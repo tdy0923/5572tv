@@ -772,7 +772,7 @@ export const UserMenu: React.FC = () => {
           <div className='my-1 border-t border-gray-200 dark:border-gray-700'></div>
 
           {/* 版本信息 - 仅管理员可见 */}
-          {role === 'owner' || role === 'admin' ? (
+          {authInfo?.role === 'owner' || authInfo?.role === 'admin' ? (
             <button
               onClick={() => {
                 setIsVersionPanelOpen(true);
