@@ -134,17 +134,19 @@ export function createRedisClient(config: RedisConnectionConfig, globalSymbol: s
     });
 
     // 初始连接，带重试机制
-    const connectWithRetry = async () => {
+    const connectWithRetry = async (): Promise<void> => {
       try {
         await client!.connect();
         console.log(`${config.clientName} connected successfully`);
       } catch (err) {
         console.error(`${config.clientName} initial connection failed:`, err);
         console.log('Will retry in 5 seconds...');
-        setTimeout(connectWithRetry, 5000);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        await connectWithRetry();
       }
     };
 
+    // 启动连接（异步，不阻塞）
     connectWithRetry();
 
     (global as any)[globalSymbol] = client;

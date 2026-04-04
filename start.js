@@ -42,7 +42,7 @@ const intervalId = setInterval(() => {
       setTimeout(() => {
         // 服务器启动后，立即执行一次 cron 任务
         executeCronJob();
-      }, 3000);
+      }, 30000);
 
       // 然后设置每小时执行一次 cron 任务
       setInterval(() => {
