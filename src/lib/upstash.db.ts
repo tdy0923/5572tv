@@ -260,6 +260,20 @@ export class UpstashRedisStorage implements IStorage {
 
   // 修改用户密码
   async changePassword(userName: string, newPassword: string): Promise<void> {
+    const userInfo = await withRetry(() =>
+      this.client.hgetall(this.userInfoKey(userName))
+    );
+
+    if (userInfo && Object.keys(userInfo).length > 0) {
+      const hashedPassword = await this.hashPassword(newPassword);
+      await withRetry(() =>
+        this.client.hset(this.userInfoKey(userName), {
+          password: hashedPassword,
+        })
+      );
+      return;
+    }
+
     const hashed = hashPwd(newPassword);
     await withRetry(() => this.client.set(this.userPwdKey(userName), hashed));
   }

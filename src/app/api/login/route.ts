@@ -164,14 +164,22 @@ export async function POST(req: NextRequest) {
     }
 
     const config = await getConfig();
-    const user = config.UserConfig.Users.find((u) => u.username === username);
-    if (user && user.banned) {
+    const legacyUser = config.UserConfig.Users.find((u) => u.username === username);
+    const userV2 = await db.getUserInfoV2(username);
+    const user = userV2 || legacyUser;
+    if (user?.banned) {
       return NextResponse.json({ error: '用户被封禁' }, { status: 401 });
     }
 
-    // 校验用户密码（V1）
+    // 优先校验 V2 用户密码，失败后回退到 V1（兼容老用户）
     try {
-      const pass = await db.verifyUser(username, password);
+      let pass = false;
+
+      if (userV2) {
+        pass = await db.verifyUserV2(username, password);
+      } else {
+        pass = await db.verifyUser(username, password);
+      }
 
       if (!pass) {
         return NextResponse.json(

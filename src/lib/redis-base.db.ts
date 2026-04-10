@@ -367,6 +367,20 @@ export abstract class BaseRedisStorage implements IStorage {
 
   // 修改用户密码
   async changePassword(userName: string, newPassword: string): Promise<void> {
+    const userInfo = await this.withRetry(() =>
+      this.client.hGetAll(this.userInfoKey(userName))
+    );
+
+    if (userInfo && Object.keys(userInfo).length > 0) {
+      const hashedPassword = await this.hashPassword(newPassword);
+      await this.withRetry(() =>
+        this.client.hSet(this.userInfoKey(userName), {
+          password: hashedPassword,
+        })
+      );
+      return;
+    }
+
     const hashed = hashPwd(newPassword);
     await this.withRetry(() =>
       this.client.set(this.userPwdKey(userName), hashed)

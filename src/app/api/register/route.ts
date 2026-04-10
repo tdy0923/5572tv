@@ -147,9 +147,12 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // 检查用户是否已存在
-      const userExists = await db.checkUserExist(username);
-      if (userExists) {
+      // 检查用户是否已存在（同时兼容 V1/V2 存储）
+      const [userExistsV1, userExistsV2] = await Promise.all([
+        db.checkUserExist(username),
+        db.checkUserExistV2(username),
+      ]);
+      if (userExistsV1 || userExistsV2) {
         return NextResponse.json({ error: '该用户名已被注册' }, { status: 400 });
       }
 
