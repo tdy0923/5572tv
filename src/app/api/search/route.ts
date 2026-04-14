@@ -4,12 +4,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getAvailableApiSites, getCacheTime, getConfig } from '@/lib/config';
+import { db } from '@/lib/db';
 import { searchFromApi } from '@/lib/downstream';
 import { generateSearchVariants } from '@/lib/downstream';
 import { recordRequest, getDbQueryCount, resetDbQueryCount } from '@/lib/performance-monitor';
 import { yellowWords } from '@/lib/yellow';
 
 export const runtime = 'nodejs';
+
+function getSearchCacheKey(username: string, query: string) {
+  return `search:${username}:${query.trim().toLowerCase()}`;
+}
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
@@ -72,6 +77,41 @@ export async function GET(request: NextRequest) {
 
   const config = await getConfig();
   const apiSites = await getAvailableApiSites(authInfo.username);
+  const cacheTime = await getCacheTime();
+  const searchCacheTtl = Math.max(15, Math.min(cacheTime, 120));
+  const searchCacheKey = getSearchCacheKey(authInfo.username, query);
+
+  try {
+    const cachedResults = await db.getCache(searchCacheKey);
+    if (Array.isArray(cachedResults) && cachedResults.length > 0) {
+      const successResponse = { results: cachedResults };
+      const responseSize = Buffer.byteLength(JSON.stringify(successResponse), 'utf8');
+
+      recordRequest({
+        timestamp: startTime,
+        method: 'GET',
+        path: '/api/search',
+        statusCode: 200,
+        duration: Date.now() - startTime,
+        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        dbQueries: getDbQueryCount(),
+        requestSize: 0,
+        responseSize,
+        filter: `query:${query}|cache:hit`,
+      });
+
+      return NextResponse.json(successResponse, {
+        headers: {
+          'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+          'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+          'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+          'Netlify-Vary': 'query',
+        },
+      });
+    }
+  } catch (error) {
+    console.warn('读取搜索缓存失败:', error);
+  }
 
   // 优化：预计算搜索变体，智能生成（普通查询1个，需要变体的2个）
   const searchVariants = generateSearchVariants(query);
@@ -101,8 +141,6 @@ export async function GET(request: NextRequest) {
         return !yellowWords.some((word: string) => typeName.includes(word));
       });
     }
-    const cacheTime = await getCacheTime();
-
     if (flattenedResults.length === 0) {
       // no cache if empty
       const emptyResponse = { results: [] };
@@ -126,6 +164,12 @@ export async function GET(request: NextRequest) {
 
     const successResponse = { results: flattenedResults };
     const responseSize = Buffer.byteLength(JSON.stringify(successResponse), 'utf8');
+
+    try {
+      await db.setCache(searchCacheKey, flattenedResults, searchCacheTtl);
+    } catch (error) {
+      console.warn('写入搜索缓存失败:', error);
+    }
 
     recordRequest({
       timestamp: startTime,
