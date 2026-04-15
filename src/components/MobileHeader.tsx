@@ -14,13 +14,13 @@ interface MobileHeaderProps {
 const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
   const { siteName } = useSite();
   return (
-    <header className='md:hidden fixed top-0 left-0 right-0 z-999 w-full bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-sm dark:bg-gray-900/90 dark:border-gray-700/50'>
+    <header className='md:hidden fixed top-0 left-0 right-0 z-999 w-full bg-white/94 backdrop-blur-md border-b border-[#ece7da] shadow-sm dark:bg-[#111111]/92 dark:border-white/8'>
       <div className='h-12 flex items-center justify-between px-4'>
         {/* 左侧：搜索按钮、返回按钮和设置按钮 */}
         <div className='flex items-center gap-2'>
           <Link
             href='/search'
-            className='w-10 h-10 p-2 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200/50 dark:text-gray-300 dark:hover:bg-gray-700/50 transition-colors'
+            className='w-10 h-10 p-2 rounded-full flex items-center justify-center text-[#171717] hover:bg-[#f8f5ec] dark:text-[#fff6de] dark:hover:bg-white/6 transition-colors'
           >
             <svg
               className='w-full h-full'
@@ -51,7 +51,7 @@ const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
       <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
         <Link
           href='/'
-          className='text-2xl font-bold text-green-600 tracking-tight hover:opacity-80 transition-opacity'
+          className='text-2xl font-bold text-[#171717] dark:text-[#fff6de] tracking-tight hover:opacity-80 transition-opacity'
         >
           {siteName}
         </Link>

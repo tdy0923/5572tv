@@ -1,23 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 'use client';
 
-import { Cat, Clover, Film, FolderOpen, Globe, Home, MoreHorizontal, PlaySquare, Radio, Search, Sparkles, Star, Tv, X } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useQuery, queryOptions } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
+import {
+  Cat,
+  Clover,
+  Film,
+  FolderOpen,
+  Globe,
+  Home,
+  MoreHorizontal,
+  PlaySquare,
+  Radio,
+  Search,
+  Sparkles,
+  Star,
+  Tv,
+  X,
+} from 'lucide-react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
 import { FastLink } from './FastLink';
+import { useSite } from './SiteProvider';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
-import { useSite } from './SiteProvider';
 
 interface NavItem {
   icon: any;
   label: string;
   href: string;
-  color: string;
-  gradient: string;
 }
 
 interface ModernNavProps {
@@ -26,95 +37,82 @@ interface ModernNavProps {
 }
 
 // Query Options 工厂函数
-const userEmbyConfigOptions = () => queryOptions({
-  queryKey: ['user', 'emby-config'],
-  queryFn: async () => {
-    const res = await fetch('/api/user/emby-config');
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.config;
-  },
-  staleTime: 5 * 60 * 1000,
-  retry: false,
-});
+const userEmbyConfigOptions = () =>
+  queryOptions({
+    queryKey: ['user', 'emby-config'],
+    queryFn: async () => {
+      const res = await fetch('/api/user/emby-config');
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.config;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
-const publicSourcesOptions = () => queryOptions({
-  queryKey: ['emby', 'public-sources'],
-  queryFn: async () => {
-    const res = await fetch('/api/emby/public-sources');
-    if (!res.ok) return { sources: [] };
-    return res.json();
-  },
-  staleTime: 5 * 60 * 1000,
-  retry: false,
-});
+const publicSourcesOptions = () =>
+  queryOptions({
+    queryKey: ['emby', 'public-sources'],
+    queryFn: async () => {
+      const res = await fetch('/api/emby/public-sources');
+      if (!res.ok) return { sources: [] };
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
-export default function ModernNav({ showAIButton = false, onAIButtonClick }: ModernNavProps = {}) {
-  const router = useRouter();
+export default function ModernNav({
+  showAIButton = false,
+  onAIButtonClick,
+}: ModernNavProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [active, setActive] = useState(pathname);
   const { siteName } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  const [menuItems, setMenuItems] = useState<NavItem[]>([
+  const baseMenuItems: NavItem[] = [
     {
       icon: Home,
       label: '首页',
       href: '/',
-      color: 'text-green-500',
-      gradient: 'from-green-500 to-emerald-500',
     },
     {
       icon: Search,
       label: '搜索',
       href: '/search',
-      color: 'text-blue-500',
-      gradient: 'from-blue-500 to-cyan-500',
     },
     {
       icon: Globe,
       label: '源浏览器',
       href: '/source-browser',
-      color: 'text-emerald-500',
-      gradient: 'from-emerald-500 to-green-500',
     },
     {
       icon: Film,
       label: '电影',
       href: '/douban?type=movie',
-      color: 'text-red-500',
-      gradient: 'from-red-500 to-pink-500',
     },
     {
       icon: Tv,
       label: '剧集',
       href: '/douban?type=tv',
-      color: 'text-blue-600',
-      gradient: 'from-blue-600 to-indigo-600',
     },
     {
       icon: PlaySquare,
       label: '短剧',
       href: '/shortdrama',
-      color: 'text-purple-500',
-      gradient: 'from-purple-500 to-violet-500',
     },
     {
       icon: Cat,
       label: '动漫',
       href: '/douban?type=anime',
-      color: 'text-pink-500',
-      gradient: 'from-pink-500 to-rose-500',
     },
     {
       icon: Clover,
       label: '综艺',
       href: '/douban?type=show',
-      color: 'text-orange-500',
-      gradient: 'from-orange-500 to-amber-500',
     },
-  ]);
+  ];
 
   // 检查用户是否配置了 Emby
   const { data: userEmbyConfig } = useQuery(userEmbyConfigOptions());
@@ -122,67 +120,48 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
   // 检查管理员是否设置了公共源
   const { data: publicSourcesData } = useQuery(publicSourcesOptions());
 
-  useEffect(() => {
-    const runtimeConfig = (window as any).RUNTIME_CONFIG;
-    const newItems = [...menuItems];
+  const active = useMemo(() => {
+    const queryString = searchParams.toString();
+    return queryString ? `${pathname}?${queryString}` : pathname;
+  }, [pathname, searchParams]);
 
-    // 直播 - 根据 ENABLE_WEB_LIVE 动态控制
-    const hasLiveInMenu = newItems.some(item => item.href === '/live');
-    if (runtimeConfig?.ENABLE_WEB_LIVE && !hasLiveInMenu) {
+  const menuItems = useMemo(() => {
+    const runtimeConfig =
+      typeof window !== 'undefined'
+        ? (window as any).RUNTIME_CONFIG
+        : undefined;
+    const newItems = [...baseMenuItems];
+
+    if (runtimeConfig?.ENABLE_WEB_LIVE) {
       newItems.push({
         icon: Radio,
         label: '直播',
         href: '/live',
-        color: 'text-teal-500',
-        gradient: 'from-teal-500 to-cyan-500',
       });
-    } else if (!runtimeConfig?.ENABLE_WEB_LIVE && hasLiveInMenu) {
-      const index = newItems.findIndex(item => item.href === '/live');
-      if (index > -1) newItems.splice(index, 1);
     }
 
-    if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0 && !newItems.some(item => item.href === '/douban?type=custom')) {
+    if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0) {
       newItems.push({
         icon: Star,
         label: '自定义',
         href: '/douban?type=custom',
-        color: 'text-yellow-500',
-        gradient: 'from-yellow-500 to-amber-500',
       });
     }
 
-    // Emby - 用户有私人源 OR 管理员有公共源，都显示导航
-    const hasUserEmby = userEmbyConfig?.sources?.some((s: any) => s.enabled && s.ServerURL);
+    const hasUserEmby = userEmbyConfig?.sources?.some(
+      (s: any) => s.enabled && s.ServerURL,
+    );
     const hasPublicEmby = (publicSourcesData?.sources?.length ?? 0) > 0;
-    const hasEmbyConfig = hasUserEmby || hasPublicEmby;
-    const hasEmbyInMenu = newItems.some(item => item.href === '/emby');
-
-    if (hasEmbyConfig && !hasEmbyInMenu) {
+    if (hasUserEmby || hasPublicEmby) {
       newItems.push({
         icon: FolderOpen,
         label: 'Emby',
         href: '/emby',
-        color: 'text-indigo-500',
-        gradient: 'from-indigo-500 to-purple-500',
       });
-    } else if (!hasEmbyConfig && hasEmbyInMenu) {
-      // 如果用户删除了所有 Emby 配置，移除导航项
-      const index = newItems.findIndex(item => item.href === '/emby');
-      if (index > -1) {
-        newItems.splice(index, 1);
-      }
     }
 
-    if (newItems.length !== menuItems.length) {
-      setMenuItems(newItems);
-    }
-  }, [userEmbyConfig, publicSourcesData]);
-
-  useEffect(() => {
-    const queryString = searchParams.toString();
-    const fullPath = queryString ? `${pathname}?${queryString}` : pathname;
-    setActive(fullPath);
-  }, [pathname, searchParams]);
+    return newItems;
+  }, [baseMenuItems, userEmbyConfig, publicSourcesData]);
 
   const isActive = (href: string) => {
     const typeMatch = href.match(/type=([^&]+)/)?.[1];
@@ -200,12 +179,12 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
   return (
     <>
       {/* Desktop Top Navigation - 2025 Disney+ Style */}
-      <nav className='hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50'>
+      <nav className='hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/92 dark:bg-[#111111]/90 backdrop-blur-xl border-b border-[#ece7da] dark:border-white/8 shadow-[0_12px_30px_rgba(0,0,0,0.05)]'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='text-xl font-bold bg-linear-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 bg-clip-text text-transparent'>
+              <div className='text-xl font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
                 {siteName}
               </div>
             </FastLink>
@@ -213,55 +192,50 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
             {/* Navigation Items */}
             <div className='flex items-center justify-center gap-1 lg:gap-2 overflow-x-auto scrollbar-hide flex-1 px-4'>
               {menuItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
+                const Icon = item.icon;
+                const active = isActive(item.href);
 
-              return (
-                <FastLink
-                  key={item.label}
-                  href={item.href}
-                  useTransitionNav
-                  onClick={() => setActive(item.href)}
-                  className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 whitespace-nowrap shrink-0'
-                >
-                  {/* Active indicator */}
-                  {active && (
-                    <div
-                      className={`absolute inset-0 bg-linear-to-r ${item.gradient} opacity-10 rounded-full animate-pulse`}
-                    />
-                  )}
-
-                  {/* Icon */}
-                  <div className='relative'>
-                    <Icon
-                      className={`w-5 h-5 transition-all duration-300 ${
-                        active
-                          ? item.color
-                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200'
-                      } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <span
-                    className={`text-sm font-medium transition-all duration-300 ${
-                      active
-                        ? `${item.color} font-semibold`
-                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
-                    }`}
+                return (
+                  <FastLink
+                    key={item.label}
+                    href={item.href}
+                    useTransitionNav
+                    className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 whitespace-nowrap shrink-0'
                   >
-                    {item.label}
-                  </span>
+                    {/* Active indicator */}
+                    {active && (
+                      <div className='absolute inset-0 bg-linear-to-r from-[#f4c24d]/20 to-[#fff6de]/65 rounded-full' />
+                    )}
 
-                  {/* Bottom active border */}
-                  {active && (
-                    <div
-                      className={`absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r ${item.gradient} rounded-full`}
-                    />
-                  )}
-                </FastLink>
-              );
-            })}
+                    {/* Icon */}
+                    <div className='relative'>
+                      <Icon
+                        className={`w-5 h-5 transition-all duration-300 ${
+                          active
+                            ? 'text-[#171717] dark:text-[#fff6de]'
+                            : 'text-gray-600 dark:text-gray-400 group-hover:text-[#171717] dark:group-hover:text-gray-100'
+                        } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                      />
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={`text-sm font-medium transition-all duration-300 ${
+                        active
+                          ? 'text-[#171717] dark:text-[#fff6de] font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 group-hover:text-[#171717] dark:group-hover:text-gray-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+
+                    {/* Bottom active border */}
+                    {active && (
+                      <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#f4c24d] to-[#c89422] rounded-full' />
+                    )}
+                  </FastLink>
+                );
+              })}
             </div>
 
             {/* Right Side Actions - ✨ AI Button, Theme Toggle & User Menu */}
@@ -269,7 +243,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
               {showAIButton && onAIButtonClick && (
                 <button
                   onClick={onAIButtonClick}
-                  className='relative p-2 rounded-lg bg-linear-to-br from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 active:scale-95 transition-all duration-200 shadow-lg shadow-blue-500/30 group'
+                  className='relative p-2 rounded-lg bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95 transition-all duration-200 shadow-lg shadow-[#f4c24d]/20 group'
                   aria-label='AI 推荐'
                 >
                   <Sparkles className='h-5 w-5 group-hover:scale-110 transition-transform duration-300' />
@@ -295,7 +269,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
           >
             {/* Header */}
             <div className='flex items-center justify-between px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50'>
-              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>全部分类</h3>
+              <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
+                全部分类
+              </h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
                 className='p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors'
@@ -315,16 +291,13 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
                     key={item.label}
                     href={item.href}
                     useTransitionNav
-                    onClick={() => {
-                      setActive(item.href);
-                      setShowMoreMenu(false);
-                    }}
+                    onClick={() => setShowMoreMenu(false)}
                     className='flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 active:scale-95 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
                   >
                     <div
                       className={`flex items-center justify-center w-12 h-12 rounded-2xl ${
                         active
-                          ? `bg-linear-to-br ${item.gradient}`
+                          ? 'bg-linear-to-br from-[#183a5b] to-[#365f8e]'
                           : 'bg-gray-100 dark:bg-gray-800'
                       }`}
                     >
@@ -339,7 +312,7 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
                     <span
                       className={`text-xs font-medium ${
                         active
-                          ? item.color
+                          ? 'text-[#102b47] dark:text-[#fff4d0]'
                           : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -372,17 +345,20 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
                 key={item.label}
                 href={item.href}
                 useTransitionNav
-                onClick={() => setActive(item.href)}
                 className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
               >
                 <Icon
                   className={`w-6 h-6 mb-1 transition-colors duration-200 ${
-                    active ? item.color : 'text-gray-600 dark:text-gray-400'
+                    active
+                      ? 'text-[#fff4d0]'
+                      : 'text-gray-600 dark:text-gray-400'
                   }`}
                 />
                 <span
                   className={`text-[10px] font-medium transition-colors duration-200 ${
-                    active ? item.color : 'text-gray-600 dark:text-gray-400'
+                    active
+                      ? 'text-[#fff4d0]'
+                      : 'text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   {item.label}
@@ -397,7 +373,9 @@ export default function ModernNav({ showAIButton = false, onAIButtonClick }: Mod
             className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
           >
             <MoreHorizontal className='w-6 h-6 mb-1 text-gray-600 dark:text-gray-400' />
-            <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>更多</span>
+            <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>
+              更多
+            </span>
           </button>
         </div>
       </nav>

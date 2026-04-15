@@ -1,26 +1,6 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="gold" x1="122" y1="110" x2="322" y2="366" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF4D0"/>
-      <stop offset="0.55" stop-color="#EBC66A"/>
-      <stop offset="1" stop-color="#D18B1F"/>
-    </linearGradient>
-  </defs>
-
-  <rect x="36" y="36" width="440" height="440" rx="104" fill="#0D121B"/>
-  <rect x="36" y="36" width="440" height="440" rx="104" stroke="#C99735" stroke-opacity="0.18" stroke-width="2"/>
-
-  <g opacity="0.16">
-    <rect x="62" y="126" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="62" y="160" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="62" y="194" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="62" y="228" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="443" y="126" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="443" y="160" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="443" y="194" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-    <rect x="443" y="228" width="7" height="18" rx="3.5" fill="#D7A94A"/>
-  </g>
-
-  <text x="118" y="330" fill="url(#gold)" font-family="'Baskerville', 'Georgia', 'Times New Roman', serif" font-size="252" font-style="italic" font-weight="700">5</text>
-  <path d="M118 358H338" stroke="#C99735" stroke-opacity="0.7" stroke-width="5" stroke-linecap="round"/>
+  <rect x="40" y="40" width="432" height="432" rx="112" fill="#F4C24D"/>
+  <rect x="40" y="40" width="432" height="432" rx="112" stroke="#1F1F1F" stroke-opacity="0.14" stroke-width="4"/>
+  <path d="M332.74 134H190.4L178.65 215.53C193.43 206.24 211.4 201.6 232.56 201.6C270.47 201.6 300.09 212.31 321.43 233.74C342.86 255.08 353.58 283.81 353.58 319.92C353.58 355.49 342.11 384.26 319.18 406.23C296.35 428.2 264.92 439.18 224.9 439.18C187.8 439.18 157.38 429.43 133.64 409.94C109.99 390.45 96.82 364.07 94.12 330.8H153.01C156.98 349.12 164.91 363.03 176.79 372.55C188.68 381.97 204.11 386.68 223.09 386.68C243.35 386.68 259.2 380.99 270.63 369.61C282.06 358.14 287.77 342.79 287.77 323.54C287.77 304.2 281.56 288.94 269.13 277.75C256.79 266.55 240.16 260.96 219.24 260.96C201.91 260.96 186.6 264.44 173.31 271.38L145.73 256.49L169.61 82.27H332.74V134Z" fill="#171717"/>
+  <path d="M152 364H332" stroke="#FFF6DE" stroke-width="10" stroke-linecap="round"/>
 </svg>
