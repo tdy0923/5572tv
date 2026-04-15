@@ -12,6 +12,11 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import {
+  getCachedWallpaperUrl,
+  setCachedWallpaperUrl,
+} from '@/lib/wallpaper-cache';
+
 import { useSite } from '@/components/SiteProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -37,10 +42,17 @@ function RegisterPageClient() {
   useEffect(() => {
     const fetchBingWallpaper = async () => {
       try {
+        const cachedWallpaper = getCachedWallpaperUrl();
+        if (cachedWallpaper) {
+          setBingWallpaper(cachedWallpaper);
+          return;
+        }
+
         const response = await fetch('/api/bing-wallpaper');
         const data = await response.json();
         if (data.url) {
           setBingWallpaper(data.url);
+          setCachedWallpaperUrl(data.url);
         }
       } catch (error) {
         console.log('Failed to fetch Bing wallpaper:', error);
