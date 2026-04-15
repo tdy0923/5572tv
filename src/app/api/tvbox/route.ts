@@ -210,6 +210,8 @@ export async function GET(request: NextRequest) {
     let currentUser: {
       username: string;
       tvboxEnabledSources?: string[];
+      enabledApis?: string[];
+      tags?: string[];
       showAdultContent?: boolean;
     } | null = null;
 
@@ -220,12 +222,10 @@ export async function GET(request: NextRequest) {
         currentUser = {
           username: user.username,
           tvboxEnabledSources: user.tvboxEnabledSources,
+          enabledApis: user.enabledApis,
+          tags: user.tags,
           showAdultContent: user.showAdultContent,
         };
-        console.log(
-          `[TVBox] 识别到用户 ${user.username}，源限制:`,
-          user.tvboxEnabledSources || '无限制',
-        );
       }
     }
 
@@ -398,26 +398,52 @@ export async function GET(request: NextRequest) {
     // 应用过滤逻辑：filter 参数和用户权限都要满足
     if (shouldFilterAdult && !showAdultContent) {
       enabledSources = enabledSources.filter((source) => !source.is_adult);
-      console.log(
-        `[TVBox] 🛡️ 成人内容过滤已启用（filter=${filterParam || 'default'}, showAdultContent=${showAdultContent}），剩余源数量: ${enabledSources.length}`,
-      );
-    } else if (!shouldFilterAdult) {
-      console.log(`[TVBox] ⚠️ 成人内容过滤已通过 filter=off 显式关闭`);
-    } else if (showAdultContent) {
-      console.log(`[TVBox] ℹ️ 用户有成人内容访问权限，未过滤成人源`);
     }
 
-    // 🔑 新增：应用用户的源限制（如果有）
-    if (
-      currentUser?.tvboxEnabledSources &&
-      currentUser.tvboxEnabledSources.length > 0
-    ) {
-      const allowedSourceKeys = new Set(currentUser.tvboxEnabledSources);
+    // 🔑 TVBox 源权限：优先使用 tvboxEnabledSources；若未单独配置，则继承网站端 enabledApis/tags 权限
+    let tvboxAllowedSourceKeys: Set<string> | null = null;
+    if (currentUser) {
+      if (
+        currentUser.tvboxEnabledSources &&
+        currentUser.tvboxEnabledSources.length > 0
+      ) {
+        tvboxAllowedSourceKeys = new Set(currentUser.tvboxEnabledSources);
+      } else if (
+        currentUser.enabledApis &&
+        currentUser.enabledApis.length > 0
+      ) {
+        tvboxAllowedSourceKeys = new Set(
+          currentUser.enabledApis.filter(
+            (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
+          ),
+        );
+      } else if (
+        currentUser.tags &&
+        currentUser.tags.length > 0 &&
+        config.UserConfig.Tags
+      ) {
+        const inheritedApis = new Set<string>();
+        currentUser.tags.forEach((tagName) => {
+          const tagConfig = config.UserConfig.Tags?.find(
+            (t) => t.name === tagName,
+          );
+          if (tagConfig?.enabledApis) {
+            tagConfig.enabledApis.forEach((apiKey) => {
+              if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+                inheritedApis.add(apiKey);
+              }
+            });
+          }
+        });
+        if (inheritedApis.size > 0) {
+          tvboxAllowedSourceKeys = inheritedApis;
+        }
+      }
+    }
+
+    if (tvboxAllowedSourceKeys && tvboxAllowedSourceKeys.size > 0) {
       enabledSources = enabledSources.filter((source) =>
-        allowedSourceKeys.has(source.key),
-      );
-      console.log(
-        `[TVBox] 用户 ${currentUser.username} 限制后的源数量: ${enabledSources.length}`,
+        tvboxAllowedSourceKeys.has(source.key),
       );
     }
 

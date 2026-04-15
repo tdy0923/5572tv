@@ -386,33 +386,38 @@ export async function configSelfCheck(
           // 保留现有配置
           return existingUserConfig;
         } else {
+          // 新用户，优先保留 adminConfig 中已存在的配置字段，避免自检覆盖后台刚保存的 tags/enabledApis
+          const persistedUserConfig = adminConfig.UserConfig.Users.find(
+            (u) => u.username === username,
+          );
+
           // 新用户，创建默认配置
           let createdAt = Date.now();
           let oidcSub: string | undefined;
-          let tags: string[] | undefined;
+          let tags: string[] | undefined = persistedUserConfig?.tags;
           let role: 'owner' | 'admin' | 'user' =
-            username === ownerUser ? 'owner' : 'user';
-          let banned = false;
-          let enabledApis: string[] | undefined;
+            persistedUserConfig?.role ||
+            (username === ownerUser ? 'owner' : 'user');
+          let banned = persistedUserConfig?.banned || false;
+          let enabledApis: string[] | undefined =
+            persistedUserConfig?.enabledApis;
+          let showAdultContent: boolean | undefined =
+            persistedUserConfig?.showAdultContent;
 
           try {
             // 从数据库V2获取用户信息（OIDC/新版用户）
             const userInfoV2 = await db.getUserInfoV2(username);
-            console.log(
-              `=== configSelfCheck: 用户 ${username} 数据库信息 ===`,
-              userInfoV2,
-            );
             if (userInfoV2) {
               createdAt = userInfoV2.createdAt || Date.now();
               oidcSub = userInfoV2.oidcSub;
-              tags = userInfoV2.tags;
+              tags = userInfoV2.tags ?? tags;
               role = userInfoV2.role || role;
               banned = userInfoV2.banned || false;
-              enabledApis = userInfoV2.enabledApis;
-              console.log(
-                `=== configSelfCheck: 用户 ${username} tags ===`,
-                tags,
-              );
+              enabledApis = userInfoV2.enabledApis ?? enabledApis;
+              showAdultContent =
+                userInfoV2.showAdultContent !== undefined
+                  ? userInfoV2.showAdultContent
+                  : showAdultContent;
             }
           } catch (err) {
             console.warn(`获取用户 ${username} 信息失败:`, err);
@@ -430,17 +435,12 @@ export async function configSelfCheck(
           }
           if (tags && tags.length > 0) {
             newUserConfig.tags = tags;
-            console.log(
-              `=== configSelfCheck: 用户 ${username} 最终配置包含tags ===`,
-              newUserConfig.tags,
-            );
-          } else {
-            console.log(
-              `=== configSelfCheck: 用户 ${username} 没有tags (tags=${tags}) ===`,
-            );
           }
           if (enabledApis && enabledApis.length > 0) {
             newUserConfig.enabledApis = enabledApis;
+          }
+          if (showAdultContent !== undefined) {
+            newUserConfig.showAdultContent = showAdultContent;
           }
 
           return newUserConfig;
@@ -585,10 +585,6 @@ export async function configSelfCheck(
       },
     ];
 
-    console.log(
-      `[Config Migration] Migrated OIDCAuthConfig to OIDCProviders with provider: ${providerId}`,
-    );
-
     // 保留旧配置一段时间以防回滚需要
     // delete adminConfig.OIDCAuthConfig;
   }
@@ -704,9 +700,6 @@ function applyVideoProxy(sites: ApiSite[], config: AdminConfig): ApiSite[] {
     const urlMatch = source.api.match(/[?&]url=([^&]+)/);
     if (urlMatch) {
       realApiUrl = decodeURIComponent(urlMatch[1]);
-      console.log(
-        `[Video Proxy] ${source.name}: Detected old proxy, replacing with new proxy`,
-      );
     }
 
     // Extract source ID from real API URL
@@ -743,8 +736,6 @@ function applyVideoProxy(sites: ApiSite[], config: AdminConfig): ApiSite[] {
 
     const sourceId = extractSourceId(realApiUrl);
     const proxiedApi = `${proxyBaseUrl}/p/${sourceId}?url=${encodeURIComponent(realApiUrl)}`;
-
-    console.log(`[Video Proxy] ${source.name}: ✓ Applied proxy`);
 
     return {
       ...source,

@@ -482,6 +482,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
     username: string;
     tvboxToken?: string;
     tvboxEnabledSources?: string[];
+    allowedSources?: string[];
   } | null>(null);
   const [selectedTVBoxSources, setSelectedTVBoxSources] = useState<string[]>(
     [],
@@ -612,8 +613,12 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
   const handleStartEditUserGroup = (group: {
     name: string;
     enabledApis: string[];
+    showAdultContent?: boolean;
   }) => {
-    setEditingUserGroup({ ...group });
+    setEditingUserGroup({
+      ...group,
+      showAdultContent: group.showAdultContent || false,
+    });
     setShowEditUserGroupForm(true);
     setShowAddUserGroupForm(false);
   };
@@ -721,24 +726,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
   }) => {
     setSelectedUser(user);
 
-    // 计算用户的所有有效 API（个人 + 用户组）
-    const userApis = user.enabledApis || [];
-    const tagApis: string[] = [];
-
-    // 从用户组获取 API 权限
-    if (user.tags && user.tags.length > 0) {
-      user.tags.forEach((tagName) => {
-        const tag = config.UserConfig.Tags?.find((t) => t.name === tagName);
-        if (tag && tag.enabledApis) {
-          tagApis.push(...tag.enabledApis);
-        }
-      });
-    }
-
-    // 合并去重
-    const allApis = [...new Set([...userApis, ...tagApis])];
-
-    setSelectedApis(allApis);
+    setSelectedApis(user.enabledApis || []);
     setSelectedShowAdultContent(user.showAdultContent || false);
     setShowConfigureApisModal(true);
   };
@@ -1945,11 +1933,48 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                                   user.username === currentUsername))) && (
                               <button
                                 onClick={() => {
+                                  const tagAllowedSources = new Set<string>();
+                                  if (user.tags && user.tags.length > 0) {
+                                    user.tags.forEach((tagName) => {
+                                      const tag = userGroups.find(
+                                        (t) => t.name === tagName,
+                                      );
+                                      if (tag?.enabledApis) {
+                                        tag.enabledApis.forEach((apiKey) => {
+                                          if (
+                                            ![
+                                              'ai-recommend',
+                                              'youtube-search',
+                                            ].includes(apiKey)
+                                          ) {
+                                            tagAllowedSources.add(apiKey);
+                                          }
+                                        });
+                                      }
+                                    });
+                                  }
+
+                                  const directAllowedSources = new Set(
+                                    (user.enabledApis || []).filter(
+                                      (apiKey) =>
+                                        ![
+                                          'ai-recommend',
+                                          'youtube-search',
+                                        ].includes(apiKey),
+                                    ),
+                                  );
+
+                                  const inheritedAllowedSources =
+                                    directAllowedSources.size > 0
+                                      ? Array.from(directAllowedSources)
+                                      : Array.from(tagAllowedSources);
+
                                   setTVBoxTokenUser({
                                     username: user.username,
                                     tvboxToken: user.tvboxToken,
                                     tvboxEnabledSources:
                                       user.tvboxEnabledSources,
+                                    allowedSources: inheritedAllowedSources,
                                   });
                                   setSelectedTVBoxSources(
                                     user.tvboxEnabledSources || [],
@@ -2123,44 +2148,80 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
 
                 {/* 采集源选择 - 多列布局 */}
                 <div className='mb-6'>
-                  <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-4'>
-                    选择可用的采集源：
-                  </h4>
-                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                    {config?.SourceConfig?.map((source) => (
-                      <label
-                        key={source.key}
-                        className='flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors'
-                      >
-                        <input
-                          type='checkbox'
-                          checked={selectedApis.includes(source.key)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedApis([...selectedApis, source.key]);
-                            } else {
-                              setSelectedApis(
-                                selectedApis.filter(
-                                  (api) => api !== source.key,
-                                ),
-                              );
-                            }
-                          }}
-                          className='rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700'
-                        />
-                        <div className='flex-1 min-w-0'>
-                          <div className='text-sm font-medium text-gray-900 dark:text-gray-100 truncate'>
-                            {source.name}
+                  {(() => {
+                    const allowedApiKeys =
+                      selectedUser?.tags && selectedUser.tags.length > 0
+                        ? Array.from(
+                            new Set(
+                              selectedUser.tags.flatMap((tagName) => {
+                                const tag = config?.UserConfig.Tags?.find(
+                                  (t) => t.name === tagName,
+                                );
+                                return tag?.enabledApis || [];
+                              }),
+                            ),
+                          )
+                        : [];
+
+                    const availableSources = (
+                      config?.SourceConfig || []
+                    ).filter((source) => {
+                      if (!selectedUser) return false;
+                      if (allowedApiKeys.length === 0) return true;
+                      return allowedApiKeys.includes(source.key);
+                    });
+
+                    return (
+                      <>
+                        <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-4'>
+                          选择可用的采集源：
+                        </h4>
+                        {allowedApiKeys.length > 0 && (
+                          <div className='mb-3 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2'>
+                            当前用户已分配用户组，个人采集源权限只能在用户组开放范围内进一步收窄。
                           </div>
-                          {source.api && (
-                            <div className='text-xs text-gray-500 dark:text-gray-400 truncate'>
-                              {extractDomain(source.api)}
-                            </div>
-                          )}
+                        )}
+                        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                          {availableSources.map((source) => (
+                            <label
+                              key={source.key}
+                              className='flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors'
+                            >
+                              <input
+                                type='checkbox'
+                                checked={selectedApis.includes(source.key)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedApis([
+                                      ...selectedApis,
+                                      source.key,
+                                    ]);
+                                  } else {
+                                    setSelectedApis(
+                                      selectedApis.filter(
+                                        (api) => api !== source.key,
+                                      ),
+                                    );
+                                  }
+                                }}
+                                className='rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700'
+                              />
+                              <div className='flex-1 min-w-0'>
+                                <div className='text-sm font-medium text-gray-900 dark:text-gray-100 truncate'>
+                                  {source.name}
+                                </div>
+                                {source.api && (
+                                  <div className='text-xs text-gray-500 dark:text-gray-400 truncate'>
+                                    {extractDomain(source.api)}
+                                  </div>
+                                )}
+                              </div>
+                            </label>
+                          ))}
                         </div>
-                      </label>
-                    ))}
-                  </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* 快速操作按钮 */}
@@ -2174,10 +2235,25 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                     </button>
                     <button
                       onClick={() => {
+                        const allowedApiKeys =
+                          selectedUser?.tags && selectedUser.tags.length > 0
+                            ? Array.from(
+                                new Set(
+                                  selectedUser.tags.flatMap((tagName) => {
+                                    const tag = config?.UserConfig.Tags?.find(
+                                      (t) => t.name === tagName,
+                                    );
+                                    return tag?.enabledApis || [];
+                                  }),
+                                ),
+                              )
+                            : [];
                         const allApis =
-                          config?.SourceConfig?.filter(
-                            (source) => !source.disabled,
-                          ).map((s) => s.key) || [];
+                          allowedApiKeys.length > 0
+                            ? allowedApiKeys
+                            : config?.SourceConfig?.filter(
+                                (source) => !source.disabled,
+                              ).map((s) => s.key) || [];
                         setSelectedApis(allApis);
                       }}
                       className={buttonStyles.quickAction}
@@ -3265,6 +3341,17 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
             username={tvboxTokenUser.username}
             tvboxToken={tvboxTokenUser.tvboxToken}
             tvboxEnabledSources={selectedTVBoxSources}
+            allowedSources={
+              tvboxTokenUser.allowedSources?.length > 0
+                ? (config?.SourceConfig || [])
+                    .filter(
+                      (s) =>
+                        !s.disabled &&
+                        tvboxTokenUser.allowedSources!.includes(s.key),
+                    )
+                    .map((s) => ({ key: s.key, name: s.name }))
+                : undefined
+            }
             allSources={(config?.SourceConfig || [])
               .filter((s) => !s.disabled)
               .map((s) => ({ key: s.key, name: s.name }))}
@@ -3884,6 +3971,10 @@ const VideoSourceConfig = ({
 
   // 有效性检测函数
   const handleValidateSources = async () => {
+    if (isValidating) {
+      return;
+    }
+
     if (!searchKeyword.trim()) {
       showAlert({
         type: 'warning',
@@ -3913,6 +4004,20 @@ const VideoSourceConfig = ({
         const eventSource = new EventSource(
           `/api/admin/source/validate?q=${encodeURIComponent(searchKeyword.trim())}`,
         );
+        let validationCompleted = false;
+        let validationTimedOut = false;
+        const timeoutId = window.setTimeout(() => {
+          validationTimedOut = true;
+          if (eventSource.readyState !== EventSource.CLOSED) {
+            eventSource.close();
+            setIsValidating(false);
+            showAlert({
+              type: 'warning',
+              title: '验证超时',
+              message: '检测超时，请重试',
+            });
+          }
+        }, 60000);
 
         eventSource.onmessage = (event) => {
           try {
@@ -3920,7 +4025,6 @@ const VideoSourceConfig = ({
 
             switch (data.type) {
               case 'start':
-                console.log(`开始检测 ${data.totalSources} 个视频源`);
                 break;
 
               case 'source_result':
@@ -3970,41 +4074,35 @@ const VideoSourceConfig = ({
                 break;
 
               case 'complete':
-                console.log(
-                  `检测完成，共检测 ${data.completedSources} 个视频源`,
-                );
+                validationCompleted = true;
+                window.clearTimeout(timeoutId);
                 eventSource.close();
                 setIsValidating(false);
                 break;
             }
           } catch (error) {
-            console.error('解析EventSource数据失败:', error);
+            console.warn('解析验证流数据失败:', error);
           }
         };
 
-        eventSource.onerror = (error) => {
-          console.error('EventSource错误:', error);
+        eventSource.onerror = () => {
+          window.clearTimeout(timeoutId);
+
+          if (validationCompleted) {
+            eventSource.close();
+            return;
+          }
+
           eventSource.close();
           setIsValidating(false);
-          showAlert({
-            type: 'error',
-            title: '验证失败',
-            message: '连接错误，请重试',
-          });
-        };
-
-        // 设置超时，防止长时间等待
-        setTimeout(() => {
-          if (eventSource.readyState === EventSource.OPEN) {
-            eventSource.close();
-            setIsValidating(false);
+          if (!validationCompleted && !validationTimedOut) {
             showAlert({
-              type: 'warning',
-              title: '验证超时',
-              message: '检测超时，请重试',
+              type: 'error',
+              title: '验证失败',
+              message: '连接错误，请重试',
             });
           }
-        }, 60000); // 60秒超时
+        };
       } catch (error) {
         setIsValidating(false);
         showAlert({

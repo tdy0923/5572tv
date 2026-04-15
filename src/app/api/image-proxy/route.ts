@@ -1,9 +1,12 @@
 import * as https from 'https';
 import { NextResponse } from 'next/server';
 
+import { db } from '@/lib/db';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
+
+const IMAGE_FAILURE_CACHE_TTL = 10 * 60;
 
 // https agent with rejectUnauthorized: false for expired-cert image CDNs
 const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -79,6 +82,10 @@ async function fetchWithInsecureHttps(
   });
 }
 
+function getImageFailureCacheKey(imageUrl: string): string {
+  return `image-proxy:failure:${imageUrl}`;
+}
+
 // 图片代理接口 - 解决防盗链和 Mixed Content 问题
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -98,8 +105,14 @@ export async function GET(request: Request) {
   // 创建 AbortController 用于超时控制
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+  const failureCacheKey = getImageFailureCacheKey(imageUrl);
 
   try {
+    const cachedFailure = await db.getCache(failureCacheKey);
+    if (cachedFailure) {
+      return NextResponse.redirect('/placeholder-cover.jpg', 302);
+    }
+
     // 动态设置 Referer 和 Origin（根据图片源域名）
     const imageUrlObj = new URL(imageUrl);
     const isDoubanImage = imageUrlObj.hostname.includes('doubanio.com');
@@ -213,19 +226,22 @@ export async function GET(request: Request) {
   } catch (error: any) {
     clearTimeout(timeoutId);
 
-    // 错误类型判断
-    if (error.name === 'AbortError') {
-      return NextResponse.json(
-        { error: 'Image fetch timeout (15s)' },
-        { status: 504 },
+    try {
+      await db.setCache(
+        failureCacheKey,
+        { failedAt: Date.now() },
+        IMAGE_FAILURE_CACHE_TTL,
       );
+    } catch {
+      // 缓存失败不影响主流程
     }
 
-    console.error('[Image Proxy] Error fetching image:', error.message);
-    return NextResponse.json(
-      { error: 'Error fetching image', details: error.message },
-      { status: 502 },
-    );
+    // 错误类型判断
+    if (error.name === 'AbortError') {
+      return NextResponse.redirect('/placeholder-cover.jpg', 302);
+    }
+
+    return NextResponse.redirect('/placeholder-cover.jpg', 302);
   }
 }
 

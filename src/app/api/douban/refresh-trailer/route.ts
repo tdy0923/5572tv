@@ -5,9 +5,14 @@ import { recordRequest } from '@/lib/performance-monitor';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 const TRAILER_FAILURE_CACHE_TTL = 10 * 60;
+const TRAILER_SUCCESS_CACHE_TTL = 30 * 60;
 
 function getTrailerFailureCacheKey(id: string): string {
   return `douban:trailer:refresh-failure:${id}`;
+}
+
+function getTrailerSuccessCacheKey(id: string): string {
+  return `douban:trailer:refresh-success:${id}`;
 }
 
 async function cacheTrailerRefreshFailure(
@@ -33,10 +38,67 @@ async function clearTrailerRefreshFailure(id: string): Promise<void> {
   }
 }
 
+async function cacheTrailerRefreshSuccess(
+  id: string,
+  payload: unknown,
+): Promise<void> {
+  try {
+    await db.setCache(
+      getTrailerSuccessCacheKey(id),
+      payload,
+      TRAILER_SUCCESS_CACHE_TTL,
+    );
+  } catch {
+    // 缓存失败不影响主流程
+  }
+}
+
 /**
  * 刷新过期的 Douban trailer URL
  * 不使用任何缓存，直接调用豆瓣移动端API获取最新URL
  */
+
+async function fetchTrailerFromEndpoint(
+  endpoint: 'movie' | 'tv',
+  id: string,
+): Promise<string | null> {
+  const TIMEOUT = 20000;
+  const mobileApiUrl = `https://m.douban.com/rexxar/api/v2/${endpoint}/${id}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+
+  try {
+    const response = await fetch(mobileApiUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': DEFAULT_USER_AGENT,
+        Referer: 'https://movie.douban.com/explore',
+        Accept: 'application/json, text/plain, */*',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        Origin: 'https://movie.douban.com',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+      },
+      redirect: 'manual',
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`豆瓣API返回错误: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.trailers?.[0]?.video_url || null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 // 带重试的获取函数
 async function fetchTrailerWithRetry(
@@ -50,62 +112,9 @@ async function fetchTrailerWithRetry(
   const startTime = Date.now();
 
   try {
-    // 先尝试 movie 端点
-    let mobileApiUrl = `https://m.douban.com/rexxar/api/v2/movie/${id}`;
-
-    // 创建 AbortController 用于超时控制
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
-
-    let response = await fetch(mobileApiUrl, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': DEFAULT_USER_AGENT,
-        Referer: 'https://movie.douban.com/explore',
-        Accept: 'application/json, text/plain, */*',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        Origin: 'https://movie.douban.com',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-site',
-      },
-      redirect: 'manual', // 手动处理重定向
-    });
-
-    clearTimeout(timeoutId);
-
-    // 如果是 3xx 重定向，说明可能是电视剧，尝试 tv 端点
-    if (response.status >= 300 && response.status < 400) {
-      mobileApiUrl = `https://m.douban.com/rexxar/api/v2/tv/${id}`;
-
-      const tvController = new AbortController();
-      const tvTimeoutId = setTimeout(() => tvController.abort(), TIMEOUT);
-
-      response = await fetch(mobileApiUrl, {
-        signal: tvController.signal,
-        headers: {
-          'User-Agent': DEFAULT_USER_AGENT,
-          Referer: 'https://movie.douban.com/explore',
-          Accept: 'application/json, text/plain, */*',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          Origin: 'https://movie.douban.com',
-          'Sec-Fetch-Dest': 'empty',
-          'Sec-Fetch-Mode': 'cors',
-          'Sec-Fetch-Site': 'same-site',
-        },
-      });
-
-      clearTimeout(tvTimeoutId);
-    }
-
-    if (!response.ok) {
-      throw new Error(`豆瓣API返回错误: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const trailerUrl = data.trailers?.[0]?.video_url;
+    const trailerUrl =
+      (await fetchTrailerFromEndpoint('movie', id)) ||
+      (await fetchTrailerFromEndpoint('tv', id));
 
     if (!trailerUrl) {
       throw new Error('该影片没有预告片');
@@ -166,6 +175,18 @@ export async function GET(request: Request) {
   }
 
   try {
+    const successCacheKey = getTrailerSuccessCacheKey(id);
+    const cachedSuccess = await db.getCache(successCacheKey);
+    if (cachedSuccess) {
+      return NextResponse.json(cachedSuccess, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      });
+    }
+
     const failureCacheKey = getTrailerFailureCacheKey(id);
     const cachedFailure = await db.getCache(failureCacheKey);
     if (cachedFailure) {
@@ -205,6 +226,8 @@ export async function GET(request: Request) {
       requestSize: 0,
       responseSize,
     });
+
+    await cacheTrailerRefreshSuccess(id, successResponse);
 
     return NextResponse.json(successResponse, {
       headers: {

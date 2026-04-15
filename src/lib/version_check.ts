@@ -84,26 +84,22 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
 
   // 1. 检查内存缓存
   if (memoryCache && now - memoryCache.timestamp < CACHE_TTL) {
-    console.log('使用内存缓存的版本检查结果');
     return memoryCache.status;
   }
 
   // 2. 检查 sessionStorage 缓存
   const storageCache = getCacheFromStorage();
   if (storageCache) {
-    console.log('使用 sessionStorage 缓存的版本检查结果');
     memoryCache = storageCache; // 同步到内存缓存
     return storageCache.status;
   }
 
   // 3. 检查是否有正在进行的请求（去重）
   if (pendingRequest) {
-    console.log('复用正在进行的版本检查请求');
     return pendingRequest;
   }
 
   // 4. 发起新的版本检查请求
-  console.log('发起新的版本检查请求');
   pendingRequest = performVersionCheck();
 
   try {

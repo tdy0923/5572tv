@@ -1,50 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-console */
+/* eslint-disable no-console */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
-import { getConfig, getAvailableApiSites } from '@/lib/config';
+import { getAvailableApiSites } from '@/lib/config';
 import { API_CONFIG } from '@/lib/config';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  console.log('[Source Validate] ========== API Route Called ==========');
-
   const authInfo = getAuthInfoFromCookie(request);
   if (!authInfo || !authInfo.username) {
-    console.log('[Source Validate] Unauthorized - no auth info');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
   const searchKeyword = searchParams.get('q');
-  console.log(`[Source Validate] Search keyword: ${searchKeyword}`);
 
   if (!searchKeyword) {
-    return new Response(
-      JSON.stringify({ error: '搜索关键词不能为空' }),
-      {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    return new Response(JSON.stringify({ error: '搜索关键词不能为空' }), {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
   // 🔑 使用 getAvailableApiSites() 来获取源列表，自动应用代理配置
   const apiSites = await getAvailableApiSites(authInfo.username);
-
-  // 🔍 调试：记录前3个源的API地址，检查是否应用了代理
-  console.log('[Source Validate] ========== Validation Start ==========');
-  console.log(`[Source Validate] Username: ${authInfo.username}`);
-  console.log(`[Source Validate] Total sources: ${apiSites.length}`);
-  console.log('[Source Validate] Sample API URLs:', apiSites.slice(0, 3).map(s => ({
-    name: s.name,
-    api: s.api.substring(0, 100) + (s.api.length > 100 ? '...' : '')
-  })));
-  console.log('[Source Validate] =========================================');
 
   // 共享状态
   let streamClosed = false;
@@ -57,7 +40,10 @@ export async function GET(request: NextRequest) {
       // 辅助函数：安全地向控制器写入数据
       const safeEnqueue = (data: Uint8Array) => {
         try {
-          if (streamClosed || (!controller.desiredSize && controller.desiredSize !== 0)) {
+          if (
+            streamClosed ||
+            (!controller.desiredSize && controller.desiredSize !== 0)
+          ) {
             return false;
           }
           controller.enqueue(data);
@@ -72,7 +58,7 @@ export async function GET(request: NextRequest) {
       // 发送开始事件
       const startEvent = `data: ${JSON.stringify({
         type: 'start',
-        totalSources: apiSites.length
+        totalSources: apiSites.length,
       })}\n\n`;
 
       if (!safeEnqueue(encoder.encode(startEvent))) {
@@ -89,8 +75,6 @@ export async function GET(request: NextRequest) {
           const searchUrl = `${site.api}?ac=videolist&wd=${encodeURIComponent(searchKeyword)}`;
 
           // 🔍 调试：记录实际请求的URL
-          console.log(`[Source Validate] Testing ${site.name}: ${searchUrl.substring(0, 150)}...`);
-
           // 设置超时控制
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -107,7 +91,7 @@ export async function GET(request: NextRequest) {
               throw new Error(`HTTP ${response.status}`);
             }
 
-            const data = await response.json() as any;
+            const data = (await response.json()) as any;
 
             // 检查结果是否有效
             let status: 'valid' | 'no_results' | 'invalid';
@@ -120,7 +104,9 @@ export async function GET(request: NextRequest) {
               // 检查是否有标题包含搜索词的结果
               const validResults = data.list.filter((item: any) => {
                 const title = item.vod_name || '';
-                return title.toLowerCase().includes(searchKeyword.toLowerCase());
+                return title
+                  .toLowerCase()
+                  .includes(searchKeyword.toLowerCase());
               });
 
               if (validResults.length > 0) {
@@ -139,7 +125,7 @@ export async function GET(request: NextRequest) {
               const sourceEvent = `data: ${JSON.stringify({
                 type: 'source_result',
                 source: site.key,
-                status
+                status,
               })}\n\n`;
 
               if (!safeEnqueue(encoder.encode(sourceEvent))) {
@@ -147,11 +133,9 @@ export async function GET(request: NextRequest) {
                 return;
               }
             }
-
           } finally {
             clearTimeout(timeoutId);
           }
-
         } catch (error) {
           console.warn(`验证失败 ${site.name}:`, error);
 
@@ -162,7 +146,7 @@ export async function GET(request: NextRequest) {
             const errorEvent = `data: ${JSON.stringify({
               type: 'source_error',
               source: site.key,
-              status: 'invalid'
+              status: 'invalid',
             })}\n\n`;
 
             if (!safeEnqueue(encoder.encode(errorEvent))) {
@@ -178,7 +162,7 @@ export async function GET(request: NextRequest) {
             // 发送最终完成事件
             const completeEvent = `data: ${JSON.stringify({
               type: 'complete',
-              completedSources
+              completedSources,
             })}\n\n`;
 
             if (safeEnqueue(encoder.encode(completeEvent))) {
@@ -198,7 +182,6 @@ export async function GET(request: NextRequest) {
 
     cancel() {
       streamClosed = true;
-      console.log('Client disconnected, cancelling validation stream');
     },
   });
 
@@ -207,7 +190,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET',
       'Access-Control-Allow-Headers': 'Content-Type',

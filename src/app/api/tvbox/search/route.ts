@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { searchFromApi } from '@/lib/downstream';
 import { rankSearchResults } from '@/lib/search-ranking';
@@ -44,12 +45,41 @@ export async function GET(request: NextRequest) {
           msg: '缺少必要参数: source 或 wd',
           list: [],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const config = await getConfig();
     const shouldFilter = filterParam === 'on' || filterParam === 'enable';
+
+    // 权限用户识别：优先 token 用户，其次登录态用户
+    let currentUser = null as null | {
+      username: string;
+      enabledApis?: string[];
+      tags?: string[];
+      showAdultContent?: boolean;
+      tvboxEnabledSources?: string[];
+    };
+
+    const token = searchParams.get('token');
+    if (token) {
+      const tokenUser = config.UserConfig.Users.find(
+        (u) => u.tvboxToken === token,
+      );
+      if (tokenUser) {
+        currentUser = tokenUser;
+      }
+    }
+
+    if (!currentUser) {
+      const authInfo = getAuthInfoFromCookie(request);
+      if (authInfo?.username) {
+        currentUser =
+          config.UserConfig.Users.find(
+            (u) => u.username === authInfo.username,
+          ) || null;
+      }
+    }
 
     // 查找视频源配置
     const targetSource = config.SourceConfig.find((s) => s.key === sourceKey);
@@ -60,7 +90,7 @@ export async function GET(request: NextRequest) {
           msg: `未找到视频源: ${sourceKey}`,
           list: [],
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -72,13 +102,61 @@ export async function GET(request: NextRequest) {
           msg: `视频源已被禁用: ${sourceKey}`,
           list: [],
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    console.log(
-      `[TVBox Search Proxy] source=${sourceKey}, query="${query}", filter=${filterParam}, strict=${strictMode}`
-    );
+    // TVBox 源权限限制：优先 tvboxEnabledSources；否则继承网站端 enabledApis/tags
+    if (currentUser) {
+      let allowedSourceKeys: Set<string> | null = null;
+      if (
+        currentUser.tvboxEnabledSources &&
+        currentUser.tvboxEnabledSources.length > 0
+      ) {
+        allowedSourceKeys = new Set(currentUser.tvboxEnabledSources);
+      } else if (
+        currentUser.enabledApis &&
+        currentUser.enabledApis.length > 0
+      ) {
+        allowedSourceKeys = new Set(
+          currentUser.enabledApis.filter(
+            (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
+          ),
+        );
+      } else if (
+        currentUser.tags &&
+        currentUser.tags.length > 0 &&
+        config.UserConfig.Tags
+      ) {
+        const inheritedApis = new Set<string>();
+        currentUser.tags.forEach((tagName) => {
+          const tagConfig = config.UserConfig.Tags?.find(
+            (t) => t.name === tagName,
+          );
+          if (tagConfig?.enabledApis) {
+            tagConfig.enabledApis.forEach((apiKey) => {
+              if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+                inheritedApis.add(apiKey);
+              }
+            });
+          }
+        });
+        if (inheritedApis.size > 0) {
+          allowedSourceKeys = inheritedApis;
+        }
+      }
+
+      if (allowedSourceKeys && !allowedSourceKeys.has(sourceKey)) {
+        return NextResponse.json(
+          {
+            code: 403,
+            msg: `当前用户无权使用视频源: ${sourceKey}`,
+            list: [],
+          },
+          { status: 403 },
+        );
+      }
+    }
 
     // 从上游API搜索
     let results = await searchFromApi(
@@ -88,11 +166,7 @@ export async function GET(request: NextRequest) {
         api: targetSource.api,
         detail: targetSource.detail,
       },
-      query
-    );
-
-    console.log(
-      `[TVBox Search Proxy] Fetched ${results.length} results from upstream`
+      query,
     );
 
     // 🔒 成人内容过滤
@@ -114,18 +188,11 @@ export async function GET(request: NextRequest) {
 
         return true;
       });
-
-      console.log(
-        `[TVBox Search Proxy] Adult filter: ${beforeFilterCount} → ${
-          results.length
-        } (filtered ${beforeFilterCount - results.length})`
-      );
     }
 
     // 🎯 智能排序 - 解决搜索不精确问题
     if (results.length > 0) {
       results = rankSearchResults(results, query);
-      console.log(`[TVBox Search Proxy] Applied smart ranking`);
     }
 
     // ⚡ 严格匹配模式 - 只返回高度相关的结果
@@ -151,16 +218,9 @@ export async function GET(request: NextRequest) {
 
         return false;
       });
-
-      console.log(
-        `[TVBox Search Proxy] Strict mode: ${beforeStrictCount} → ${results.length}`
-      );
     }
 
     const processingTime = Date.now() - startTime;
-    console.log(
-      `[TVBox Search Proxy] Completed in ${processingTime}ms, returning ${results.length} results`
-    );
 
     // 返回TVBox兼容的格式
     // TVBox期望的搜索API返回格式通常是MacCMS标准格式
@@ -172,7 +232,6 @@ export async function GET(request: NextRequest) {
       limit: results.length,
       total: results.length,
       list: results.map((r) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const raw = r as any;
         return {
           vod_id: r.id,
@@ -211,7 +270,7 @@ export async function GET(request: NextRequest) {
         msg: error instanceof Error ? error.message : '搜索失败',
         list: [],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -255,7 +314,7 @@ function levenshteinDistance(str1: string, str2: string): number {
       matrix[i][j] = Math.min(
         matrix[i - 1][j] + 1, // 删除
         matrix[i][j - 1] + 1, // 插入
-        matrix[i - 1][j - 1] + cost // 替换
+        matrix[i - 1][j - 1] + cost, // 替换
       );
     }
   }

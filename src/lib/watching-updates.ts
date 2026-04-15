@@ -20,6 +20,10 @@ const fixingRecords = new Set<string>();
 // 内存缓存（用于非 localStorage 模式，避免 QuotaExceededError）
 let memoryWatchingUpdatesCache: WatchingUpdatesCache | null = null;
 let memoryLastCheckTime = 0;
+let playRecordsSnapshotCache: {
+  timestamp: number;
+  records: Record<string, PlayRecord>;
+} | null = null;
 
 // 检测存储模式
 const STORAGE_TYPE = (() => {
@@ -31,6 +35,7 @@ const STORAGE_TYPE = (() => {
 // 事件名称
 export const WATCHING_UPDATES_EVENT = 'watchingUpdatesChanged';
 const WATCHING_UPDATES_FETCH_DEDUP_MS = 5000;
+const PLAYRECORDS_SNAPSHOT_TTL = 10000;
 
 // 更新信息接口
 export interface WatchingUpdate {
@@ -192,7 +197,6 @@ export async function checkWatchingUpdates(
           }
           return seriesInfo;
         } catch (error) {
-          console.error(`检查 ${record.title} 更新失败:`, error);
           // 返回默认状态
           const [sourceName, videoId] = record.id.split('+');
           const seriesInfo = {
@@ -306,7 +310,7 @@ export async function checkWatchingUpdates(
           hasAnyUpdates = true;
         }
       } catch (error) {
-        console.error('检查新上映内容失败:', error);
+        console.warn('检查新上映内容失败:', error);
       }
 
       // 🔧 修复：对 updatedSeries 进行排序，确保每次顺序一致，防止卡片闪烁
@@ -361,7 +365,7 @@ export async function checkWatchingUpdates(
         );
       }
     } catch (error) {
-      console.error('检查追番更新失败:', error);
+      console.warn('检查追番更新失败:', error);
       notifyListeners(false);
     } finally {
       ongoingWatchingUpdatesCheck = null;
@@ -406,7 +410,7 @@ async function checkSingleRecordUpdate(
         }
       }
     } catch (mappingError) {
-      console.warn('数据源映射失败，使用原始名称:', mappingError);
+      // 数据源映射失败时回退到原始名称，不影响主流程
     }
 
     // 使用映射后的key调用API（API已默认不缓存，确保集数信息实时更新）
@@ -506,9 +510,25 @@ async function getOriginalEpisodes(
   // 🔑 关键修复：不信任内存中的 original_episodes（可能来自缓存）
   // 始终从数据库重新读取最新的 original_episodes
   try {
-    const freshRecordsResponse = await fetch('/api/playrecords');
-    if (freshRecordsResponse.ok) {
-      const freshRecords = await freshRecordsResponse.json();
+    const now = Date.now();
+    let freshRecords = playRecordsSnapshotCache?.records;
+
+    if (
+      !freshRecords ||
+      !playRecordsSnapshotCache ||
+      now - playRecordsSnapshotCache.timestamp > PLAYRECORDS_SNAPSHOT_TTL
+    ) {
+      const freshRecordsResponse = await fetch('/api/playrecords');
+      if (freshRecordsResponse.ok) {
+        freshRecords = await freshRecordsResponse.json();
+        playRecordsSnapshotCache = {
+          timestamp: now,
+          records: freshRecords,
+        };
+      }
+    }
+
+    if (freshRecords) {
       const freshRecord = freshRecords[recordKey];
 
       if (freshRecord?.original_episodes && freshRecord.original_episodes > 0) {
@@ -578,7 +598,7 @@ export function getCachedWatchingUpdates(): boolean {
 
     return isExpired ? false : data.hasUpdates;
   } catch (error) {
-    console.error('读取更新缓存失败:', error);
+    console.warn('读取更新缓存失败:', error);
     return false;
   }
 }
@@ -606,7 +626,7 @@ function cacheWatchingUpdates(data: WatchingUpdate): void {
       );
     }
   } catch (error) {
-    console.error('缓存更新信息失败:', error);
+    console.warn('缓存更新信息失败:', error);
   }
 }
 
@@ -632,7 +652,7 @@ function notifyListeners(hasUpdates: boolean): void {
     try {
       callback(hasUpdates);
     } catch (error) {
-      console.error('通知更新监听器失败:', error);
+      console.warn('通知更新监听器失败:', error);
     }
   });
 }
@@ -642,8 +662,6 @@ function notifyListeners(hasUpdates: boolean): void {
  * @param intervalMinutes 检查间隔（分钟）
  */
 export function setupPeriodicUpdateCheck(intervalMinutes = 60): () => void {
-  console.log(`设置定期更新检查，间隔: ${intervalMinutes} 分钟`);
-
   // 立即执行一次检查
   checkWatchingUpdates();
 
@@ -729,7 +747,7 @@ export function getDetailedWatchingUpdates(): WatchingUpdate | null {
       updatedSeries: data.updatedSeries,
     };
   } catch (error) {
-    console.error('读取详细更新信息失败:', error);
+    console.warn('读取详细更新信息失败:', error);
     return null;
   }
 }
@@ -763,7 +781,7 @@ export function markUpdatesAsViewed(): void {
       }
     }
   } catch (error) {
-    console.error('标记更新为已查看失败:', error);
+    console.warn('标记更新为已查看失败:', error);
   }
 }
 
@@ -793,7 +811,7 @@ export function clearWatchingUpdates(): void {
       );
     }
   } catch (error) {
-    console.error('清除新集数更新状态失败:', error);
+    console.warn('清除新集数更新状态失败:', error);
   }
 }
 
@@ -803,8 +821,6 @@ export function clearWatchingUpdates(): void {
  */
 export function forceClearWatchingUpdatesCache(): void {
   try {
-    console.log('🔄 强制清除 watching-updates 缓存');
-
     // 清除内存缓存
     memoryWatchingUpdatesCache = null;
     memoryLastCheckTime = 0;
@@ -814,10 +830,8 @@ export function forceClearWatchingUpdatesCache(): void {
       localStorage.removeItem(WATCHING_UPDATES_CACHE_KEY);
       localStorage.removeItem(LAST_CHECK_TIME_KEY);
     }
-
-    console.log('✅ watching-updates 缓存已清除');
   } catch (error) {
-    console.error('清除 watching-updates 缓存失败:', error);
+    console.warn('清除 watching-updates 缓存失败:', error);
   }
 }
 
@@ -848,7 +862,7 @@ export async function checkVideoUpdate(
       await checkWatchingUpdates();
     }
   } catch (error) {
-    console.error('检查视频更新失败:', error);
+    console.warn('检查视频更新失败:', error);
   }
 }
 

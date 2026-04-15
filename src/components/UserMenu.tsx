@@ -216,13 +216,6 @@ export const UserMenu: React.FC = () => {
 
   // 获取观看更新信息
   useEffect(() => {
-    console.log('UserMenu watching-updates 检查条件:', {
-      window: typeof window !== 'undefined',
-      'authInfo.username': authInfo?.username,
-      storageType: storageType,
-      'storageType !== localstorage': storageType !== 'localstorage',
-    });
-
     if (
       typeof window !== 'undefined' &&
       authInfo?.username &&

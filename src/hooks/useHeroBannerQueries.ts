@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const FAILED_TRAILER_REFRESHES_KEY = 'failed-trailer-refreshes';
 const FAILED_TRAILER_RETRY_TTL = 10 * 60 * 1000;
+const NO_TRAILER_IDS_KEY = 'no-trailer-ids';
 
 function getFailedTrailerRefreshes(): Record<string, number> {
   if (typeof window === 'undefined') return {};
@@ -26,7 +25,45 @@ function saveFailedTrailerRefreshes(data: Record<string, number>) {
   }
 }
 
+function getNoTrailerIds(): Record<string, boolean> {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const stored = localStorage.getItem(NO_TRAILER_IDS_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function markNoTrailer(doubanId: number | string) {
+  const ids = getNoTrailerIds();
+  ids[String(doubanId)] = true;
+  try {
+    localStorage.setItem(NO_TRAILER_IDS_KEY, JSON.stringify(ids));
+  } catch {
+    // ignore localStorage errors
+  }
+}
+
+function clearNoTrailer(doubanId: number | string) {
+  const ids = getNoTrailerIds();
+  if (ids[String(doubanId)] !== undefined) {
+    delete ids[String(doubanId)];
+    try {
+      localStorage.setItem(NO_TRAILER_IDS_KEY, JSON.stringify(ids));
+    } catch {
+      // ignore localStorage errors
+    }
+  }
+}
+
 export function shouldSkipTrailerRefresh(doubanId: number | string): boolean {
+  const noTrailerIds = getNoTrailerIds();
+  if (noTrailerIds[String(doubanId)]) {
+    return true;
+  }
+
   const failedMap = getFailedTrailerRefreshes();
   const failedAt = failedMap[String(doubanId)];
   return (
@@ -63,8 +100,7 @@ export function useRefreshedTrailerUrlsQuery() {
         try {
           const stored = localStorage.getItem('refreshed-trailer-urls');
           return stored ? JSON.parse(stored) : {};
-        } catch (error) {
-          console.error('[HeroBanner] 读取localStorage失败:', error);
+        } catch {
           return {};
         }
       }
@@ -115,11 +151,16 @@ export function useRefreshTrailerUrlMutation() {
         return data.data.trailerUrl;
       }
 
+      if (data.code === 404 || data.error === 'NO_TRAILER') {
+        markNoTrailer(doubanId);
+      }
+
       return null;
     },
     onSuccess: (newUrl, { doubanId }) => {
       if (newUrl) {
         clearFailedTrailerRefresh(doubanId);
+        clearNoTrailer(doubanId);
         // Update query cache with new URL
         queryClient.setQueryData<Record<string, string>>(
           ['refreshedTrailerUrls'],
@@ -132,8 +173,8 @@ export function useRefreshTrailerUrlMutation() {
                 'refreshed-trailer-urls',
                 JSON.stringify(updated),
               );
-            } catch (error) {
-              console.error('[HeroBanner] 保存到localStorage失败:', error);
+            } catch {
+              // localStorage 不可用时忽略缓存写入失败
             }
 
             return updated;
@@ -171,8 +212,8 @@ export function useClearTrailerUrlMutation() {
               'refreshed-trailer-urls',
               JSON.stringify(updated),
             );
-          } catch (error) {
-            console.error('[HeroBanner] 清除localStorage失败:', error);
+          } catch {
+            // localStorage 不可用时忽略缓存写入失败
           }
 
           return updated;

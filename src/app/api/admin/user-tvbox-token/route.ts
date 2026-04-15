@@ -6,9 +6,38 @@ import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
+function getAllowedTVBoxSourceKeys(
+  config: Awaited<ReturnType<typeof getConfig>>,
+  user: (typeof config.UserConfig.Users)[number],
+): string[] {
+  if (user.enabledApis && user.enabledApis.length > 0) {
+    return user.enabledApis.filter(
+      (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
+    );
+  }
+
+  if (user.tags && user.tags.length > 0 && config.UserConfig.Tags) {
+    const inheritedApis = new Set<string>();
+    user.tags.forEach((tagName) => {
+      const tagConfig = config.UserConfig.Tags?.find((t) => t.name === tagName);
+      if (tagConfig?.enabledApis) {
+        tagConfig.enabledApis.forEach((apiKey) => {
+          if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+            inheritedApis.add(apiKey);
+          }
+        });
+      }
+    });
+    return Array.from(inheritedApis);
+  }
+
+  return [];
+}
+
 // 生成随机 Token
 function generateToken(length = 32): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -28,27 +57,43 @@ export async function POST(request: NextRequest) {
     const { username, tvboxEnabledSources, regenerateToken } = body;
 
     if (!username) {
-      return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Username is required' },
+        { status: 400 },
+      );
     }
 
     // 获取当前配置
     const config = await getConfig();
 
     // 检查权限：只有 owner 和 admin 可以管理用户 Token
-    const currentUser = config.UserConfig.Users.find(u => u.username === authInfo.username);
-    if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
+    const currentUser = config.UserConfig.Users.find(
+      (u) => u.username === authInfo.username,
+    );
+    if (
+      !currentUser ||
+      (currentUser.role !== 'owner' && currentUser.role !== 'admin')
+    ) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
     }
 
     // 查找目标用户
-    const targetUser = config.UserConfig.Users.find(u => u.username === username);
+    const targetUser = config.UserConfig.Users.find(
+      (u) => u.username === username,
+    );
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // admin 不能修改 owner 和其他 admin 的配置
-    if (currentUser.role === 'admin' && (targetUser.role === 'owner' || targetUser.role === 'admin')) {
-      return NextResponse.json({ error: 'Cannot modify admin or owner users' }, { status: 403 });
+    if (
+      currentUser.role === 'admin' &&
+      (targetUser.role === 'owner' || targetUser.role === 'admin')
+    ) {
+      return NextResponse.json(
+        { error: 'Cannot modify admin or owner users' },
+        { status: 403 },
+      );
     }
 
     // 生成或保留 Token
@@ -58,7 +103,17 @@ export async function POST(request: NextRequest) {
 
     // 更新源权限
     if (Array.isArray(tvboxEnabledSources)) {
-      targetUser.tvboxEnabledSources = tvboxEnabledSources;
+      const allowedSourceKeys = getAllowedTVBoxSourceKeys(config, targetUser);
+
+      // 如果用户组/网站权限未限制，则允许自由选择所有源
+      if (allowedSourceKeys.length === 0) {
+        targetUser.tvboxEnabledSources = tvboxEnabledSources;
+      } else {
+        const allowedSet = new Set(allowedSourceKeys);
+        targetUser.tvboxEnabledSources = tvboxEnabledSources.filter(
+          (sourceKey: string) => allowedSet.has(sourceKey),
+        );
+      }
     }
 
     // 保存配置
@@ -68,13 +123,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       token: targetUser.tvboxToken,
-      enabledSources: targetUser.tvboxEnabledSources || []
+      enabledSources: targetUser.tvboxEnabledSources || [],
     });
   } catch (error) {
     console.error('Update user TVBox token failed:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -91,27 +146,43 @@ export async function DELETE(request: NextRequest) {
     const username = searchParams.get('username');
 
     if (!username) {
-      return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Username is required' },
+        { status: 400 },
+      );
     }
 
     // 获取当前配置
     const config = await getConfig();
 
     // 检查权限
-    const currentUser = config.UserConfig.Users.find(u => u.username === authInfo.username);
-    if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
+    const currentUser = config.UserConfig.Users.find(
+      (u) => u.username === authInfo.username,
+    );
+    if (
+      !currentUser ||
+      (currentUser.role !== 'owner' && currentUser.role !== 'admin')
+    ) {
       return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
     }
 
     // 查找目标用户
-    const targetUser = config.UserConfig.Users.find(u => u.username === username);
+    const targetUser = config.UserConfig.Users.find(
+      (u) => u.username === username,
+    );
     if (!targetUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // admin 不能修改 owner 和其他 admin 的配置
-    if (currentUser.role === 'admin' && (targetUser.role === 'owner' || targetUser.role === 'admin')) {
-      return NextResponse.json({ error: 'Cannot modify admin or owner users' }, { status: 403 });
+    if (
+      currentUser.role === 'admin' &&
+      (targetUser.role === 'owner' || targetUser.role === 'admin')
+    ) {
+      return NextResponse.json(
+        { error: 'Cannot modify admin or owner users' },
+        { status: 403 },
+      );
     }
 
     // 删除 Token 和源权限
@@ -127,7 +198,7 @@ export async function DELETE(request: NextRequest) {
     console.error('Delete user TVBox token failed:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

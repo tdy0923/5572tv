@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { Copy, Key, Settings, X } from 'lucide-react';
@@ -9,6 +8,7 @@ interface TVBoxTokenManagerProps {
   tvboxToken?: string;
   tvboxEnabledSources?: string[];
   allSources: Array<{ key: string; name: string }>;
+  allowedSources?: Array<{ key: string; name: string }>;
   onUpdate: () => void;
 }
 
@@ -25,9 +25,7 @@ export function TVBoxTokenCell({ tvboxToken }: { tvboxToken?: string }) {
 
   if (!tvboxToken) {
     return (
-      <span className='text-xs text-gray-400 dark:text-gray-500'>
-        未设置
-      </span>
+      <span className='text-xs text-gray-400 dark:text-gray-500'>未设置</span>
     );
   }
 
@@ -41,7 +39,9 @@ export function TVBoxTokenCell({ tvboxToken }: { tvboxToken?: string }) {
         className='p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded'
         title='复制完整Token'
       >
-        <Copy className={`w-3 h-3 ${copied ? 'text-green-600' : 'text-gray-400'}`} />
+        <Copy
+          className={`w-3 h-3 ${copied ? 'text-green-600' : 'text-gray-400'}`}
+        />
       </button>
     </div>
   );
@@ -52,12 +52,19 @@ export function TVBoxTokenModal({
   tvboxToken,
   tvboxEnabledSources = [],
   allSources,
+  allowedSources,
   onClose,
   onUpdate,
 }: TVBoxTokenManagerProps & { onClose: () => void }) {
-  const [selectedSources, setSelectedSources] = useState<string[]>(tvboxEnabledSources);
+  const effectiveAllowedSources =
+    allowedSources && allowedSources.length > 0 ? allowedSources : allSources;
+  const [selectedSources, setSelectedSources] =
+    useState<string[]>(tvboxEnabledSources);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const handleSave = async (regenerate = false) => {
     setIsSaving(true);
@@ -79,7 +86,10 @@ export function TVBoxTokenModal({
         throw new Error(data.error || '保存失败');
       }
 
-      setMessage({ type: 'success', text: regenerate ? 'Token已重新生成' : '配置已保存' });
+      setMessage({
+        type: 'success',
+        text: regenerate ? 'Token已重新生成' : '配置已保存',
+      });
       setTimeout(() => {
         onUpdate();
         onClose();
@@ -98,9 +108,12 @@ export function TVBoxTokenModal({
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/admin/user-tvbox-token?username=${encodeURIComponent(username)}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/admin/user-tvbox-token?username=${encodeURIComponent(username)}`,
+        {
+          method: 'DELETE',
+        },
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -123,12 +136,16 @@ export function TVBoxTokenModal({
     setSelectedSources((prev) =>
       prev.includes(sourceKey)
         ? prev.filter((k) => k !== sourceKey)
-        : [...prev, sourceKey]
+        : [...prev, sourceKey],
     );
   };
 
   const toggleAll = () => {
-    setSelectedSources(selectedSources.length === allSources.length ? [] : allSources.map((s) => s.key));
+    setSelectedSources(
+      selectedSources.length === effectiveAllowedSources.length
+        ? []
+        : effectiveAllowedSources.map((s) => s.key),
+    );
   };
 
   return (
@@ -185,20 +202,23 @@ export function TVBoxTokenModal({
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-                可访问的源 ({selectedSources.length}/{allSources.length})
+                可访问的源 ({selectedSources.length}/
+                {effectiveAllowedSources.length})
               </label>
               <button
                 onClick={toggleAll}
                 className='text-xs text-blue-600 hover:text-blue-700'
               >
-                {selectedSources.length === allSources.length ? '取消全选' : '全选'}
+                {selectedSources.length === effectiveAllowedSources.length
+                  ? '取消全选'
+                  : '全选'}
               </button>
             </div>
             <div className='text-xs text-gray-500 dark:text-gray-400'>
-              留空表示可以访问所有源
+              用户可以在当前用户组开放的源范围内自由选择；留空表示使用该范围内全部源
             </div>
             <div className='border border-gray-200 dark:border-gray-700 rounded-lg max-h-60 overflow-y-auto'>
-              {allSources.map((source) => (
+              {effectiveAllowedSources.map((source) => (
                 <label
                   key={source.key}
                   className='flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0'

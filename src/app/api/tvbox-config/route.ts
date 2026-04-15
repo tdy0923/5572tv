@@ -32,7 +32,35 @@ export async function GET(request: NextRequest) {
       (u) => u.username === authInfo.username,
     );
     const userTvboxToken = currentUser?.tvboxToken || '';
-    const userEnabledSources = currentUser?.tvboxEnabledSources || [];
+
+    // TVBox 源权限继承规则：优先 tvboxEnabledSources；否则继承网站端 enabledApis/tags
+    let userEnabledSources = currentUser?.tvboxEnabledSources || [];
+    if (currentUser && userEnabledSources.length === 0) {
+      if (currentUser.enabledApis && currentUser.enabledApis.length > 0) {
+        userEnabledSources = currentUser.enabledApis.filter(
+          (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
+        );
+      } else if (
+        currentUser.tags &&
+        currentUser.tags.length > 0 &&
+        config.UserConfig.Tags
+      ) {
+        const inheritedApis = new Set<string>();
+        currentUser.tags.forEach((tagName) => {
+          const tagConfig = config.UserConfig.Tags?.find(
+            (t) => t.name === tagName,
+          );
+          if (tagConfig?.enabledApis) {
+            tagConfig.enabledApis.forEach((apiKey) => {
+              if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+                inheritedApis.add(apiKey);
+              }
+            });
+          }
+        });
+        userEnabledSources = Array.from(inheritedApis);
+      }
+    }
 
     // 获取所有可用源（用于管理界面选择）
     const allSources = (config.SourceConfig || [])
