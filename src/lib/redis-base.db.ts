@@ -90,6 +90,9 @@ export function createRedisClient(
   globalSymbol: symbol,
 ): RedisClientType {
   let client: RedisClientType | undefined = (global as any)[globalSymbol];
+  const connectStateSymbol = Symbol.for(
+    `${String(globalSymbol)}__CONNECT_STATE__`,
+  );
 
   if (!client) {
     if (!config.url) {
@@ -143,23 +146,28 @@ export function createRedisClient(
       console.log(`${config.clientName} ready`);
     });
 
-    // 初始连接，带重试机制
-    const connectWithRetry = async (): Promise<void> => {
-      try {
-        await client!.connect();
-        console.log(`${config.clientName} connected successfully`);
-      } catch (err) {
-        console.error(`${config.clientName} initial connection failed:`, err);
-        console.log('Will retry in 5 seconds...');
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        await connectWithRetry();
-      }
-    };
-
-    // 启动连接（异步，不阻塞）
-    connectWithRetry();
-
     (global as any)[globalSymbol] = client;
+    (global as any)[connectStateSymbol] = { connecting: false };
+  }
+
+  const connectState = ((global as any)[connectStateSymbol] ??= {
+    connecting: false,
+  }) as { connecting: boolean };
+
+  if (!client.isOpen && !connectState.connecting) {
+    connectState.connecting = true;
+
+    void client
+      .connect()
+      .then(() => {
+        console.log(`${config.clientName} connected successfully`);
+      })
+      .catch((err) => {
+        console.error(`${config.clientName} initial connection failed:`, err);
+      })
+      .finally(() => {
+        connectState.connecting = false;
+      });
   }
 
   return client;
