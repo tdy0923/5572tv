@@ -13,7 +13,11 @@ export class ClientCache {
     }
   }
 
-  static async set(key: string, data: any, expireSeconds?: number): Promise<void> {
+  static async set(
+    key: string,
+    data: any,
+    expireSeconds?: number,
+  ): Promise<void> {
     try {
       const response = await fetch('/api/cache', {
         method: 'POST',
@@ -33,9 +37,12 @@ export class ClientCache {
 
   static async delete(key: string): Promise<void> {
     try {
-      const response = await fetch(`/api/cache?key=${encodeURIComponent(key)}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/cache?key=${encodeURIComponent(key)}`,
+        {
+          method: 'DELETE',
+        },
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -47,15 +54,20 @@ export class ClientCache {
 
   static async clearExpired(prefix?: string): Promise<void> {
     try {
-      const url = prefix ? `/api/cache?prefix=${encodeURIComponent(prefix)}` : '/api/cache';
+      const url = prefix
+        ? `/api/cache?prefix=${encodeURIComponent(prefix)}`
+        : '/api/cache';
       const response = await fetch(url, {
         method: 'DELETE',
       });
+      if (response.status === 401 || response.status === 403) {
+        return;
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      console.error('清理过期缓存失败:', error);
+      console.warn('清理过期缓存失败:', error);
       throw error;
     }
   }

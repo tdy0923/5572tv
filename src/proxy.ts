@@ -429,7 +429,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/icon-5.svg',
     '/screenshot.png',
     '/api/telegram/', // Telegram API 端点
-    '/api/cache/', // 缓存 API 端点（内部使用，无需认证）
+    '/api/cache', // 缓存 API 端点（内部使用，无需认证）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
