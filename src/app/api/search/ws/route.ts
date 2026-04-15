@@ -1,13 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-console */
+/* eslint-disable no-console */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getAvailableApiSites, getConfig } from '@/lib/config';
+import { getCacheTime } from '@/lib/config';
+import { db } from '@/lib/db';
 import { searchFromApi } from '@/lib/downstream';
+import { generateSearchVariants } from '@/lib/downstream';
 import { yellowWords } from '@/lib/yellow';
 
 export const runtime = 'nodejs';
+
+function getSearchCacheKey(username: string, query: string) {
+  return `search:${username}:${query.trim().toLowerCase()}`;
+}
 
 export async function GET(request: NextRequest) {
   const authInfo = getAuthInfoFromCookie(request);
@@ -19,19 +26,78 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('q');
 
   if (!query) {
-    return new Response(
-      JSON.stringify({ error: '搜索关键词不能为空' }),
-      {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    return new Response(JSON.stringify({ error: '搜索关键词不能为空' }), {
+      status: 400,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
   const config = await getConfig();
   const apiSites = await getAvailableApiSites(authInfo.username);
+  const searchVariants = generateSearchVariants(query);
+  const searchCacheKey = getSearchCacheKey(authInfo.username, query);
+  const cacheTime = Math.max(15, Math.min(await getCacheTime(), 120));
+
+  try {
+    const cachedResults = await db.getCache(searchCacheKey);
+    if (Array.isArray(cachedResults) && cachedResults.length > 0) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'start',
+                query,
+                totalSources: 1,
+                timestamp: Date.now(),
+                cached: true,
+              })}\n\n`,
+            ),
+          );
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'source_result',
+                source: 'cache',
+                sourceName: '缓存结果',
+                results: cachedResults,
+                timestamp: Date.now(),
+                cached: true,
+              })}\n\n`,
+            ),
+          );
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                type: 'complete',
+                totalResults: cachedResults.length,
+                completedSources: 1,
+                timestamp: Date.now(),
+                cached: true,
+              })}\n\n`,
+            ),
+          );
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+  } catch (error) {
+    console.warn('读取流式搜索缓存失败:', error);
+  }
 
   // 共享状态
   let streamClosed = false;
@@ -44,7 +110,10 @@ export async function GET(request: NextRequest) {
       // 辅助函数：安全地向控制器写入数据
       const safeEnqueue = (data: Uint8Array) => {
         try {
-          if (streamClosed || (!controller.desiredSize && controller.desiredSize !== 0)) {
+          if (
+            streamClosed ||
+            (!controller.desiredSize && controller.desiredSize !== 0)
+          ) {
             // 流已标记为关闭或控制器已关闭
             return false;
           }
@@ -63,7 +132,7 @@ export async function GET(request: NextRequest) {
         type: 'start',
         query,
         totalSources: apiSites.length,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })}\n\n`;
 
       if (!safeEnqueue(encoder.encode(startEvent))) {
@@ -79,20 +148,25 @@ export async function GET(request: NextRequest) {
         try {
           // 添加超时控制
           const searchPromise = Promise.race([
-            searchFromApi(site, query),
+            searchFromApi(site, query, searchVariants),
             new Promise((_, reject) =>
-              setTimeout(() => reject(new Error(`${site.name} timeout`)), 20000)
+              setTimeout(
+                () => reject(new Error(`${site.name} timeout`)),
+                20000,
+              ),
             ),
           ]);
 
-          const results = await searchPromise as any[];
+          const results = (await searchPromise) as any[];
 
           // 过滤黄色内容
           let filteredResults = results;
           if (!config.SiteConfig.DisableYellowFilter) {
             filteredResults = results.filter((result) => {
               const typeName = result.type_name || '';
-              return !yellowWords.some((word: string) => typeName.includes(word));
+              return !yellowWords.some((word: string) =>
+                typeName.includes(word),
+              );
             });
           }
 
@@ -105,7 +179,7 @@ export async function GET(request: NextRequest) {
               source: site.key,
               sourceName: site.name,
               results: filteredResults,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             })}\n\n`;
 
             if (!safeEnqueue(encoder.encode(sourceEvent))) {
@@ -117,7 +191,6 @@ export async function GET(request: NextRequest) {
           if (filteredResults.length > 0) {
             allResults.push(...filteredResults);
           }
-
         } catch (error) {
           console.warn(`搜索失败 ${site.name}:`, error);
 
@@ -130,7 +203,7 @@ export async function GET(request: NextRequest) {
               source: site.key,
               sourceName: site.name,
               error: error instanceof Error ? error.message : '搜索失败',
-              timestamp: Date.now()
+              timestamp: Date.now(),
             })}\n\n`;
 
             if (!safeEnqueue(encoder.encode(errorEvent))) {
@@ -142,13 +215,21 @@ export async function GET(request: NextRequest) {
 
         // 检查是否所有源都已完成
         if (completedSources === apiSites.length) {
+          if (allResults.length > 0) {
+            try {
+              await db.setCache(searchCacheKey, allResults, cacheTime);
+            } catch (error) {
+              console.warn('写入流式搜索缓存失败:', error);
+            }
+          }
+
           if (!streamClosed) {
             // 发送最终完成事件
             const completeEvent = `data: ${JSON.stringify({
               type: 'complete',
               totalResults: allResults.length,
               completedSources,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             })}\n\n`;
 
             if (safeEnqueue(encoder.encode(completeEvent))) {
@@ -179,7 +260,7 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET',
       'Access-Control-Allow-Headers': 'Content-Type',
