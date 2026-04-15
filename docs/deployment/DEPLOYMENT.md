@@ -5,18 +5,21 @@
 为确保流畅运行，建议服务器满足以下最低配置：
 
 #### Docker 自托管部署
+
 - **CPU**: 2 核心（推荐 4 核心）
 - **内存**: 2GB RAM（推荐 4GB）
 - **存储**: 10GB 可用空间（推荐 20GB，用于视频缓存和数据库）
 - **网络**: 10Mbps 上行带宽（推荐 100Mbps）
 
 #### Vercel / Render / EdgeOne 云端部署
+
 - **无需自备服务器**：平台自动分配资源
 - **Vercel**: 无服务器架构，按需自动扩容
 - **Render**: 免费版提供 750 小时/月运行时间，适合个人项目
 - **EdgeOne Pages**: 腾讯云边缘计算，国内访问友好
 
 #### ⚠️ 常见卡顿原因
+
 - ❌ **CPU 不足**：单核或低频 CPU 会导致视频转码和搜索缓慢
 - ❌ **内存不足**：少于 2GB 内存会导致频繁 OOM（内存溢出）
 - ❌ **网络带宽低**：上行带宽低于 5Mbps 会导致视频播放卡顿
@@ -47,12 +50,12 @@ services:
       - PASSWORD=your_secure_password
       - NEXT_PUBLIC_STORAGE_TYPE=kvrocks
       - KVROCKS_URL=redis://moontv-kvrocks:6666
-      - VIDEO_CACHE_DIR=/app/video-cache  # 视频缓存目录
+      - VIDEO_CACHE_DIR=/app/video-cache # 视频缓存目录
       # 可选：站点配置
       - SITE_BASE=https://your-domain.com
-      - NEXT_PUBLIC_SITE_NAME=LunaTV Enhanced
+      - NEXT_PUBLIC_SITE_NAME=5572影视
     volumes:
-      - video-cache:/app/video-cache  # 视频缓存持久化
+      - video-cache:/app/video-cache # 视频缓存持久化
     networks:
       - moontv-network
     depends_on:
@@ -73,7 +76,7 @@ networks:
 
 volumes:
   kvrocks-data:
-  video-cache:  # 视频缓存 volume
+  video-cache: # 视频缓存 volume
 ```
 
 ### 🔴 Redis 存储（有数据丢失风险）
@@ -251,14 +254,14 @@ docker-compose logs -f
 
    在 Space 页面点击 `Settings` > `Variables and secrets`，添加以下 Secrets：
 
-   | 变量名 | 说明 | 示例值 |
-   |--------|------|--------|
-   | `USERNAME` | 管理员账号 | `admin` |
-   | `PASSWORD` | 管理员密码 | `your_secure_password` |
-   | `NEXT_PUBLIC_STORAGE_TYPE` | 存储类型 | `upstash` |
-   | `UPSTASH_URL` | Upstash REST URL | `https://xxx.upstash.io` |
-   | `UPSTASH_TOKEN` | Upstash Token | `AxxxQ==` |
-   | `DISABLE_HERO_TRAILER` | 禁用首页预告片 | `true` |
+   | 变量名                     | 说明             | 示例值                   |
+   | -------------------------- | ---------------- | ------------------------ |
+   | `USERNAME`                 | 管理员账号       | `admin`                  |
+   | `PASSWORD`                 | 管理员密码       | `your_secure_password`   |
+   | `NEXT_PUBLIC_STORAGE_TYPE` | 存储类型         | `upstash`                |
+   | `UPSTASH_URL`              | Upstash REST URL | `https://xxx.upstash.io` |
+   | `UPSTASH_TOKEN`            | Upstash Token    | `AxxxQ==`                |
+   | `DISABLE_HERO_TRAILER`     | 禁用首页预告片   | `true`                   |
 
    > ⚠️ **注意**：HF Space 无持久化存储，必须使用 Upstash 等外部数据库
    >
@@ -342,7 +345,7 @@ your-space/
 
    # 可选：站点配置
    SITE_BASE=https://your-project.edgeone.app
-   NEXT_PUBLIC_SITE_NAME=LunaTV Enhanced
+    NEXT_PUBLIC_SITE_NAME=5572影视
 
    # 可选：豆瓣代理配置（推荐）
    NEXT_PUBLIC_DOUBAN_PROXY_TYPE=cmliussss-cdn-tencent
@@ -388,7 +391,7 @@ your-space/
 
 [Vercel](https://vercel.com/) 是 Next.js 官方推荐的部署平台，无服务器架构，自动扩容，适合全球用户访问。
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/SzeMeng76/LunaTV)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tdy0923/LunaTV)
 
 #### 部署步骤
 
@@ -427,7 +430,7 @@ your-space/
 
    # 可选：站点配置
    SITE_BASE=https://your-project.vercel.app
-   NEXT_PUBLIC_SITE_NAME=LunaTV Enhanced
+    NEXT_PUBLIC_SITE_NAME=5572影视
    ```
 
 5. **部署项目**
@@ -462,7 +465,7 @@ your-space/
 
 [Render](https://render.com/) 提供免费的 Web Service 托管，支持 Docker 部署，适合个人项目。
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SzeMeng76/LunaTV)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tdy0923/LunaTV)
 
 #### 方式一：Docker 部署（推荐）
 
@@ -501,7 +504,7 @@ your-space/
 
    # 可选：站点配置
    SITE_BASE=https://your-service.onrender.com
-   NEXT_PUBLIC_SITE_NAME=LunaTV Enhanced
+    NEXT_PUBLIC_SITE_NAME=5572影视
    ```
 
 5. **部署**

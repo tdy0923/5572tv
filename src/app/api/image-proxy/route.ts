@@ -1,13 +1,57 @@
-import { NextResponse } from 'next/server';
-import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 import * as https from 'https';
+import { NextResponse } from 'next/server';
+
+import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
 // https agent with rejectUnauthorized: false for expired-cert image CDNs
 const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-async function fetchWithInsecureHttps(imageUrl: string, fetchHeaders: HeadersInit): Promise<Response> {
+function buildCandidateImageUrls(imageUrl: string): string[] {
+  const candidates = new Set<string>();
+
+  try {
+    const url = new URL(imageUrl);
+    const isDoubanImage = url.hostname.includes('doubanio.com');
+
+    if (isDoubanImage && url.protocol === 'http:') {
+      url.protocol = 'https:';
+    }
+
+    candidates.add(url.toString());
+
+    if (isDoubanImage) {
+      const hostVariants = [
+        'img3.doubanio.com',
+        'img1.doubanio.com',
+        'img9.doubanio.com',
+      ];
+      for (const host of hostVariants) {
+        const variantUrl = new URL(url.toString());
+        variantUrl.hostname = host;
+        candidates.add(variantUrl.toString());
+      }
+    }
+  } catch {
+    candidates.add(imageUrl);
+  }
+
+  return Array.from(candidates);
+}
+
+function isValidImageContentType(contentType: string | null): boolean {
+  if (!contentType) return true;
+  return (
+    contentType.startsWith('image/') ||
+    contentType === 'application/octet-stream'
+  );
+}
+
+async function fetchWithInsecureHttps(
+  imageUrl: string,
+  fetchHeaders: HeadersInit,
+): Promise<Response> {
   return new Promise((resolve, reject) => {
     const urlObj = new URL(imageUrl);
     const options = {
@@ -22,10 +66,12 @@ async function fetchWithInsecureHttps(imageUrl: string, fetchHeaders: HeadersIni
       res.on('data', (chunk) => chunks.push(chunk));
       res.on('end', () => {
         const body = Buffer.concat(chunks);
-        resolve(new Response(body, {
-          status: res.statusCode ?? 200,
-          headers: res.headers as Record<string, string>,
-        }));
+        resolve(
+          new Response(body, {
+            status: res.statusCode ?? 200,
+            headers: res.headers as Record<string, string>,
+          }),
+        );
       });
     });
     req.on('error', reject);
@@ -56,48 +102,72 @@ export async function GET(request: Request) {
   try {
     // 动态设置 Referer 和 Origin（根据图片源域名）
     const imageUrlObj = new URL(imageUrl);
-    const sourceOrigin = `${imageUrlObj.protocol}//${imageUrlObj.host}`;
+    const isDoubanImage = imageUrlObj.hostname.includes('doubanio.com');
+    const sourceOrigin = isDoubanImage
+      ? 'https://movie.douban.com'
+      : `${imageUrlObj.protocol}//${imageUrlObj.host}`;
 
     // 构建请求头
     const fetchHeaders: HeadersInit = {
-      'Referer': sourceOrigin + '/',
-      'Origin': sourceOrigin,
+      Referer: sourceOrigin + '/',
+      Origin: sourceOrigin,
       'User-Agent': DEFAULT_USER_AGENT,
-      'Accept': 'image/avif,image/webp,image/jxl,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      Accept:
+        'image/avif,image/webp,image/jxl,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
       'Accept-Encoding': 'gzip, deflate, br',
-      'Connection': 'keep-alive',
+      Connection: 'keep-alive',
     };
 
-    let imageResponse: Response;
-    try {
-      imageResponse = await fetch(imageUrl, {
-        signal: controller.signal,
-        headers: fetchHeaders,
-      });
-    } catch (fetchError: any) {
-      // SSL cert error (e.g. expired cert) - retry with rejectUnauthorized: false
-      if (imageUrl.startsWith('https://') && (fetchError.code === 'CERT_HAS_EXPIRED' || fetchError.cause?.code === 'CERT_HAS_EXPIRED' || fetchError.message?.includes('certificate'))) {
-        imageResponse = await fetchWithInsecureHttps(imageUrl, fetchHeaders);
-      } else {
-        throw fetchError;
+    const candidateUrls = buildCandidateImageUrls(imageUrl);
+    let imageResponse: Response | null = null;
+    let finalImageUrl = candidateUrls[0];
+    let lastError: Error | null = null;
+
+    for (const candidateUrl of candidateUrls) {
+      try {
+        let response: Response;
+        try {
+          response = await fetch(candidateUrl, {
+            signal: controller.signal,
+            headers: fetchHeaders,
+          });
+        } catch (fetchError: any) {
+          // SSL cert error (e.g. expired cert) - retry with rejectUnauthorized: false
+          if (
+            candidateUrl.startsWith('https://') &&
+            (fetchError.code === 'CERT_HAS_EXPIRED' ||
+              fetchError.cause?.code === 'CERT_HAS_EXPIRED' ||
+              fetchError.message?.includes('certificate'))
+          ) {
+            response = await fetchWithInsecureHttps(candidateUrl, fetchHeaders);
+          } else {
+            throw fetchError;
+          }
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (response.ok && isValidImageContentType(contentType)) {
+          imageResponse = response;
+          finalImageUrl = candidateUrl;
+          break;
+        }
+
+        lastError = new Error(
+          `Upstream returned ${response.status} ${response.statusText || ''} (${contentType || 'unknown content-type'})`,
+        );
+      } catch (fetchError: any) {
+        lastError =
+          fetchError instanceof Error
+            ? fetchError
+            : new Error(String(fetchError));
       }
     }
 
     clearTimeout(timeoutId);
 
-    if (!imageResponse.ok) {
-      const errorResponse = NextResponse.json(
-        {
-          error: 'Failed to fetch image',
-          status: imageResponse.status,
-          statusText: imageResponse.statusText
-        },
-        { status: imageResponse.status }
-      );
-      // 错误响应不缓存，避免缓存失效的图片链接
-      errorResponse.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-      return errorResponse;
+    if (!imageResponse) {
+      throw lastError || new Error('No valid upstream image response');
     }
 
     const contentType = imageResponse.headers.get('content-type');
@@ -105,7 +175,7 @@ export async function GET(request: Request) {
     if (!imageResponse.body) {
       return NextResponse.json(
         { error: 'Image response has no body' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -122,7 +192,10 @@ export async function GET(request: Request) {
     }
 
     // 设置缓存头 - 缓存7天（604800秒），允许重新验证
-    headers.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
+    headers.set(
+      'Cache-Control',
+      'public, max-age=604800, stale-while-revalidate=86400',
+    );
     headers.set('CDN-Cache-Control', 'public, s-maxage=604800');
     headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=604800');
     headers.set('Netlify-Vary', 'query');
@@ -130,6 +203,7 @@ export async function GET(request: Request) {
     // 添加 CORS 支持
     headers.set('Access-Control-Allow-Origin', '*');
     headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    headers.set('X-Image-Source', finalImageUrl);
 
     // 直接返回图片流
     return new Response(imageResponse.body, {
@@ -143,14 +217,14 @@ export async function GET(request: Request) {
     if (error.name === 'AbortError') {
       return NextResponse.json(
         { error: 'Image fetch timeout (15s)' },
-        { status: 504 }
+        { status: 504 },
       );
     }
 
     console.error('[Image Proxy] Error fetching image:', error.message);
     return NextResponse.json(
       { error: 'Error fetching image', details: error.message },
-      { status: 500 }
+      { status: 502 },
     );
   }
 }
@@ -163,6 +237,6 @@ export async function OPTIONS() {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    }
+    },
   });
 }

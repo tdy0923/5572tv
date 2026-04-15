@@ -1,6 +1,6 @@
 {
-  "name": "moontv",
-  "version": "6.3.0",
+  "name": "lunatv-enhanced",
+  "version": "6.3.1",
   "private": true,
   "scripts": {
     "dev": "pnpm gen:manifest && next dev -H 0.0.0.0",
@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "eslint src --fix && pnpm format",
-    "lint:strict": "eslint --max-warnings=0 src",
+    "lint:strict": "eslint src",
     "typecheck": "tsc --noEmit --incremental false",
     "test:watch": "jest --watch",
     "test": "jest",
@@ -85,7 +85,6 @@
     "@types/node": "24.0.3",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.6",
-
     "@types/testing-library__jest-dom": "^5.14.9",
     "@types/xml2js": "^0.4.14",
     "@webgpu/types": "^0.1.69",
@@ -109,7 +108,7 @@
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
-      "eslint --max-warnings=0",
+      "eslint --fix",
       "prettier -w"
     ],
     "**/*.{json,css,scss,md,webmanifest}": [

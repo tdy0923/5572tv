@@ -1,0 +1,42 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1220"/>
+      <stop offset="0.5" stop-color="#111A2B"/>
+      <stop offset="1" stop-color="#18253E"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="90" y1="48" x2="270" y2="272" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8D66D"/>
+      <stop offset="0.5" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="text" x1="356" y1="74" x2="1020" y2="248" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF5D6"/>
+      <stop offset="0.5" stop-color="#F7C75D"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="34" fill="url(#bg)"/>
+
+  <g>
+    <rect x="44" y="44" width="272" height="232" rx="34" fill="#0F172A" stroke="#F8D66D" stroke-opacity="0.2"/>
+    <path d="M86 88H274V122H145L132 172C145 165 159 162 173 162C208 162 236 170 256 188C275 206 285 229 285 256C285 283 276 305 258 320C239 334 213 341 180 341C149 341 123 333 102 317C81 301 69 280 66 255H115C118 268 125 278 136 286C147 294 161 298 178 298C194 298 207 294 216 286C226 277 231 265 231 250C231 236 226 225 216 217C205 208 190 204 171 204C155 204 142 207 131 214H84L110 88Z" fill="url(#accent)" transform="translate(0 -33) scale(0.73)"/>
+    <path d="M186 88H274V276H232V135H186V88Z" fill="#F7C75D" fill-opacity="0.14"/>
+    <path d="M76 220C108 170 145 136 188 118C207 110 229 104 254 102" stroke="#F8D66D" stroke-opacity="0.3" stroke-width="8" stroke-linecap="round"/>
+    <path d="M102 246C132 207 168 178 209 161C223 155 239 150 257 147" stroke="#F59E0B" stroke-opacity="0.45" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="248" cy="88" r="11" fill="#F8D66D" fill-opacity="0.8"/>
+  </g>
+
+  <g fill="url(#text)">
+    <path d="M393 96H574V123H451L440 167C454 160 469 156 486 156C523 156 552 165 574 184C595 202 606 227 606 258C606 288 595 313 574 331C553 348 524 357 487 357C452 357 423 348 401 331C378 313 365 289 362 259H417C421 274 429 286 441 295C453 303 468 307 487 307C506 307 522 302 534 292C546 281 552 267 552 249C552 232 546 219 534 210C521 200 504 195 482 195C465 195 449 199 436 207H390L418 96Z" transform="translate(0 -54) scale(0.86)"/>
+    <path d="M611 96H792V123H669L658 167C672 160 687 156 704 156C741 156 770 165 792 184C813 202 824 227 824 258C824 288 813 313 792 331C771 348 742 357 705 357C670 357 641 348 619 331C596 313 583 289 580 259H635C639 274 647 286 659 295C671 303 686 307 705 307C724 307 740 302 752 292C764 281 770 267 770 249C770 232 764 219 752 210C739 200 722 195 700 195C683 195 667 199 654 207H608L636 96Z" transform="translate(0 -54) scale(0.86)"/>
+    <path d="M866 96H1038V130L931 334H875L975 145H866V96Z" transform="translate(0 -54) scale(0.86)"/>
+    <path d="M1056 140C1056 126 1059 114 1067 103C1074 92 1084 83 1098 77C1111 70 1126 66 1144 66C1172 66 1195 73 1213 88C1231 103 1240 124 1240 149C1240 167 1234 183 1222 197C1210 211 1189 230 1159 254L1105 296H1246V343H1030V301L1120 220C1157 187 1180 165 1189 154C1198 143 1202 133 1202 123C1202 112 1198 104 1190 98C1181 92 1169 89 1155 89C1141 89 1128 93 1118 101C1108 109 1103 122 1102 140H1056Z" transform="translate(-130 -31) scale(0.69)"/>
+  </g>
+
+  <g>
+    <text x="355" y="250" fill="#F5E6B8" font-family="Georgia, 'Times New Roman', serif" font-size="42" letter-spacing="8">5572TV</text>
+    <text x="356" y="286" fill="#AAB6CC" font-family="Georgia, 'Times New Roman', serif" font-size="18" letter-spacing="5">STREAM · CINEMA · LIVE</text>
+  </g>
+</svg>

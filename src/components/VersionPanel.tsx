@@ -36,17 +36,11 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
   isOpen,
   onClose,
 }) => {
-  const [mounted, setMounted] = useState(false);
+  const [mounted] = useState(() => typeof window !== 'undefined');
   const [remoteChangelog, setRemoteChangelog] = useState<ChangelogEntry[]>([]);
   const [hasUpdate, setIsHasUpdate] = useState(false);
   const [latestVersion, setLatestVersion] = useState<string>('');
   const [showRemoteContent, setShowRemoteContent] = useState(false);
-
-  // 确保组件已挂载
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
 
   // Body 滚动锁定 - 使用 overflow 方式避免布局问题
   useEffect(() => {
@@ -70,44 +64,6 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
     }
   }, [isOpen]);
 
-  // 获取远程变更日志
-  useEffect(() => {
-    if (isOpen) {
-      fetchRemoteChangelog();
-    }
-  }, [isOpen]);
-
-  // 获取远程变更日志
-  const fetchRemoteChangelog = async () => {
-    try {
-      const response = await fetch(
-        'https://raw.githubusercontent.com/SzeMeng76/LunaTV/refs/heads/main/CHANGELOG'
-      );
-      if (response.ok) {
-        const content = await response.text();
-        const parsed = parseChangelog(content);
-        setRemoteChangelog(parsed);
-
-        // 检查是否有更新
-        if (parsed.length > 0) {
-          const latest = parsed[0];
-          setLatestVersion(latest.version);
-          setIsHasUpdate(
-            compareVersions(latest.version) === UpdateStatus.HAS_UPDATE
-          );
-        }
-      } else {
-        console.error(
-          '获取远程变更日志失败:',
-          response.status,
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error('获取远程变更日志失败:', error);
-    }
-  };
-
   // 解析变更日志格式
   const parseChangelog = (content: string): RemoteChangelogEntry[] => {
     const lines = content.split('\n');
@@ -121,7 +77,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
 
       // 匹配版本行: ## [X.Y.Z] - YYYY-MM-DD
       const versionMatch = trimmedLine.match(
-        /^## \[([\d.]+)\] - (\d{4}-\d{2}-\d{2})$/
+        /^## \[([\d.]+)\] - (\d{4}-\d{2}-\d{2})$/,
       );
       if (versionMatch) {
         if (currentVersion) {
@@ -176,23 +132,68 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
     return versions;
   };
 
+  // 获取远程变更日志
+  async function fetchRemoteChangelog() {
+    try {
+      const response = await fetch(
+        'https://raw.githubusercontent.com/tdy0923/LunaTV/refs/heads/main/CHANGELOG',
+      );
+      if (response.ok) {
+        const content = await response.text();
+        const parsed = parseChangelog(content);
+        setRemoteChangelog(parsed);
+
+        // 检查是否有更新
+        if (parsed.length > 0) {
+          const latest = parsed[0];
+          setLatestVersion(latest.version);
+          setIsHasUpdate(
+            compareVersions(latest.version) === UpdateStatus.HAS_UPDATE,
+          );
+        }
+      } else {
+        console.error(
+          '获取远程变更日志失败:',
+          response.status,
+          response.statusText,
+        );
+      }
+    } catch (error) {
+      console.error('获取远程变更日志失败:', error);
+    }
+  }
+
+  // 获取远程变更日志
+  useEffect(() => {
+    if (isOpen) {
+      const timer = window.setTimeout(() => {
+        fetchRemoteChangelog();
+      }, 0);
+
+      return () => {
+        window.clearTimeout(timer);
+      };
+    }
+  }, [isOpen]);
+
   // 渲染变更日志条目
   const renderChangelogEntry = (
     entry: ChangelogEntry | RemoteChangelogEntry,
     isCurrentVersion = false,
-    isRemote = false
+    isRemote = false,
   ) => {
     const isUpdate = isRemote && hasUpdate && entry.version === latestVersion;
 
     return (
       <div
         key={entry.version}
-        className={`p-4 rounded-lg border ${isCurrentVersion
-          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-          : isUpdate
-            ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-            : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'
-          }`}
+        className={`p-4 rounded-lg border ${
+          isCurrentVersion
+            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+            : isUpdate
+              ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+              : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'
+        }`}
       >
         {/* 版本标题 */}
         <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3'>
@@ -363,7 +364,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                     </div>
                   </div>
                   <a
-                    href='https://github.com/SzeMeng76/LunaTV'
+                    href='https://github.com/tdy0923/LunaTV'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
@@ -393,7 +394,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                     </div>
                   </div>
                   <a
-                    href='https://github.com/SzeMeng76/LunaTV'
+                    href='https://github.com/tdy0923/LunaTV'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
@@ -437,17 +438,18 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                       .filter((entry) => {
                         // 找到第一个本地版本，过滤掉本地已有的版本
                         const localVersions = changelog.map(
-                          (local) => local.version
+                          (local) => local.version,
                         );
                         return !localVersions.includes(entry.version);
                       })
                       .map((entry, index) => (
                         <div
                           key={index}
-                          className={`p-4 rounded-lg border ${entry.version === latestVersion
-                            ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                            : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'
-                            }`}
+                          className={`p-4 rounded-lg border ${
+                            entry.version === latestVersion
+                              ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                              : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'
+                          }`}
                         >
                           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3'>
                             <div className='flex flex-wrap items-center gap-2'>
@@ -543,8 +545,8 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                   renderChangelogEntry(
                     entry,
                     entry.version === CURRENT_VERSION,
-                    false
-                  )
+                    false,
+                  ),
                 )}
               </div>
             </div>

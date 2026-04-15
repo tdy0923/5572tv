@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
-import { searchTMDBActorWorks, isTMDBEnabled, TMDBFilterOptions } from '@/lib/tmdb.client';
 import { db } from '@/lib/db';
+import {
+  isTMDBEnabled,
+  searchTMDBActorWorks,
+  TMDBFilterOptions,
+} from '@/lib/tmdb.client';
 
 const TMDB_CACHE_TIME = 6 * 60 * 60; // 6小时
 
@@ -42,12 +46,16 @@ export async function GET(request: NextRequest) {
 
   // 集数筛选（TV剧）
   const minEpisodeCount = searchParams.get('minEpisodeCount');
-  if (minEpisodeCount) filterOptions.minEpisodeCount = parseInt(minEpisodeCount);
+  if (minEpisodeCount)
+    filterOptions.minEpisodeCount = parseInt(minEpisodeCount);
 
   // 类型筛选
   const genreIds = searchParams.get('genreIds');
   if (genreIds) {
-    filterOptions.genreIds = genreIds.split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+    filterOptions.genreIds = genreIds
+      .split(',')
+      .map((id) => parseInt(id))
+      .filter((id) => !isNaN(id));
   }
 
   // 语言筛选
@@ -63,7 +71,17 @@ export async function GET(request: NextRequest) {
   // 排序
   const sortBy = searchParams.get('sortBy');
   const sortOrder = searchParams.get('sortOrder');
-  if (sortBy && ['rating', 'date', 'popularity', 'vote_count', 'title', 'episode_count'].includes(sortBy)) {
+  if (
+    sortBy &&
+    [
+      'rating',
+      'date',
+      'popularity',
+      'vote_count',
+      'title',
+      'episode_count',
+    ].includes(sortBy)
+  ) {
     filterOptions.sortBy = sortBy as any;
   }
   if (sortOrder && ['asc', 'desc'].includes(sortOrder)) {
@@ -78,14 +96,14 @@ export async function GET(request: NextRequest) {
   if (!actorName?.trim()) {
     return NextResponse.json(
       { error: '缺少必要参数: actor（演员名字）' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!['tv', 'movie'].includes(type)) {
     return NextResponse.json(
       { error: 'type 参数必须是 tv 或 movie' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -96,9 +114,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'TMDB演员搜索功能未启用',
-          message: '请在管理后台配置TMDB API Key并启用此功能'
+          message: '请在管理后台配置TMDB API Key并启用此功能',
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
@@ -106,38 +124,26 @@ export async function GET(request: NextRequest) {
     const cacheParams = { actorName: actorName.trim(), type, ...filterOptions };
     const cacheKey = `tmdb-actor_works-${JSON.stringify(cacheParams)}`;
 
-    console.log(`🔍 [TMDB API] 检查缓存: ${cacheKey}`);
-
     // 检查缓存
     try {
       const cachedResult = await db.getCache(cacheKey);
       if (cachedResult) {
-        console.log(`✅ [TMDB API] 缓存命中: ${actorName} - ${cachedResult.list?.length || 0} 项`);
         return NextResponse.json(cachedResult);
       }
-      console.log(`❌ [TMDB API] 缓存未命中，开始搜索...`);
     } catch (cacheError) {
       console.warn('TMDB缓存检查失败:', cacheError);
     }
 
-    console.log(`[TMDB演员搜索API] 搜索演员: ${actorName}, 类型: ${type}`);
-    console.log(`[TMDB演员搜索API] 筛选参数:`, filterOptions);
-
     // 调用TMDB演员搜索函数（不使用内部缓存）
-    console.log(`[TMDB演员搜索API] 开始调用 searchTMDBActorWorks...`);
     const result = await searchTMDBActorWorks(
       actorName.trim(),
       type as 'movie' | 'tv',
-      filterOptions
+      filterOptions,
     );
-    console.log(`[TMDB演员搜索API] searchTMDBActorWorks 调用完成`);
-
-    console.log(`[TMDB演员搜索API] 搜索结果: ${result.list?.length || 0} 项`);
 
     // 缓存结果
     try {
       await db.setCache(cacheKey, result, TMDB_CACHE_TIME);
-      console.log(`💾 TMDB演员搜索结果已缓存(数据库): "${actorName}" - ${result.list?.length || 0} 个结果, TTL: ${TMDB_CACHE_TIME}s`);
     } catch (cacheError) {
       console.warn('TMDB演员搜索缓存保存失败:', cacheError);
     }
@@ -147,17 +153,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result, {
       headers: {
         'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+        'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+        'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+        'Netlify-Vary': 'query',
       },
     });
   } catch (error) {
-    console.error(`[TMDB演员搜索API] 搜索失败: ${actorName}`, (error as Error).message);
+    console.error(
+      `[TMDB演员搜索API] 搜索失败: ${actorName}`,
+      (error as Error).message,
+    );
     return NextResponse.json(
       {
         error: 'TMDB演员搜索失败',
         details: (error as Error).message,
-        params: { actorName, type, filterOptions }
+        params: { actorName, type, filterOptions },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

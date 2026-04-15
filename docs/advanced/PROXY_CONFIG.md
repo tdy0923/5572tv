@@ -18,12 +18,13 @@ LunaTV 提供两个独立的 Cloudflare Worker 代理配置，分别用于 TVBox
 
 LunaTV 提供两个**完全独立**的代理开关，互不影响：
 
-| 配置类型 | 位置 | 影响范围 | 用途 |
-|---------|------|---------|------|
-| **TVBox 代理** | TVBox 安全配置 | 仅 TVBox 配置接口 | 为 TVBox 应用提供加速 |
-| **视频源代理** | 视频源配置 | 仅网页播放 | 为 LunaTV 网页播放提供加速 |
+| 配置类型       | 位置           | 影响范围          | 用途                       |
+| -------------- | -------------- | ----------------- | -------------------------- |
+| **TVBox 代理** | TVBox 安全配置 | 仅 TVBox 配置接口 | 为 TVBox 应用提供加速      |
+| **视频源代理** | 视频源配置     | 仅网页播放        | 为 LunaTV 网页播放提供加速 |
 
 **为什么要分开？**
+
 - 🎯 **灵活控制**：可以只为 TVBox 启用代理，网页播放不使用
 - 🔧 **独立调试**：出问题时可以分别排查
 - 📊 **流量管理**：分别控制不同场景的流量
@@ -46,6 +47,7 @@ LunaTV 提供两个**完全独立**的代理开关，互不影响：
 6. 点击 **保存配置**
 
 **效果**：
+
 - TVBox 订阅链接 (`/api/tvbox`) 中的所有源自动使用代理
 - 示例：`https://lovedan.net/api.php/provide/vod`
   → `https://corsapi.smone.workers.dev/p/lovedan?url=https://lovedan.net/api.php/provide/vod`
@@ -66,6 +68,7 @@ LunaTV 提供两个**完全独立**的代理开关，互不影响：
 6. 点击 **保存代理配置**
 
 **效果**：
+
 - 网页播放时，所有通过 `/api/proxy/cms` 的请求自动使用 Worker 代理
 - 提升搜索、详情、播放等功能的访问速度
 
@@ -96,12 +99,14 @@ Worker 请求真实源站
 ### 示例转换
 
 **场景 1：普通源**
+
 ```
 原始：https://lovedan.net/api.php/provide/vod
 代理：https://corsapi.smone.workers.dev/p/lovedan?url=https://lovedan.net/api.php/provide/vod
 ```
 
 **场景 2：已有旧代理的源**
+
 ```
 原始：https://old-proxy.com/?url=https://lovedan.net/api.php/provide/vod
 提取：https://lovedan.net/api.php/provide/vod
@@ -109,6 +114,7 @@ Worker 请求真实源站
 ```
 
 **场景 3：带参数的 API 调用**
+
 ```
 TVBox 调用：/p/lovedan?url=https://lovedan.net/api.php/provide/vod&ac=list&pg=1
 Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
@@ -137,7 +143,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 
 **选项 A：使用默认配置（推荐）**
 
-项目地址：[CORSAPI](https://github.com/SzeMeng76/CORSAPI)
+参考项目：[CORSAPI](https://github.com/SzeMeng76/CORSAPI)
 
 1. Fork 项目到你的 GitHub
 2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
@@ -168,6 +174,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q1: 两个代理配置有什么区别？
 
 **A:**
+
 - **TVBox 代理**：只影响 TVBox 订阅接口，修改 TVBox 配置文件中的源地址
 - **视频源代理**：只影响网页播放，加速浏览器访问视频源的速度
 - 两者完全独立，互不影响
@@ -175,6 +182,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q2: 必须两个都启用吗？
 
 **A:** 不是！可以根据需求选择：
+
 - 只用 TVBox → 只启用 TVBox 代理
 - 只用网页播放 → 只启用视频源代理
 - 两者都用 → 两个都启用
@@ -182,6 +190,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q3: 为什么我的源已经有代理了？
 
 **A:** LunaTV 会自动检测并替换旧代理：
+
 - 系统检测源地址中的 `?url=` 参数
 - 自动提取真实 API 地址
 - 替换为你配置的新代理
@@ -190,6 +199,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q4: Worker 代理失败会怎样？
 
 **A:** 有自动降级机制：
+
 - **视频源代理**：失败时自动使用 LunaTV 服务器本地代理
 - **TVBox 代理**：TVBox 直接访问真实源站
 - 不会影响正常使用
@@ -197,6 +207,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q5: 默认代理地址 `corsapi.smone.workers.dev` 可以一直用吗？
 
 **A:** 可以，但建议自己部署：
+
 - 默认地址是公共服务，可能有流量限制
 - 自己部署可以完全控制，更稳定
 - Cloudflare Worker 免费版每天 10 万次请求，个人使用足够
@@ -204,6 +215,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q6: 代理会影响速度吗？
 
 **A:** 正常情况下会**加快**速度：
+
 - Cloudflare 有全球 CDN 节点
 - 自动选择最近的节点访问源站
 - 但如果源站本身就很快，可能不明显
@@ -211,11 +223,13 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q7: 如何测试代理是否生效？
 
 **TVBox 代理**：
+
 1. 启用代理后保存配置
 2. 访问 TVBox 诊断端点：`/api/tvbox/diagnose?token=YOUR_TOKEN`
 3. 查看返回的源地址是否包含代理 URL
 
 **视频源代理**：
+
 1. 启用代理后保存配置
 2. 打开浏览器开发者工具（F12）→ Network 标签
 3. 播放视频或搜索内容
@@ -224,12 +238,14 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q8: Worker 超时时间是多少？
 
 **A:**
+
 - 默认超时：20 秒
 - 如需修改，需要在 Worker 代码中调整 `setTimeout()` 参数
 
 ### Q9: 支持哪些 CMS API 格式？
 
 **A:** 支持所有主流 MacCMS API：
+
 - `?ac=list` - 获取列表
 - `?ac=detail` - 获取详情
 - `?ac=class` - 获取分类
@@ -239,6 +255,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### Q10: 代理配置保存后需要重启服务吗？
 
 **A:** 不需要！
+
 - 配置保存后立即生效
 - 配置缓存会自动清除
 - 下一次请求就会使用新配置
@@ -247,16 +264,16 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 
 ## 📊 配置对比表
 
-| 特性 | TVBox 代理 | 视频源代理 |
-|------|-----------|-----------|
-| **配置位置** | TVBox 安全配置 | 视频源配置 |
-| **影响接口** | `/api/tvbox` | `/api/proxy/cms` |
-| **使用场景** | TVBox 应用订阅 | LunaTV 网页播放 |
+| 特性         | TVBox 代理             | 视频源代理          |
+| ------------ | ---------------------- | ------------------- |
+| **配置位置** | TVBox 安全配置         | 视频源配置          |
+| **影响接口** | `/api/tvbox`           | `/api/proxy/cms`    |
+| **使用场景** | TVBox 应用订阅         | LunaTV 网页播放     |
 | **代理方式** | 修改配置文件中的源地址 | 拦截 CMS 请求并代理 |
-| **失败降级** | 返回原始源地址 | 使用本地代理 |
-| **参数转发** | ✅ 支持 | ✅ 支持 |
-| **自动去重** | ✅ 支持 | ✅ 支持 |
-| **唯一路径** | ✅ `/p/{sourceId}` | ✅ `/p/{sourceId}` |
+| **失败降级** | 返回原始源地址         | 使用本地代理        |
+| **参数转发** | ✅ 支持                | ✅ 支持             |
+| **自动去重** | ✅ 支持                | ✅ 支持             |
+| **唯一路径** | ✅ `/p/{sourceId}`     | ✅ `/p/{sourceId}`  |
 
 ---
 
@@ -265,6 +282,7 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 ### 白名单机制
 
 视频源代理使用白名单保护：
+
 - 只允许代理符合 CMS API 模式的 URL
 - 防止被滥用为通用代理
 - 支持的模式：`?ac=`, `/api/vod`, `/provide/vod` 等
@@ -295,8 +313,9 @@ Worker 转发：https://lovedan.net/api.php/provide/vod?ac=list&pg=1
 
 欢迎提交 Issue 和 Pull Request 改进此功能！
 
-项目地址：
-- [LunaTV](https://github.com/SzeMeng76/LunaTV)
+相关项目：
+
+- [LunaTV](https://github.com/tdy0923/LunaTV)
 - [CORSAPI](https://github.com/SzeMeng76/CORSAPI)
 
 ---
