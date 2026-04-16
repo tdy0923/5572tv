@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: lunatv
+    name: 5572tv
     runtime: image
     image:
-      url: ghcr.io/szemeng76/lunatv:latest
+      url: ghcr.io/tdy0923/5572tv:latest
     numInstances: 1
     plan: free
     healthCheckPath: /
