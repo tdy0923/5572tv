@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react-hooks/exhaustive-deps */
-
 'use client';
 
 import { Moon, Sun } from 'lucide-react';
@@ -25,7 +23,13 @@ export function ThemeToggle() {
   };
 
   useEffect(() => {
-    setMounted(true);
+    const frameId = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
   }, []);
 
   // 监听主题变化和路由变化，确保主题色始终同步
@@ -37,7 +41,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     // 渲染一个占位符以避免布局偏移
-    return <div className='w-10 h-10' />;
+    return <div className='h-11 w-11' />;
   }
 
   const toggleTheme = () => {
@@ -57,16 +61,16 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className='relative w-10 h-10 p-2 rounded-full flex items-center justify-center text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-amber-500/30 dark:hover:shadow-amber-400/30 group'
+      className='ui-control ui-control-icon relative text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-300 group'
       aria-label='Toggle theme'
     >
       {/* 微光背景效果 */}
-      <div className='absolute inset-0 rounded-full bg-linear-to-br from-amber-400/0 to-amber-600/0 group-hover:from-amber-400/20 group-hover:to-amber-600/20 dark:group-hover:from-amber-300/20 dark:group-hover:to-amber-500/20 transition-all duration-300'></div>
+      <div className='absolute inset-0 rounded-2xl bg-linear-to-br from-amber-400/0 via-transparent to-orange-500/0 group-hover:from-amber-400/20 group-hover:to-orange-500/10 dark:group-hover:from-amber-300/20 dark:group-hover:to-orange-400/10 transition-all duration-300'></div>
 
       {resolvedTheme === 'dark' ? (
-        <Sun className='w-full h-full relative z-10 group-hover:rotate-180 transition-transform duration-500' />
+        <Sun className='relative z-10 h-5 w-5 group-hover:rotate-180 transition-transform duration-500' />
       ) : (
-        <Moon className='w-full h-full relative z-10 group-hover:rotate-180 transition-transform duration-500' />
+        <Moon className='relative z-10 h-5 w-5 group-hover:rotate-180 transition-transform duration-500' />
       )}
     </button>
   );

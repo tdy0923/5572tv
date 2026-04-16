@@ -601,9 +601,9 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 菜单面板 */}
-      <div className='fixed top-14 right-4 w-56 bg-white dark:bg-gray-900 rounded-lg shadow-xl z-1001 border border-gray-200/50 dark:border-gray-700/50 overflow-hidden select-none'>
+      <div className='fixed top-16 right-4 w-60 ui-surface z-1001 overflow-hidden select-none'>
         {/* 用户信息区域 */}
-        <div className='px-3 py-2.5 border-b border-gray-200 dark:border-gray-700 bg-linear-to-r from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-800/50'>
+        <div className='px-4 py-3 border-b border-black/6 dark:border-white/8 bg-linear-to-r from-white/55 via-white/35 to-white/10 dark:from-white/8 dark:via-white/4 dark:to-transparent'>
           <div className='space-y-1'>
             <div className='flex items-center justify-between'>
               <span className='text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
@@ -636,10 +636,7 @@ export const UserMenu: React.FC = () => {
         {/* 菜单项 */}
         <div className='py-1'>
           {/* 设置按钮 */}
-          <button
-            onClick={handleSettings}
-            className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-          >
+          <button onClick={handleSettings} className='ui-menu-button'>
             <Settings className='w-4 h-4 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>设置</span>
           </button>
@@ -648,7 +645,7 @@ export const UserMenu: React.FC = () => {
           {showWatchingUpdates && (
             <button
               onClick={handleWatchingUpdates}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm relative'
+              className='ui-menu-button relative'
             >
               <Bell className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>更新提醒</span>
@@ -666,7 +663,7 @@ export const UserMenu: React.FC = () => {
           {showWatchingUpdates && (
             <button
               onClick={handleContinueWatching}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm relative'
+              className='ui-menu-button relative'
             >
               <PlayCircle className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>继续观看</span>
@@ -682,7 +679,7 @@ export const UserMenu: React.FC = () => {
           {showWatchingUpdates && (
             <button
               onClick={handleFavorites}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm relative'
+              className='ui-menu-button relative'
             >
               <Heart className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>我的收藏</span>
@@ -696,10 +693,7 @@ export const UserMenu: React.FC = () => {
 
           {/* 管理面板按钮 */}
           {showAdminPanel && (
-            <button
-              onClick={handleAdminPanel}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-            >
+            <button onClick={handleAdminPanel} className='ui-menu-button'>
               <Shield className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>管理面板</span>
             </button>
@@ -707,10 +701,7 @@ export const UserMenu: React.FC = () => {
 
           {/* 播放统计按钮 */}
           {showPlayStats && (
-            <button
-              onClick={handlePlayStats}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-            >
+            <button onClick={handlePlayStats} className='ui-menu-button'>
               <BarChart3 className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>
                 {authInfo?.role === 'owner' || authInfo?.role === 'admin'
@@ -721,29 +712,20 @@ export const UserMenu: React.FC = () => {
           )}
 
           {/* 上映日程按钮 */}
-          <button
-            onClick={handleReleaseCalendar}
-            className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-          >
+          <button onClick={handleReleaseCalendar} className='ui-menu-button'>
             <Calendar className='w-4 h-4 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>上映日程</span>
           </button>
 
           {/* TVBox配置按钮 */}
-          <button
-            onClick={handleTVBoxConfig}
-            className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-          >
+          <button onClick={handleTVBoxConfig} className='ui-menu-button'>
             <Tv className='w-4 h-4 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>TVBox 配置</span>
           </button>
 
           {/* 观影室按钮 */}
           {showWatchRoom && (
-            <button
-              onClick={handleWatchRoom}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-            >
+            <button onClick={handleWatchRoom} className='ui-menu-button'>
               <Users className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>观影室</span>
             </button>
@@ -756,7 +738,7 @@ export const UserMenu: React.FC = () => {
                 setShowDownloadPanel(true);
                 handleCloseMenu();
               }}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
+              className='ui-menu-button'
             >
               <Download className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>下载管理</span>
@@ -783,10 +765,7 @@ export const UserMenu: React.FC = () => {
 
           {/* 修改密码按钮 */}
           {showChangePassword && (
-            <button
-              onClick={handleChangePassword}
-              className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-[background-color] duration-150 ease-in-out text-sm'
-            >
+            <button onClick={handleChangePassword} className='ui-menu-button'>
               <KeyRound className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>修改密码</span>
             </button>
@@ -798,7 +777,7 @@ export const UserMenu: React.FC = () => {
           {/* 登出按钮 */}
           <button
             onClick={handleLogout}
-            className='w-full px-3 py-2 text-left flex items-center gap-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-[background-color] duration-150 ease-in-out text-sm'
+            className='flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300'
           >
             <LogOut className='w-4 h-4' />
             <span className='font-medium'>登出</span>
@@ -814,7 +793,7 @@ export const UserMenu: React.FC = () => {
                 setIsVersionPanelOpen(true);
                 handleCloseMenu();
               }}
-              className='w-full px-3 py-2 text-center flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-xs'
+              className='w-full rounded-2xl px-3 py-2 text-center text-xs text-gray-500 transition-colors hover:bg-black/4 dark:text-gray-400 dark:hover:bg-white/6'
             >
               <div className='flex items-center gap-1'>
                 <span className='font-mono'>v{CURRENT_VERSION}</span>

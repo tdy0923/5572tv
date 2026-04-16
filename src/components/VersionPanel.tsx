@@ -308,7 +308,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
 
       {/* 版本面板 */}
       <div
-        className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 overflow-hidden'
+        className='fixed top-1/2 left-1/2 z-1001 max-h-[90vh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
         onTouchMove={(e) => {
           // 允许版本面板内部滚动，阻止事件冒泡到外层
           e.stopPropagation();
@@ -318,7 +318,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
         }}
       >
         {/* 标题栏 */}
-        <div className='flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700'>
+        <div className='flex items-center justify-between border-b border-black/6 p-3 sm:p-6 dark:border-white/8'>
           <div className='flex items-center gap-2 sm:gap-3'>
             <h3 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200'>
               版本信息
@@ -338,7 +338,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
           </div>
           <button
             onClick={onClose}
-            className='w-6 h-6 sm:w-8 sm:h-8 p-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+            className='ui-control ui-control-icon h-8 w-8 text-gray-500 sm:h-10 sm:w-10'
             aria-label='关闭'
           >
             <X className='w-full h-full' />
@@ -350,7 +350,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
           <div className='space-y-3 sm:space-y-6'>
             {/* 远程更新信息 */}
             {hasUpdate && (
-              <div className='bg-linear-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 sm:p-4'>
+              <div className='rounded-3xl border border-yellow-200/80 bg-linear-to-r from-yellow-50/92 to-amber-50/80 p-3 shadow-[0_18px_40px_rgba(245,158,11,0.08)] dark:border-yellow-700/40 dark:from-yellow-900/22 dark:to-amber-900/12 sm:p-4'>
                 <div className='flex flex-col gap-3'>
                   <div className='flex items-center gap-2 sm:gap-3'>
                     <div className='w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 dark:bg-yellow-800/40 rounded-full flex items-center justify-center shrink-0'>
@@ -369,7 +369,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                     href='https://github.com/tdy0923/5572tv'
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
+                    className='ui-primary-button w-full text-xs sm:text-sm'
                   >
                     <Download className='w-3 h-3 sm:w-4 sm:h-4' />
                     前往仓库
@@ -380,7 +380,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
 
             {/* 当前为最新版本信息 */}
             {!hasUpdate && (
-              <div className='bg-linear-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 sm:p-4'>
+              <div className='rounded-3xl border border-green-200/80 bg-linear-to-r from-green-50/92 to-emerald-50/80 p-3 shadow-[0_18px_40px_rgba(16,185,129,0.08)] dark:border-green-700/40 dark:from-green-900/22 dark:to-emerald-900/12 sm:p-4'>
                 <div className='flex flex-col gap-3'>
                   <div className='flex items-center gap-2 sm:gap-3'>
                     <div className='w-8 h-8 sm:w-10 sm:h-10 bg-green-100 dark:bg-green-800/40 rounded-full flex items-center justify-center shrink-0'>
@@ -399,7 +399,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                     href='https://github.com/tdy0923/5572tv'
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='inline-flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg transition-colors shadow-sm w-full'
+                    className='ui-primary-button w-full text-xs sm:text-sm'
                   >
                     <CheckCircle className='w-3 h-3 sm:w-4 sm:h-4' />
                     前往仓库
@@ -409,7 +409,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
             )}
 
             {isStandaloneLaunch && (
-              <div className='bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4'>
+              <div className='rounded-3xl border border-blue-200/80 bg-linear-to-r from-blue-50/92 to-cyan-50/80 p-3 shadow-[0_18px_40px_rgba(59,130,246,0.08)] dark:border-blue-700/40 dark:from-blue-900/22 dark:to-cyan-900/12 sm:p-4'>
                 <div className='space-y-3'>
                   <div>
                     <h4 className='text-sm sm:text-base font-semibold text-blue-800 dark:text-blue-200'>
@@ -457,7 +457,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                   </h4>
                   <button
                     onClick={() => setShowRemoteContent(!showRemoteContent)}
-                    className='inline-flex items-center justify-center gap-2 px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 dark:bg-yellow-800/30 dark:hover:bg-yellow-800/50 dark:text-yellow-200 rounded-lg transition-colors text-sm w-full sm:w-auto'
+                    className='ui-secondary-button w-full text-sm sm:w-auto'
                   >
                     {showRemoteContent ? (
                       <>
@@ -486,7 +486,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                       .map((entry, index) => (
                         <div
                           key={index}
-                          className={`p-4 rounded-lg border ${
+                          className={`rounded-3xl border p-4 ${
                             entry.version === latestVersion
                               ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
                               : 'bg-gray-50 dark:bg-gray-800/60 border-gray-200 dark:border-gray-700'

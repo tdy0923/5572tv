@@ -301,7 +301,7 @@ function RegisterPageClient() {
                 id='username'
                 type='text'
                 autoComplete='username'
-                className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
+                className='ui-input pl-12 pr-4 sm:text-base'
                 placeholder='3-20位字母数字下划线'
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -324,7 +324,7 @@ function RegisterPageClient() {
                 id='password'
                 type='password'
                 autoComplete='new-password'
-                className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
+                className='ui-input pl-12 pr-4 sm:text-base'
                 placeholder='至少6位字符'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -347,7 +347,7 @@ function RegisterPageClient() {
                 id='confirmPassword'
                 type='password'
                 autoComplete='new-password'
-                className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md'
+                className='ui-input pl-12 pr-4 sm:text-base'
                 placeholder='再次输入密码'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -371,7 +371,7 @@ function RegisterPageClient() {
                   id='inviteCode'
                   type='text'
                   autoComplete='off'
-                  className='block w-full pl-12 pr-4 py-3.5 rounded-xl border-0 text-gray-900 dark:text-gray-100 shadow-sm ring-2 ring-white/60 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:outline-none sm:text-base bg-white/80 dark:bg-zinc-800/80 backdrop-blur transition-all duration-300 hover:shadow-md uppercase'
+                  className='ui-input pl-12 pr-4 sm:text-base uppercase'
                   placeholder='请输入邀请码'
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
@@ -401,7 +401,7 @@ function RegisterPageClient() {
             disabled={
               !username || !password || !confirmPassword || loading || !!success
             }
-            className='group relative inline-flex w-full justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-lg overflow-hidden'
+            className='ui-primary-button group relative w-full overflow-hidden text-base'
           >
             <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
             <UserPlus className='h-5 w-5' />
@@ -418,7 +418,7 @@ function RegisterPageClient() {
             </p>
             <a
               href='/login'
-              className='group flex items-center justify-center gap-2 w-full px-6 py-2.5 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800/50 text-blue-700 dark:text-blue-400 text-sm font-semibold hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-100'
+              className='ui-secondary-button group w-full text-sm'
             >
               <Lock className='w-4 h-4' />
               <span>立即登录</span>
