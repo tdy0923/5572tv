@@ -32,7 +32,7 @@
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-6.3.1-orange)
+![Version](https://img.shields.io/badge/Version-1.0.0-orange)
 
 </div>
 
@@ -41,6 +41,12 @@
 ## 📢 项目说明
 
 本仓库服务于 `www.5572.net` 的实际线上运行与持续迭代，当前重点覆盖 Cloudflare 协同优化、弱配置服务器适配、缓存治理、接口稳定性、播放体验与部署稳定性。所有功能更新详见 [CHANGELOG](CHANGELOG)。
+
+### 当前发布状态
+
+- 当前独立版本：`v1.0.0`
+- 版本定位：`5572tv / 5572影视` 独立项目首个正式版本
+- 本次发布重点：独立仓库切换、非商用许可声明、部署链路迁移、认证链路闭环验证、播放页失效线路治理、缓存与 Cloudflare 加速优化
 
 ### 当前仓库定位
 
