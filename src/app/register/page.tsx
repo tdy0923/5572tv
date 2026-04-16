@@ -251,7 +251,7 @@ function RegisterPageClient() {
         <ThemeToggle />
       </div>
       <div
-        className='relative z-10 w-full max-w-md rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white/95 via-white/85 to-white/75 dark:from-zinc-900/95 dark:via-zinc-900/85 dark:to-zinc-900/75 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_80px_rgba(0,0,0,0.6)] p-6 sm:p-10 border border-white/50 dark:border-zinc-700/50 animate-fade-in hover:shadow-[0_25px_100px_rgba(0,0,0,0.4)] transition-shadow duration-500'
+        className='relative z-10 w-full max-w-md overflow-hidden rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/96 via-white/88 to-white/76 p-6 shadow-[0_28px_110px_rgba(15,23,42,0.28)] backdrop-blur-3xl transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_36px_130px_rgba(15,23,42,0.34)] dark:border-white/12 dark:bg-gradient-to-br dark:from-[#11141c]/94 dark:via-[#0f1720]/86 dark:to-[#0b1018]/78 dark:shadow-[0_34px_120px_rgba(0,0,0,0.58)] sm:rounded-[2.25rem] sm:p-10'
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
         }}
@@ -266,21 +266,23 @@ function RegisterPageClient() {
           }
         `}</style>
         {/* 装饰性光效 */}
-        <div className='absolute -top-20 -left-20 w-40 h-40 bg-gradient-to-br from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl animate-pulse' />
+        <div className='absolute inset-x-10 top-0 h-px bg-linear-to-r from-transparent via-white/85 to-transparent dark:via-white/20' />
+        <div className='absolute -top-20 -left-20 h-40 w-40 rounded-full bg-gradient-to-br from-blue-400/30 to-cyan-400/30 blur-3xl animate-pulse' />
         <div
-          className='absolute -bottom-20 -right-20 w-40 h-40 bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse'
+          className='absolute -bottom-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br from-purple-400/30 to-pink-400/30 blur-3xl animate-pulse'
           style={{ animationDelay: '1s' }}
         />
+        <div className='absolute inset-0 rounded-[inherit] border border-white/45 dark:border-white/6 pointer-events-none' />
 
         {/* 标题区域 */}
         <div className='text-center mb-6 sm:mb-8'>
-          <div className='inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-3 sm:mb-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/50 dark:shadow-blue-500/30'>
+          <div className='inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500 shadow-[0_18px_40px_rgba(79,70,229,0.42)] ring-1 ring-white/50 dark:shadow-[0_18px_44px_rgba(79,70,229,0.28)] sm:mb-4 sm:h-16 sm:w-16 sm:rounded-[1.35rem]'>
             <UserPlus className='w-6 h-6 sm:w-8 sm:h-8 text-white' />
           </div>
           <h1 className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 tracking-tight text-3xl sm:text-4xl font-extrabold mb-2 drop-shadow-sm'>
             {siteName}
           </h1>
-          <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium'>
+          <p className='text-gray-600 dark:text-gray-400 text-xs sm:text-sm font-medium tracking-[0.02em]'>
             创建您的新账户
           </p>
         </div>
