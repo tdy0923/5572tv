@@ -839,7 +839,7 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 修改密码面板 */}
-      <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 overflow-hidden'>
+      <div className='fixed top-1/2 left-1/2 z-1001 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'>
         {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='h-full p-6'
@@ -853,16 +853,16 @@ export const UserMenu: React.FC = () => {
           }}
         >
           {/* 标题栏 */}
-          <div className='flex items-center justify-between mb-6'>
+          <div className='mb-6 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>
             <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
               修改密码
             </h3>
             <button
               onClick={handleCloseChangePassword}
-              className='w-8 h-8 p-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+              className='ui-control ui-control-icon h-10 w-10 text-gray-500'
               aria-label='Close'
             >
-              <X className='w-full h-full' />
+              <X className='h-5 w-5' />
             </button>
           </div>
 
@@ -875,7 +875,7 @@ export const UserMenu: React.FC = () => {
               </label>
               <input
                 type='password'
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400'
+                className='ui-input w-full text-sm'
                 placeholder='请输入新密码'
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -890,7 +890,7 @@ export const UserMenu: React.FC = () => {
               </label>
               <input
                 type='password'
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400'
+                className='ui-input w-full text-sm'
                 placeholder='请再次输入新密码'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -900,24 +900,24 @@ export const UserMenu: React.FC = () => {
 
             {/* 错误信息 */}
             {passwordError && (
-              <div className='text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800'>
+              <div className='rounded-2xl border border-red-200/80 bg-red-50 p-3 text-sm text-red-500 dark:border-red-800/80 dark:bg-red-900/20'>
                 {passwordError}
               </div>
             )}
           </div>
 
           {/* 操作按钮 */}
-          <div className='flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700'>
+          <div className='mt-6 flex gap-3 border-t border-black/6 pt-4 dark:border-white/8'>
             <button
               onClick={handleCloseChangePassword}
-              className='flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors'
+              className='ui-secondary-button flex-1 justify-center text-sm'
               disabled={passwordLoading}
             >
               取消
             </button>
             <button
               onClick={handleSubmitChangePassword}
-              className='flex-1 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+              className='ui-primary-button flex-1 justify-center text-sm'
               disabled={passwordLoading || !newPassword || !confirmPassword}
             >
               {passwordLoading ? '修改中...' : '确认修改'}
@@ -954,7 +954,7 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 更新弹窗 */}
-      <div className='fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-xl z-1001 flex flex-col'>
+      <div className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'>
         {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='flex-1 p-6 overflow-y-auto'
@@ -965,7 +965,7 @@ export const UserMenu: React.FC = () => {
           }}
         >
           {/* 标题栏 */}
-          <div className='flex items-center justify-between mb-6'>
+          <div className='mb-6 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>
             <div className='flex items-center gap-3'>
               <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                 更新提醒
@@ -981,10 +981,10 @@ export const UserMenu: React.FC = () => {
             </div>
             <button
               onClick={handleCloseWatchingUpdates}
-              className='w-8 h-8 p-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+              className='ui-control ui-control-icon h-10 w-10 text-gray-500'
               aria-label='Close'
             >
-              <X className='w-full h-full' />
+              <X className='h-5 w-5' />
             </button>
           </div>
 
@@ -1174,18 +1174,18 @@ export const UserMenu: React.FC = () => {
 
       {/* 继续观看弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 transform -translate-y-1/2 max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-1001 max-h-[80vh] overflow-y-auto'
+        className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
       >
         <div className='p-6'>
-          <div className='flex items-center justify-between mb-4'>
+          <div className='mb-4 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>
             <h3 className='text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2'>
               <PlayCircle className='w-6 h-6 text-blue-500' />
               继续观看
             </h3>
             <button
               onClick={handleCloseContinueWatching}
-              className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='ui-control ui-control-icon h-10 w-10 text-gray-500'
             >
               <X className='w-5 h-5' />
             </button>
@@ -1290,18 +1290,18 @@ export const UserMenu: React.FC = () => {
 
       {/* 收藏弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 transform -translate-y-1/2 max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-1001 max-h-[80vh] overflow-y-auto'
+        className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
       >
         <div className='p-6'>
-          <div className='flex items-center justify-between mb-4'>
+          <div className='mb-4 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>
             <h3 className='text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2'>
               <Heart className='w-6 h-6 text-red-500' />
               我的收藏
             </h3>
             <button
               onClick={handleCloseFavorites}
-              className='p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='ui-control ui-control-icon h-10 w-10 text-gray-500'
             >
               <X className='w-5 h-5' />
             </button>
