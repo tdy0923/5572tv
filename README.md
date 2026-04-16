@@ -15,6 +15,13 @@
 
 > 🎬 **5572影视** 是一个独立持续维护的全功能影视聚合播放平台，当前运行站点为 `www.5572.net`。项目聚焦生产可用性、弱配置服务器适配、Cloudflare 协同优化、接口稳定性、缓存治理与实际观影体验，并集成 **YouTube**、**网盘搜索**、**AI 推荐**、**短剧功能**、**IPTV 直播**、**Bangumi 动漫**、**播放统计**、**弹幕系统** 等多项增强能力。
 
+> ⚠️ **许可与使用说明**
+>
+> - 本项目源码仅供 **学习、研究与非商业交流** 使用。
+> - **禁止将本项目用于任何商业用途**，包括但不限于商业部署、收费服务、售卖源码、售卖二次开发版本、引流变现或与商业产品/服务捆绑使用。
+> - 本项目可能涉及第三方影视接口、元数据、图片、预告片或其他外部资源；**这些内容的版权、合规与使用责任由实际使用者自行承担**。
+> - 项目作者 **不授予任何第三方影视内容的版权许可**，也不对第三方接口、站点内容或其可用性作出保证。
+
 <div align="center">
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.0-000?logo=nextdotjs)
@@ -23,7 +30,7 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.18-38bdf8?logo=tailwindcss)
 ![ArtPlayer](https://img.shields.io/badge/ArtPlayer-5.4.0-ff6b6b)
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
 ![Version](https://img.shields.io/badge/Version-6.3.1-orange)
 

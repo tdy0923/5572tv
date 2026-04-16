@@ -15,6 +15,13 @@
 
 > 🎬 **5572TV** is an independently maintained streaming platform built for real production use. The live site is `www.5572.net`, with a strong focus on Cloudflare-assisted acceleration, low-resource server compatibility, cache governance, operational stability, and a polished watching experience, alongside features such as **YouTube Integration**, **Cloud Drive Search**, **AI Recommendations**, **Short Drama**, **IPTV Live TV**, **Bangumi Anime**, **Watch Statistics**, and **Danmaku**.
 
+> ⚠️ **License and Usage Notice**
+>
+> - This source code is provided for **learning, research, and non-commercial use only**.
+> - **Commercial use is prohibited**, including but not limited to paid deployment, commercial hosting, selling the source code, selling modified versions, traffic monetization, or bundling with commercial products/services.
+> - The project may interact with third-party video APIs, metadata, images, trailers, or other external resources; **all copyright, compliance, and usage responsibilities for such resources are solely the responsibility of the actual user/operator**.
+> - The project authors **do not grant any license to third-party media content**, and provide no warranty regarding the legality, availability, or continued accessibility of third-party resources.
+
 <div align="center">
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.0-000?logo=nextdotjs)
@@ -23,7 +30,7 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.18-38bdf8?logo=tailwindcss)
 ![ArtPlayer](https://img.shields.io/badge/ArtPlayer-5.4.0-ff6b6b)
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
-![License](https://img.shields.io/badge/License-MIT-green)
+![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
 ![Version](https://img.shields.io/badge/Version-6.3.1-orange)
 
