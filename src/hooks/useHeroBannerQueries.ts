@@ -143,6 +143,9 @@ export function useRefreshTrailerUrlMutation() {
       );
 
       if (!response.ok) {
+        if (response.status === 404 || response.status === 429) {
+          return null;
+        }
         return null;
       }
 

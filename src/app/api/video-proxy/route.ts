@@ -148,6 +148,7 @@ export async function GET(request: Request) {
           error: 'Failed to fetch video',
           status: videoResponse.status,
           statusText: videoResponse.statusText,
+          stale: videoResponse.status === 403 || videoResponse.status === 404,
         },
         { status: videoResponse.status },
       );
@@ -263,7 +264,7 @@ export async function GET(request: Request) {
       );
     }
 
-    console.error('[Video Proxy] Error fetching video:', error.message);
+    console.warn('[Video Proxy] Error fetching video:', error.message);
     return NextResponse.json(
       { error: 'Error fetching video', details: error.message },
       { status: 500 },
