@@ -9,9 +9,12 @@ import {
 } from './db.client';
 
 // 缓存键
-const WATCHING_UPDATES_CACHE_KEY = 'moontv_watching_updates';
-const LAST_CHECK_TIME_KEY = 'moontv_last_update_check';
-const ORIGINAL_EPISODES_CACHE_KEY = 'moontv_original_episodes'; // 新增：记录观看时的总集数
+const WATCHING_UPDATES_CACHE_KEY = '5572tv_watching_updates';
+const LAST_CHECK_TIME_KEY = '5572tv_last_update_check';
+const ORIGINAL_EPISODES_CACHE_KEY = '5572tv_original_episodes'; // 新增：记录观看时的总集数
+const LEGACY_WATCHING_UPDATES_CACHE_KEY = 'moontv_watching_updates';
+const LEGACY_LAST_CHECK_TIME_KEY = 'moontv_last_update_check';
+const LEGACY_ORIGINAL_EPISODES_CACHE_KEY = 'moontv_original_episodes';
 const CACHE_DURATION = 30 * 60 * 1000; // 30分钟缓存
 
 // 防重复修复标记
@@ -116,7 +119,11 @@ export async function checkWatchingUpdates(
         const lastCheckTime =
           STORAGE_TYPE !== 'localstorage'
             ? memoryLastCheckTime
-            : parseInt(localStorage.getItem(LAST_CHECK_TIME_KEY) || '0');
+            : parseInt(
+                localStorage.getItem(LAST_CHECK_TIME_KEY) ||
+                  localStorage.getItem(LEGACY_LAST_CHECK_TIME_KEY) ||
+                  '0',
+              );
 
         if (currentTime - lastCheckTime < CACHE_DURATION) {
           const cached = getCachedWatchingUpdates();

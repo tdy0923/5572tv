@@ -13,7 +13,7 @@
   <img src="public/logo.svg" alt="5572TV Logo" width="220">
 </div>
 
-> 🎬 **5572TV** is a production-oriented streaming platform derived from MoonTV and continuously refined for real-world use. The live demo and running site is `www.5572.net`, with extensive enhancements including **YouTube Integration**, **Cloud Drive Search**, **AI Recommendations**, **Short Drama**, **IPTV Live TV**, **Bangumi Anime**, **Watch Statistics**, **Danmaku System**, and 60+ major feature additions.
+> 🎬 **5572TV** is an independently maintained streaming platform built for real production use. The live site is `www.5572.net`, with a strong focus on Cloudflare-assisted acceleration, low-resource server compatibility, cache governance, operational stability, and a polished watching experience, alongside features such as **YouTube Integration**, **Cloud Drive Search**, **AI Recommendations**, **Short Drama**, **IPTV Live TV**, **Bangumi Anime**, **Watch Statistics**, and **Danmaku**.
 
 <div align="center">
 
@@ -33,12 +33,12 @@
 
 ## 📢 About
 
-This project originates from **MoonTV** and is now continuously maintained as a secondary-development branch for real production use. Starting from **v4.3.1**, it has evolved to the current **v6.3.1** with 60+ major feature modules and 400+ detail optimizations. The current repository focuses on the live operation of `www.5572.net`, especially Cloudflare integration, low-resource server tuning, cache governance, and deployment stability. See [CHANGELOG](CHANGELOG) for all new features.
+This repository is maintained for the live operation of `www.5572.net` and its ongoing iteration. The current focus is Cloudflare-assisted delivery, low-resource server deployment, caching strategy, interface stability, playback experience, and deployment reliability. See [CHANGELOG](CHANGELOG) for all new features.
 
 ### Repository Positioning
 
-- Active maintained repository: `tdy0923/LunaTV`
-- Repository role: the main production-oriented secondary-development branch, not just a passive upstream mirror
+- Active maintained repository: `tdy0923/5572tv`
+- Repository role: the independent production branch of the project
 - Maintenance focus: low-resource server deployment, Cloudflare integration, interface stability, caching, and performance governance
 
 ## ⚠️ Disclaimer
@@ -97,8 +97,8 @@ This project is for educational purposes only. Do not use for commercial purpose
 
 ```bash
 # Clone the project
-git clone https://github.com/tdy0923/LunaTV.git
-cd LunaTV
+git clone https://github.com/tdy0923/5572tv.git
+cd 5572tv
 
 # Copy environment variables
 cp .env.example .env
@@ -190,13 +190,13 @@ This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/lic
 
 © 2025-2026 5572TV & Contributors
 
-This project is forked from [MoonTV](https://github.com/MoonTechLab/LunaTV). The actively maintained secondary-development repository is `tdy0923/LunaTV`.
+This project is now maintained as an independent repository.
 
 ## 🙏 Acknowledgments
 
-### Origin & Thanks
+### Acknowledgments
 
-- [MoonTV](https://github.com/MoonTechLab/LunaTV) — the upstream fork source and architectural starting point; thanks to the original author and contributors
+- [MoonTV](https://github.com/MoonTechLab/LunaTV) — one of the early architectural and product inspirations; thanks to the original author and contributors
 - [Selene](https://github.com/MoonTechLab/Selene) — reference for the official mobile app ecosystem and interaction ideas
 - [LibreTV](https://github.com/LibreSpark/LibreTV) — inspiration for some product ideas and user experience directions
 
@@ -235,7 +235,7 @@ Thanks to these projects and authors for the open-source inspiration and practic
 
 ## 📊 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=tdy0923/LunaTV&type=Date)](https://www.star-history.com/#tdy0923/LunaTV&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=tdy0923/5572tv&type=Date)](https://www.star-history.com/#tdy0923/5572tv&Date)
 
 ---
 

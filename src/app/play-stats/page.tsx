@@ -254,6 +254,8 @@ const PlayStatsPage: React.FC = () => {
 
     // 清理其他可能过期的缓存项
     const keysToCheck = [
+      '5572tv_watching_updates',
+      '5572tv_last_update_check',
       'moontv_watching_updates',
       'moontv_last_update_check',
       'release_calendar_all_data',
@@ -261,11 +263,15 @@ const PlayStatsPage: React.FC = () => {
     ];
 
     // 检查追番更新缓存（这个有不同的过期时间）
-    const watchingUpdateTime = localStorage.getItem('moontv_last_update_check');
+    const watchingUpdateTime =
+      localStorage.getItem('5572tv_last_update_check') ||
+      localStorage.getItem('moontv_last_update_check');
     if (watchingUpdateTime) {
       const WATCHING_CACHE_DURATION = 30 * 60 * 1000; // 30分钟
       const age = now - parseInt(watchingUpdateTime);
       if (age >= WATCHING_CACHE_DURATION) {
+        localStorage.removeItem('5572tv_watching_updates');
+        localStorage.removeItem('5572tv_last_update_check');
         localStorage.removeItem('moontv_watching_updates');
         localStorage.removeItem('moontv_last_update_check');
         console.log('已清理过期的追番更新缓存');

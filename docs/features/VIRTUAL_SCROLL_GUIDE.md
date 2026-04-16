@@ -2,7 +2,7 @@
 
 ## 🚀 功能概述
 
-LunaTV 现在支持虚拟滑动技术，大幅提升页面性能表现：
+5572影视 现在支持虚拟滑动技术，大幅提升页面性能表现：
 
 - **虚拟化渲染**：只渲染可视区域内的内容，显著减少 DOM 节点
 - **无感无限滚动**：智能预加载，滚动时完全无感
@@ -96,7 +96,10 @@ const detectColumns = () => {
 ```typescript
 const viewportHeight = window.innerHeight;
 const visibleRows = Math.ceil(viewportHeight / estimateRowHeight);
-const dynamicThreshold = Math.max(visibleRows + endReachedThreshold, endReachedThreshold);
+const dynamicThreshold = Math.max(
+  visibleRows + endReachedThreshold,
+  endReachedThreshold,
+);
 ```
 
 #### 3. endReached 回调
@@ -224,7 +227,7 @@ interface CardProps {
 
 ```typescript
 const [imageLoaded, setImageLoaded] = useState(() =>
-  loadedImageUrls.has(imageUrl)
+  loadedImageUrls.has(imageUrl),
 );
 ```
 
@@ -313,11 +316,13 @@ console.log('动态阈值:', visibleRows + 3);
 如果你的项目之前使用 `react-virtuoso`，迁移步骤：
 
 1. 移除旧依赖：
+
 ```bash
 pnpm remove react-virtuoso
 ```
 
 2. 安装新依赖：
+
 ```bash
 pnpm add @tanstack/react-virtual
 ```

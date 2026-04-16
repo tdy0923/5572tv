@@ -277,7 +277,7 @@ const WatchRoomConfig = ({ config, refreshConfig }: WatchRoomConfigProps) => {
             <ul className='space-y-1 list-disc list-inside'>
               <li>
                 <strong>
-                  如果多个 LunaTV
+                  如果多个 5572影视
                   站点使用同一个观影室服务器，所有站点将共享房间列表
                 </strong>
               </li>

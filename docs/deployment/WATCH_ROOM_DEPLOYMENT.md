@@ -5,27 +5,32 @@
 ## 功能特性
 
 ✅ **多人同步观影**
+
 - 播放/暂停/跳转实时同步
 - 房主控制播放进度，成员自动跟随
 - 切换视频/剧集时自动提示成员
 
 ✅ **实时聊天系统**
+
 - 文字消息即时发送
 - 表情符号支持
 - 未读消息提示
 
 ✅ **WebRTC 语音通话**
+
 - P2P 点对点语音连接
 - 回声消除和噪音抑制
 - 独立的麦克风/扬声器控制
 
 ✅ **房间管理**
+
 - 公开/私密房间
 - 密码保护
 - 房主/成员权限管理
 - 房间列表实时更新
 
 ✅ **连接状态监控**
+
 - 实时连接状态显示
 - 服务器统计信息
 - 心跳检测机制
@@ -39,23 +44,26 @@
 ### 🎯 智能播放同步
 
 **同剧集切换优化**
+
 - 房主切换同一部剧的不同集数时，成员无需刷新页面即可自动跟随
 - 使用 `setCurrentEpisodeIndex` 直接切换集数，保持 WebSocket 连接
 - 自动跳转到房主的播放时间点（1秒延迟确保集数加载完成）
 - 保持房间状态，避免重复加入房间
 
 **跨剧集智能跳转**
+
 - 房主切换到不同影片时，使用客户端路由（`router.push`）
 - 避免 `window.location.href` 导致的页面刷新和 WebSocket 断连
 - 自动携带播放时间、集数等参数，实现无缝切换
 - 成员收到弹窗提示，可选择"跟随房主"或"自由观看"
 
 **技术实现**
+
 ```typescript
 // 同一部剧：直接切换集数
 if (isSameShow) {
   setCurrentEpisodeIndex(state.episode);
-  setTimeout(() => artPlayer.currentTime = state.currentTime, 1000);
+  setTimeout(() => (artPlayer.currentTime = state.currentTime), 1000);
 }
 // 不同剧：客户端路由跳转
 else {
@@ -66,6 +74,7 @@ else {
 ### 📺 正在观看显示
 
 **房间信息面板增强**
+
 - 创建/加入房间后可查看当前正在观看的影片
 - 使用迷你视频卡片展示：
   - 海报缩略图（64x96px）
@@ -77,12 +86,14 @@ else {
 - 自动携带房主的当前播放时间，实现时间同步
 
 **房间列表增强**
+
 - 房间列表中展示各房间正在观看的内容
 - 完整的图片处理和占位符支持
 - 图片加载失败时显示默认占位符（SVG）
 - 点击视频卡片跳转到播放页面（不携带时间参数，因为用户尚未加入房间）
 
 **MiniVideoCard 组件**
+
 - 专门为观影室设计的紧凑型视频卡片
 - 响应式设计，支持深色模式
 - 悬停效果提升用户体验
@@ -92,12 +103,14 @@ else {
 ### 🎬 集数显示优化
 
 **智能判断逻辑**
+
 - 根据 `totalEpisodes` 字段自动判断是否显示集数信息
 - **电影**（totalEpisodes = 1）：不显示"第1集"
 - **电视剧**（totalEpisodes > 1）：显示"第X集"
 - 避免电影显示不必要的集数信息，提升用户体验
 
 **实现细节**
+
 - 在整个状态链中传递 `totalEpisodes` 字段：
   - `PlayState` 接口
   - `OwnerPlayState` 接口
@@ -106,6 +119,7 @@ else {
 - 从影片详情中自动提取：`detail?.episodes?.length`
 
 **显示逻辑**
+
 ```typescript
 {totalEpisodes && totalEpisodes > 1 && episode !== undefined && (
   <span>第 {episode + 1} 集</span>
@@ -115,17 +129,20 @@ else {
 ### 👤 用户名识别改进
 
 **问题背景**
+
 - Cookie 在浏览器中异步加载，首次加载时可能未准备好
 - 导致用户加入房间时显示为"游客"而非真实用户名
 - 用户需要手动刷新页面才能显示正确用户名
 
 **解决方案：持续轮询检测**
+
 - 使用 `setInterval` 持续检查 Cookie 是否加载完成
 - 最多检查 20 次，每次间隔 500ms（总计 10 秒）
 - 成功获取用户名后立即停止检查
 - 达到最大次数后停止，避免无限循环
 
 **实现代码**
+
 ```typescript
 const checkUsername = () => {
   const authInfo = getAuthInfoFromBrowserCookie();
@@ -144,6 +161,7 @@ const checkUsername = () => {
 ```
 
 **用户体验提升**
+
 - 首次加载即可正确显示用户名（无需刷新）
 - 成员列表中显示真实用户名
 - 聊天消息显示正确的发送者名称
@@ -151,26 +169,35 @@ const checkUsername = () => {
 ### 🔄 房主本地状态同步
 
 **问题背景**
+
 - WebSocket 服务器不会将事件回传给发送者（sender）
 - 房主发送播放状态更新后，自己的房间信息面板不会更新
 - 导致房主看不到自己正在播放的视频，但成员可以看到
 
 **解决方案**
+
 - 房主发送 Socket.IO 事件时，同时更新本地状态
 - 在 `updatePlayState`、`changeVideo`、`clearState` 等方法中添加本地更新
 
 **实现代码**
+
 ```typescript
-const updatePlayState = useCallback((state: PlayState) => {
-  if (socket && connected) {
-    socket.emit('play:update', state);
-    // ✅ 本地更新，因为服务器不会回传给发送者
-    setCurrentRoom((prev) => prev ? { ...prev, currentState: state } : null);
-  }
-}, [socket, connected]);
+const updatePlayState = useCallback(
+  (state: PlayState) => {
+    if (socket && connected) {
+      socket.emit('play:update', state);
+      // ✅ 本地更新，因为服务器不会回传给发送者
+      setCurrentRoom((prev) =>
+        prev ? { ...prev, currentState: state } : null,
+      );
+    }
+  },
+  [socket, connected],
+);
 ```
 
 **保持一致性**
+
 - 房主和成员看到相同的房间状态
 - 房间信息面板实时显示正在播放的内容
 - 所有用户都能通过房间信息快速跳转到当前影片
@@ -178,22 +205,26 @@ const updatePlayState = useCallback((state: PlayState) => {
 ### 🐛 关键 Bug 修复
 
 **状态更新缺失（Critical）**
+
 - **问题**：`useWatchRoom.ts` 中的事件监听器只记录日志，从未更新状态
 - **影响**：房间信息面板、房间列表等所有依赖 `currentRoom.currentState` 的功能全部失效
 - **修复**：在所有事件监听器中添加 `setCurrentRoom` 调用
+
 ```typescript
 socket.on('play:update', (state: PlayState) => {
   console.log('[WatchRoom] Play state updated:', state);
-  setCurrentRoom((prev) => prev ? { ...prev, currentState: state } : null);
+  setCurrentRoom((prev) => (prev ? { ...prev, currentState: state } : null));
 });
 ```
 
 **房间列表时间同步逻辑错误**
+
 - **问题**：用户未加入房间时，点击房间列表的视频卡片也会携带时间参数同步播放进度
 - **影响**：逻辑不合理，用户应该从头开始观看，而非跳转到房主的时间点
 - **修复**：房间列表导航时不携带 `t`（时间）和 `prefer` 参数，仅房间信息面板内的跳转才携带
 
 **类型字段名称错误**
+
 - **问题**：使用了旧的字段名 `vod_name`、`vod_year` 而非 `SearchResult` 接口的 `title`、`year`
 - **影响**：TypeScript 编译失败
 - **修复**：统一使用正确的字段名称
@@ -201,9 +232,11 @@ socket.on('play:update', (state: PlayState) => {
 ### 📝 代码改进
 
 **新增文件**
+
 - `src/components/watch-room/MiniVideoCard.tsx` - 迷你视频卡片组件
 
 **修改文件**
+
 - `src/types/watch-room.types.ts` - 添加 `totalEpisodes` 字段
 - `src/hooks/useWatchRoom.ts` - 修复事件监听器状态更新，添加房主本地更新
 - `src/app/play/hooks/useWatchRoomSync.ts` - 实现智能导航逻辑，添加 `totalEpisodes` 传递
@@ -213,6 +246,7 @@ socket.on('play:update', (state: PlayState) => {
 - `src/app/play/page.tsx` - 修复字段名称，添加 `setCurrentEpisodeIndex` 参数
 
 **关键技术决策**
+
 - 使用 `router.push` 而非 `window.location.href` 保持 WebSocket 连接
 - 使用 `setInterval` 而非 `setTimeout` 实现持续检测
 - 在发送端添加本地状态更新以解决服务器不回传问题
@@ -224,7 +258,7 @@ socket.on('play:update', (state: PlayState) => {
 
 观影室功能由两部分组成：
 
-1. **LunaTV 前端**：已集成到本项目中，无需额外部署
+1. **5572影视 前端**：已集成到本项目中，无需额外部署
 2. **观影室服务器**：需要单独部署的 Socket.IO 服务器
 
 **为什么要分离？**
@@ -254,6 +288,7 @@ Fly.io 提供免费额度，适合小规模使用。
 
 1. 注册 [Fly.io 账号](https://fly.io/app/sign-up)
 2. 安装 Fly CLI：
+
    ```bash
    # macOS/Linux
    curl -L https://fly.io/install.sh | sh
@@ -270,12 +305,14 @@ Fly.io 提供免费额度，适合小规模使用。
 #### 部署步骤
 
 1. 克隆观影室服务器代码：
+
    ```bash
    git clone https://github.com/tgs9915/watch-room-server.git
    cd watch-room-server
    ```
 
 2. 创建 `fly.toml` 配置文件：
+
    ```toml
    app = "your-watch-room-server"  # 修改为你的应用名称（全局唯一）
 
@@ -300,12 +337,14 @@ Fly.io 提供免费额度，适合小规模使用。
    ```
 
 3. 部署到 Fly.io：
+
    ```bash
    flyctl launch --no-deploy  # 创建应用
    flyctl deploy              # 部署应用
    ```
 
 4. 获取应用 URL：
+
    ```bash
    flyctl info
    ```
@@ -384,7 +423,7 @@ services:
     container_name: watch-room-server
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - AUTH_KEY=your-secure-random-key-here
       - PORT=8080
@@ -402,23 +441,27 @@ docker-compose logs -f
 如果需要自定义修改：
 
 1. 克隆服务器代码：
+
    ```bash
    git clone https://github.com/tgs9915/watch-room-server.git
    cd watch-room-server
    ```
 
 2. 创建 `.env` 文件：
+
    ```env
    AUTH_KEY=your-secure-random-key-here
    PORT=8080
    ```
 
 3. 使用 Docker Compose 部署：
+
    ```bash
    docker-compose up -d
    ```
 
 4. 查看运行状态：
+
    ```bash
    docker-compose ps
    docker-compose logs -f
@@ -427,6 +470,7 @@ docker-compose logs -f
 5. 配置反向代理（可选，推荐）：
 
    **Nginx 配置示例：**
+
    ```nginx
    server {
        listen 443 ssl http2;
@@ -457,11 +501,13 @@ docker-compose logs -f
 #### 部署步骤
 
 1. 确保服务器已安装 Node.js 18+：
+
    ```bash
    node --version
    ```
 
 2. 克隆代码并安装依赖：
+
    ```bash
    git clone https://github.com/tgs9915/watch-room-server.git
    cd watch-room-server
@@ -469,18 +515,21 @@ docker-compose logs -f
    ```
 
 3. 创建 `.env` 文件：
+
    ```env
    AUTH_KEY=your-secure-random-key-here
    PORT=8080
    ```
 
 4. 构建并运行：
+
    ```bash
    npm run build
    npm start
    ```
 
 5. 使用 PM2 守护进程（推荐）：
+
    ```bash
    # 安装 PM2
    npm install -g pm2
@@ -501,11 +550,11 @@ docker-compose logs -f
 
 ---
 
-## LunaTV 配置
+## 5572影视 配置
 
-部署完观影室服务器后，需要在 LunaTV 管理后台配置：
+部署完观影室服务器后，需要在 5572影视 管理后台配置：
 
-1. 登录 LunaTV 管理后台（需要 owner 或 admin 权限）
+1. 登录 5572影视 管理后台（需要 owner 或 admin 权限）
 2. 进入"观影室配置"标签页
 3. 填写配置信息：
    - **启用观影室功能**：勾选此选项
@@ -518,14 +567,14 @@ docker-compose logs -f
 ### 配置说明
 
 - **服务器地址**：必须是完整的 URL，包含协议（http:// 或 https://）
-- **认证密钥**：用于验证 LunaTV 客户端身份，防止未授权访问
+- **认证密钥**：用于验证 5572影视 客户端身份，防止未授权访问
   - 必须与服务器的 `AUTH_KEY` 环境变量一致
   - 建议使用 32 位以上的随机字符串
   - 可使用在线工具生成：[Random.org](https://www.random.org/strings/)
 
 ### ⚠️ 多站点共享警告
 
-**重要提示**：如果多个 LunaTV 站点使用同一个观影室服务器：
+**重要提示**：如果多个 5572影视 站点使用同一个观影室服务器：
 
 - ✅ 所有站点将共享同一个房间池
 - ✅ 站点A创建的房间，站点B的用户也能看到和加入
@@ -541,7 +590,7 @@ docker-compose logs -f
 
 ### 1. 房间管理测试
 
-1. 在 LunaTV 导航栏找到"观影室"入口
+1. 在 5572影视 导航栏找到"观影室"入口
 2. 查看连接状态指示器（应显示"已连接"）
 3. 创建一个测试房间：
    - 填写房间名称
@@ -593,8 +642,8 @@ docker-compose logs -f
 **检查清单：**
 
 - 服务器是否正常运行？（访问 `https://your-server-url/health` 应返回 `{"status":"ok"}`）
-- LunaTV 配置的服务器地址是否正确？
-- LunaTV 配置的 AUTH_KEY 是否与服务器一致？
+- 5572影视 配置的服务器地址是否正确？
+- 5572影视 配置的 AUTH_KEY 是否与服务器一致？
 - 服务器防火墙是否开放了相应端口？
 - 浏览器控制台是否有 CORS 错误？
 
@@ -627,6 +676,7 @@ python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ### 4. Fly.io 免费额度够用吗？
 
 Fly.io 免费额度包括：
+
 - 3 个共享 CPU VM（256MB RAM）
 - 3GB 持久化存储
 - 160GB 出站流量/月
@@ -660,7 +710,7 @@ Fly.io 免费额度包括：
 **是的**，房间数据存储在服务器内存中：
 
 - 服务器重启 = 所有房间清空
-- Vercel 重新部署 LunaTV = 不影响服务器（数据保留）
+- Vercel 重新部署 5572影视 = 不影响服务器（数据保留）
 - 观影室服务器重新部署 = 所有房间清空
 
 这是设计行为，观影室是临时会话功能。
@@ -668,6 +718,7 @@ Fly.io 免费额度包括：
 ### 8. 如何更新服务器？
 
 **Fly.io：**
+
 ```bash
 cd watch-room-server
 git pull
@@ -675,9 +726,11 @@ flyctl deploy
 ```
 
 **Railway：**
+
 - 推送代码到 GitHub，Railway 会自动重新部署
 
 **Docker：**
+
 ```bash
 cd watch-room-server
 git pull
@@ -687,6 +740,7 @@ docker-compose up -d
 ```
 
 **VPS (PM2)：**
+
 ```bash
 cd watch-room-server
 git pull
@@ -715,7 +769,7 @@ pm2 restart watch-room-server
 3. **定期更新**：关注 watch-room-server 仓库的更新
 4. **监控资源**：定期检查服务器资源使用情况
 5. **备份配置**：妥善保存 AUTH_KEY 等配置信息
-6. **独立部署**：每个 LunaTV 站点使用独立的服务器（避免房间混淆）
+6. **独立部署**：每个 5572影视 站点使用独立的服务器（避免房间混淆）
 
 ---
 
@@ -743,10 +797,12 @@ pm2 restart watch-room-server
 ```
 
 **防止循环广播：**
+
 - `isHandlingRemoteCommandRef` 标志位
 - 远程命令触发的事件不再广播
 
 **定期同步：**
+
 - 每5秒广播一次播放状态
 - 确保长时间播放不会失去同步
 
@@ -754,7 +810,7 @@ pm2 restart watch-room-server
 
 ## 卸载说明
 
-### 移除 LunaTV 观影室功能
+### 移除 5572影视 观影室功能
 
 在管理后台取消勾选"启用观影室功能"即可。用户菜单中的观影室入口会自动隐藏。
 
@@ -769,7 +825,7 @@ pm2 restart watch-room-server
 
 ## 致谢与引用
 
-LunaTV 的观影室功能基于以下开源项目开发：
+5572影视 的观影室功能基于以下开源项目开发：
 
 ### 核心依赖
 
@@ -798,7 +854,7 @@ LunaTV 的观影室功能基于以下开源项目开发：
 
 ## 许可证
 
-- LunaTV 观影室前端代码遵循 LunaTV 项目许可证
+- 5572影视 观影室前端代码遵循当前项目许可证
 - 观影室服务器遵循 [watch-room-server](https://github.com/tgs9915/watch-room-server) 的 MIT 许可证
 
 ---
@@ -806,7 +862,7 @@ LunaTV 的观影室功能基于以下开源项目开发：
 ## 技术支持
 
 - **观影室服务器问题**：在 [watch-room-server](https://github.com/tgs9915/watch-room-server/issues) 提交 Issue
-- **LunaTV 集成问题**：在 LunaTV 项目仓库提交 Issue
+- **5572影视 集成问题**：在 5572tv 项目仓库提交 Issue
 - **功能建议**：欢迎提交 Feature Request
 
 ---

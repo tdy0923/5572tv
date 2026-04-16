@@ -86,7 +86,9 @@ export const UserMenu: React.FC = () => {
       // 从localStorage加载已忽略的新上映列表
       if (typeof window !== 'undefined') {
         try {
-          const saved = localStorage.getItem('moontv_dismissed_releases');
+          const saved =
+            localStorage.getItem('5572tv_dismissed_releases') ||
+            localStorage.getItem('moontv_dismissed_releases');
           return saved ? new Set(JSON.parse(saved)) : new Set();
         } catch {
           return new Set();
@@ -312,7 +314,10 @@ export const UserMenu: React.FC = () => {
     if (willOpen && authInfo?.username && storageType !== 'localstorage') {
       try {
         // 暂时清除缓存时间，强制检查一次
-        const lastCheckTime = localStorage.getItem('moontv_last_update_check');
+        const lastCheckTime =
+          localStorage.getItem('5572tv_last_update_check') ||
+          localStorage.getItem('moontv_last_update_check');
+        localStorage.removeItem('5572tv_last_update_check');
         localStorage.removeItem('moontv_last_update_check');
 
         // 执行检查
@@ -320,7 +325,7 @@ export const UserMenu: React.FC = () => {
 
         // 恢复缓存时间（如果之前有的话）
         if (lastCheckTime) {
-          localStorage.setItem('moontv_last_update_check', lastCheckTime);
+          localStorage.setItem('5572tv_last_update_check', lastCheckTime);
         }
 
         // 更新UI状态
@@ -439,7 +444,7 @@ export const UserMenu: React.FC = () => {
     // 保存到localStorage
     try {
       localStorage.setItem(
-        'moontv_dismissed_releases',
+        '5572tv_dismissed_releases',
         JSON.stringify([...newDismissed]),
       );
     } catch (error) {

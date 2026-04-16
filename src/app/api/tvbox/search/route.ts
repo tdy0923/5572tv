@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
           vod_content: r.desc || '',
           type_name: r.type_name || '',
           // 保留原始数据以便详情页使用
-          vod_play_from: r.episodes ? 'LunaTV' : '',
+          vod_play_from: r.episodes ? '5572TV' : '',
           vod_play_url: r.episodes ? r.episodes.join('#') : '',
         };
       }),

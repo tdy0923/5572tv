@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   if (!path) {
     return NextResponse.json(
       { error: 'Missing path parameter' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(apiUrl, {
       headers: {
-        'User-Agent': 'LunaTV/1.0 (https://github.com/yourusername/LunaTV)',
-        'Accept': 'application/json',
+        'User-Agent': '5572TV/1.0 (https://github.com/tdy0923/5572tv)',
+        Accept: 'application/json',
       },
       next: {
         // 缓存5分钟
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       return NextResponse.json(
         { error: `Bangumi API returned ${response.status}` },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     console.error('Bangumi API proxy error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch from Bangumi API' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

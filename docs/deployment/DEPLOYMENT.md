@@ -228,7 +228,7 @@ docker-compose logs -f
 
    ```yaml
    ---
-   title: LunaTV
+   title: 5572影视
    emoji: 🎬
    colorFrom: green
    colorTo: blue
@@ -248,7 +248,7 @@ docker-compose logs -f
    FROM ghcr.io/szemeng76/lunatv:latest
    ```
 
-   > 💡 这会直接使用 LunaTV 官方 Docker 镜像，无需构建
+   > 💡 这会直接使用当前仓库对应的 Docker 镜像，无需本地构建
 
 5. **配置环境变量（Secrets）**
 
@@ -318,7 +318,7 @@ your-space/
    - 登录 EdgeOne 控制台
    - 进入 "Pages" > "创建项目"
    - 选择 "连接 Git 仓库"
-   - 授权并选择你 Fork 的 LunaTV 仓库
+   - 授权并选择你的 5572tv 仓库
 
 3. **配置构建设置**
    - **框架预设**：选择 `Next.js`
@@ -391,7 +391,7 @@ your-space/
 
 [Vercel](https://vercel.com/) 是 Next.js 官方推荐的部署平台，无服务器架构，自动扩容，适合全球用户访问。
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tdy0923/LunaTV)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/tdy0923/5572tv)
 
 #### 部署步骤
 
@@ -403,7 +403,7 @@ your-space/
 2. **导入项目**
    - 登录 Vercel 控制台
    - 点击 "Add New..." > "Project"
-   - 选择你 Fork 的 LunaTV 仓库并导入
+   - 选择你的 5572tv 仓库并导入
 
 3. **配置构建设置**
    - **Framework Preset**：`Next.js`（自动检测）
@@ -465,7 +465,7 @@ your-space/
 
 [Render](https://render.com/) 提供免费的 Web Service 托管，支持 Docker 部署，适合个人项目。
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tdy0923/LunaTV)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tdy0923/5572tv)
 
 #### 方式一：Docker 部署（推荐）
 
@@ -477,7 +477,7 @@ your-space/
 2. **创建 Web Service**
    - 登录 Render Dashboard
    - 点击 "New +" > "Web Service"
-   - 连接你的 GitHub 账号，选择 Fork 的 LunaTV 仓库
+   - 连接你的 GitHub 账号，选择 5572tv 仓库
 
 3. **配置服务**
    - **Name**：`lunatv`（自定义）

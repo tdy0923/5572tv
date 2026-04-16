@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
-import { getTelegramToken, deleteTelegramToken } from '@/lib/telegram-tokens';
 import { db } from '@/lib/db';
+import { getTelegramToken } from '@/lib/telegram-tokens';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         await sendTelegramMessage(
           telegramConfig.botToken,
           chatId,
-          '❌ 登录链接已过期或无效，请返回网站重新操作。'
+          '❌ 登录链接已过期或无效，请返回网站重新操作。',
         );
         return NextResponse.json({ ok: true });
       }
@@ -52,13 +52,9 @@ export async function POST(request: Request) {
       const loginUrl = `${tokenData.baseUrl}/api/telegram/verify?token=${token}`;
 
       // 发送登录链接
-      const message = `🔐 *登录到 ${config?.SiteConfig?.SiteName || 'LunaTV'}*\n\n点击下方链接完成登录：\n\n${loginUrl}\n\n⏰ 此链接将在 5 分钟后过期`;
+      const message = `🔐 *登录到 ${config?.SiteConfig?.SiteName || '5572影视'}*\n\n点击下方链接完成登录：\n\n${loginUrl}\n\n⏰ 此链接将在 5 分钟后过期`;
 
-      await sendTelegramMessage(
-        telegramConfig.botToken,
-        chatId,
-        message
-      );
+      await sendTelegramMessage(telegramConfig.botToken, chatId, message);
 
       console.log('[Webhook] Login link sent successfully');
       return NextResponse.json({ ok: true });
@@ -73,37 +69,43 @@ export async function POST(request: Request) {
 }
 
 // 自动设置 webhook 到当前域名
-async function autoSetWebhook(request: Request, botToken: string): Promise<void> {
+async function autoSetWebhook(
+  request: Request,
+  botToken: string,
+): Promise<void> {
   try {
     // 获取当前访问的域名
     const host = request.headers.get('host');
     if (!host) return;
 
-    const protocol = request.headers.get('x-forwarded-proto') ||
-                     (host.includes('localhost') ? 'http' : 'https');
+    const protocol =
+      request.headers.get('x-forwarded-proto') ||
+      (host.includes('localhost') ? 'http' : 'https');
     const currentWebhookUrl = `${protocol}://${host}/api/telegram/webhook`;
 
     // 检查当前 Telegram webhook 配置
     const infoResponse = await fetch(
-      `https://api.telegram.org/bot${botToken}/getWebhookInfo`
+      `https://api.telegram.org/bot${botToken}/getWebhookInfo`,
     );
     const info = await infoResponse.json();
 
     // 如果 webhook URL 不匹配，自动更新
     if (info.ok && info.result.url !== currentWebhookUrl) {
-      console.log('[Webhook] Auto-updating webhook from', info.result.url, 'to', currentWebhookUrl);
-
-      await fetch(
-        `https://api.telegram.org/bot${botToken}/setWebhook`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: currentWebhookUrl,
-            allowed_updates: ['message'],
-          }),
-        }
+      console.log(
+        '[Webhook] Auto-updating webhook from',
+        info.result.url,
+        'to',
+        currentWebhookUrl,
       );
+
+      await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: currentWebhookUrl,
+          allowed_updates: ['message'],
+        }),
+      });
 
       console.log('[Webhook] Webhook auto-updated successfully');
     }
@@ -117,7 +119,7 @@ async function autoSetWebhook(request: Request, botToken: string): Promise<void>
 async function sendTelegramMessage(
   botToken: string,
   chatId: number,
-  text: string
+  text: string,
 ): Promise<void> {
   try {
     const response = await fetch(
@@ -130,7 +132,7 @@ async function sendTelegramMessage(
           text: text,
           parse_mode: 'Markdown',
         }),
-      }
+      },
     );
 
     if (!response.ok) {

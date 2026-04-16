@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -40,7 +38,10 @@ export async function OPTIONS() {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
-  const source = searchParams.get('moontv-source') || searchParams.get('decotv-source');
+  const source =
+    searchParams.get('5572tv-source') ||
+    searchParams.get('moontv-source') ||
+    searchParams.get('decotv-source');
 
   if (!url) {
     return NextResponse.json({ error: 'Missing url' }, { status: 400 });

@@ -71,7 +71,8 @@ import {
 import { useWatchRoomSync } from './hooks/useWatchRoomSync';
 
 // 播放速率持久化
-const PLAYER_PLAYBACK_RATE_KEY = 'moontv_player_playback_rate';
+const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
+const LEGACY_PLAYER_PLAYBACK_RATE_KEY = 'moontv_player_playback_rate';
 const PREFERRED_AUDIO_LANG_KEY = 'preferred_audio_lang';
 
 function sanitizePlaybackRate(value: unknown): number {
@@ -83,7 +84,9 @@ function sanitizePlaybackRate(value: unknown): number {
 function loadPlaybackRate(): number {
   if (typeof window === 'undefined') return 1.0;
   try {
-    const raw = localStorage.getItem(PLAYER_PLAYBACK_RATE_KEY);
+    const raw =
+      localStorage.getItem(PLAYER_PLAYBACK_RATE_KEY) ||
+      localStorage.getItem(LEGACY_PLAYER_PLAYBACK_RATE_KEY);
     if (!raw) return 1.0;
     return sanitizePlaybackRate(Number(raw));
   } catch {

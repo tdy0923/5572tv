@@ -1402,7 +1402,7 @@ function LivePageClient() {
           typeof performance !== 'undefined' ? performance.now() : 0;
         const precheckUrl = `/api/live/precheck?url=${encodeURIComponent(
           channel.url,
-        )}&moontv-source=${sourceKey}`;
+        )}&5572tv-source=${sourceKey}`;
         const response = await fetch(precheckUrl, { cache: 'no-store' });
         const elapsedMs =
           typeof performance !== 'undefined'
@@ -1780,7 +1780,7 @@ function LivePageClient() {
         try {
           const url = new URL(context.url);
           url.searchParams.set(
-            'moontv-source',
+            '5572tv-source',
             currentSourceRef.current?.key || '',
           );
           context.url = url.toString();
@@ -2278,7 +2278,7 @@ function LivePageClient() {
         const proxyEndpoint = isFlvUrl
           ? '/api/proxy/stream'
           : '/api/proxy/m3u8';
-        targetUrl = `${proxyEndpoint}?url=${encodeURIComponent(videoUrl)}&moontv-source=${currentSourceRef.current?.key || ''}`;
+        targetUrl = `${proxyEndpoint}?url=${encodeURIComponent(videoUrl)}&5572tv-source=${currentSourceRef.current?.key || ''}`;
         console.log(
           `🎬 播放模式: 🔄 代理 (${isFlvUrl ? 'FLV' : 'M3U8'}) | URL: ${targetUrl.substring(0, 100)}...`,
         );

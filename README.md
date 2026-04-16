@@ -13,7 +13,7 @@
   <img src="public/logo.svg" alt="5572影视 Logo" width="220">
 </div>
 
-> 🎬 **5572影视** 是基于 MoonTV 深度二次开发并持续生产维护的全功能影视聚合播放平台。当前演示与运行站点为 `www.5572.net`，在原版基础上新增了 **YouTube 集成**、**网盘搜索**、**AI 推荐**、**短剧功能**、**IPTV 直播**、**Bangumi 动漫**、**播放统计**、**弹幕系统**等 60+ 重大功能增强，打造极致的在线观影体验。
+> 🎬 **5572影视** 是一个独立持续维护的全功能影视聚合播放平台，当前运行站点为 `www.5572.net`。项目聚焦生产可用性、弱配置服务器适配、Cloudflare 协同优化、接口稳定性、缓存治理与实际观影体验，并集成 **YouTube**、**网盘搜索**、**AI 推荐**、**短剧功能**、**IPTV 直播**、**Bangumi 动漫**、**播放统计**、**弹幕系统** 等多项增强能力。
 
 <div align="center">
 
@@ -33,12 +33,12 @@
 
 ## 📢 项目说明
 
-本项目源自 **MoonTV**，并在其基础上持续进行二次开发与生产维护。从 **v4.3.1** 版本开始，逐步演进至当前 **v6.3.1**，累计新增 60+ 重大功能模块与 400+ 细节优化。当前仓库聚焦 `www.5572.net` 的线上运行场景，重点覆盖 Cloudflare 协同优化、弱配置服务器适配、缓存治理与部署稳定性。所有新增功能详见 [CHANGELOG](CHANGELOG)。
+本仓库服务于 `www.5572.net` 的实际线上运行与持续迭代，当前重点覆盖 Cloudflare 协同优化、弱配置服务器适配、缓存治理、接口稳定性、播放体验与部署稳定性。所有功能更新详见 [CHANGELOG](CHANGELOG)。
 
 ### 当前仓库定位
 
-- 当前维护仓库：`tdy0923/LunaTV`
-- 仓库定位：生产维护中的二次开发主线，而非仅同步上游的镜像仓库
+- 当前维护仓库：`tdy0923/5572tv`
+- 仓库定位：独立维护中的生产主线项目
 - 维护重点：小配置服务器部署、Cloudflare 协同优化、接口稳定性、缓存与性能治理
 
 ## ⚠️ 重要声明
@@ -97,8 +97,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/tdy0923/LunaTV.git
-cd LunaTV
+git clone https://github.com/tdy0923/5572tv.git
+cd 5572tv
 
 # 复制环境变量配置
 cp .env.example .env
@@ -190,13 +190,13 @@ pnpm dev
 
 © 2025-2026 5572影视 & Contributors
 
-项目 Fork 自 [MoonTV](https://github.com/MoonTechLab/LunaTV)，当前由 `tdy0923/LunaTV` 持续进行二次开发与维护。
+本项目当前以独立仓库形式持续维护与迭代。
 
 ## 🙏 致谢
 
-### 项目来源与感谢
+### 项目致谢
 
-- [MoonTV](https://github.com/MoonTechLab/LunaTV) — 当前项目的 Fork 来源与核心架构起点，感谢原作者与开源贡献者
+- [MoonTV](https://github.com/MoonTechLab/LunaTV) — 早期架构与功能灵感来源之一，感谢原作者与开源贡献者
 - [Selene](https://github.com/MoonTechLab/Selene) — 官方移动端生态与部分交互思路参考
 - [LibreTV](https://github.com/LibreSpark/LibreTV) — 一些产品方向与页面体验灵感来源
 
@@ -235,7 +235,7 @@ pnpm dev
 
 ## 📊 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=tdy0923/LunaTV&type=Date)](https://www.star-history.com/#tdy0923/LunaTV&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=tdy0923/5572tv&type=Date)](https://www.star-history.com/#tdy0923/5572tv&Date)
 
 ---
 

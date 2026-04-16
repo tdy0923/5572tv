@@ -35,14 +35,14 @@ jobs:
               echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
             fi
 
-            docker pull ghcr.io/${{ github.repository_owner }}/lunatv:latest
+            docker pull ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
-            docker stop moontv-core || true
-            docker rm moontv-core || true
+            docker stop 5572tv-core || true
+            docker rm 5572tv-core || true
 
             docker run -d \
-              --name moontv-core \
-              --network moontv-net \
+              --name 5572tv-core \
+              --network 5572tv-net \
               -p 3000:3000 \
               -e USERNAME='Danny' \
               -e PASSWORD='Danny0923' \
@@ -51,6 +51,6 @@ jobs:
               -e NEXT_PUBLIC_STORAGE_TYPE='kvrocks' \
               -e KVROCKS_URL='redis://kvrocks:6666' \
               --restart unless-stopped \
-              ghcr.io/${{ github.repository_owner }}/lunatv:latest
+              ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
             docker image prune -f

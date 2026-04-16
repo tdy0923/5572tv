@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMAGE="${IMAGE:-ghcr.io/tdy0923/lunatv:latest}"
-CONTAINER_NAME="${CONTAINER_NAME:-moontv-core}"
-NETWORK_NAME="${NETWORK_NAME:-moontv-net}"
+IMAGE="${IMAGE:-ghcr.io/tdy0923/5572tv:latest}"
+CONTAINER_NAME="${CONTAINER_NAME:-5572tv-core}"
+NETWORK_NAME="${NETWORK_NAME:-5572tv-net}"
 
 docker pull "$IMAGE"
 
