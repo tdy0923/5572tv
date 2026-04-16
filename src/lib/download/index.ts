@@ -1,31 +1,30 @@
 /**
  * 下载器类型兼容层
- * 将 MoonTV 的新类型映射到 LunaTV 原有的类型名称
+ * 将历史下载器类型映射到 5572影视 当前使用的类型名称
  */
 
 // 从新的下载器导出类型
 export type {
-  M3U8Task as M3U8TaskBase,
   DownloadProgress,
+  M3U8Task as M3U8TaskBase,
   StreamSaverMode,
 } from './m3u8-downloader';
-
 export {
-  parseM3U8,
-  downloadM3U8Video,
-  PauseResumeController,
   aesDecrypt,
   applyURL,
+  downloadM3U8Video,
+  parseM3U8,
+  PauseResumeController,
 } from './m3u8-downloader';
 
 // 从检测器导出
 export type { StreamModeSupport } from './stream-mode-detector';
 export {
-  getBestStreamMode,
   detectStreamModeSupport,
-  getStreamModeName,
-  getStreamModeIcon,
+  getBestStreamMode,
   getStreamModeDescription,
+  getStreamModeIcon,
+  getStreamModeName,
 } from './stream-mode-detector';
 
 // 从新的下载器导入基础类型

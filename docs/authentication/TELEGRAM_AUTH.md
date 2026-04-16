@@ -2,7 +2,7 @@
 
 ## 概述
 
-LunaTV 支持通过 Telegram Bot 实现无密码登录（Magic Link），用户只需输入 Telegram 用户名，即可通过 Bot 发送的链接完成登录。
+5572影视 支持通过 Telegram Bot 实现无密码登录（Magic Link），用户只需输入 Telegram 用户名，即可通过 Bot 发送的链接完成登录。
 
 ## 功能特性
 
@@ -58,8 +58,10 @@ KVROCKS_URL=redis://moontv-kvrocks:6666
 
 ```javascript
 fetch('/api/telegram/set-webhook', {
-  method: 'POST'
-}).then(r => r.json()).then(console.log)
+  method: 'POST',
+})
+  .then((r) => r.json())
+  .then(console.log);
 ```
 
 ## 工作原理
@@ -80,9 +82,9 @@ fetch('/api/telegram/set-webhook', {
 ```typescript
 // Token 数据结构
 interface TelegramTokenData {
-  telegramUsername: string;  // Telegram 用户名
-  expiresAt: number;         // 过期时间戳
-  baseUrl?: string;          // 创建 token 的域名
+  telegramUsername: string; // Telegram 用户名
+  expiresAt: number; // 过期时间戳
+  baseUrl?: string; // 创建 token 的域名
 }
 
 // 存储位置：Redis/Kvrocks
@@ -128,6 +130,7 @@ Telegram Bot 的 webhook 机制限制：**一个 Bot 只能绑定一个 webhook 
 生成并发送 Magic Link
 
 **请求体：**
+
 ```json
 {
   "telegramUsername": "username"
@@ -135,6 +138,7 @@ Telegram Bot 的 webhook 机制限制：**一个 Bot 只能绑定一个 webhook 
 ```
 
 **响应：**
+
 ```json
 {
   "success": true,
@@ -156,6 +160,7 @@ Telegram Bot 的 webhook 机制限制：**一个 Bot 只能绑定一个 webhook 
 验证并消费 token，完成登录
 
 **查询参数：**
+
 - `token`: 一次性登录 token
 
 ## 故障排查
@@ -165,11 +170,13 @@ Telegram Bot 的 webhook 机制限制：**一个 Bot 只能绑定一个 webhook 
 **症状：** 点击 Bot 发送的链接后显示"登录链接已过期或无效"
 
 **可能原因：**
+
 1. Webhook 指向了其他域名（多部署冲突）
 2. Token 未正确存储到 Redis/Kvrocks
 3. 服务器时间不同步
 
 **解决方法：**
+
 ```bash
 # 1. 检查当前 webhook 配置
 curl https://your-domain.com/api/telegram/set-webhook
@@ -191,6 +198,7 @@ TTL cache:telegram_token:{token_hash}
 **原因：** Webhook URL 返回了 401 状态码（通常是域名或路径错误）
 
 **解决方法：**
+
 1. 确认域名可公开访问（不在防火墙后）
 2. 检查 webhook 路径是否正确：`/api/telegram/webhook`
 3. 检查中间件是否拦截了 webhook 请求
@@ -200,11 +208,14 @@ TTL cache:telegram_token:{token_hash}
 **症状：** 点击 Bot 链接后没有收到登录 URL
 
 **解决方法：**
+
 ```javascript
 // 在浏览器访问你的域名，然后在 Console 执行
 fetch('/api/telegram/set-webhook', {
-  method: 'POST'
-}).then(r => r.json()).then(console.log)
+  method: 'POST',
+})
+  .then((r) => r.json())
+  .then(console.log);
 ```
 
 ## 安全考虑

@@ -150,6 +150,7 @@ export async function POST(request: NextRequest) {
     // 查找目标用户条目（用户组操作和批量操作不需要）
     let targetEntry: any = null;
     let isTargetAdmin = false;
+    let targetExistsInStorage = false;
 
     if (
       !['userGroup', 'batchUpdateUserGroups'].includes(action) &&
@@ -158,6 +159,14 @@ export async function POST(request: NextRequest) {
       targetEntry = adminConfig.UserConfig.Users.find(
         (u) => u.username === targetUsername,
       );
+
+      if (!targetEntry && targetUsername) {
+        const [existsV1, existsV2] = await Promise.all([
+          db.checkUserExist(targetUsername),
+          db.checkUserExistV2(targetUsername),
+        ]);
+        targetExistsInStorage = existsV1 || existsV2;
+      }
 
       if (
         targetEntry &&
@@ -323,7 +332,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'deleteUser': {
-        if (!targetEntry) {
+        if (!targetEntry && !targetExistsInStorage) {
           return NextResponse.json(
             { error: '目标用户不存在' },
             { status: 404 },
