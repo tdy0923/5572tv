@@ -3140,7 +3140,7 @@ function PlayPageClient() {
         }
 
         if (!detailResponse.ok) {
-          throw new Error('获取视频详情失败');
+          throw new Error(`获取视频详情失败 (${detailResponse.status})`);
         }
 
         const detailData = (await detailResponse.json()) as SearchResult;
@@ -3157,7 +3157,7 @@ function PlayPageClient() {
 
         return [detailData];
       } catch (err) {
-        console.error('获取视频详情失败:', err);
+        console.warn('获取视频详情失败:', err);
         return [];
       } finally {
         setSourceSearchLoading(false);
@@ -3463,10 +3463,10 @@ function PlayPageClient() {
             sourcesInfo = currentSourceDetail;
             console.log('[Play] 设置 detailData 和 sourcesInfo 成功');
           } else {
-            console.error('[Play] fetchSourceDetail 返回空数组');
+            console.warn('[Play] fetchSourceDetail 返回空数组');
           }
         } catch (err) {
-          console.error('获取当前源详情失败:', err);
+          console.warn('获取当前源详情失败:', err);
         }
 
         // 异步获取其他源信息，不阻塞播放

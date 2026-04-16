@@ -171,39 +171,46 @@ function getDoubanImageProxyConfig(): {
 export function processImageUrl(originalUrl: string): string {
   if (!originalUrl) return originalUrl;
 
+  const normalizedUrl = originalUrl.startsWith('http://')
+    ? `https://${originalUrl.slice('http://'.length)}`
+    : originalUrl;
+
   // 处理 manmankan 图片防盗链
-  if (originalUrl.includes('manmankan.com')) {
-    return `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
+  if (normalizedUrl.includes('manmankan.com')) {
+    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
   }
 
   // 仅处理豆瓣图片代理
-  if (!originalUrl.includes('doubanio.com')) {
-    return originalUrl;
+  if (!normalizedUrl.includes('doubanio.com')) {
+    return normalizedUrl;
   }
 
   const { proxyType, proxyUrl } = getDoubanImageProxyConfig();
   switch (proxyType) {
     case 'server':
-      return `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
     case 'img3':
-      return originalUrl.replace(/img\d+\.doubanio\.com/g, 'img3.doubanio.com');
+      return normalizedUrl.replace(
+        /img\d+\.doubanio\.com/g,
+        'img3.doubanio.com',
+      );
     case 'cmliussss-cdn-tencent':
-      return originalUrl.replace(
+      return normalizedUrl.replace(
         /img\d+\.doubanio\.com/g,
         'img.doubanio.cmliussss.net',
       );
     case 'cmliussss-cdn-ali':
-      return originalUrl.replace(
+      return normalizedUrl.replace(
         /img\d+\.doubanio\.com/g,
         'img.doubanio.cmliussss.com',
       );
     case 'baidu':
-      return `https://image.baidu.com/search/down?url=${encodeURIComponent(originalUrl)}`;
+      return `https://image.baidu.com/search/down?url=${encodeURIComponent(normalizedUrl)}`;
     case 'custom':
-      return `${proxyUrl}${encodeURIComponent(originalUrl)}`;
+      return `${proxyUrl}${encodeURIComponent(normalizedUrl)}`;
     case 'direct':
     default:
-      return originalUrl;
+      return normalizedUrl;
   }
 }
 
