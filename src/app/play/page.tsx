@@ -624,6 +624,7 @@ function PlayPageClient() {
   const [isAudioTrackSwitching, setIsAudioTrackSwitching] = useState(false);
   const audioTracksRef = useRef(audioTracks);
   const currentAudioTrackRef = useRef(currentAudioTrack);
+  const invalidSourceKeysRef = useRef<Set<string>>(new Set());
 
   // 🚀 使用 useDanmu Hook 管理弹幕
   const danmuScopeKey = `${videoTitle}_${videoYear}_${videoDoubanId}_${currentEpisodeIndex + 1}`;
@@ -1578,16 +1579,30 @@ function PlayPageClient() {
     });
   };
 
+  const getSourceIdentityKey = (source: string, id: string) =>
+    `${source}::${id}`;
+
+  const filterInvalidSources = (sources: SearchResult[]): SearchResult[] => {
+    return sources.filter(
+      (source) =>
+        !invalidSourceKeysRef.current.has(
+          getSourceIdentityKey(source.source, source.id),
+        ),
+    );
+  };
+
   // 设置可用源列表（先按权重排序）
   const setAvailableSourcesWithWeight = async (
     sources: SearchResult[],
   ): Promise<SearchResult[]> => {
-    if (sources.length <= 1) {
-      setAvailableSources(sources);
-      return sources;
+    const validSources = filterInvalidSources(sources);
+
+    if (validSources.length <= 1) {
+      setAvailableSources(validSources);
+      return validSources;
     }
     const weights = await fetchSourceWeights();
-    const sortedSources = sortSourcesByWeight(sources, weights);
+    const sortedSources = sortSourcesByWeight(validSources, weights);
     console.log(
       '按权重排序可用源:',
       sortedSources
@@ -3140,6 +3155,9 @@ function PlayPageClient() {
         }
 
         if (!detailResponse.ok) {
+          if (detailResponse.status === 404 && source && id) {
+            invalidSourceKeysRef.current.add(getSourceIdentityKey(source, id));
+          }
           throw new Error(`获取视频详情失败 (${detailResponse.status})`);
         }
 
@@ -6833,7 +6851,9 @@ function PlayPageClient() {
                   currentSource={currentSource}
                   currentId={currentId}
                   videoTitle={searchTitle || videoTitle}
-                  availableSources={availableSources.filter((source) => {
+                  availableSources={filterInvalidSources(
+                    availableSources,
+                  ).filter((source) => {
                     // 必须有集数数据（所有源包括短剧源都必须满足）
                     if (!source.episodes || source.episodes.length < 1)
                       return false;
