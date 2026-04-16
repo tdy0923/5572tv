@@ -42,6 +42,8 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
   const [latestVersion, setLatestVersion] = useState<string>('');
   const [showRemoteContent, setShowRemoteContent] = useState(false);
 
+  const isStandaloneLaunch = CURRENT_VERSION === '1.0.0';
+
   // Body 滚动锁定 - 使用 overflow 方式避免布局问题
   useEffect(() => {
     if (isOpen) {
@@ -402,6 +404,45 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                     <CheckCircle className='w-3 h-3 sm:w-4 sm:h-4' />
                     前往仓库
                   </a>
+                </div>
+              </div>
+            )}
+
+            {isStandaloneLaunch && (
+              <div className='bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 sm:p-4'>
+                <div className='space-y-3'>
+                  <div>
+                    <h4 className='text-sm sm:text-base font-semibold text-blue-800 dark:text-blue-200'>
+                      5572tv 独立首发版本
+                    </h4>
+                    <p className='text-xs sm:text-sm text-blue-700 dark:text-blue-300 mt-1 leading-6'>
+                      v1.0.0 标志着 5572tv / 5572影视
+                      正式从历史版本线中独立发布。当前版本已完成独立仓库切换、非商用使用说明补充、部署链路迁移，以及认证与播放主链路稳定性收口。
+                    </p>
+                  </div>
+
+                  <div>
+                    <h5 className='text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300 mb-2'>
+                      本次发布重点
+                    </h5>
+                    <ul className='space-y-1'>
+                      {[
+                        '独立仓库与品牌主线切换到 5572tv / 5572影视',
+                        'README、文档、版本检查与页面版本信息同步独立化',
+                        '登录、注册、注册后删除用户链路完成真实流程验证',
+                        '播放页失效线路治理、临时失效恢复与更准确错误提示',
+                        '图片与公共接口缓存、Cloudflare 边缘加速策略优化',
+                      ].map((item) => (
+                        <li
+                          key={item}
+                          className='text-xs sm:text-sm text-blue-800 dark:text-blue-200 flex items-start gap-2'
+                        >
+                          <span className='w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 shrink-0'></span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             )}
