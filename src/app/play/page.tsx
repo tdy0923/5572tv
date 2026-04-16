@@ -3478,6 +3478,43 @@ function PlayPageClient() {
       let detailData: SearchResult | null = null;
       let sourcesInfo: SearchResult[] = [];
 
+      if (currentSource && currentId && !searchTitle && !videoTitle) {
+        try {
+          const [allRecords, favorites] = await Promise.all([
+            getAllPlayRecords().catch(() => ({})),
+            getAllFavorites().catch(() => ({})),
+          ]);
+          const currentKey = generateStorageKey(currentSource, currentId);
+          const matchedRecord = allRecords[currentKey];
+          const matchedFavorite = favorites[currentKey];
+          const strictMeta = matchedRecord || matchedFavorite;
+
+          if (strictMeta) {
+            if (strictMeta.search_title) {
+              videoTitleRef.current = strictMeta.search_title;
+            } else if (strictMeta.title) {
+              videoTitleRef.current = strictMeta.title;
+            }
+
+            if (strictMeta.title) {
+              setVideoTitle(strictMeta.title);
+            }
+
+            if (strictMeta.year) {
+              videoYearRef.current = strictMeta.year;
+              setVideoYear(strictMeta.year);
+            }
+
+            if ('douban_id' in strictMeta && strictMeta.douban_id) {
+              videoDoubanIdRef.current = strictMeta.douban_id;
+              setVideoDoubanId(strictMeta.douban_id);
+            }
+          }
+        } catch (error) {
+          console.warn('恢复播放元信息失败:', error);
+        }
+      }
+
       // 如果已经有了source和id，优先通过单个详情接口快速获取
       if (currentSource && currentId) {
         // 先快速获取当前源的详情
@@ -3536,7 +3573,11 @@ function PlayPageClient() {
       }
 
       if (!detailData && sourcesInfo.length === 0) {
-        setError('未找到匹配结果');
+        setError(
+          currentSource && currentId
+            ? '当前线路已失效，且未找到其他严格匹配的可用线路'
+            : '未找到严格匹配结果',
+        );
         setLoading(false);
         return;
       }
@@ -3582,7 +3623,7 @@ function PlayPageClient() {
               '[Play] 当前源详情已存在，但全源搜索未命中当前 source/id，回退使用当前详情',
             );
           } else {
-            setError('未找到匹配结果');
+            setError('当前线路已失效，且未找到其他严格匹配的可用线路');
             setLoading(false);
             return;
           }
@@ -3619,7 +3660,11 @@ function PlayPageClient() {
       }
 
       if (!detailData) {
-        setError('未找到匹配结果');
+        setError(
+          currentSource && currentId
+            ? '当前线路已失效，且未找到其他严格匹配的可用线路'
+            : '未找到严格匹配结果',
+        );
         setLoading(false);
         return;
       }
