@@ -57,6 +57,9 @@ function HeroBanner({
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [disabledTrailerIds, setDisabledTrailerIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const videoRef = useRef<HTMLVideoElement>(null);
   const attemptedRefreshIdsRef = useRef<Set<string>>(new Set());
 
@@ -105,6 +108,10 @@ function HeroBanner({
 
   // 获取当前有效的trailer URL（优先使用刷新后的）
   const getEffectiveTrailerUrl = (item: BannerItem) => {
+    if (item.douban_id && disabledTrailerIds.has(String(item.douban_id))) {
+      return null;
+    }
+
     if (item.douban_id && refreshedTrailerUrls[item.douban_id]) {
       return refreshedTrailerUrls[item.douban_id];
     }
@@ -273,31 +280,44 @@ function HeroBanner({
                       const video = e.currentTarget;
 
                       // 检测是否是403错误（trailer URL过期）
-                      if (
-                        item.douban_id &&
-                        !refreshTrailerMutation.isPending &&
-                        !attemptedRefreshIdsRef.current.has(
-                          String(item.douban_id),
-                        ) &&
-                        !shouldSkipTrailerRefresh(item.douban_id)
-                      ) {
-                        attemptedRefreshIdsRef.current.add(
-                          String(item.douban_id),
-                        );
+                      if (item.douban_id) {
+                        const doubanIdKey = String(item.douban_id);
 
-                        // 如果缓存中有URL，说明之前刷新过，但现在又失败了
-                        // 需要清除缓存中的旧URL，重新刷新
-                        if (refreshedTrailerUrls[item.douban_id]) {
-                          clearTrailerMutation.mutate({
-                            doubanId: item.douban_id,
-                          });
-                        }
+                        setDisabledTrailerIds((prev) => {
+                          const next = new Set(prev);
+                          next.add(doubanIdKey);
+                          return next;
+                        });
 
-                        // 重新刷新URL
-                        const newUrl = await refreshTrailerUrl(item.douban_id);
-                        if (newUrl) {
-                          // 重新加载视频
-                          video.load();
+                        if (
+                          !refreshTrailerMutation.isPending &&
+                          !attemptedRefreshIdsRef.current.has(doubanIdKey) &&
+                          !shouldSkipTrailerRefresh(item.douban_id)
+                        ) {
+                          attemptedRefreshIdsRef.current.add(doubanIdKey);
+
+                          // 如果缓存中有URL，说明之前刷新过，但现在又失败了
+                          // 需要清除缓存中的旧URL，重新刷新
+                          if (refreshedTrailerUrls[item.douban_id]) {
+                            clearTrailerMutation.mutate({
+                              doubanId: item.douban_id,
+                            });
+                          }
+
+                          // 重新刷新URL
+                          const newUrl = await refreshTrailerUrl(
+                            item.douban_id,
+                          );
+                          if (newUrl) {
+                            setDisabledTrailerIds((prev) => {
+                              const next = new Set(prev);
+                              next.delete(doubanIdKey);
+                              return next;
+                            });
+
+                            // 重新加载视频
+                            video.load();
+                          }
                         }
                       }
                     }}
