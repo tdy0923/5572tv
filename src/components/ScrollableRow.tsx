@@ -1,5 +1,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Children, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Children,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import AnimatedCardGrid from '@/components/AnimatedCardGrid';
 
@@ -20,7 +28,9 @@ function ScrollableRow({
   const [showLeftScroll, setShowLeftScroll] = useState(false);
   const [showRightScroll, setShowRightScroll] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const checkScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const checkScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
 
   // 使用 useMemo 缓存 children 数量，减少不必要的 effect 触发
@@ -36,8 +46,12 @@ function ScrollableRow({
         scrollWidth - (scrollLeft + clientWidth) > threshold;
       const canScrollLeft = scrollLeft > threshold;
 
-      setShowRightScroll((prev) => (prev !== canScrollRight ? canScrollRight : prev));
-      setShowLeftScroll((prev) => (prev !== canScrollLeft ? canScrollLeft : prev));
+      setShowRightScroll((prev) =>
+        prev !== canScrollRight ? canScrollRight : prev,
+      );
+      setShowLeftScroll((prev) =>
+        prev !== canScrollLeft ? canScrollLeft : prev,
+      );
 
       // 虚拟化：精确计算可见范围（参考 react-window 实现）
       if (enableVirtualization && containerRef.current.children.length > 0) {
@@ -61,7 +75,11 @@ function ScrollableRow({
         }
 
         // 查找最后一个可见元素
-        for (let i = startIndexVisible; i < containerRef.current.children.length; i++) {
+        for (
+          let i = startIndexVisible;
+          i < containerRef.current.children.length;
+          i++
+        ) {
           const child = containerRef.current.children[i] as HTMLElement;
           const offsetLeft = child.offsetLeft;
 
@@ -74,7 +92,7 @@ function ScrollableRow({
         const start = Math.max(0, startIndexVisible - overscan);
         const end = Math.min(childrenCount, stopIndexVisible + overscan + 1);
 
-        setVisibleRange(prev => {
+        setVisibleRange((prev) => {
           if (prev.start !== start || prev.end !== end) {
             return { start, end };
           }
@@ -164,7 +182,7 @@ function ScrollableRow({
 
   return (
     <div
-      className='relative'
+      className='ui-rail relative px-1 py-1 sm:px-2 sm:py-2'
       onMouseEnter={() => {
         setIsHovered(true);
         // 当鼠标进入时重新检查一次
@@ -174,7 +192,7 @@ function ScrollableRow({
     >
       <div
         ref={containerRef}
-        className='flex space-x-6 overflow-x-auto scrollbar-hide pt-3 pb-12 sm:pt-4 sm:pb-14 px-4 sm:px-6'
+        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-10 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
         onScroll={checkScroll}
         style={{
           WebkitOverflowScrolling: 'touch', // iOS 惯性滚动
@@ -183,7 +201,7 @@ function ScrollableRow({
         }}
       >
         {enableAnimation ? (
-          <AnimatedCardGrid className="flex space-x-6">
+          <AnimatedCardGrid className='flex space-x-6'>
             {visibleChildren}
           </AnimatedCardGrid>
         ) : (
@@ -211,7 +229,7 @@ function ScrollableRow({
           >
             <button
               onClick={handleScrollLeftClick}
-              className='w-12 h-12 bg-white/95 rounded-full shadow-lg flex items-center justify-center hover:bg-white border border-gray-200 transition-transform hover:scale-105 dark:bg-gray-800/90 dark:hover:bg-gray-700 dark:border-gray-600'
+              className='flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/90 shadow-[0_18px_36px_rgba(15,23,42,0.14)] transition-transform hover:scale-105 hover:bg-white dark:border-white/10 dark:bg-[#161b23]/92 dark:hover:bg-[#1c2430]'
             >
               <ChevronLeft className='w-6 h-6 text-gray-600 dark:text-gray-300' />
             </button>
@@ -240,7 +258,7 @@ function ScrollableRow({
           >
             <button
               onClick={handleScrollRightClick}
-              className='w-12 h-12 bg-white/95 rounded-full shadow-lg flex items-center justify-center hover:bg-white border border-gray-200 transition-transform hover:scale-105 dark:bg-gray-800/90 dark:hover:bg-gray-700 dark:border-gray-600'
+              className='flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/90 shadow-[0_18px_36px_rgba(15,23,42,0.14)] transition-transform hover:scale-105 hover:bg-white dark:border-white/10 dark:bg-[#161b23]/92 dark:hover:bg-[#1c2430]'
             >
               <ChevronRight className='w-6 h-6 text-gray-600 dark:text-gray-300' />
             </button>

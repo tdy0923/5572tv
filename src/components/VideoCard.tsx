@@ -962,7 +962,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
     return (
       <>
         <div
-          className='@container group relative w-full rounded-lg bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:scale-[1.05] hover:z-30 hover:shadow-2xl'
+          className='@container group relative w-full rounded-[22px] bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 hover:scale-[1.03]'
           onClick={handleClick}
           onMouseEnter={handlePrefetch}
           onFocus={handlePrefetch}
@@ -1008,7 +1008,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         >
           {/* 海报容器 */}
           <div
-            className={`relative aspect-[2/3] overflow-hidden rounded-lg ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+            className={`relative aspect-[2/3] overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_20px_44px_rgba(15,23,42,0.1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_28px_56px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/6 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
             style={
               {
                 WebkitUserSelect: 'none',
@@ -1131,7 +1131,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               >
                 {isUpcoming ? (
                   // 即将上映 - 显示敬请期待
-                  <div className='flex flex-col items-center gap-2 bg-black/60 backdrop-blur-md px-6 py-4 rounded-xl'>
+                  <div className='flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-black/60 px-6 py-4 backdrop-blur-md'>
                     <span className='text-3xl'>📅</span>
                     <span className='text-white font-bold text-sm whitespace-nowrap'>
                       敬请期待

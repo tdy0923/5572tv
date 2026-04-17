@@ -207,10 +207,9 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
     <nav
       className={cn(
         'md:hidden fixed left-0 right-0 z-600',
-        // Netflix 风格：全宽度贴底导航栏
-        'bg-[#171717]/96 dark:bg-[#0b0b0b]/98',
+        'bg-[#171717]/92 dark:bg-[#0b0b0b]/96',
         'backdrop-blur-lg',
-        'border-t border-white/5',
+        'border-t border-white/8 shadow-[0_-20px_40px_rgba(0,0,0,0.22)]',
       )}
       style={{
         // 贴底，使用 safe area insets
@@ -222,7 +221,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       <div
         ref={scrollContainerRef}
         className={cn(
-          'flex items-center justify-around px-2 py-2',
+          'flex items-center justify-around px-2 py-2.5',
           'overflow-x-auto',
         )}
         style={{
@@ -250,26 +249,26 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
                 itemRefs.current[index] = el;
               }}
               className={cn(
-                // Netflix 风格：竖向布局
                 'flex flex-col items-center justify-center',
                 'min-w-[60px] flex-1',
-                'py-2 px-1',
+                'rounded-2xl py-2 px-1',
                 'transition-all duration-200',
                 'active:scale-95',
+                active && 'bg-white/6',
               )}
             >
               <Icon
                 className={cn(
-                  'w-6 h-6 mb-1',
+                  'mb-1 h-6 w-6',
                   'transition-colors duration-200',
-                  active ? 'text-[#fff6de]' : 'text-white/65',
+                  active ? 'text-[#fff6de]' : 'text-white/60',
                 )}
               />
               <span
                 className={cn(
                   'text-[10px] font-medium',
                   'transition-colors duration-200',
-                  active ? 'text-[#fff6de]' : 'text-white/65',
+                  active ? 'text-[#fff6de]' : 'text-white/60',
                 )}
               >
                 {item.label}

@@ -54,6 +54,70 @@
 }
 
 @layer utilities {
+  .ui-shell {
+    @apply relative overflow-hidden;
+  }
+
+  .ui-shell::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(244, 194, 77, 0.18),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at top right,
+        rgba(59, 130, 246, 0.12),
+        transparent 24%
+      ),
+      radial-gradient(
+        circle at bottom,
+        rgba(168, 85, 247, 0.08),
+        transparent 30%
+      );
+    z-index: 0;
+  }
+
+  .ui-page-frame {
+    @apply relative z-[1] mx-auto w-full max-w-[2560px];
+  }
+
+  .ui-page-container {
+    @apply relative overflow-hidden rounded-[30px] border border-black/6 bg-white/72 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0d1016]/72 dark:shadow-[0_30px_90px_rgba(0,0,0,0.34)];
+  }
+
+  .ui-page-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.22),
+      transparent 18%
+    );
+  }
+
+  .ui-nav-surface {
+    @apply border-b border-black/6 bg-white/76 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0c0f14]/76 dark:shadow-[0_18px_50px_rgba(0,0,0,0.3)];
+  }
+
+  .ui-section-heading {
+    @apply flex items-center gap-3 text-[1.05rem] font-semibold tracking-[0.01em] text-gray-900 dark:text-gray-100 sm:text-[1.18rem];
+  }
+
+  .ui-section-kicker {
+    @apply inline-flex items-center rounded-full border border-primary-200/80 bg-primary-100/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-700 dark:border-primary-400/20 dark:bg-primary-500/10 dark:text-primary-300;
+  }
+
+  .ui-rail {
+    @apply relative rounded-[28px] border border-black/5 bg-white/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-xl dark:border-white/6 dark:bg-white/[0.03] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.03)];
+  }
+
   .ui-control {
     @apply inline-flex items-center justify-center rounded-2xl border border-black/8 bg-white/78 text-gray-700 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-black/12 hover:bg-white/92 hover:shadow-[0_14px_38px_rgba(15,23,42,0.12)] active:translate-y-0 active:scale-[0.98] dark:border-white/10 dark:bg-white/6 dark:text-gray-200 dark:shadow-[0_12px_36px_rgba(0,0,0,0.32)] dark:hover:border-white/16 dark:hover:bg-white/10 dark:hover:shadow-[0_18px_44px_rgba(0,0,0,0.42)];
   }

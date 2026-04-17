@@ -323,7 +323,7 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_20px_44px_rgba(15,23,42,0.1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_28px_56px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/6'>
           {/* 渐变光泽动画层 */}
           <div
             className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10'
@@ -363,8 +363,8 @@ function ShortDramaCard({
           />
 
           {/* 悬浮播放按钮 - 玻璃态效果 */}
-          <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/80 via-black/20 to-transparent backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-black shadow-lg transition-transform group-hover:scale-110'>
+          <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/82 via-black/24 to-transparent backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100'>
+            <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/90 text-black shadow-lg transition-transform group-hover:scale-110'>
               <Play className='h-5 w-5 ml-0.5' fill='currentColor' />
             </div>
           </div>
@@ -392,7 +392,7 @@ function ShortDramaCard({
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleToggleFavorite}
-            className='absolute bottom-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-110 hover:bg-black/70 z-20'
+            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-110 hover:bg-black/70'
             aria-label={favorited ? '取消收藏' : '添加收藏'}
           >
             <Heart
@@ -446,8 +446,8 @@ function ShortDramaCard({
         </div>
 
         {/* 信息区域 */}
-        <div className='mt-2 space-y-1.5'>
-          <h3 className='text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-linear-to-r group-hover:from-blue-600 group-hover:to-purple-600 dark:group-hover:from-blue-400 dark:group-hover:to-purple-400 transition-all duration-300'>
+        <div className='mt-3 space-y-1.5 px-1'>
+          <h3 className='line-clamp-2 text-sm font-semibold text-gray-900 transition-all duration-300 group-hover:bg-linear-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent dark:text-white dark:group-hover:from-blue-400 dark:group-hover:to-purple-400'>
             {drama.name}
           </h3>
 

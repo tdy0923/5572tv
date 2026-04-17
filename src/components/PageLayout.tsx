@@ -38,7 +38,7 @@ const PageLayout = ({
     // 2025 Modern Navigation Layout
     return (
       <>
-        <div className='w-full min-h-screen'>
+        <div className='ui-shell w-full min-h-screen'>
           {/* Modern Navigation - Top (Desktop) & Bottom (Mobile) */}
           <ModernNav
             showAIButton={aiEnabled ?? false}
@@ -46,7 +46,7 @@ const PageLayout = ({
           />
 
           {/* 移动端头部 - Logo和用户菜单 */}
-          <div className='md:hidden fixed top-0 left-0 right-0 z-40 bg-white/94 dark:bg-[#111111]/92 backdrop-blur-md border-b border-[#ece7da] dark:border-white/8 shadow-sm'>
+          <div className='ui-nav-surface md:hidden fixed top-0 left-0 right-0 z-40'>
             <div className='flex items-center justify-between h-11 px-4'>
               {/* Logo */}
               <div className='text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
@@ -71,9 +71,11 @@ const PageLayout = ({
           </div>
 
           {/* Main Content - 移动端44px顶部 + 底部导航栏空间，桌面端64px */}
-          <main className='w-full min-h-screen pt-[44px] md:pt-16 pb-16 md:pb-8'>
-            <div className='w-full max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
-              {children}
+          <main className='w-full min-h-screen pb-16 pt-[44px] md:pb-8 md:pt-16'>
+            <div className='ui-page-frame px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
+              <div className='ui-page-container px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7'>
+                {children}
+              </div>
             </div>
           </main>
         </div>

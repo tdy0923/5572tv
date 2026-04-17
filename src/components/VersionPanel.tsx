@@ -42,7 +42,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
   const [latestVersion, setLatestVersion] = useState<string>('');
   const [showRemoteContent, setShowRemoteContent] = useState(false);
 
-  const isStandaloneLaunch = CURRENT_VERSION === '1.0.0';
+  const isStandaloneLaunch = changelog[0]?.version === CURRENT_VERSION;
 
   // Body 滚动锁定 - 使用 overflow 方式避免布局问题
   useEffect(() => {

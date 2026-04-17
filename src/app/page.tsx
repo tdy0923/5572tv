@@ -714,15 +714,20 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-6 md:mt-0 pb-32 md:pb-safe-bottom'>
+      <div className='overflow-visible -mt-2 pb-32 md:mt-0 md:pb-safe-bottom'>
         {/* 欢迎横幅 - 现代化精简设计 */}
-        <div className='mb-6 relative overflow-hidden rounded-xl bg-linear-to-r from-blue-500/90 via-purple-500/90 to-pink-500/90 backdrop-blur-sm shadow-xl border border-white/20'>
+        <div className='mb-6 overflow-hidden rounded-[28px] border border-black/6 bg-linear-to-r from-slate-950 via-slate-900 to-[#433010] shadow-[0_28px_80px_rgba(15,23,42,0.18)]'>
           <div className='relative p-4 sm:p-5'>
             {/* 动态渐变背景 */}
-            <div className='absolute inset-0 bg-linear-to-br from-white/5 via-transparent to-black/5'></div>
+            <div className='absolute inset-0 bg-linear-to-br from-white/8 via-transparent to-black/15'></div>
+            <div className='absolute -right-12 top-0 h-32 w-32 rounded-full bg-primary-400/18 blur-3xl'></div>
+            <div className='absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-blue-400/14 blur-3xl'></div>
 
             <div className='relative z-10 flex items-center justify-between gap-4'>
               <div className='flex-1 min-w-0'>
+                <div className='mb-2 inline-flex items-center rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary-200'>
+                  5572 curated picks
+                </div>
                 <h2 className='text-lg sm:text-xl font-bold text-white mb-1 flex items-center gap-2 flex-wrap'>
                   <span>
                     {greeting}
@@ -737,12 +742,14 @@ function HomeClient() {
                     👋
                   </span>
                 </h2>
-                <p className='text-sm text-white/90'>发现更多精彩影视内容 ✨</p>
+                <p className='max-w-2xl text-sm text-white/76'>
+                  发现更多精彩影视内容，并在不改动现有架构的前提下持续升级体验。
+                </p>
               </div>
 
               {/* 装饰图标 - 更小更精致 */}
-              <div className='hidden md:flex items-center justify-center shrink-0 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20'>
-                <Film className='w-6 h-6 text-white' />
+              <div className='hidden md:flex items-center justify-center shrink-0 w-14 h-14 rounded-[20px] bg-white/8 backdrop-blur-sm border border-white/10'>
+                <Film className='w-7 h-7 text-primary-200' />
               </div>
             </div>
           </div>
@@ -1287,7 +1294,7 @@ function HomeClient() {
                   hotTvShows.length > 0 ||
                   hotVarietyShows.length > 0 ||
                   hotShortDramas.length > 0) && (
-                  <section className='mb-8'>
+                  <section className='mb-10'>
                     <HeroBanner
                       items={[
                         // 豆瓣电影
@@ -1358,7 +1365,7 @@ function HomeClient() {
 
               {/* 即将上映 */}
               {!loading && upcomingReleases.length > 0 && (
-                <section className='mb-8'>
+                <section className='mb-10'>
                   <div className='mb-4 flex items-center justify-between'>
                     <SectionTitle
                       title='即将上映'
@@ -1511,7 +1518,7 @@ function HomeClient() {
               )}
 
               {/* 热门电影 */}
-              <section className='mb-8'>
+              <section className='mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门电影'
@@ -1556,7 +1563,7 @@ function HomeClient() {
               </section>
 
               {/* 热门剧集 */}
-              <section className='mb-8'>
+              <section className='mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门剧集'
@@ -1601,7 +1608,7 @@ function HomeClient() {
               </section>
 
               {/* 每日新番放送 */}
-              <section className='mb-8'>
+              <section className='mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='新番放送'
@@ -1653,7 +1660,7 @@ function HomeClient() {
               </section>
 
               {/* 热门综艺 */}
-              <section className='mb-8'>
+              <section className='mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门综艺'

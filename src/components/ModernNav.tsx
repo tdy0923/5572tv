@@ -179,13 +179,23 @@ export default function ModernNav({
   return (
     <>
       {/* Desktop Top Navigation - 2025 Disney+ Style */}
-      <nav className='hidden md:block fixed top-0 left-0 right-0 z-50 bg-white/92 dark:bg-[#111111]/90 backdrop-blur-xl border-b border-[#ece7da] dark:border-white/8 shadow-[0_12px_30px_rgba(0,0,0,0.05)]'>
+      <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-50'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='text-xl font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
-                {siteName}
+              <div className='flex items-center gap-3'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-primary-400 via-primary-500 to-primary-700 text-sm font-black text-[#171717] shadow-[0_16px_30px_rgba(244,194,77,0.32)]'>
+                  5
+                </div>
+                <div className='flex flex-col'>
+                  <div className='bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] bg-clip-text text-xl font-bold text-transparent dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d]'>
+                    {siteName}
+                  </div>
+                  <span className='text-[10px] uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
+                    Streaming hub
+                  </span>
+                </div>
               </div>
             </FastLink>
 
@@ -200,11 +210,11 @@ export default function ModernNav({
                     key={item.label}
                     href={item.href}
                     useTransitionNav
-                    className='group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 whitespace-nowrap shrink-0'
+                    className='group relative flex items-center gap-2 rounded-full px-3 py-2 transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 lg:px-4 whitespace-nowrap shrink-0'
                   >
                     {/* Active indicator */}
                     {active && (
-                      <div className='absolute inset-0 bg-linear-to-r from-[#f4c24d]/20 to-[#fff6de]/65 rounded-full' />
+                      <div className='absolute inset-0 rounded-full border border-primary-300/50 bg-linear-to-r from-[#f4c24d]/18 to-[#fff6de]/70 shadow-[0_10px_24px_rgba(244,194,77,0.12)] dark:border-primary-300/20 dark:from-primary-400/16 dark:to-white/6' />
                     )}
 
                     {/* Icon */}

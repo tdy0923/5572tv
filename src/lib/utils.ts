@@ -171,9 +171,23 @@ function getDoubanImageProxyConfig(): {
 export function processImageUrl(originalUrl: string): string {
   if (!originalUrl) return originalUrl;
 
+  if (
+    originalUrl.startsWith('data:') ||
+    originalUrl.startsWith('blob:') ||
+    originalUrl.startsWith('/')
+  ) {
+    return originalUrl;
+  }
+
   const normalizedUrl = originalUrl.startsWith('http://')
     ? `https://${originalUrl.slice('http://'.length)}`
     : originalUrl;
+
+  const isRemoteHttpUrl = /^https?:\/\//i.test(normalizedUrl);
+
+  if (isRemoteHttpUrl && !normalizedUrl.includes('doubanio.com')) {
+    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
+  }
 
   // 处理 manmankan 图片防盗链
   if (normalizedUrl.includes('manmankan.com')) {
