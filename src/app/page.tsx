@@ -732,39 +732,31 @@ function HomeClient() {
       <TelegramWelcomeModal />
 
       <div className='overflow-visible -mt-2 pb-32 md:mt-0 md:pb-safe-bottom'>
-        <div className='mb-8 space-y-4 rounded-[32px] border border-black/6 bg-white/30 p-3 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-4'>
+        <div className='mb-8 space-y-4'>
           <SiteAdSlot position='home_hero' />
           {/* 欢迎横幅 - 现代化精简设计 */}
-          <div className='overflow-hidden rounded-[28px] border border-black/6 bg-[#12161f] shadow-[0_22px_56px_rgba(15,23,42,0.14)]'>
-            <div className='relative p-4 sm:p-5'>
-              <div className='absolute inset-0 bg-linear-to-r from-white/[0.04] via-transparent to-transparent'></div>
-
-              <div className='relative z-10 flex items-center justify-between gap-4'>
-                <div className='min-w-0 flex-1'>
-                  <h2 className='mb-1 flex flex-wrap items-center gap-2 text-lg font-bold text-white sm:text-xl'>
-                    <span>
-                      {greeting}
-                      {username && '，'}
-                    </span>
-                    {username && (
-                      <span className='font-semibold text-yellow-300'>
-                        {username}
-                      </span>
-                    )}
-                    <span className='inline-block origin-bottom-right animate-wave'>
-                      👋
-                    </span>
-                  </h2>
-                  <p className='max-w-2xl text-sm text-white/64'>
-                    发现更多精彩影视内容。
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className='flex flex-wrap items-center gap-3 py-1 sm:gap-4'>
+            <h2 className='flex flex-wrap items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl'>
+              <span>
+                {greeting}
+                {username && '，'}
+              </span>
+              {username && (
+                <span className='font-bold text-[#dba52b] dark:text-[#f4c24d]'>
+                  {username}
+                </span>
+              )}
+              <span className='inline-block origin-bottom-right animate-wave'>
+                👋
+              </span>
+            </h2>
+            <p className='text-sm text-gray-500 dark:text-gray-400'>
+              发现更多精彩影视内容。
+            </p>
           </div>
 
           {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
-          <div className='flex items-center justify-center'>
+          <div className='flex items-center justify-start'>
             <CapsuleSwitch
               className='bg-white/62 dark:bg-white/6'
               options={[
