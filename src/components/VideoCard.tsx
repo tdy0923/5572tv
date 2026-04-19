@@ -209,6 +209,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
           : type,
       [isAggregate, actualEpisodes, type],
     );
+    const actualSearchAlias = actualQuery || actualTitle.trim();
 
     // 判断是否为即将上映（未发布的内容）- 只有真正未上映的才算
     const isUpcoming = useMemo(
@@ -502,7 +503,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         // 豆瓣内容 或 聚合搜索 或 即将上映 或 Bangumi番剧 - 只用标题和年份搜索
         const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${
           actualYear ? `&year=${actualYear}` : ''
-        }${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
+        }${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualSearchAlias ? `&stitle=${encodeURIComponent(actualSearchAlias)}` : ''}`;
         router.push(url);
       } else if (actualSource && actualId) {
         const url = `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
@@ -510,7 +511,9 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         )}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${
           shouldPreferBestSource ? '&prefer=true' : ''
         }${
-          actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''
+          actualSearchAlias
+            ? `&stitle=${encodeURIComponent(actualSearchAlias)}`
+            : ''
         }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
         router.push(url);
       }
@@ -525,6 +528,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
       actualYear,
       isAggregate,
       actualQuery,
+      actualSearchAlias,
       actualSearchType,
       actualDoubanId,
     ]);
