@@ -25,7 +25,13 @@ interface ContinueWatchingProps {
 }
 
 function parsePlayRecordKey(key: string) {
-  const [source, id] = key.split('+');
+  const separatorIndex = key.indexOf('+');
+  if (separatorIndex === -1) {
+    return { source: '', id: key };
+  }
+
+  const source = key.slice(0, separatorIndex);
+  const id = key.slice(separatorIndex + 1);
   return { source, id };
 }
 
