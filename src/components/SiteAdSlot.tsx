@@ -109,9 +109,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
           <span>广告</span>
         </div>
         {textAds.length > 0 && (
-          <div
-            className={`mt-3 flex ${isCompactTextRow ? 'flex-wrap items-center gap-2 sm:gap-3' : 'flex-wrap gap-2.5'}`}
-          >
+          <div className='mt-3 space-y-2'>
             {textAds.map((line, index) => {
               const [label, maybeUrl, desc] = line
                 .split('|')
@@ -135,13 +133,17 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
                     href={maybeUrl}
                     target={target}
                     rel={rel}
-                    className='block'
+                    className='block w-full'
                   >
                     {node}
                   </Link>
                 );
               }
-              return <div key={`${label}-${index}`}>{node}</div>;
+              return (
+                <div key={`${label}-${index}`} className='w-full'>
+                  {node}
+                </div>
+              );
             })}
           </div>
         )}
