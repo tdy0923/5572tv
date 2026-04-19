@@ -11,6 +11,9 @@ import {
 
 import type { AdSettings } from '@/lib/ad-settings';
 
+const SITE_CONFIG_CACHE_KEY = 'site-public-config-v1';
+const SITE_CONFIG_CACHE_TTL = 60 * 1000;
+
 const SiteContext = createContext<{
   siteName: string;
   announcementTitle?: string;
@@ -52,6 +55,27 @@ export function SiteProvider({
 
     const loadPublicSiteConfig = async () => {
       try {
+        if (typeof window !== 'undefined') {
+          const cached = sessionStorage.getItem(SITE_CONFIG_CACHE_KEY);
+          if (cached) {
+            const parsed = JSON.parse(cached) as {
+              timestamp: number;
+              data: typeof siteState;
+            };
+
+            if (Date.now() - parsed.timestamp < SITE_CONFIG_CACHE_TTL) {
+              setSiteState((current) => ({
+                siteName: parsed.data.siteName || current.siteName,
+                announcementTitle:
+                  parsed.data.announcementTitle ?? current.announcementTitle,
+                announcement: parsed.data.announcement ?? current.announcement,
+                adSettings: parsed.data.adSettings ?? current.adSettings,
+              }));
+              return;
+            }
+          }
+        }
+
         const response = await fetch('/api/server-config', {
           next: { revalidate: 60 },
         });
@@ -59,6 +83,27 @@ export function SiteProvider({
 
         const data = await response.json();
         if (cancelled) return;
+
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(
+            SITE_CONFIG_CACHE_KEY,
+            JSON.stringify({
+              timestamp: Date.now(),
+              data: {
+                siteName: data.SiteName || siteName,
+                announcementTitle:
+                  data.AnnouncementTitle !== undefined
+                    ? data.AnnouncementTitle
+                    : announcementTitle,
+                announcement:
+                  data.Announcement !== undefined
+                    ? data.Announcement
+                    : announcement,
+                adSettings: data.AdSettings ?? adSettings,
+              },
+            }),
+          );
+        }
 
         setSiteState((current) => ({
           siteName: data.SiteName || current.siteName,
