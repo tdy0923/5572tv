@@ -61,13 +61,22 @@ export function SiteProvider({
             : undefined;
 
         if (runtimeConfig) {
-          setSiteState((current) => ({
-            siteName: runtimeConfig.SITE_NAME || current.siteName,
-            announcementTitle:
-              runtimeConfig.ANNOUNCEMENT_TITLE ?? current.announcementTitle,
-            announcement: runtimeConfig.ANNOUNCEMENT ?? current.announcement,
-            adSettings: runtimeConfig.AD_SETTINGS ?? current.adSettings,
-          }));
+          setSiteState((current) => {
+            const next = {
+              siteName: runtimeConfig.SITE_NAME || current.siteName,
+              announcementTitle:
+                runtimeConfig.ANNOUNCEMENT_TITLE ?? current.announcementTitle,
+              announcement: runtimeConfig.ANNOUNCEMENT ?? current.announcement,
+              adSettings: runtimeConfig.AD_SETTINGS ?? current.adSettings,
+            };
+
+            return next.siteName === current.siteName &&
+              next.announcementTitle === current.announcementTitle &&
+              next.announcement === current.announcement &&
+              next.adSettings === current.adSettings
+              ? current
+              : next;
+          });
           return;
         }
 
@@ -80,13 +89,23 @@ export function SiteProvider({
             };
 
             if (Date.now() - parsed.timestamp < SITE_CONFIG_CACHE_TTL) {
-              setSiteState((current) => ({
-                siteName: parsed.data.siteName || current.siteName,
-                announcementTitle:
-                  parsed.data.announcementTitle ?? current.announcementTitle,
-                announcement: parsed.data.announcement ?? current.announcement,
-                adSettings: parsed.data.adSettings ?? current.adSettings,
-              }));
+              setSiteState((current) => {
+                const next = {
+                  siteName: parsed.data.siteName || current.siteName,
+                  announcementTitle:
+                    parsed.data.announcementTitle ?? current.announcementTitle,
+                  announcement:
+                    parsed.data.announcement ?? current.announcement,
+                  adSettings: parsed.data.adSettings ?? current.adSettings,
+                };
+
+                return next.siteName === current.siteName &&
+                  next.announcementTitle === current.announcementTitle &&
+                  next.announcement === current.announcement &&
+                  next.adSettings === current.adSettings
+                  ? current
+                  : next;
+              });
               return;
             }
           }
@@ -121,18 +140,27 @@ export function SiteProvider({
           );
         }
 
-        setSiteState((current) => ({
-          siteName: data.SiteName || current.siteName,
-          announcementTitle:
-            data.AnnouncementTitle !== undefined
-              ? data.AnnouncementTitle
-              : current.announcementTitle,
-          announcement:
-            data.Announcement !== undefined
-              ? data.Announcement
-              : current.announcement,
-          adSettings: data.AdSettings ?? current.adSettings,
-        }));
+        setSiteState((current) => {
+          const next = {
+            siteName: data.SiteName || current.siteName,
+            announcementTitle:
+              data.AnnouncementTitle !== undefined
+                ? data.AnnouncementTitle
+                : current.announcementTitle,
+            announcement:
+              data.Announcement !== undefined
+                ? data.Announcement
+                : current.announcement,
+            adSettings: data.AdSettings ?? current.adSettings,
+          };
+
+          return next.siteName === current.siteName &&
+            next.announcementTitle === current.announcementTitle &&
+            next.announcement === current.announcement &&
+            next.adSettings === current.adSettings
+            ? current
+            : next;
+        });
       } catch {
         // Ignore config refresh failures and keep server-rendered defaults.
       }
