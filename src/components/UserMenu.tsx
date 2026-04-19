@@ -170,9 +170,7 @@ export const UserMenu: React.FC = () => {
 
   // 数据查询条件
   const dataQueryEnabled =
-    typeof window !== 'undefined' &&
-    !!authInfo?.username &&
-    storageType !== 'localstorage';
+    typeof window !== 'undefined' && !!authInfo?.username;
 
   // 🚀 TanStack Query - 播放记录
   const { data: playRecords = [] } = usePlayRecordsQuery({

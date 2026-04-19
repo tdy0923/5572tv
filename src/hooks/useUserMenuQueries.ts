@@ -7,6 +7,7 @@ import {
 
 import {
   forceRefreshPlayRecordsCache,
+  getAllFavorites,
   getAllPlayRecords,
 } from '@/lib/db.client';
 import type { Favorite } from '@/lib/types';
@@ -238,22 +239,14 @@ const favoritesOptions = () =>
   queryOptions({
     queryKey: ['favorites', 'userMenu'],
     queryFn: async () => {
-      const response = await fetch('/api/favorites');
-      if (response.ok) {
-        const favoritesData = (await response.json()) as Record<
-          string,
-          Favorite
-        >;
-        const favoritesArray = Object.entries(favoritesData).map(
-          ([key, favorite]) => ({
-            ...(favorite as Favorite),
-            key,
-          }),
-        );
-        // Sort by save time descending
-        return favoritesArray.sort((a, b) => b.save_time - a.save_time);
-      }
-      return [];
+      const favoritesData = await getAllFavorites();
+      const favoritesArray = Object.entries(favoritesData).map(
+        ([key, favorite]) => ({
+          ...(favorite as Favorite),
+          key,
+        }),
+      );
+      return favoritesArray.sort((a, b) => b.save_time - a.save_time);
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000,
