@@ -9,6 +9,7 @@ import { ChevronUp, Grid2x2, List, Play, Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 
+import { isAdSettingRenderable } from '@/lib/ad-settings';
 import {
   addSearchHistory,
   clearSearchHistory,
@@ -18,6 +19,8 @@ import {
 } from '@/lib/db.client';
 import { SearchResult } from '@/lib/types';
 import { resolvePosterUrl } from '@/lib/utils';
+
+import { useSite } from '@/components/SiteProvider';
 
 // ─── streamedQuery 类型 ───────────────────────────────────────────────────────
 
@@ -421,6 +424,7 @@ function SearchPageClient() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   // 返回顶部按钮显示状态
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const { adSettings } = useSite();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -437,6 +441,8 @@ function SearchPageClient() {
     }
     return true;
   });
+
+  const hasSearchSidebarAd = isAdSettingRenderable(adSettings?.search_sidebar);
   // 精确搜索开关
   const [exactSearch, setExactSearch] = useState(true);
 
@@ -1441,7 +1447,7 @@ function SearchPageClient() {
         </div>
 
         {/* 搜索结果或搜索历史 */}
-        <div className='mx-auto mt-12 max-w-[98%] overflow-visible 2xl:max-w-[96%]'>
+        <div className='mx-auto mt-12 max-w-5xl overflow-visible px-3 sm:px-0'>
           {showResults ? (
             <section className='mb-12 space-y-6'>
               {searchType === 'netdisk' ? (
@@ -1655,7 +1661,13 @@ function SearchPageClient() {
               ) : (
                 /* 原有的影视搜索结果 */
                 <>
-                  <div className='grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]'>
+                  <div
+                    className={
+                      hasSearchSidebarAd
+                        ? 'grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]'
+                        : 'grid gap-8'
+                    }
+                  >
                     <div className='min-w-0 space-y-6'>
                       <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
                         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
@@ -2025,11 +2037,13 @@ function SearchPageClient() {
                       ) : null}
                     </div>
 
-                    <aside className='hidden xl:block'>
-                      <div className='sticky top-24 rounded-[28px] border border-black/6 bg-white/38 p-3 shadow-[0_14px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03]'>
-                        <SiteAdSlot position='search_sidebar' />
-                      </div>
-                    </aside>
+                    {hasSearchSidebarAd && (
+                      <aside className='hidden xl:block'>
+                        <div className='sticky top-24'>
+                          <SiteAdSlot position='search_sidebar' />
+                        </div>
+                      </aside>
+                    )}
                   </div>
                 </>
               )}
