@@ -199,7 +199,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
             ))
           : // 显示真实数据
             playRecords.map((record, index) => {
-              const { source, id } = parseKey(record.key);
+              const { source, id } = parsePlayRecordKey(record.key);
               const newEpisodesCount = getNewEpisodesCount(record);
               const latestTotalEpisodes = getLatestTotalEpisodes(record);
               // 优先使用播放记录中保存的 type，否则根据集数判断
