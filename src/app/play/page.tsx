@@ -22,7 +22,11 @@ import {
   subscribeToDataUpdates,
 } from '@/lib/db.client';
 import { SearchResult } from '@/lib/types';
-import { getVideoResolutionFromM3u8, processImageUrl } from '@/lib/utils';
+import {
+  getVideoResolutionFromM3u8,
+  processImageUrl,
+  resolveCardPosterUrl,
+} from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
 import { useDanmu } from '@/hooks/useDanmu';
 
@@ -48,6 +52,7 @@ import VideoInfoSection from '@/components/play/VideoInfoSection';
 import VideoLoadingOverlay from '@/components/play/VideoLoadingOverlay';
 import WatchRoomSyncBanner from '@/components/play/WatchRoomSyncBanner';
 import WebSRSettingsPanel from '@/components/play/WebSRSettingsPanel';
+import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
 } from '@/components/SkipController';
@@ -3693,7 +3698,7 @@ function PlayPageClient() {
       setCurrentId(detailData.id);
       setVideoYear(detailData.year);
       setVideoTitle(detailData.title || videoTitleRef.current);
-      setVideoCover(detailData.poster);
+      setVideoCover(resolveCardPosterUrl(detailData.poster));
       // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
       setVideoDoubanId(videoDoubanIdRef.current || detailData.douban_id || 0);
       setDetail(detailData);
@@ -3922,7 +3927,7 @@ function PlayPageClient() {
 
       setVideoTitle(detailToUse.title || newTitle);
       setVideoYear(detailToUse.year);
-      setVideoCover(detailToUse.poster);
+      setVideoCover(resolveCardPosterUrl(detailToUse.poster));
       // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
       setVideoDoubanId(videoDoubanIdRef.current || detailToUse.douban_id || 0);
       setCurrentSource(newSource);
@@ -4276,7 +4281,7 @@ function PlayPageClient() {
           title: videoTitleRef.current,
           source_name: detailRef.current?.source_name || '',
           year: detailRef.current?.year,
-          cover: detailRef.current?.poster || '',
+          cover: resolveCardPosterUrl(detailRef.current?.poster),
           index: currentEpisodeIndexRef.current + 1,
           total_episodes: currentTotalEpisodes,
           original_episodes: existingRecord?.original_episodes,
@@ -4513,7 +4518,10 @@ function PlayPageClient() {
               source_name:
                 detail.source_name || favoriteToUpdate.source_name || '',
               year: detail.year || favoriteToUpdate.year || '',
-              cover: detail.poster || favoriteToUpdate.cover || '',
+              cover: resolveCardPosterUrl(
+                detail.poster,
+                favoriteToUpdate.cover,
+              ),
               total_episodes: realEpisodes,
               save_time: favoriteToUpdate.save_time || Date.now(),
               search_title: favoriteToUpdate.search_title || searchTitle,
@@ -4617,7 +4625,7 @@ function PlayPageClient() {
             title: videoTitleRef.current,
             source_name: detailRef.current?.source_name || '',
             year: detailRef.current?.year,
-            cover: detailRef.current?.poster || '',
+            cover: resolveCardPosterUrl(detailRef.current?.poster, videoCover),
             total_episodes: detailRef.current?.episodes.length || 1,
             save_time: Date.now(),
             search_title: searchTitle,
@@ -6948,6 +6956,10 @@ function PlayPageClient() {
             </div>
           </div>
 
+          <div className='mt-4'>
+            <SiteAdSlot position='play_sidebar' />
+          </div>
+
           {/* 详情展示 */}
           <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
             {/* 文字区 - 使用独立组件优化性能 */}
@@ -6985,7 +6997,6 @@ function PlayPageClient() {
               bangumiDetails={bangumiDetails}
               videoTitle={videoTitle}
               videoDoubanId={videoDoubanId}
-              processImageUrl={processImageUrl}
             />
           </div>
         </div>
@@ -7308,18 +7319,32 @@ function PlayPageClient() {
       {/* 网盘资源模态框 */}
       {showNetdiskModal && (
         <div
-          className='fixed inset-0 z-9999 bg-black/50 flex items-end md:items-center justify-center p-0 md:p-4'
+          className='fixed inset-0 z-9999 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm md:items-center md:p-4'
           onClick={() => setShowNetdiskModal(false)}
         >
           <div
-            className='bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl w-full md:max-w-4xl max-h-[85vh] md:max-h-[90vh] flex flex-col shadow-2xl'
+            className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-black/6 bg-white/88 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/8 dark:bg-[#151a22]/88 md:max-h-[90vh] md:max-w-4xl md:rounded-[28px]'
             onClick={(e) => e.stopPropagation()}
           >
             {/* 头部 - Fixed */}
             <div className='shrink-0 border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6'>
               <div className='flex items-center justify-between mb-3'>
                 <div className='flex items-center gap-2 sm:gap-3'>
-                  <div className='text-2xl sm:text-3xl'>📁</div>
+                  <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300'>
+                    <svg
+                      className='h-5 w-5'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z'
+                      />
+                    </svg>
+                  </div>
                   <div>
                     <h3 className='text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200'>
                       资源搜索
@@ -7343,7 +7368,7 @@ function PlayPageClient() {
                 </div>
                 <button
                   onClick={() => setShowNetdiskModal(false)}
-                  className='rounded-lg p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors active:scale-95'
+                  className='rounded-full p-1.5 transition-colors active:scale-95 hover:bg-gray-100 dark:hover:bg-gray-700 sm:p-2'
                   aria-label='关闭'
                 >
                   <X className='h-5 w-5 sm:h-6 sm:w-6 text-gray-500' />
@@ -7381,13 +7406,13 @@ function PlayPageClient() {
                             setNetdiskResults(null);
                             setNetdiskError(null);
                           }}
-                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg border transition-all ${
+                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
                             netdiskResourceType === 'netdisk'
-                              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
+                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)]'
                               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
                           }`}
                         >
-                          💾 网盘资源
+                          网盘资源
                         </button>
                         <button
                           onClick={() => {
@@ -7398,13 +7423,13 @@ function PlayPageClient() {
                               setAcgTriggerSearch((prev) => !prev);
                             }
                           }}
-                          className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-lg border transition-all ${
+                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
                             netdiskResourceType === 'acg'
-                              ? 'bg-purple-500 text-white border-purple-500 shadow-md'
+                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)]'
                               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
                           }`}
                         >
-                          🎌 动漫磁力
+                          动漫磁力
                         </button>
                       </div>
                     </div>
@@ -7425,15 +7450,29 @@ function PlayPageClient() {
                     !netdiskLoading &&
                     !netdiskResults &&
                     !netdiskError && (
-                      <div className='flex flex-col items-center justify-center py-12 sm:py-16 text-center'>
-                        <div className='text-5xl sm:text-6xl mb-4'>📁</div>
+                      <div className='flex flex-col items-center justify-center py-12 text-center sm:py-16'>
+                        <div className='mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300'>
+                          <svg
+                            className='h-7 w-7'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z'
+                            />
+                          </svg>
+                        </div>
                         <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400'>
                           点击搜索按钮开始查找网盘资源
                         </p>
                         <button
                           onClick={() => handleNetDiskSearch(videoTitle)}
                           disabled={netdiskLoading}
-                          className='mt-4 px-4 sm:px-6 py-2 sm:py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base font-medium'
+                          className='mt-4 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2 text-sm font-medium text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)] transition-transform hover:scale-[1.02] disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-base'
                         >
                           开始搜索
                         </button>
@@ -7468,11 +7507,7 @@ function PlayPageClient() {
                       });
                     }
                   }}
-                  className={`sticky bottom-6 left-full -ml-14 sm:bottom-8 sm:-ml-16 w-11 h-11 sm:w-12 sm:h-12 ${
-                    netdiskResourceType === 'acg'
-                      ? 'bg-purple-500 hover:bg-purple-600'
-                      : 'bg-blue-500 hover:bg-blue-600'
-                  } text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center active:scale-95 z-50 group`}
+                  className='sticky bottom-6 left-full -ml-14 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-black/6 bg-white/82 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:text-blue-600 hover:shadow-xl active:scale-95 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 sm:bottom-8 sm:-ml-16 sm:h-12 sm:w-12'
                   aria-label='返回顶部'
                 >
                   <svg

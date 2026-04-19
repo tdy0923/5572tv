@@ -10,7 +10,9 @@ import { BackButton } from './BackButton';
 import MobileBottomNav from './MobileBottomNav';
 import MobileHeader from './MobileHeader';
 import ModernNav from './ModernNav';
+import { NavActionCluster } from './NavActionCluster';
 import Sidebar from './Sidebar';
+import { SiteAdSlot } from './SiteAdSlot';
 import { useSite } from './SiteProvider';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
@@ -19,12 +21,16 @@ interface PageLayoutProps {
   children: React.ReactNode;
   activePath?: string;
   useModernNav?: boolean; // 新增：是否使用2025现代化导航
+  onAnnouncementClick?: () => void;
+  hasUnreadAnnouncement?: boolean;
 }
 
 const PageLayout = ({
   children,
   activePath = '/',
   useModernNav = true,
+  onAnnouncementClick,
+  hasUnreadAnnouncement = false,
 }: PageLayoutProps) => {
   const { siteName } = useSite();
 
@@ -43,6 +49,8 @@ const PageLayout = ({
           <ModernNav
             showAIButton={aiEnabled ?? false}
             onAIButtonClick={() => setShowAIRecommendModal(true)}
+            onAnnouncementClick={onAnnouncementClick}
+            hasUnreadAnnouncement={hasUnreadAnnouncement}
           />
 
           {/* 移动端头部 - Logo和用户菜单 */}
@@ -53,20 +61,14 @@ const PageLayout = ({
                 {siteName}
               </div>
 
-              {/* ✨ AI Button, Theme Toggle & User Menu */}
-              <div className='flex items-center gap-1.5'>
-                {aiEnabled && (
-                  <button
-                    onClick={() => setShowAIRecommendModal(true)}
-                    className='relative p-1.5 rounded-lg bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95 transition-all duration-200 shadow-lg shadow-[#f4c24d]/20 group'
-                    aria-label='AI 推荐'
-                  >
-                    <Sparkles className='h-4 w-4 group-hover:scale-110 transition-transform duration-300' />
-                  </button>
-                )}
-                <ThemeToggle />
-                <UserMenu />
-              </div>
+              {/* 右侧操作区 */}
+              <NavActionCluster
+                showAIButton={aiEnabled ?? false}
+                onAIButtonClick={() => setShowAIRecommendModal(true)}
+                onAnnouncementClick={onAnnouncementClick}
+                hasUnreadAnnouncement={hasUnreadAnnouncement}
+                compact
+              />
             </div>
           </div>
 
@@ -75,6 +77,7 @@ const PageLayout = ({
             <div className='ui-page-frame px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
               <div className='ui-page-container px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7'>
                 {children}
+                <SiteAdSlot position='footer' className='mt-8' />
               </div>
             </div>
           </main>

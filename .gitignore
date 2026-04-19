@@ -49,3 +49,6 @@ AGENT.md
 TVBOX_DEV.md
 docker-compose.yml
 package-lock.json
+
+# local secrets
+.local-secrets/

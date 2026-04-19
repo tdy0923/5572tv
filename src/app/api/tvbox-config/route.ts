@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     if (currentUser && userEnabledSources.length === 0) {
       if (currentUser.enabledApis && currentUser.enabledApis.length > 0) {
         userEnabledSources = currentUser.enabledApis.filter(
-          (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
+          (apiKey) => apiKey !== 'ai-recommend',
         );
       } else if (
         currentUser.tags &&
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           );
           if (tagConfig?.enabledApis) {
             tagConfig.enabledApis.forEach((apiKey) => {
-              if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+              if (apiKey !== 'ai-recommend') {
                 inheritedApis.add(apiKey);
               }
             });

@@ -385,7 +385,8 @@ export async function fetchDoubanCategories(
     const list: DoubanItem[] = doubanData.items.map((item) => ({
       id: item.id,
       title: item.title,
-      poster: item.pic?.normal || item.pic?.large || '',
+      poster: item.pic?.large || item.pic?.normal || '',
+      backdrop: item.pic?.large || item.pic?.normal || '',
       rate: item.rating?.value ? item.rating.value.toFixed(1) : '',
       year: item.card_subtitle?.match(/(\d{4})/)?.[1] || '',
     }));
@@ -576,6 +577,7 @@ export async function fetchDoubanList(
       id: item.id,
       title: item.title,
       poster: item.cover,
+      backdrop: item.cover,
       rate: item.rate,
       year: item.card_subtitle?.match(/(\d{4})/)?.[1] || '',
     }));
@@ -857,7 +859,8 @@ async function fetchDoubanRecommends(
       .map((item) => ({
         id: item.id,
         title: item.title,
-        poster: item.pic?.normal || item.pic?.large || '',
+        poster: item.pic?.large || item.pic?.normal || '',
+        backdrop: item.pic?.large || item.pic?.normal || '',
         rate: item.rating?.value ? item.rating.value.toFixed(1) : '',
         year: item.year,
       }));
@@ -983,6 +986,7 @@ export async function getDoubanActorMovies(
         id: item.id?.toString() || '',
         title: item.title || '',
         poster: item.cover_url || '',
+        backdrop: item.cover_url || '',
         rate: item.rating?.value ? item.rating.value.toFixed(1) : '',
         year: year,
       };

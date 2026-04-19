@@ -16,7 +16,8 @@
  */
 
 import { useQueries } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
+
 import {
   BangumiCalendarData,
   GetBangumiCalendarData,
@@ -24,6 +25,7 @@ import {
 import { getDoubanCategories } from '@/lib/douban.client';
 import { getRecommendedShortDramas } from '@/lib/shortdrama.client';
 import { DoubanItem, ShortDramaItem } from '@/lib/types';
+import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 
 // ============================================================================
 // 类型定义
@@ -45,6 +47,14 @@ export interface HomePageQueriesResult {
   errors: Error[];
   hasError: boolean;
   refetch: () => void;
+}
+
+function normalizeDoubanItems(items: DoubanItem[] = []): DoubanItem[] {
+  return items.map((item) => ({
+    ...item,
+    poster: resolveCardPosterUrl(item.poster, item.backdrop),
+    backdrop: resolvePosterUrl(item.backdrop, item.poster),
+  }));
 }
 
 // ============================================================================
@@ -98,11 +108,21 @@ export function useHomePageQueries(): HomePageQueriesResult {
     // 聚合数据
     const data: HomePageData = {
       hotMovies:
-        moviesResult.data?.code === 200 ? moviesResult.data.list : [],
-      hotTvShows: tvResult.data?.code === 200 ? tvResult.data.list : [],
+        moviesResult.data?.code === 200
+          ? normalizeDoubanItems(moviesResult.data.list)
+          : [],
+      hotTvShows:
+        tvResult.data?.code === 200
+          ? normalizeDoubanItems(tvResult.data.list)
+          : [],
       hotVarietyShows:
-        varietyResult.data?.code === 200 ? varietyResult.data.list : [],
-      hotAnime: animeResult.data?.code === 200 ? animeResult.data.list : [],
+        varietyResult.data?.code === 200
+          ? normalizeDoubanItems(varietyResult.data.list)
+          : [],
+      hotAnime:
+        animeResult.data?.code === 200
+          ? normalizeDoubanItems(animeResult.data.list)
+          : [],
       hotShortDramas: shortDramasResult.data || [],
       bangumiCalendar: bangumiResult.data || [],
     };
@@ -112,9 +132,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
     const isFetching = results.some((r) => r.isFetching);
 
     // 聚合错误
-    const errors = results
-      .filter((r) => r.error)
-      .map((r) => r.error as Error);
+    const errors = results.filter((r) => r.error).map((r) => r.error as Error);
     const hasError = errors.length > 0;
 
     // 聚合 refetch 函数

@@ -12,7 +12,6 @@ import {
   PlaySquare,
   Radio,
   Search,
-  Sparkles,
   Star,
   Tv,
   X,
@@ -21,9 +20,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { FastLink } from './FastLink';
+import { NavActionCluster } from './NavActionCluster';
 import { useSite } from './SiteProvider';
-import { ThemeToggle } from './ThemeToggle';
-import { UserMenu } from './UserMenu';
 
 interface NavItem {
   icon: any;
@@ -34,6 +32,8 @@ interface NavItem {
 interface ModernNavProps {
   showAIButton?: boolean;
   onAIButtonClick?: () => void;
+  onAnnouncementClick?: () => void;
+  hasUnreadAnnouncement?: boolean;
 }
 
 // Query Options 工厂函数
@@ -65,10 +65,12 @@ const publicSourcesOptions = () =>
 export default function ModernNav({
   showAIButton = false,
   onAIButtonClick,
+  onAnnouncementClick,
+  hasUnreadAnnouncement = false,
 }: ModernNavProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { siteName } = useSite();
+  const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const baseMenuItems: NavItem[] = [
@@ -178,13 +180,13 @@ export default function ModernNav({
 
   return (
     <>
-      {/* Desktop Top Navigation - 2025 Disney+ Style */}
+      {/* Desktop Top Navigation */}
       <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-50'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='flex items-center gap-3'>
+              <div className='flex items-center gap-3 rounded-full border border-black/6 bg-white/58 px-3 py-2 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
                 <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-primary-400 via-primary-500 to-primary-700 text-sm font-black text-[#171717] shadow-[0_16px_30px_rgba(244,194,77,0.32)]'>
                   5
                 </div>
@@ -192,75 +194,62 @@ export default function ModernNav({
                   <div className='bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] bg-clip-text text-xl font-bold text-transparent dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d]'>
                     {siteName}
                   </div>
-                  <span className='text-[10px] uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
-                    Streaming hub
-                  </span>
                 </div>
               </div>
             </FastLink>
 
             {/* Navigation Items */}
-            <div className='flex items-center justify-center gap-1 lg:gap-2 overflow-x-auto scrollbar-hide flex-1 px-4'>
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
+            <div className='flex flex-1 items-center justify-center overflow-x-auto px-2 scrollbar-hide lg:px-4'>
+              <div className='flex items-center gap-1.5 rounded-full border border-black/6 bg-white/52 p-1.5 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
 
-                return (
-                  <FastLink
-                    key={item.label}
-                    href={item.href}
-                    useTransitionNav
-                    className='group relative flex items-center gap-2 rounded-full px-3 py-2 transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 lg:px-4 whitespace-nowrap shrink-0'
-                  >
-                    {/* Active indicator */}
-                    {active && (
-                      <div className='absolute inset-0 rounded-full border border-primary-300/50 bg-linear-to-r from-[#f4c24d]/18 to-[#fff6de]/70 shadow-[0_10px_24px_rgba(244,194,77,0.12)] dark:border-primary-300/20 dark:from-primary-400/16 dark:to-white/6' />
-                    )}
-
-                    {/* Icon */}
-                    <div className='relative'>
-                      <Icon
-                        className={`w-5 h-5 transition-all duration-300 ${
-                          active
-                            ? 'text-[#171717] dark:text-[#fff6de]'
-                            : 'text-gray-600 dark:text-gray-400 group-hover:text-[#171717] dark:group-hover:text-gray-100'
-                        } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
-                      />
-                    </div>
-
-                    {/* Label */}
-                    <span
-                      className={`text-sm font-medium transition-all duration-300 ${
-                        active
-                          ? 'text-[#171717] dark:text-[#fff6de] font-semibold'
-                          : 'text-gray-700 dark:text-gray-300 group-hover:text-[#171717] dark:group-hover:text-gray-100'
-                      }`}
+                  return (
+                    <FastLink
+                      key={item.label}
+                      href={item.href}
+                      useTransitionNav
+                      className='group relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 lg:px-4'
                     >
-                      {item.label}
-                    </span>
+                      {active && (
+                        <div className='absolute inset-0 rounded-full border border-primary-300/40 bg-linear-to-r from-[#f4c24d]/18 to-[#fff6de]/60 shadow-[0_8px_20px_rgba(244,194,77,0.1)] dark:border-primary-300/20 dark:from-primary-400/14 dark:to-white/6' />
+                      )}
 
-                    {/* Bottom active border */}
-                    {active && (
-                      <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-[#f4c24d] to-[#c89422] rounded-full' />
-                    )}
-                  </FastLink>
-                );
-              })}
+                      <div className='relative'>
+                        <Icon
+                          className={`w-5 h-5 transition-all duration-300 ${
+                            active
+                              ? 'text-[#171717] dark:text-[#fff6de]'
+                              : 'text-gray-600 dark:text-gray-400 group-hover:text-[#171717] dark:group-hover:text-gray-100'
+                          } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                        />
+                      </div>
+
+                      <span
+                        className={`text-sm font-medium transition-all duration-300 ${
+                          active
+                            ? 'font-semibold text-[#171717] dark:text-[#fff6de]'
+                            : 'text-gray-700 dark:text-gray-300 group-hover:text-[#171717] dark:group-hover:text-gray-100'
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </FastLink>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Right Side Actions - ✨ AI Button, Theme Toggle & User Menu */}
-            <div className='flex items-center gap-2 shrink-0'>
-              {showAIButton && onAIButtonClick && (
-                <button
-                  onClick={onAIButtonClick}
-                  className='relative p-2 rounded-lg bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95 transition-all duration-200 shadow-lg shadow-[#f4c24d]/20 group'
-                  aria-label='AI 推荐'
-                >
-                  <Sparkles className='h-5 w-5 group-hover:scale-110 transition-transform duration-300' />
-                </button>
-              )}
-              <ThemeToggle />
-              <UserMenu />
+            {/* Right Side Actions */}
+            <div className='shrink-0'>
+              <NavActionCluster
+                showAIButton={showAIButton}
+                onAIButtonClick={onAIButtonClick}
+                onAnnouncementClick={onAnnouncementClick}
+                hasUnreadAnnouncement={hasUnreadAnnouncement}
+                announcementLabel={announcementTitle || '公告'}
+              />
             </div>
           </div>
         </div>

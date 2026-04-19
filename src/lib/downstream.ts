@@ -5,6 +5,7 @@ import { API_CONFIG, ApiSite, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import { getCachedSearchPage, setCachedSearchPage } from '@/lib/search-cache';
 import { SearchResult } from '@/lib/types';
+import { resolvePosterUrl } from '@/lib/utils';
 import { cleanHtmlTags } from '@/lib/utils';
 
 // 创建模块级别的繁简转换器实例
@@ -14,6 +15,9 @@ interface ApiSearchItem {
   vod_id: string;
   vod_name: string;
   vod_pic: string;
+  vod_pic_slide?: string;
+  vod_pic_thumb?: string;
+  vod_pic_s?: string;
   vod_remarks?: string;
   vod_play_url?: string;
   vod_class?: string;
@@ -70,6 +74,45 @@ async function clearSearchSourceFailures(siteKey: string): Promise<void> {
   } catch {
     // 清理失败不影响主流程
   }
+}
+
+async function enrichSearchResultsWithMissingPosters(
+  apiSite: ApiSite,
+  results: SearchResult[],
+): Promise<SearchResult[]> {
+  const missingPosterItems = results.filter(
+    (item) => !resolvePosterUrl(item.poster),
+  );
+
+  if (missingPosterItems.length === 0) {
+    return results;
+  }
+
+  const posterMap = new Map<string, string>();
+
+  await Promise.all(
+    missingPosterItems.map(async (item) => {
+      try {
+        const detail = await getDetailFromApi(apiSite, item.id);
+        const poster = resolvePosterUrl(detail.poster);
+
+        if (poster) {
+          posterMap.set(item.id, poster);
+        }
+      } catch {
+        // 单个结果补图失败时保留原搜索结果，不影响整体搜索。
+      }
+    }),
+  );
+
+  if (posterMap.size === 0) {
+    return results;
+  }
+
+  return results.map((item) => ({
+    ...item,
+    poster: resolvePosterUrl(item.poster, posterMap.get(item.id)),
+  }));
 }
 
 /**
@@ -156,7 +199,12 @@ async function searchWithCache(
       return {
         id: item.vod_id.toString(),
         title: item.vod_name.trim().replace(/\s+/g, ' '),
-        poster: item.vod_pic?.trim() || '', // 确保poster为有效字符串，过滤空白
+        poster: resolvePosterUrl(
+          item.vod_pic,
+          item.vod_pic_slide,
+          item.vod_pic_thumb,
+          item.vod_pic_s,
+        ),
         episodes,
         episodes_titles: titles,
         source: apiSite.key,
@@ -268,6 +316,8 @@ export async function searchFromApi(
       await recordSearchSourceFailure(apiSite.key);
       return [];
     }
+
+    results = await enrichSearchResultsWithMissingPosters(apiSite, results);
 
     await clearSearchSourceFailures(apiSite.key);
 
@@ -640,7 +690,12 @@ export async function getDetailFromApi(
   return {
     id: id.toString(),
     title: videoDetail.vod_name,
-    poster: videoDetail.vod_pic?.trim() || '', // 确保poster为有效字符串，过滤空白
+    poster: resolvePosterUrl(
+      videoDetail.vod_pic,
+      videoDetail.vod_pic_slide,
+      videoDetail.vod_pic_thumb,
+      videoDetail.vod_pic_s,
+    ),
     episodes,
     episodes_titles: titles,
     source: apiSite.key,

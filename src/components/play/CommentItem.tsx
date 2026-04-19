@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { memo } from 'react';
@@ -12,7 +11,7 @@ interface CommentItemProps {
  */
 const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
   return (
-    <div className='bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'>
+    <div className='rounded-2xl border border-black/6 bg-white/60 p-4 transition-colors hover:bg-white/80 dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]'>
       <div className='flex items-start gap-3'>
         {/* 用户头像 */}
         <div className='shrink-0'>
@@ -20,13 +19,13 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
             <img
               src={comment.avatar}
               alt={comment.username}
-              className='w-10 h-10 rounded-full object-cover'
+              className='h-10 w-10 rounded-full object-cover ring-1 ring-black/6 dark:ring-white/10'
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
           ) : (
-            <div className='w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-400'>
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-400'>
               {comment.username.charAt(0)}
             </div>
           )}
@@ -34,14 +33,14 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
 
         {/* 短评内容 */}
         <div className='flex-1 min-w-0'>
-          <div className='flex items-center gap-2 mb-1 flex-wrap'>
+          <div className='mb-1 flex flex-wrap items-center gap-2'>
             <span className='font-medium text-gray-800 dark:text-gray-200'>
               {comment.username}
             </span>
 
             {/* 评分星级 */}
             {comment.rating > 0 && (
-              <div className='flex items-center'>
+              <div className='flex items-center px-1 py-0.5'>
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
@@ -73,7 +72,7 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
 
           {/* 有用数 */}
           {comment.useful_count > 0 && (
-            <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>
+            <div className='mt-2 inline-flex text-xs text-gray-500 dark:text-gray-400'>
               {comment.useful_count} 人认为有用
             </div>
           )}

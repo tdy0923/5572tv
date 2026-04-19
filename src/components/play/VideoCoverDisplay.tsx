@@ -1,15 +1,18 @@
 'use client';
 
+import { resolveCardPosterUrl } from '@/lib/utils';
+
 interface VideoCoverDisplayProps {
   videoCover: string;
   bangumiDetails: {
     images?: {
       large?: string;
+      common?: string;
+      medium?: string;
     };
   } | null;
   videoTitle: string;
   videoDoubanId: number;
-  processImageUrl: (url: string) => string;
 }
 
 export default function VideoCoverDisplay({
@@ -17,34 +20,40 @@ export default function VideoCoverDisplay({
   bangumiDetails,
   videoTitle,
   videoDoubanId,
-  processImageUrl,
 }: VideoCoverDisplayProps) {
+  const coverSrc = resolveCardPosterUrl(
+    bangumiDetails?.images?.large,
+    bangumiDetails?.images?.common,
+    bangumiDetails?.images?.medium,
+    videoCover,
+  );
+  const resolvedCover = coverSrc;
+
   return (
     <div className='hidden md:block md:col-span-1 md:order-first'>
-      <div className='pl-0 py-4 pr-6'>
-        <div className='group relative bg-gray-300 dark:bg-gray-700 aspect-[2/3] flex items-center justify-center rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02]'>
-          {(videoCover || bangumiDetails?.images?.large) ? (
+      <div className='py-4 pr-6'>
+        <div className='group relative flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[22px] border border-black/6 bg-linear-to-br from-gray-100 to-gray-200 shadow-[0_18px_44px_rgba(15,23,42,0.08)] dark:border-white/8 dark:from-gray-800 dark:to-gray-700'>
+          {coverSrc ? (
             <>
-              {/* 渐变光泽动画层 */}
-              <div
-                className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10'
-                style={{
-                  background: 'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.15) 55%, transparent 70%)',
-                  backgroundSize: '200% 100%',
-                  animation: 'shimmer 2.5s ease-in-out infinite',
+              <img
+                src={resolvedCover}
+                alt={videoTitle}
+                className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]'
+                referrerPolicy='no-referrer'
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (!img.dataset.fallbackApplied) {
+                    img.dataset.fallbackApplied = 'true';
+                    img.src = '/placeholder-cover.jpg';
+                  } else {
+                    img.src =
+                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480"%3E%3Crect width="320" height="480" rx="28" fill="%23111827"/%3E%3Crect x="48" y="72" width="224" height="280" rx="18" fill="none" stroke="%236b7280" stroke-width="8" stroke-dasharray="14 12"/%3E%3Ccircle cx="160" cy="176" r="38" fill="%236b7280"/%3E%3Cpath d="M108 286c14-34 34-52 52-52s38 18 52 52" fill="%236b7280"/%3E%3Ctext x="160" y="410" font-family="Arial" font-size="22" fill="%239ca3af" text-anchor="middle"%3E封面暂不可用%3C/text%3E%3C/svg%3E';
+                  }
                 }}
               />
 
-              <img
-                src={processImageUrl(bangumiDetails?.images?.large || videoCover)}
-                alt={videoTitle}
-                className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'
-              />
+              <div className='absolute inset-0 bg-linear-to-t from-black/40 via-black/0 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100'></div>
 
-              {/* 悬浮遮罩 */}
-              <div className='absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500'></div>
-
-              {/* 链接按钮（bangumi或豆瓣） */}
               {videoDoubanId !== 0 && (
                 <a
                   href={
@@ -54,13 +63,12 @@ export default function VideoCoverDisplay({
                   }
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='absolute top-3 left-3 z-20'
+                  className='absolute left-3 top-3 z-20'
                 >
-                  <div className={`relative ${bangumiDetails ? 'bg-linear-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600' : 'bg-linear-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'} text-white text-xs font-bold w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 ease-out hover:scale-110 group/link`}>
-                    <div className={`absolute inset-0 ${bangumiDetails ? 'bg-pink-400' : 'bg-green-400'} rounded-full opacity-0 group-hover/link:opacity-30 blur transition-opacity duration-300`}></div>
+                  <div className='inline-flex items-center gap-2 rounded-full border border-white/18 bg-black/35 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md transition-all duration-300 hover:bg-black/50'>
                     <svg
-                      width='18'
-                      height='18'
+                      width='14'
+                      height='14'
                       viewBox='0 0 24 24'
                       fill='none'
                       stroke='currentColor'
@@ -72,14 +80,13 @@ export default function VideoCoverDisplay({
                       <path d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'></path>
                       <path d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'></path>
                     </svg>
+                    <span>{bangumiDetails ? 'Bangumi' : '豆瓣'}</span>
                   </div>
                 </a>
               )}
             </>
           ) : (
-            <span className='text-gray-600 dark:text-gray-400'>
-              封面图片
-            </span>
+            <span className='text-gray-600 dark:text-gray-400'>封面图片</span>
           )}
         </div>
       </div>

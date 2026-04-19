@@ -64,6 +64,7 @@ export default async function RootLayout({
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
 
   let siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
+  let announcementTitle = process.env.ANNOUNCEMENT_TITLE || '站点公告';
   let announcement =
     process.env.ANNOUNCEMENT ||
     '本网站仅提供影视信息搜索服务，所有内容均来自第三方网站。本站不存储任何视频资源，不对任何内容的准确性、合法性、完整性负责。';
@@ -80,6 +81,7 @@ export default async function RootLayout({
   let customAdFilterVersion = 0;
   let aiRecommendEnabled = false;
   let embyEnabled = false;
+  let adSettings = undefined as any;
   let customCategories = [] as {
     name: string;
     type: 'movie' | 'tv';
@@ -88,6 +90,7 @@ export default async function RootLayout({
   if (storageType !== 'localstorage') {
     const config = await getConfig();
     siteName = config.SiteConfig.SiteName;
+    announcementTitle = config.SiteConfig.AnnouncementTitle || '站点公告';
     announcement = config.SiteConfig.Announcement;
 
     doubanProxyType = config.SiteConfig.DoubanProxyType;
@@ -106,6 +109,7 @@ export default async function RootLayout({
     enableWebLive = config.SiteConfig.EnableWebLive ?? false;
     customAdFilterVersion = config.SiteConfig?.CustomAdFilterVersion || 0;
     aiRecommendEnabled = config.AIRecommendConfig?.enabled ?? false;
+    adSettings = config.SiteConfig?.AdSettings;
     // 检查是否启用了 Emby 功能（支持多源）
     embyEnabled = !!(
       config.EmbyConfig?.Sources &&
@@ -163,7 +167,12 @@ export default async function RootLayout({
             <GlobalCacheProvider>
               <DownloadProvider>
                 <WatchRoomProvider>
-                  <SiteProvider siteName={siteName} announcement={announcement}>
+                  <SiteProvider
+                    siteName={siteName}
+                    announcementTitle={announcementTitle}
+                    announcement={announcement}
+                    adSettings={adSettings}
+                  >
                     <Suspense
                       fallback={
                         <div className='min-h-screen flex items-center justify-center'>

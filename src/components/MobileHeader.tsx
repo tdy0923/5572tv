@@ -41,7 +41,7 @@ const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
         </div>
 
         {/* 右侧按钮 */}
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 rounded-full border border-black/6 bg-white/55 px-2 py-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
           <ThemeToggle />
           <UserMenu />
         </div>

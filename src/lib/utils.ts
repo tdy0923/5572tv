@@ -179,6 +179,10 @@ export function processImageUrl(originalUrl: string): string {
     return originalUrl;
   }
 
+  if (originalUrl.startsWith('//')) {
+    return processImageUrl(`https:${originalUrl}`);
+  }
+
   const normalizedUrl = originalUrl.startsWith('http://')
     ? `https://${originalUrl.slice('http://'.length)}`
     : originalUrl;
@@ -226,6 +230,34 @@ export function processImageUrl(originalUrl: string): string {
     default:
       return normalizedUrl;
   }
+}
+
+export function resolvePosterUrl(
+  ...candidates: Array<string | null | undefined>
+): string {
+  for (const candidate of candidates) {
+    if (typeof candidate !== 'string') continue;
+
+    const normalized = candidate.trim();
+    if (!normalized) continue;
+
+    if (/^(null|undefined|n\/a|none)$/i.test(normalized)) continue;
+
+    return normalized;
+  }
+
+  return '';
+}
+
+export function resolveCardPosterUrl(
+  ...candidates: Array<string | null | undefined>
+): string {
+  const resolved = resolvePosterUrl(...candidates);
+  if (!resolved) return '/placeholder-cover.jpg';
+
+  if (resolved.startsWith('/')) return resolved;
+
+  return processImageUrl(resolved);
 }
 
 /**

@@ -1,15 +1,22 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
 import {
-  FunnelIcon,
-  XMarkIcon,
   CalendarIcon,
-  StarIcon,
   FireIcon,
+  FunnelIcon,
   LanguageIcon,
+  StarIcon,
   TagIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
+import React, { useCallback, useState } from 'react';
+
+import {
+  GlassPanel,
+  PanelField,
+  PanelSelect,
+  PillButton,
+} from '@/components/ui-surface';
 
 export interface TMDBFilterState {
   // 时间筛选
@@ -40,7 +47,13 @@ export interface TMDBFilterState {
   onlyRated?: boolean;
 
   // 排序方式
-  sortBy?: 'rating' | 'date' | 'popularity' | 'vote_count' | 'title' | 'episode_count';
+  sortBy?:
+    | 'rating'
+    | 'date'
+    | 'popularity'
+    | 'vote_count'
+    | 'title'
+    | 'episode_count';
   sortOrder?: 'asc' | 'desc';
 
   // 结果限制
@@ -114,10 +127,12 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
   const [localFilters, setLocalFilters] = useState<TMDBFilterState>(filters);
 
   const genres = contentType === 'movie' ? MOVIE_GENRES : TV_GENRES;
-  const sortOptions = SORT_OPTIONS.filter(option => !option.tvOnly || contentType === 'tv');
+  const sortOptions = SORT_OPTIONS.filter(
+    (option) => !option.tvOnly || contentType === 'tv',
+  );
 
   const updateFilter = useCallback((key: keyof TMDBFilterState, value: any) => {
-    setLocalFilters(prev => ({
+    setLocalFilters((prev) => ({
       ...prev,
       [key]: value,
     }));
@@ -133,77 +148,88 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
     onFiltersChange(emptyFilters);
   }, [onFiltersChange]);
 
-  const hasActiveFilters = Object.keys(localFilters).some(key => {
+  const hasActiveFilters = Object.keys(localFilters).some((key) => {
     const value = localFilters[key as keyof TMDBFilterState];
-    return value !== undefined && value !== null && (Array.isArray(value) ? value.length > 0 : true);
+    return (
+      value !== undefined &&
+      value !== null &&
+      (Array.isArray(value) ? value.length > 0 : true)
+    );
   });
 
   return (
-    <div className="relative">
+    <div className='relative'>
       {/* 筛选按钮 */}
-      <button
+      <PillButton
         onClick={onToggleVisible}
-        className={`inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium ${
-          hasActiveFilters
-            ? 'text-blue-700 bg-blue-50 border-blue-300 dark:text-blue-300 dark:bg-blue-900/20 dark:border-blue-600'
-            : 'text-gray-700 bg-white hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
-        } transition-colors`}
+        active={hasActiveFilters}
+        className='inline-flex items-center gap-2 px-3 py-2'
       >
-        <FunnelIcon className="h-4 w-4 mr-2" />
+        <FunnelIcon className='h-4 w-4' />
         筛选
         {hasActiveFilters && (
-          <span className="ml-1 bg-blue-600 text-white text-xs rounded-full px-1.5 py-0.5">
+          <span className='rounded-full bg-black/10 px-1.5 py-0.5 text-xs text-current dark:bg-white/10'>
             {Object.keys(localFilters).length}
           </span>
         )}
-      </button>
+      </PillButton>
 
       {/* 筛选面板 */}
       {isVisible && (
-        <div className="absolute top-full left-0 mt-2 w-96 max-w-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <GlassPanel className='absolute left-0 top-full z-50 mt-2 w-96 max-w-lg p-4'>
+          <div className='flex items-center justify-between mb-4'>
+            <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100'>
               {contentType === 'movie' ? '电影' : '电视剧'}筛选
             </h3>
-            <div className="flex items-center space-x-2">
-              <button
+            <div className='flex items-center space-x-2'>
+              <PillButton
                 onClick={resetFilters}
-                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                className='px-3 py-1.5 text-sm'
               >
                 重置
-              </button>
+              </PillButton>
               <button
                 onClick={onToggleVisible}
-                className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                className='text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
               >
-                <XMarkIcon className="h-5 w-5" />
+                <XMarkIcon className='h-5 w-5' />
               </button>
             </div>
           </div>
 
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className='space-y-4 max-h-96 overflow-y-auto'>
             {/* 年份筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 年份范围
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  placeholder="起始年份"
+              <div className='grid grid-cols-2 gap-2'>
+                <PanelField
+                  type='number'
+                  placeholder='起始年份'
                   value={localFilters.startYear || ''}
-                  onChange={(e) => updateFilter('startYear', e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  min="1900"
+                  onChange={(e) =>
+                    updateFilter(
+                      'startYear',
+                      e.target.value ? parseInt(e.target.value) : undefined,
+                    )
+                  }
+                  className='px-3 py-2'
+                  min='1900'
                   max={new Date().getFullYear()}
                 />
-                <input
-                  type="number"
-                  placeholder="结束年份"
+                <PanelField
+                  type='number'
+                  placeholder='结束年份'
                   value={localFilters.endYear || ''}
-                  onChange={(e) => updateFilter('endYear', e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  min="1900"
+                  onChange={(e) =>
+                    updateFilter(
+                      'endYear',
+                      e.target.value ? parseInt(e.target.value) : undefined,
+                    )
+                  }
+                  className='px-3 py-2'
+                  min='1900'
                   max={new Date().getFullYear()}
                 />
               </div>
@@ -211,88 +237,113 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
 
             {/* 评分筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 评分范围 (0-10)
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  placeholder="最低评分"
+              <div className='grid grid-cols-2 gap-2'>
+                <PanelField
+                  type='number'
+                  placeholder='最低评分'
                   value={localFilters.minRating || ''}
-                  onChange={(e) => updateFilter('minRating', e.target.value ? parseFloat(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  min="0"
-                  max="10"
-                  step="0.1"
+                  onChange={(e) =>
+                    updateFilter(
+                      'minRating',
+                      e.target.value ? parseFloat(e.target.value) : undefined,
+                    )
+                  }
+                  className='px-3 py-2'
+                  min='0'
+                  max='10'
+                  step='0.1'
                 />
-                <input
-                  type="number"
-                  placeholder="最高评分"
+                <PanelField
+                  type='number'
+                  placeholder='最高评分'
                   value={localFilters.maxRating || ''}
-                  onChange={(e) => updateFilter('maxRating', e.target.value ? parseFloat(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  min="0"
-                  max="10"
-                  step="0.1"
+                  onChange={(e) =>
+                    updateFilter(
+                      'maxRating',
+                      e.target.value ? parseFloat(e.target.value) : undefined,
+                    )
+                  }
+                  className='px-3 py-2'
+                  min='0'
+                  max='10'
+                  step='0.1'
                 />
               </div>
             </div>
 
             {/* 人气筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 最低人气值
               </label>
-              <input
-                type="number"
-                placeholder="例如: 10"
+              <PanelField
+                type='number'
+                placeholder='例如: 10'
                 value={localFilters.minPopularity || ''}
-                onChange={(e) => updateFilter('minPopularity', e.target.value ? parseFloat(e.target.value) : undefined)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                min="0"
+                onChange={(e) =>
+                  updateFilter(
+                    'minPopularity',
+                    e.target.value ? parseFloat(e.target.value) : undefined,
+                  )
+                }
+                className='px-3 py-2'
+                min='0'
               />
             </div>
 
             {/* 最低投票数 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 最低投票数
               </label>
-              <input
-                type="number"
-                placeholder="例如: 100"
+              <PanelField
+                type='number'
+                placeholder='例如: 100'
                 value={localFilters.minVoteCount || ''}
-                onChange={(e) => updateFilter('minVoteCount', e.target.value ? parseInt(e.target.value) : undefined)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                min="0"
+                onChange={(e) =>
+                  updateFilter(
+                    'minVoteCount',
+                    e.target.value ? parseInt(e.target.value) : undefined,
+                  )
+                }
+                className='px-3 py-2'
+                min='0'
               />
             </div>
 
             {/* TV剧集数筛选 */}
             {contentType === 'tv' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                   最少参演集数
                 </label>
-                <input
-                  type="number"
-                  placeholder="例如: 5"
+                <PanelField
+                  type='number'
+                  placeholder='例如: 5'
                   value={localFilters.minEpisodeCount || ''}
-                  onChange={(e) => updateFilter('minEpisodeCount', e.target.value ? parseInt(e.target.value) : undefined)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  min="1"
+                  onChange={(e) =>
+                    updateFilter(
+                      'minEpisodeCount',
+                      e.target.value ? parseInt(e.target.value) : undefined,
+                    )
+                  }
+                  className='px-3 py-2'
+                  min='1'
                 />
               </div>
             )}
 
             {/* 类型筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 类型
               </label>
-              <div className="flex flex-wrap gap-1">
+              <div className='flex flex-wrap gap-1'>
                 {genres.map((genre) => (
-                  <button
+                  <PillButton
                     key={genre.id}
                     onClick={() => {
                       const current = localFilters.genreIds || [];
@@ -300,30 +351,27 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
                       updateFilter(
                         'genreIds',
                         isSelected
-                          ? current.filter(id => id !== genre.id)
-                          : [...current, genre.id]
+                          ? current.filter((id) => id !== genre.id)
+                          : [...current, genre.id],
                       );
                     }}
-                    className={`px-2 py-1 text-xs rounded-md border transition-colors ${
-                      (localFilters.genreIds || []).includes(genre.id)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                    }`}
+                    active={(localFilters.genreIds || []).includes(genre.id)}
+                    className='px-2 py-1 text-xs'
                   >
                     {genre.name}
-                  </button>
+                  </PillButton>
                 ))}
               </div>
             </div>
 
             {/* 语言筛选 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 语言
               </label>
-              <div className="flex flex-wrap gap-1">
+              <div className='flex flex-wrap gap-1'>
                 {LANGUAGES.map((lang) => (
-                  <button
+                  <PillButton
                     key={lang.code}
                     onClick={() => {
                       const current = localFilters.languages || [];
@@ -331,60 +379,59 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
                       updateFilter(
                         'languages',
                         isSelected
-                          ? current.filter(code => code !== lang.code)
-                          : [...current, lang.code]
+                          ? current.filter((code) => code !== lang.code)
+                          : [...current, lang.code],
                       );
                     }}
-                    className={`px-2 py-1 text-xs rounded-md border transition-colors ${
-                      (localFilters.languages || []).includes(lang.code)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-                    }`}
+                    active={(localFilters.languages || []).includes(lang.code)}
+                    className='px-2 py-1 text-xs'
                   >
                     {lang.name}
-                  </button>
+                  </PillButton>
                 ))}
               </div>
             </div>
 
             {/* 排序方式 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 排序方式
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <select
+              <div className='grid grid-cols-2 gap-2'>
+                <PanelSelect
                   value={localFilters.sortBy || 'rating'}
                   onChange={(e) => updateFilter('sortBy', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className='px-3 py-2'
                 >
                   {sortOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
-                </select>
-                <select
+                </PanelSelect>
+                <PanelSelect
                   value={localFilters.sortOrder || 'desc'}
                   onChange={(e) => updateFilter('sortOrder', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  className='px-3 py-2'
                 >
-                  <option value="desc">降序</option>
-                  <option value="asc">升序</option>
-                </select>
+                  <option value='desc'>降序</option>
+                  <option value='asc'>升序</option>
+                </PanelSelect>
               </div>
             </div>
 
             {/* 选项开关 */}
             <div>
-              <label className="flex items-center">
+              <label className='flex items-center'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={localFilters.onlyRated || false}
-                  onChange={(e) => updateFilter('onlyRated', e.target.checked || undefined)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  onChange={(e) =>
+                    updateFilter('onlyRated', e.target.checked || undefined)
+                  }
+                  className='h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
                 />
-                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <span className='ml-2 text-sm text-gray-700 dark:text-gray-300'>
                   只显示有评分的作品
                 </span>
               </label>
@@ -392,38 +439,44 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
 
             {/* 结果限制 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 显示数量限制
               </label>
-              <select
+              <PanelSelect
                 value={localFilters.limit || ''}
-                onChange={(e) => updateFilter('limit', e.target.value ? parseInt(e.target.value) : undefined)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                onChange={(e) =>
+                  updateFilter(
+                    'limit',
+                    e.target.value ? parseInt(e.target.value) : undefined,
+                  )
+                }
+                className='px-3 py-2'
               >
-                <option value="">不限制</option>
-                <option value="50">50 个</option>
-                <option value="100">100 个</option>
-                <option value="200">200 个</option>
-                <option value="500">500 个</option>
-              </select>
+                <option value=''>不限制</option>
+                <option value='50'>50 个</option>
+                <option value='100'>100 个</option>
+                <option value='200'>200 个</option>
+                <option value='500'>500 个</option>
+              </PanelSelect>
             </div>
           </div>
 
           {/* 应用按钮 */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+          <div className='mt-4 pt-4 border-t border-gray-200 dark:border-gray-600'>
+            <div className='flex justify-between items-center'>
+              <span className='text-sm text-gray-500 dark:text-gray-400'>
                 {resultCount > 0 && `当前 ${resultCount} 个结果`}
               </span>
-              <button
+              <PillButton
                 onClick={applyFilters}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                active
+                className='px-4 py-2 text-sm'
               >
                 应用筛选
-              </button>
+              </PillButton>
             </div>
           </div>
-        </div>
+        </GlassPanel>
       )}
     </div>
   );

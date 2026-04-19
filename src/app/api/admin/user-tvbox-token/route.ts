@@ -11,9 +11,7 @@ function getAllowedTVBoxSourceKeys(
   user: (typeof config.UserConfig.Users)[number],
 ): string[] {
   if (user.enabledApis && user.enabledApis.length > 0) {
-    return user.enabledApis.filter(
-      (apiKey) => !['ai-recommend', 'youtube-search'].includes(apiKey),
-    );
+    return user.enabledApis.filter((apiKey) => apiKey !== 'ai-recommend');
   }
 
   if (user.tags && user.tags.length > 0 && config.UserConfig.Tags) {
@@ -22,7 +20,7 @@ function getAllowedTVBoxSourceKeys(
       const tagConfig = config.UserConfig.Tags?.find((t) => t.name === tagName);
       if (tagConfig?.enabledApis) {
         tagConfig.enabledApis.forEach((apiKey) => {
-          if (!['ai-recommend', 'youtube-search'].includes(apiKey)) {
+          if (apiKey !== 'ai-recommend') {
             inheritedApis.add(apiKey);
           }
         });

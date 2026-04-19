@@ -1,8 +1,14 @@
 'use client';
 
-import { ArrowDownWideNarrow, ArrowUpDown,ArrowUpNarrowWide } from 'lucide-react';
+import {
+  ArrowDownWideNarrow,
+  ArrowUpDown,
+  ArrowUpNarrowWide,
+} from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+
+import { GlassPanel, PillButton, PillGroup } from '@/components/ui-surface';
 
 export type SearchFilterKey = 'source' | 'title' | 'year' | 'yearOrder';
 
@@ -30,9 +36,19 @@ const DEFAULTS: Record<SearchFilterKey, string> = {
   yearOrder: 'none',
 };
 
-const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, values, onChange }) => {
-  const [activeCategory, setActiveCategory] = useState<SearchFilterKey | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState<{ x: number; y: number; width: number }>({ x: 0, y: 0, width: 0 });
+const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
+  categories,
+  values,
+  onChange,
+}) => {
+  const [activeCategory, setActiveCategory] = useState<SearchFilterKey | null>(
+    null,
+  );
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    x: number;
+    y: number;
+    width: number;
+  }>({ x: 0, y: 0, width: 0 });
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +86,11 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
         }
       }
 
-      setDropdownPosition({ x, y: rect.bottom, width: useFixedWidth ? dropdownWidth : rect.width });
+      setDropdownPosition({
+        x,
+        y: rect.bottom,
+        width: useFixedWidth ? dropdownWidth : rect.width,
+      });
     }
   };
 
@@ -83,7 +103,10 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
     }
   };
 
-  const handleOptionSelect = (categoryKey: SearchFilterKey, optionValue: string) => {
+  const handleOptionSelect = (
+    categoryKey: SearchFilterKey,
+    optionValue: string,
+  ) => {
     const newValues = {
       ...mergedValues,
       [categoryKey]: optionValue,
@@ -106,7 +129,10 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
     return !value || value === DEFAULTS[categoryKey];
   };
 
-  const isOptionSelected = (categoryKey: SearchFilterKey, optionValue: string) => {
+  const isOptionSelected = (
+    categoryKey: SearchFilterKey,
+    optionValue: string,
+  ) => {
     const value = mergedValues[categoryKey] ?? DEFAULTS[categoryKey];
     return value === optionValue;
   };
@@ -135,7 +161,9 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
-        !Object.values(categoryRefs.current).some((ref) => ref && ref.contains(event.target as Node))
+        !Object.values(categoryRefs.current).some(
+          (ref) => ref && ref.contains(event.target as Node),
+        )
       ) {
         setActiveCategory(null);
       }
@@ -146,30 +174,47 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
 
   return (
     <>
-      <div className='relative inline-flex rounded-full p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2'>
+      <PillGroup className='relative flex max-w-full flex-wrap gap-1 sm:gap-2'>
         {categories.map((category) => (
-          <div key={category.key} ref={(el) => { categoryRefs.current[category.key] = el; }} className='relative'>
-            <button
+          <div
+            key={category.key}
+            ref={(el) => {
+              categoryRefs.current[category.key] = el;
+            }}
+            className='relative'
+          >
+            <PillButton
               onClick={() => handleCategoryClick(category.key)}
-              className={`relative z-10 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${activeCategory === category.key
-                ? isDefaultValue(category.key)
-                  ? 'text-gray-900 dark:text-gray-100 cursor-default'
-                  : 'text-green-600 dark:text-green-400 cursor-default'
-                : isDefaultValue(category.key)
-                  ? 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
-                  : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 cursor-pointer'
-                }`}
+              className={`relative z-10 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                activeCategory === category.key
+                  ? isDefaultValue(category.key)
+                    ? 'text-gray-900 dark:text-gray-100 cursor-default'
+                    : 'text-green-600 dark:text-green-400 cursor-default'
+                  : isDefaultValue(category.key)
+                    ? 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
+                    : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 cursor-pointer'
+              }`}
             >
               <span>{getDisplayText(category.key)}</span>
-              <svg className={`inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5 sm:ml-1 transition-transform duration-200 ${activeCategory === category.key ? 'rotate-180' : ''}`} fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+              <svg
+                className={`inline-block w-2.5 h-2.5 sm:w-3 sm:h-3 ml-0.5 sm:ml-1 transition-transform duration-200 ${activeCategory === category.key ? 'rotate-180' : ''}`}
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M19 9l-7 7-7-7'
+                />
               </svg>
-            </button>
+            </PillButton>
           </div>
         ))}
         {/* 通用年份排序切换按钮 */}
         <div className='relative'>
-          <button
+          <PillButton
             onClick={() => {
               let next;
               switch (mergedValues.yearOrder) {
@@ -187,10 +232,11 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
               }
               onChange({ ...mergedValues, yearOrder: next });
             }}
-            className={`relative z-10 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 text-xs sm:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${mergedValues.yearOrder === 'none'
-              ? 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
-              : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 cursor-pointer'
-              }`}
+            className={`relative z-10 px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-4 md:py-2 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+              mergedValues.yearOrder === 'none'
+                ? 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 cursor-pointer'
+                : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 cursor-pointer'
+            }`}
             aria-label={`按年份${mergedValues.yearOrder === 'none' ? '排序' : mergedValues.yearOrder === 'desc' ? '降序' : '升序'}排序`}
           >
             <span>年份</span>
@@ -201,45 +247,53 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({ categories, val
             ) : (
               <ArrowUpNarrowWide className='inline-block ml-1 w-4 h-4 sm:w-4 sm:h-4' />
             )}
-          </button>
+          </PillButton>
         </div>
-      </div>
+      </PillGroup>
 
-      {activeCategory && createPortal(
-        <div
-          ref={dropdownRef}
-          className='fixed z-9999 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm max-h-[50vh] flex flex-col'
-          style={{
-            left: `${dropdownPosition.x}px`,
-            top: `${dropdownPosition.y}px`,
-            ...(typeof window !== 'undefined' && window.innerWidth < 768 ? { width: `${dropdownPosition.width}px` } : { minWidth: `${Math.max(dropdownPosition.width, activeCategory === 'title' ? 400 : 240)}px` }),
-            maxWidth: '600px',
-            position: 'fixed',
-          }}
-        >
-          <div className='p-2 sm:p-4 overflow-y-auto flex-1 min-h-0'>
-            <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2'>
-              {categories.find((cat) => cat.key === activeCategory)?.options.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => handleOptionSelect(activeCategory, option.value)}
-                  className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 text-left ${isOptionSelected(activeCategory, option.value)
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-700'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
-                    }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+      {activeCategory &&
+        createPortal(
+          <GlassPanel
+            ref={dropdownRef}
+            className='fixed z-9999 max-h-[50vh] flex flex-col rounded-2xl bg-white/95 dark:bg-gray-800/95'
+            style={{
+              left: `${dropdownPosition.x}px`,
+              top: `${dropdownPosition.y}px`,
+              ...(typeof window !== 'undefined' && window.innerWidth < 768
+                ? { width: `${dropdownPosition.width}px` }
+                : {
+                    minWidth: `${Math.max(dropdownPosition.width, activeCategory === 'title' ? 400 : 240)}px`,
+                  }),
+              maxWidth: '600px',
+              position: 'fixed',
+            }}
+          >
+            <div className='p-2 sm:p-4 overflow-y-auto flex-1 min-h-0'>
+              <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2'>
+                {categories
+                  .find((cat) => cat.key === activeCategory)
+                  ?.options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() =>
+                        handleOptionSelect(activeCategory, option.value)
+                      }
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 text-left ${
+                        isOptionSelected(activeCategory, option.value)
+                          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.2)]'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </GlassPanel>,
+          document.body,
+        )}
     </>
   );
 };
 
 export default SearchResultFilter;
-
-

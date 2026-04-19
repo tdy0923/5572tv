@@ -86,6 +86,10 @@ function getImageFailureCacheKey(imageUrl: string): string {
   return `image-proxy:failure:${imageUrl}`;
 }
 
+function getPlaceholderRedirectUrl(request: Request): URL {
+  return new URL('/placeholder-cover.jpg', request.url);
+}
+
 // 图片代理接口 - 解决防盗链和 Mixed Content 问题
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -110,7 +114,7 @@ export async function GET(request: Request) {
   try {
     const cachedFailure = await db.getCache(failureCacheKey);
     if (cachedFailure) {
-      return NextResponse.redirect('/placeholder-cover.jpg', 302);
+      return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
     }
 
     // 动态设置 Referer 和 Origin（根据图片源域名）
@@ -238,10 +242,10 @@ export async function GET(request: Request) {
 
     // 错误类型判断
     if (error.name === 'AbortError') {
-      return NextResponse.redirect('/placeholder-cover.jpg', 302);
+      return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
     }
 
-    return NextResponse.redirect('/placeholder-cover.jpg', 302);
+    return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
   }
 }
 

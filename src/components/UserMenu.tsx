@@ -385,6 +385,10 @@ export const UserMenu: React.FC = () => {
   const handlePlayStats = () => {
     setIsOpen(false);
     router.refresh();
+    if (authInfo?.role === 'owner' || authInfo?.role === 'admin') {
+      router.push('/admin');
+      return;
+    }
     router.push('/play-stats');
   };
 
@@ -559,8 +563,12 @@ export const UserMenu: React.FC = () => {
   const showChangePassword =
     authInfo?.role !== 'owner' && storageType !== 'localstorage';
 
-  // 检查是否显示播放统计按钮（所有登录用户，且非localstorage存储）
-  const showPlayStats = authInfo?.username && storageType !== 'localstorage';
+  // 普通用户显示个人统计；管理员统一从后台进入统计中心
+  const showPlayStats =
+    authInfo?.username &&
+    storageType !== 'localstorage' &&
+    authInfo?.role !== 'owner' &&
+    authInfo?.role !== 'admin';
 
   // 检查是否显示更新提醒按钮（登录用户且非localstorage存储就显示）
   const showWatchingUpdates =
@@ -699,13 +707,13 @@ export const UserMenu: React.FC = () => {
             </button>
           )}
 
-          {/* 播放统计按钮 */}
+          {/* 统计入口 */}
           {showPlayStats && (
             <button onClick={handlePlayStats} className='ui-menu-button'>
               <BarChart3 className='w-4 h-4 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>
                 {authInfo?.role === 'owner' || authInfo?.role === 'admin'
-                  ? '播放统计'
+                  ? '统计中心'
                   : '个人统计'}
               </span>
             </button>

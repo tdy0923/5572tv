@@ -1,6 +1,8 @@
 'use client';
 import React, { memo } from 'react';
 
+import { resolvePosterUrl } from '@/lib/utils';
+
 import CommentSection from '@/components/play/CommentSection';
 import FavoriteButton from '@/components/play/FavoriteButton';
 import VideoCard from '@/components/VideoCard';
@@ -54,6 +56,9 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
     onClearCelebrity,
     processImageUrl,
   } = props;
+
+  const celebrityFallbackAvatar =
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"%3E%3Crect width="96" height="96" rx="48" fill="%23e5e7eb"/%3E%3Ccircle cx="48" cy="36" r="16" fill="%239ca3af"/%3E%3Cpath d="M22 78c4-13 14-20 26-20s22 7 26 20" fill="%239ca3af"/%3E%3C/svg%3E';
 
   return (
     <div className='md:col-span-3'>
@@ -451,44 +456,68 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
           movieDetails.celebrities.length > 0 &&
           movieDetails.celebrities.some((c: any) => c.avatar) && (
             <div className='mt-6 border-t border-gray-200 dark:border-gray-700 pt-6'>
-              <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2'>
-                <span>🎭</span>
-                <span>演员阵容</span>
-              </h3>
-              <div className='flex gap-4 overflow-x-auto pb-4 scrollbar-hide'>
-                {movieDetails.celebrities.slice(0, 15).map((celebrity: any) => (
-                  <div
-                    key={celebrity.id}
-                    onClick={() => onCelebrityClick(celebrity.name)}
-                    className='shrink-0 text-center group cursor-pointer'
-                  >
-                    <div className='w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mb-2 ring-2 ring-transparent group-hover:ring-blue-500 transition-all duration-300 group-hover:scale-110 shadow-md group-hover:shadow-xl'>
-                      <img
-                        src={processImageUrl(celebrity.avatar)}
-                        alt={celebrity.name}
-                        className='w-full h-full object-cover'
-                        loading='lazy'
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                    <p
-                      className='text-xs font-medium text-gray-700 dark:text-gray-300 w-20 truncate group-hover:text-blue-500 transition-colors'
-                      title={celebrity.name}
+              <div className='mb-4 flex items-center justify-between gap-3'>
+                <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-200'>
+                  <span>演员阵容</span>
+                </h3>
+                <span className='text-xs text-gray-500 dark:text-gray-400'>
+                  点击查看相关作品
+                </span>
+              </div>
+              <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
+                {movieDetails.celebrities.slice(0, 15).map((celebrity: any) => {
+                  const celebrityAvatar = resolvePosterUrl(
+                    celebrity.avatar,
+                    celebrityFallbackAvatar,
+                  );
+
+                  return (
+                    <div
+                      key={celebrity.id}
+                      onClick={() => onCelebrityClick(celebrity.name)}
+                      className='group cursor-pointer'
                     >
-                      {celebrity.name}
-                    </p>
-                    {celebrity.role && (
-                      <p
-                        className='text-[10px] text-gray-500 dark:text-gray-500 w-20 truncate mt-0.5'
-                        title={celebrity.role}
-                      >
-                        {celebrity.role}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                      <div className='flex items-center gap-3 rounded-2xl border border-black/6 bg-white/72 p-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-300 group-hover:shadow-[0_18px_36px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6 dark:group-hover:border-blue-500/40'>
+                        <div className='h-20 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-700 sm:h-24 sm:w-[72px]'>
+                          <img
+                            src={processImageUrl(celebrityAvatar)}
+                            alt={celebrity.name}
+                            className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]'
+                            loading='lazy'
+                            referrerPolicy='no-referrer'
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              if (!img.dataset.fallbackApplied) {
+                                img.dataset.fallbackApplied = 'true';
+                                img.src = celebrityFallbackAvatar;
+                              }
+                            }}
+                          />
+                        </div>
+                        <div className='min-w-0 flex-1'>
+                          <p
+                            className='line-clamp-2 text-sm font-semibold text-gray-800 transition-colors group-hover:text-blue-600 dark:text-gray-200 dark:group-hover:text-blue-400'
+                            title={celebrity.name}
+                          >
+                            {celebrity.name}
+                          </p>
+                          {celebrity.role ? (
+                            <p
+                              className='mt-1 line-clamp-2 text-xs leading-5 text-gray-500 dark:text-gray-400'
+                              title={celebrity.role}
+                            >
+                              {celebrity.role}
+                            </p>
+                          ) : (
+                            <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+                              查看相关作品
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -496,31 +525,36 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
         {/* 演员作品展示 */}
         {selectedCelebrityName && (
           <div className='mt-6 border-t border-gray-200 dark:border-gray-700 pt-6'>
-            <div className='flex justify-between items-center mb-4'>
-              <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
-                <span>🎬</span>
-                <span>{selectedCelebrityName} 的作品</span>
-              </h3>
+            <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex items-center gap-3'>
+                <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-200'>
+                  <span>{selectedCelebrityName} 的作品</span>
+                </h3>
+                {!loadingCelebrityWorks && celebrityWorks.length > 0 && (
+                  <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300'>
+                    {celebrityWorks.length} 部
+                  </span>
+                )}
+              </div>
               <button
                 onClick={onClearCelebrity}
-                className='text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                className='inline-flex items-center justify-center rounded-full border border-black/6 bg-white/70 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700 dark:border-white/8 dark:bg-white/6 dark:text-gray-400 dark:hover:text-gray-200'
               >
-                收起 ✕
+                收起
               </button>
             </div>
 
             {loadingCelebrityWorks ? (
-              <div className='flex flex-col items-center justify-center py-12'>
-                <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4'></div>
-                <p className='text-gray-600 dark:text-gray-400'>
-                  正在加载作品...
-                </p>
+              <div className='rounded-[24px] border border-black/6 bg-white/65 py-12 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/8 dark:bg-white/5'>
+                <div className='flex flex-col items-center justify-center'>
+                  <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4'></div>
+                  <p className='text-gray-600 dark:text-gray-400'>
+                    正在加载作品...
+                  </p>
+                </div>
               </div>
             ) : celebrityWorks.length > 0 ? (
               <>
-                <p className='text-sm text-gray-600 dark:text-gray-400 mb-4'>
-                  找到 {celebrityWorks.length} 部相关作品
-                </p>
                 <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
                   {celebrityWorks.map((work: any) => {
                     // TMDB作品不传douban_id，仅传title搜索
@@ -636,7 +670,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                 </div>
               </>
             ) : (
-              <div className='text-center py-12'>
+              <div className='rounded-[24px] border border-dashed border-black/10 bg-black/[0.02] py-12 text-center dark:border-white/10 dark:bg-white/[0.03]'>
                 <p className='text-gray-500 dark:text-gray-400 mb-2'>
                   暂无相关作品
                 </p>
@@ -652,12 +686,21 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
         {movieDetails?.recommendations &&
           movieDetails.recommendations.length > 0 && (
             <div className='mt-6 border-t border-gray-200 dark:border-gray-700 pt-6'>
-              <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2'>
-                <span>💡</span>
-                <span>
-                  喜欢这部{movieDetails.episodes ? '剧' : '电影'}的人也喜欢
-                </span>
-              </h3>
+              <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='flex items-center gap-3'>
+                  <h3 className='flex items-center gap-2 text-lg font-semibold text-gray-800 dark:text-gray-200'>
+                    <span>
+                      喜欢这部{movieDetails.episodes ? '剧' : '电影'}的人也喜欢
+                    </span>
+                  </h3>
+                  <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300'>
+                    {movieDetails.recommendations.length} 部
+                  </span>
+                </div>
+                <p className='text-xs text-gray-500 dark:text-gray-400'>
+                  基于豆瓣关联内容推荐
+                </p>
+              </div>
               <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4'>
                 {movieDetails.recommendations.map((item: any) => {
                   const playUrl = `/play?title=${encodeURIComponent(item.title)}&douban_id=${item.id}&prefer=true`;

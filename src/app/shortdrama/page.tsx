@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/exhaustive-deps, no-console */
+/* eslint-disable react-hooks/exhaustive-deps, no-console */
 
 'use client';
 
 import { ChevronUp, Filter, Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   getShortDramaCategories,
@@ -15,6 +15,8 @@ import { ShortDramaCategory, ShortDramaItem } from '@/lib/types';
 
 import PageLayout from '@/components/PageLayout';
 import ShortDramaCard from '@/components/ShortDramaCard';
+import { SiteAdSlot } from '@/components/SiteAdSlot';
+import { PanelField, PillButton, PillGroup } from '@/components/ui-surface';
 import VirtualGrid from '@/components/VirtualGrid';
 
 export default function ShortDramaPage() {
@@ -53,7 +55,7 @@ export default function ShortDramaPage() {
       });
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, useVirtualization]
+    [loading, hasMore, useVirtualization],
   );
 
   // 获取分类列表
@@ -136,7 +138,7 @@ export default function ShortDramaPage() {
         setLoading(false);
       }
     },
-    [selectedCategory, searchQuery, isSearchMode]
+    [selectedCategory, searchQuery, isSearchMode],
   );
 
   // 当分类变化时重新加载
@@ -156,23 +158,20 @@ export default function ShortDramaPage() {
   }, [page, loadDramas]);
 
   // 处理搜索
-  const handleSearch = useCallback(
-    async (query: string) => {
-      setSearchQuery(query);
-      setIsSearchMode(!!query);
-      setPage(1);
-      setHasMore(true);
+  const handleSearch = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    setIsSearchMode(!!query);
+    setPage(1);
+    setHasMore(true);
 
-      if (query) {
-        const result = await searchShortDramas(query, 1, 20);
-        setDramas(result.list);
-        setHasMore(result.hasMore);
-      }
-      // 如果清空搜索，不需要手动调用 loadDramas
-      // useEffect 会自动监听 isSearchMode 的变化并重新加载
-    },
-    []
-  );
+    if (query) {
+      const result = await searchShortDramas(query, 1, 20);
+      setDramas(result.list);
+      setHasMore(result.hasMore);
+    }
+    // 如果清空搜索，不需要手动调用 loadDramas
+    // useEffect 会自动监听 isSearchMode 的变化并重新加载
+  }, []);
 
   // 返回顶部功能
   const scrollToTop = () => {
@@ -192,32 +191,36 @@ export default function ShortDramaPage() {
     const newValue = !useVirtualization;
     setUseVirtualization(newValue);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('useShortDramaVirtualization', JSON.stringify(newValue));
+      localStorage.setItem(
+        'useShortDramaVirtualization',
+        JSON.stringify(newValue),
+      );
     }
   };
 
   return (
-    <PageLayout activePath="/shortdrama">
-      <div className="min-h-screen -mt-6 md:mt-0">
-        <div className="">
+    <PageLayout activePath='/shortdrama'>
+      <div className='min-h-screen -mt-6 md:mt-0'>
+        <div className=''>
+          <SiteAdSlot position='footer' className='mb-6' />
           {/* 页面标题 */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className='mb-6'>
+            <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
               短剧频道
             </h1>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
               精彩短剧，一刷到底
             </p>
           </div>
 
           {/* 搜索栏 */}
-          <div className="mb-6">
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110" />
-              <input
-                type="text"
-                placeholder="搜索短剧名称..."
-                className="w-full rounded-xl border border-gray-200 bg-white/80 pl-11 pr-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent focus:bg-white shadow-sm hover:shadow-md focus:shadow-lg dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:border-gray-700 dark:focus:bg-gray-800 dark:focus:ring-purple-500 transition-all duration-300"
+          <div className='mb-6'>
+            <div className='relative group'>
+              <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
+              <PanelField
+                type='text'
+                placeholder='搜索短剧名称...'
+                className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
               />
@@ -226,67 +229,52 @@ export default function ShortDramaPage() {
 
           {/* 分类筛选 */}
           {!isSearchMode && categories.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center space-x-2.5 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-linear-to-br from-purple-500 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                  <Filter className="h-4 w-4 text-white" />
+            <div className='mb-6'>
+              <div className='mb-4 flex items-center justify-between gap-4'>
+                <div className='flex items-center gap-2'>
+                  <Filter className='h-4 w-4 text-gray-500' />
+                  <span className='text-base font-semibold text-gray-900 dark:text-gray-100'>
+                    分类
+                  </span>
                 </div>
-                <span className="text-base font-bold text-gray-900 dark:text-gray-100">
-                  分类筛选
-                </span>
-                <div className="flex-1"></div>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium">
-                  {categories.length} 个分类
+                <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 font-medium'>
+                  {categories.length}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2.5">
+              <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
                 {categories.map((category, index) => (
-                  <button
+                  <PillButton
                     key={category.type_id}
                     onClick={() => setSelectedCategory(category.type_id)}
-                    className={`group relative overflow-hidden rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                      selectedCategory === category.type_id
-                        ? 'bg-linear-to-r from-purple-500 via-purple-600 to-pink-500 text-white shadow-lg shadow-purple-500/40'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md'
-                    }`}
+                    active={selectedCategory === category.type_id}
+                    className='px-4 py-2 duration-300'
                     style={{
                       animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
                     }}
                   >
-                    {/* 激活状态的光泽效果 */}
-                    {selectedCategory === category.type_id && (
-                      <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                    )}
-
-                    {/* 未激活状态的悬停背景 */}
-                    {selectedCategory !== category.type_id && (
-                      <div className="absolute inset-0 bg-linear-to-r from-purple-50 via-pink-50 to-purple-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-purple-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    )}
-
-                    <span className="relative z-10">{category.type_name}</span>
-                  </button>
+                    {category.type_name}
+                  </PillButton>
                 ))}
-              </div>
+              </PillGroup>
             </div>
           )}
 
           {/* 虚拟化开关 */}
           <div className='flex justify-end mb-4'>
             <label className='flex items-center gap-3 cursor-pointer select-none group'>
-              <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors'>
-                ⚡ 虚拟滑动
+              <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors'>
+                虚拟滑动
               </span>
-              <div className='relative'>
+              <div className='relative inline-flex items-center rounded-full border border-black/6 bg-white/75 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
                 <input
                   type='checkbox'
                   className='sr-only peer'
                   checked={useVirtualization}
                   onChange={toggleVirtualization}
                 />
-                <div className='w-11 h-6 bg-linear-to-r from-gray-200 to-gray-300 rounded-full peer-checked:from-purple-400 peer-checked:to-pink-500 transition-all duration-300 dark:from-gray-600 dark:to-gray-700 dark:peer-checked:from-purple-500 dark:peer-checked:to-pink-600 shadow-inner'></div>
-                <div className='absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-5 shadow-lg peer-checked:shadow-purple-300 dark:peer-checked:shadow-purple-500/50 peer-checked:scale-105'></div>
-                <div className='absolute top-1.5 left-1.5 w-3 h-3 flex items-center justify-center pointer-events-none transition-all duration-300 peer-checked:translate-x-5'>
-                  <span className='text-[10px] peer-checked:text-white text-gray-500'>
+                <div className='relative flex h-6 w-11 items-center rounded-full bg-gray-200 transition-all duration-300 peer-checked:bg-linear-to-r peer-checked:from-[#f4c24d] peer-checked:via-[#f0b938] peer-checked:to-[#d89c18] dark:bg-gray-700'></div>
+                <div className='absolute left-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 peer-checked:translate-x-5'>
+                  <span className='text-[10px] text-gray-500'>
                     {useVirtualization ? '✨' : '○'}
                   </span>
                 </div>
@@ -312,7 +300,7 @@ export default function ShortDramaPage() {
               )}
             />
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
               {dramas.map((drama, index) => (
                 <div
                   key={`${drama.id}-${index}`}
@@ -326,23 +314,25 @@ export default function ShortDramaPage() {
 
           {/* 加载状态 - 只在首次加载或加载更多时显示骨架屏 */}
           {loading && (isInitialLoad || page > 1) && (
-            <div className="mt-8">
-              <div className="flex justify-center mb-6">
-                <div className='flex items-center gap-3 px-6 py-3 bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200/50 dark:border-purple-700/50 shadow-md'>
-                  <div className='animate-spin rounded-full h-5 w-5 border-2 border-purple-300 border-t-purple-600 dark:border-purple-700 dark:border-t-purple-400'></div>
-                  <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>加载更多短剧...</span>
+            <div className='mt-8'>
+              <div className='flex justify-center mb-6'>
+                <div className='flex items-center gap-3 px-6 py-3 bg-white/70 dark:bg-white/6 rounded-full border border-black/6 dark:border-white/8 shadow-[0_12px_28px_rgba(15,23,42,0.06)] backdrop-blur-md'>
+                  <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-[#f0b938] dark:border-gray-600 dark:border-t-[#f0b938]'></div>
+                  <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    加载更多短剧...
+                  </span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+              <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
                 {Array.from({ length: 12 }).map((_, index) => (
-                  <div key={index} className="relative overflow-hidden">
-                    <div className="aspect-[2/3] w-full rounded-lg bg-linear-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800">
+                  <div key={index} className='relative overflow-hidden'>
+                    <div className='aspect-[2/3] w-full rounded-lg bg-linear-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'>
                       <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
                     </div>
-                    <div className="mt-2 h-4 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden">
+                    <div className='mt-2 h-4 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden'>
                       <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
                     </div>
-                    <div className="mt-1 h-3 w-2/3 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden">
+                    <div className='mt-1 h-3 w-2/3 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden'>
                       <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
                     </div>
                   </div>
@@ -354,17 +344,26 @@ export default function ShortDramaPage() {
           {/* 无更多数据提示 */}
           {!loading && !hasMore && dramas.length > 0 && (
             <div className='flex justify-center mt-12 py-8'>
-              <div className='relative px-8 py-5 rounded-2xl bg-linear-to-r from-purple-50 via-pink-50 to-rose-50 dark:from-purple-900/20 dark:via-pink-900/20 dark:to-rose-900/20 border border-purple-200/50 dark:border-purple-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                {/* 装饰性背景 */}
-                <div className='absolute inset-0 bg-linear-to-br from-purple-100/20 to-pink-100/20 dark:from-purple-800/10 dark:to-pink-800/10'></div>
+              <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-white/6 border border-black/6 dark:border-white/8 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-hidden'>
+                <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
 
                 {/* 内容 */}
                 <div className='relative flex flex-col items-center gap-2'>
                   {/* 完成图标 */}
                   <div className='relative'>
-                    <div className='w-12 h-12 rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg'>
-                      <svg className='w-7 h-7 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2.5' d='M5 13l4 4L19 7'></path>
+                    <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
+                      <svg
+                        className='w-7 h-7 text-white'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='2.5'
+                          d='M5 13l4 4L19 7'
+                        ></path>
                       </svg>
                     </div>
                     {/* 光圈效果 */}
@@ -398,8 +397,18 @@ export default function ShortDramaPage() {
                   {/* 搜索图标 */}
                   <div className='relative'>
                     <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                      <svg className='w-12 h-12 text-gray-400 dark:text-gray-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='1.5' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'></path>
+                      <svg
+                        className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                        ></path>
                       </svg>
                     </div>
                     {/* 浮动小点装饰 */}
@@ -437,10 +446,11 @@ export default function ShortDramaPage() {
       {/* 返回顶部悬浮按钮 */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-20 md:bottom-6 right-6 z-500 w-12 h-12 bg-purple-500/90 hover:bg-purple-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${showBackToTop
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 translate-y-4 pointer-events-none'
-          }`}
+        className={`fixed bottom-20 md:bottom-6 right-6 z-500 w-12 h-12 bg-purple-500/90 hover:bg-purple-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${
+          showBackToTop
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
         aria-label='返回顶部'
       >
         <ChevronUp className='w-6 h-6 transition-transform group-hover:scale-110' />

@@ -2,13 +2,24 @@
 
 'use client';
 
-import { ExternalLink, Layers, Server, Tv } from 'lucide-react';
+import { ExternalLink, Layers, Server, Tv, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ClientCache } from '@/lib/client-cache';
+import type {
+  DoubanItem,
+  SearchResult as GlobalSearchResult,
+} from '@/lib/types';
+
 import PageLayout from '@/components/PageLayout';
-import type { DoubanItem, SearchResult as GlobalSearchResult } from '@/lib/types';
+import {
+  GlassPanel,
+  PanelField,
+  PanelSelect,
+  PillButton,
+  PillGroup,
+} from '@/components/ui-surface';
 
 type Source = { key: string; name: string; api: string };
 type Category = { type_id: string | number; type_name: string };
@@ -30,7 +41,7 @@ export default function SourceBrowserPage() {
   const [activeSourceKey, setActiveSourceKey] = useState('');
   const activeSource = useMemo(
     () => sources.find((s) => s.key === activeSourceKey),
-    [sources, activeSourceKey]
+    [sources, activeSourceKey],
   );
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -66,13 +77,18 @@ export default function SourceBrowserPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
-  const [previewData, setPreviewData] = useState<GlobalSearchResult | null>(null);
+  const [previewData, setPreviewData] = useState<GlobalSearchResult | null>(
+    null,
+  );
   const [previewItem, setPreviewItem] = useState<Item | null>(null);
   const [previewDouban, setPreviewDouban] = useState<DoubanItem | null>(null);
   const [previewDoubanLoading, setPreviewDoubanLoading] = useState(false);
   const [previewDoubanId, setPreviewDoubanId] = useState<number | null>(null);
   type BangumiTag = { name: string };
-  type BangumiInfoboxValue = string | { v: string } | Array<string | { v: string }>;
+  type BangumiInfoboxValue =
+    | string
+    | { v: string }
+    | Array<string | { v: string }>;
   type BangumiInfoboxEntry = { key: string; value: BangumiInfoboxValue };
   type BangumiSubject = {
     name?: string;
@@ -83,9 +99,12 @@ export default function SourceBrowserPage() {
     infobox?: BangumiInfoboxEntry[];
     summary?: string;
   };
-  const [previewBangumi, setPreviewBangumi] = useState<BangumiSubject | null>(null);
+  const [previewBangumi, setPreviewBangumi] = useState<BangumiSubject | null>(
+    null,
+  );
   const [previewBangumiLoading, setPreviewBangumiLoading] = useState(false);
-  const [previewSearchPick, setPreviewSearchPick] = useState<GlobalSearchResult | null>(null);
+  const [previewSearchPick, setPreviewSearchPick] =
+    useState<GlobalSearchResult | null>(null);
 
   const fetchSources = useCallback(async () => {
     setLoadingSources(true);
@@ -120,7 +139,7 @@ export default function SourceBrowserPage() {
     setCategoryError(null);
     try {
       const res = await fetch(
-        `/api/source-browser/categories?source=${encodeURIComponent(sourceKey)}`
+        `/api/source-browser/categories?source=${encodeURIComponent(sourceKey)}`,
       );
       if (!res.ok) throw new Error('获取分类失败');
       const data = await res.json();
@@ -145,7 +164,7 @@ export default function SourceBrowserPage() {
       sourceKey: string,
       typeId: string | number,
       p = 1,
-      append = false
+      append = false,
     ) => {
       if (!sourceKey || !typeId) return;
       if (append) setLoadingMore(true);
@@ -154,8 +173,8 @@ export default function SourceBrowserPage() {
       try {
         const res = await fetch(
           `/api/source-browser/list?source=${encodeURIComponent(
-            sourceKey
-          )}&type_id=${encodeURIComponent(String(typeId))}&page=${p}`
+            sourceKey,
+          )}&type_id=${encodeURIComponent(String(typeId))}&page=${p}`,
         );
         if (!res.ok) throw new Error('获取列表失败');
         const data = (await res.json()) as {
@@ -168,7 +187,7 @@ export default function SourceBrowserPage() {
         setPageCount(Number(data.meta?.pagecount || 1));
         // 更新可选年份
         const years = Array.from(
-          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean))
+          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean)),
         );
         years.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
         setAvailableYears(years);
@@ -183,7 +202,7 @@ export default function SourceBrowserPage() {
         else setLoadingItems(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -211,8 +230,8 @@ export default function SourceBrowserPage() {
       try {
         const res = await fetch(
           `/api/source-browser/search?source=${encodeURIComponent(
-            sourceKey
-          )}&q=${encodeURIComponent(q)}&page=${p}`
+            sourceKey,
+          )}&q=${encodeURIComponent(q)}&page=${p}`,
         );
         if (!res.ok) throw new Error('搜索失败');
         const data = (await res.json()) as {
@@ -224,7 +243,7 @@ export default function SourceBrowserPage() {
         setPage(Number(data.meta?.page || p));
         setPageCount(Number(data.meta?.pagecount || 1));
         const years = Array.from(
-          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean))
+          new Set(list.map((i) => (i.year || '').trim()).filter(Boolean)),
         );
         years.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
         setAvailableYears(years);
@@ -239,7 +258,7 @@ export default function SourceBrowserPage() {
         else setLoadingItems(false);
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -279,7 +298,7 @@ export default function SourceBrowserPage() {
           }
         }
       },
-      { root: null, rootMargin: '200px', threshold: 0 }
+      { root: null, rootMargin: '200px', threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -361,7 +380,7 @@ export default function SourceBrowserPage() {
       arr = arr.filter(
         (i) =>
           (i.title || '').toLowerCase().includes(kw) ||
-          (i.remarks || '').toLowerCase().includes(kw)
+          (i.remarks || '').toLowerCase().includes(kw),
       );
     }
     // 年份筛选（精确匹配）
@@ -375,11 +394,11 @@ export default function SourceBrowserPage() {
         return arr.sort((a, b) => b.title.localeCompare(a.title));
       case 'year-asc':
         return arr.sort(
-          (a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0)
+          (a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0),
         );
       case 'year-desc':
         return arr.sort(
-          (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
+          (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0),
         );
       default:
         return arr; // 保持上游顺序
@@ -400,13 +419,14 @@ export default function SourceBrowserPage() {
 
       // 2) 缓存未命中，回源请求 /api/douban/details
       const fallback = await fetch(
-        `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`
+        `/api/douban/details?id=${encodeURIComponent(String(doubanId))}`,
       );
       if (fallback.ok) {
         const dbData = (await fallback.json()) as
           | { code: number; message: string; data?: DoubanItem }
           | DoubanItem;
-        const normalized = (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
+        const normalized =
+          (dbData as { data?: DoubanItem }).data || (dbData as DoubanItem);
         setPreviewDouban(normalized);
         // 3) 回写缓存（4小时）
         try {
@@ -431,7 +451,9 @@ export default function SourceBrowserPage() {
     try {
       setPreviewBangumiLoading(true);
       setPreviewBangumi(null);
-      const res = await fetch(`/api/proxy/bangumi?path=v0/subjects/${bangumiId}`);
+      const res = await fetch(
+        `/api/proxy/bangumi?path=v0/subjects/${bangumiId}`,
+      );
       if (res.ok) {
         const data = (await res.json()) as {
           name?: string;
@@ -464,8 +486,8 @@ export default function SourceBrowserPage() {
     try {
       const res = await fetch(
         `/api/detail?source=${encodeURIComponent(
-          activeSourceKey
-        )}&id=${encodeURIComponent(item.id)}`
+          activeSourceKey,
+        )}&id=${encodeURIComponent(item.id)}`,
       );
       if (!res.ok) throw new Error('获取详情失败');
       const data = (await res.json()) as GlobalSearchResult;
@@ -477,15 +499,15 @@ export default function SourceBrowserPage() {
         const normalize = (s: string) =>
           (s || '').replace(/\s+/g, '').toLowerCase();
         const variants = Array.from(
-          new Set([item.title, (item.title || '').replace(/\s+/g, '')])
+          new Set([item.title, (item.title || '').replace(/\s+/g, '')]),
         ).filter(Boolean) as string[];
 
         for (const v of variants) {
           try {
             const res = await fetch(
               `/api/search/one?resourceId=${encodeURIComponent(
-                activeSourceKey
-              )}&q=${encodeURIComponent(v)}`
+                activeSourceKey,
+              )}&q=${encodeURIComponent(v)}`,
             );
             if (!res.ok) continue;
             const payload = (await res.json()) as {
@@ -501,10 +523,10 @@ export default function SourceBrowserPage() {
                   (r.year &&
                     String(r.year).toLowerCase() ===
                       String(item.year).toLowerCase())) &&
-                r.douban_id
+                r.douban_id,
             );
             const matchTitleOnly = list.find(
-              (r) => normalize(r.title) === tNorm && r.douban_id
+              (r) => normalize(r.title) === tNorm && r.douban_id,
             );
             const pick = matchStrict || matchTitleOnly || null;
             if (pick && pick.douban_id) {
@@ -547,246 +569,250 @@ export default function SourceBrowserPage() {
 
   return (
     <PageLayout activePath='/source-browser'>
-      <div className='max-w-7xl mx-auto space-y-6 -mt-6 md:mt-0'>
-        {/* Header - 美化版 */}
-        <div className='relative'>
-          <div className='absolute inset-0 bg-linear-to-r from-emerald-400/10 via-green-400/10 to-teal-400/10 rounded-2xl blur-3xl'></div>
-          <div className='relative flex items-center gap-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl'>
-            <div className='relative w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 via-green-500 to-teal-500 flex items-center justify-center shadow-lg group hover:scale-110 transition-transform duration-300'>
-              <div className='absolute inset-0 bg-emerald-400 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity'></div>
-              <Layers className='relative w-8 h-8 text-white drop-shadow-lg' />
-            </div>
-            <div className='flex-1'>
-              <h1 className='text-3xl md:text-4xl font-bold bg-linear-to-r from-emerald-600 via-green-600 to-teal-600 dark:from-emerald-400 dark:via-green-400 dark:to-teal-400 bg-clip-text text-transparent'>
-                源浏览器
-              </h1>
-              <p className='text-sm text-gray-600 dark:text-gray-400 mt-1'>
-                按来源站与分类浏览内容，探索海量影视资源
-              </p>
-            </div>
-            {sources.length > 0 && (
-              <div className='hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'>
-                <Server className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
-                <span className='text-sm font-medium text-emerald-700 dark:text-emerald-300'>
-                  {sources.length} 个源可用
+      <div className='-mt-6 space-y-6 md:mt-0'>
+        <div className='space-y-4'>
+          {/* Header */}
+          <GlassPanel className='p-5 sm:p-6'>
+            <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex items-center gap-4'>
+                <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_12px_28px_rgba(244,194,77,0.18)]'>
+                  <Layers className='h-7 w-7' />
+                </div>
+                <div>
+                  <h1 className='text-3xl font-bold text-gray-900 dark:text-white md:text-4xl'>
+                    源浏览器
+                  </h1>
+                  <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                    浏览来源、分类和内容预览
+                  </p>
+                </div>
+              </div>
+              <div className='flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300'>
+                <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1.5 dark:border-white/8 dark:bg-white/6'>
+                  {sources.length} 个来源
+                </span>
+                <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1.5 dark:border-white/8 dark:bg-white/6'>
+                  {mode === 'search' ? '搜索模式' : '分类模式'}
                 </span>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Sources - 美化版 */}
-        <div className='bg-linear-to-br from-white via-emerald-50/30 to-white dark:from-gray-800 dark:via-emerald-900/10 dark:to-gray-800 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/80 backdrop-blur-sm'>
-          <div className='px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between'>
-            <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
-              <div className='w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center'>
-                <Server className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
-              </div>
-              <span>选择来源站</span>
             </div>
-            {!loadingSources && sources.length > 0 && (
-              <span className='text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium'>
-                {sources.length} 个
-              </span>
-            )}
-          </div>
-          <div className='p-5'>
-            {loadingSources ? (
-              <div className='flex items-center gap-2 text-sm text-gray-500'>
-                <div className='w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin'></div>
-                加载中...
-              </div>
-            ) : sourceError ? (
-              <div className='flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'>
-                <span className='text-sm text-red-600 dark:text-red-400'>{sourceError}</span>
-              </div>
-            ) : sources.length === 0 ? (
-              <div className='text-center py-8'>
-                <div className='w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center'>
-                  <Server className='w-8 h-8 text-gray-400' />
-                </div>
-                <p className='text-sm text-gray-500'>暂无可用来源</p>
-              </div>
-            ) : (
-              <div className='flex flex-wrap gap-2.5'>
-                {sources.map((s, index) => (
-                  <button
-                    key={s.key}
-                    onClick={() => setActiveSourceKey(s.key)}
-                    className={`group relative px-4 py-2.5 rounded-xl text-sm font-medium border-2 transition-all duration-300 transform hover:scale-105 ${
-                      activeSourceKey === s.key
-                        ? 'bg-linear-to-r from-emerald-500 to-green-500 text-white border-transparent shadow-lg shadow-emerald-500/30'
-                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-linear-to-r hover:from-emerald-50 hover:to-green-50 dark:hover:from-emerald-900/20 dark:hover:to-green-900/20 hover:border-emerald-300 dark:hover:border-emerald-700'
-                    }`}
-                    style={{
-                      animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
-                    }}
-                  >
-                    {activeSourceKey === s.key && (
-                      <div className='absolute inset-0 rounded-xl bg-linear-to-r from-emerald-400 to-green-400 blur-lg opacity-50 -z-10'></div>
-                    )}
-                    {s.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          </GlassPanel>
 
-        {/* Query & Sort */}
-        {activeSource && (
-          <div className='bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700'>
-            <div className='px-4 py-3 border-b border-gray-200 dark:border-gray-700 space-y-3'>
-              {/* 第一行：搜索框 + 清除按钮 + 模式显示 */}
-              <div className='flex items-center gap-2'>
-                <input
-                  value={query}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setQuery(val);
-                    if (debounceId) clearTimeout(debounceId);
-                    const id = setTimeout(() => {
-                      setMode(val.trim() ? 'search' : 'category');
-                      if (val.trim()) {
-                        fetchSearch(activeSourceKey, val.trim(), 1);
-                      } else if (activeCategory) {
-                        fetchItems(activeSourceKey, activeCategory, 1);
-                      }
-                    }, 500);
-                    setDebounceId(id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setMode(query.trim() ? 'search' : 'category');
-                    }
-                  }}
-                  placeholder='输入关键词并回车进行搜索；清空回车恢复分类'
-                  className='flex-1 px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm'
-                />
-                {query && (
-                  <button
-                    onClick={() => {
-                      setQuery('');
-                      setMode('category');
-                      if (activeCategory)
-                        fetchItems(activeSourceKey, activeCategory, 1);
-                    }}
-                    className='px-3 py-2 text-xs border rounded-md whitespace-nowrap hover:bg-gray-100 dark:hover:bg-gray-700'
-                    title='清除'
-                  >
-                    清除
-                  </button>
-                )}
-                <div className='hidden sm:block text-xs text-gray-500 whitespace-nowrap'>
-                  {mode === 'search' ? '搜索' : '分类'}
+          {/* Sources */}
+          <GlassPanel className='overflow-hidden'>
+            <div className='border-b border-black/6 px-5 py-4 dark:border-white/8'>
+              <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
+                <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30'>
+                  <Server className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
                 </div>
+                <span>选择来源站</span>
               </div>
-
-              {/* 第二行：筛选控件（移动端优化布局） */}
-              <div className='grid grid-cols-2 sm:flex sm:flex-wrap gap-2'>
-                <select
-                  value={sortBy}
-                  onChange={(e) =>
-                    setSortBy(
-                      e.target.value as
-                        | 'default'
-                        | 'title-asc'
-                        | 'title-desc'
-                        | 'year-asc'
-                        | 'year-desc'
-                    )
-                  }
-                  className='sm:flex-1 sm:min-w-[120px] px-2 sm:px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs sm:text-sm'
-                  title='排序'
-                >
-                  <option value='default'>默认</option>
-                  <option value='title-asc'>标题 A→Z</option>
-                  <option value='title-desc'>标题 Z→A</option>
-                  <option value='year-asc'>年份↑</option>
-                  <option value='year-desc'>年份↓</option>
-                </select>
-                <select
-                  value={filterYear}
-                  onChange={(e) => setFilterYear(e.target.value)}
-                  className='sm:flex-1 sm:min-w-[100px] px-2 sm:px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs sm:text-sm'
-                  title='年份'
-                >
-                  <option value=''>全部年份</option>
-                  {availableYears.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
+            </div>
+            <div className='p-4 sm:p-5'>
+              {loadingSources ? (
+                <div className='flex items-center gap-2 text-sm text-gray-500'>
+                  <div className='h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent'></div>
+                  加载中...
+                </div>
+              ) : sourceError ? (
+                <div className='flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
+                  <span className='text-sm text-red-600 dark:text-red-400'>
+                    {sourceError}
+                  </span>
+                </div>
+              ) : sources.length === 0 ? (
+                <div className='text-center py-8'>
+                  <div className='w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center'>
+                    <Server className='w-8 h-8 text-gray-400' />
+                  </div>
+                  <p className='text-sm text-gray-500'>暂无可用来源</p>
+                </div>
+              ) : (
+                <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
+                  {sources.map((s, index) => (
+                    <PillButton
+                      key={s.key}
+                      onClick={() => setActiveSourceKey(s.key)}
+                      active={activeSourceKey === s.key}
+                      className='px-4 py-2 duration-300'
+                      style={{
+                        animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
+                      }}
+                    >
+                      {s.name}
+                    </PillButton>
                   ))}
-                </select>
-                <input
-                  value={filterKeyword}
-                  onChange={(e) => setFilterKeyword(e.target.value)}
-                  placeholder='地区/关键词'
-                  className='col-span-2 sm:flex-1 sm:min-w-[140px] px-2 sm:px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-xs sm:text-sm'
-                />
-              </div>
+                </PillGroup>
+              )}
             </div>
-          </div>
-        )}
+          </GlassPanel>
+
+          {/* Query & Sort */}
+          {activeSource && (
+            <GlassPanel className='overflow-hidden'>
+              <div className='space-y-4 border-b border-black/6 px-4 py-4 dark:border-white/8'>
+                <div className='flex flex-col gap-3 lg:flex-row lg:items-center'>
+                  <div className='w-full lg:flex-1'>
+                    <PanelField
+                      value={query}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setQuery(val);
+                        if (debounceId) clearTimeout(debounceId);
+                        const id = setTimeout(() => {
+                          setMode(val.trim() ? 'search' : 'category');
+                          if (val.trim()) {
+                            fetchSearch(activeSourceKey, val.trim(), 1);
+                          } else if (activeCategory) {
+                            fetchItems(activeSourceKey, activeCategory, 1);
+                          }
+                        }, 500);
+                        setDebounceId(id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setMode(query.trim() ? 'search' : 'category');
+                        }
+                      }}
+                      placeholder='输入关键词后自动切换到搜索'
+                      className='h-12 px-3 py-2.5'
+                    />
+                  </div>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    {query && (
+                      <PillButton
+                        onClick={() => {
+                          setQuery('');
+                          setMode('category');
+                          if (activeCategory)
+                            fetchItems(activeSourceKey, activeCategory, 1);
+                        }}
+                        className='whitespace-nowrap px-3 py-2 text-xs'
+                        title='清除'
+                      >
+                        清除
+                      </PillButton>
+                    )}
+                    <div className='inline-flex items-center rounded-full border border-black/6 bg-white/70 px-3 py-2 text-xs text-gray-500 dark:border-white/8 dark:bg-white/5 dark:text-gray-400 whitespace-nowrap'>
+                      {mode === 'search' ? '搜索模式' : '分类模式'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+                  <PanelSelect
+                    value={sortBy}
+                    onChange={(e) =>
+                      setSortBy(
+                        e.target.value as
+                          | 'default'
+                          | 'title-asc'
+                          | 'title-desc'
+                          | 'year-asc'
+                          | 'year-desc',
+                      )
+                    }
+                    className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
+                    title='排序'
+                  >
+                    <option value='default'>默认</option>
+                    <option value='title-asc'>标题 A→Z</option>
+                    <option value='title-desc'>标题 Z→A</option>
+                    <option value='year-asc'>年份↑</option>
+                    <option value='year-desc'>年份↓</option>
+                  </PanelSelect>
+                  <PanelSelect
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value)}
+                    className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
+                    title='年份'
+                  >
+                    <option value=''>全部年份</option>
+                    {availableYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </PanelSelect>
+                  <PanelField
+                    value={filterKeyword}
+                    onChange={(e) => setFilterKeyword(e.target.value)}
+                    placeholder='地区/关键词'
+                    className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
+                  />
+                </div>
+              </div>
+            </GlassPanel>
+          )}
+        </div>
 
         {/* Categories and Items */}
         {activeSource && (
-          <div className='bg-linear-to-br from-white via-blue-50/20 to-white dark:from-gray-800 dark:via-blue-900/5 dark:to-gray-800 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/80 backdrop-blur-sm'>
-            <div className='px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between'>
-              <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
-                <div className='w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center'>
-                  <Tv className='w-4 h-4 text-blue-600 dark:text-blue-400' />
+          <GlassPanel className='overflow-hidden'>
+            <div className='border-b border-black/6 px-5 py-4 dark:border-white/8'>
+              <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
+                  <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30'>
+                    <Tv className='h-4 w-4 text-blue-600 dark:text-blue-400' />
+                  </div>
+                  <span>{activeSource.name} 分类</span>
                 </div>
-                <span>{activeSource.name} 分类</span>
+                <div className='flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                  <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1.5 dark:border-white/8 dark:bg-white/6'>
+                    {filteredAndSorted.length} 条内容
+                  </span>
+                  <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1.5 dark:border-white/8 dark:bg-white/6'>
+                    第 {page} / {pageCount} 页
+                  </span>
+                </div>
               </div>
-              {categories.length > 0 && (
-                <span className='text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'>
-                  {categories.length} 个分类
-                </span>
-              )}
             </div>
-            <div className='p-5 space-y-5'>
+            <div className='space-y-5 p-5'>
               {mode === 'category' && (
-                <div className='flex flex-wrap gap-2.5'>
+                <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
                   {loadingCategories ? (
                     <div className='flex items-center gap-2 text-sm text-gray-500'>
-                      <div className='w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
+                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
                       加载分类...
                     </div>
                   ) : categoryError ? (
-                    <div className='flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400'>
+                    <div className='flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>
                       {categoryError}
                     </div>
                   ) : categories.length === 0 ? (
-                    <div className='text-center w-full py-6'>
-                      <div className='w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center'>
-                        <Tv className='w-8 h-8 text-gray-400' />
+                    <div className='w-full py-6 text-center'>
+                      <div className='mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
+                        <Tv className='h-8 w-8 text-gray-400' />
                       </div>
                       <p className='text-sm text-gray-500'>暂无分类</p>
                     </div>
                   ) : (
                     categories.map((c, index) => (
-                      <button
+                      <PillButton
                         key={String(c.type_id)}
                         onClick={() => setActiveCategory(c.type_id)}
-                        className={`group relative px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all duration-300 transform hover:scale-105 ${
-                          activeCategory === c.type_id
-                            ? 'bg-linear-to-r from-blue-500 to-indigo-500 text-white border-transparent shadow-lg shadow-blue-500/30'
-                            : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-linear-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 hover:border-blue-300 dark:hover:border-blue-700'
-                        }`}
+                        active={activeCategory === c.type_id}
+                        className='px-4 py-2 duration-300'
                         style={{
                           animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
                         }}
                       >
-                        {activeCategory === c.type_id && (
-                          <div className='absolute inset-0 rounded-xl bg-linear-to-r from-blue-400 to-indigo-400 blur-lg opacity-50 -z-10'></div>
-                        )}
                         {c.type_name}
-                      </button>
+                      </PillButton>
                     ))
                   )}
-                </div>
+                </PillGroup>
               )}
+
+              <div className='flex flex-wrap items-center gap-2 rounded-[22px] border border-black/6 bg-black/[0.02] px-3 py-2 text-xs text-gray-500 dark:border-white/8 dark:bg-white/[0.03] dark:text-gray-400'>
+                <span>
+                  {mode === 'search'
+                    ? '当前为搜索结果'
+                    : `当前分类：${categories.find((c) => c.type_id === activeCategory)?.type_name || '未选择'}`}
+                </span>
+                {filterYear && <span>年份：{filterYear}</span>}
+                {filterKeyword && <span>筛选：{filterKeyword}</span>}
+              </div>
 
               <div>
                 {loadingItems ? (
@@ -807,11 +833,11 @@ export default function SourceBrowserPage() {
                   </div>
                 ) : (
                   <>
-                    <div className='grid gap-3 grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                    <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
                       {filteredAndSorted.map((item, index) => (
                         <div
                           key={item.id}
-                          className='group relative rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-300 bg-white dark:bg-gray-800 cursor-pointer hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1'
+                          className='group cursor-pointer transition-all duration-300 hover:-translate-y-0.5'
                           onClick={() => openPreview(item)}
                           role='button'
                           tabIndex={0}
@@ -822,27 +848,34 @@ export default function SourceBrowserPage() {
                             animation: `fadeInUp 0.4s ease-out ${index * 0.02}s both`,
                           }}
                         >
-                          {/* 发光效果 */}
-                          <div className='absolute inset-0 bg-linear-to-t from-blue-500/0 via-blue-500/0 to-blue-500/0 group-hover:from-blue-500/10 group-hover:via-blue-500/5 group-hover:to-transparent transition-all duration-300 pointer-events-none z-10'></div>
-
-                          <div className='aspect-[2/3] bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700 overflow-hidden relative'>
+                          <div className='relative aspect-[2/3] overflow-hidden rounded-[22px] border border-black/6 bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 shadow-[0_16px_34px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:shadow-[0_22px_42px_rgba(15,23,42,0.12)] dark:border-white/8 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700'>
                             {item.poster ? (
                               <img
                                 src={item.poster}
                                 alt={item.title}
-                                className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'
+                                className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+                                referrerPolicy='no-referrer'
+                                onError={(e) => {
+                                  const img = e.currentTarget;
+                                  if (!img.dataset.fallbackApplied) {
+                                    img.dataset.fallbackApplied = 'true';
+                                    img.src = '/placeholder-cover.jpg';
+                                  }
+                                }}
                                 loading='lazy'
                               />
                             ) : (
                               <div className='w-full h-full flex items-center justify-center text-gray-400 text-xs sm:text-sm'>
                                 <div className='text-center'>
                                   <Tv className='w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-1 sm:mb-2 opacity-50' />
-                                  <div className='text-[10px] sm:text-sm'>无封面</div>
+                                  <div className='text-[10px] sm:text-sm'>
+                                    无封面
+                                  </div>
                                 </div>
                               </div>
                             )}
                             {/* 渐变遮罩 */}
-                            <div className='absolute inset-0 bg-linear-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                            <div className='absolute inset-0 bg-linear-to-t from-black/72 via-black/16 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100'></div>
 
                             {/* 年份标签 */}
                             {item.year && (
@@ -859,12 +892,12 @@ export default function SourceBrowserPage() {
                             )}
                           </div>
 
-                          <div className='p-1.5 sm:p-3 space-y-1 sm:space-y-1.5 relative z-20'>
-                            <div className='font-medium text-xs sm:text-sm text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug min-h-[2rem] sm:min-h-[2.5rem]'>
+                          <div className='space-y-1.5 px-1.5 pt-3 sm:px-2'>
+                            <div className='line-clamp-2 min-h-[2.4rem] text-sm font-medium leading-snug text-gray-900 transition-colors dark:text-white sm:min-h-[2.8rem]'>
                               {item.title}
                             </div>
                             {item.remarks && (
-                              <div className='text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 line-clamp-1'>
+                              <div className='line-clamp-1 text-xs text-gray-500 dark:text-gray-400'>
                                 {item.remarks}
                               </div>
                             )}
@@ -878,91 +911,106 @@ export default function SourceBrowserPage() {
                       className='mt-4 flex items-center justify-center py-4'
                     >
                       {loadingMore ? (
-                        <div className='text-sm text-gray-500'>加载更多...</div>
+                        <div className='rounded-full border border-black/6 bg-white/70 px-4 py-2 text-sm text-gray-500 dark:border-white/8 dark:bg-white/6'>
+                          加载更多...
+                        </div>
                       ) : hasMore ? (
-                        <div className='text-xs text-gray-400'>
+                        <div className='rounded-full border border-black/6 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-white/8 dark:bg-white/6'>
                           下拉加载更多
                         </div>
                       ) : (
-                        <div className='text-xs text-gray-400'>没有更多了</div>
+                        <div className='rounded-full border border-black/6 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-white/8 dark:bg-white/6'>
+                          没有更多了
+                        </div>
                       )}
                     </div>
                   </>
                 )}
               </div>
             </div>
-          </div>
+          </GlassPanel>
         )}
 
         {/* 预览弹层 */}
         {previewOpen && (
           <div
-            className='fixed inset-0 z-1000 flex items-center justify-center bg-black/60 backdrop-blur-sm px-3 py-6 sm:p-4 pb-20 md:pb-4 animate-fadeIn'
+            className='fixed inset-0 z-1000 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fadeIn sm:p-4 md:pb-4'
             role='dialog'
             aria-modal='true'
             onClick={() => setPreviewOpen(false)}
           >
             <div
-              className='w-full max-w-5xl bg-linear-to-br from-white via-blue-50/20 to-white dark:from-gray-800 dark:via-blue-900/10 dark:to-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] md:max-h-[90vh] border-2 border-gray-200/50 dark:border-gray-700/50 animate-scaleIn'
+              className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-black/6 bg-white/82 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-xl animate-scaleIn dark:border-white/8 dark:bg-gray-900/82 md:max-h-[90vh]'
               onClick={(e) => e.stopPropagation()}
             >
               {/* 头部 */}
-              <div className='relative flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm'>
-                <div className='flex items-center gap-3 flex-1 min-w-0'>
-                  <div className='w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg'>
-                    <Tv className='w-5 h-5 text-white' />
+              <div className='relative flex items-center justify-between border-b border-black/6 px-5 py-4 backdrop-blur-sm dark:border-white/8 sm:px-6'>
+                <div className='flex min-w-0 flex-1 items-center gap-3'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500 to-indigo-500 shadow-lg'>
+                    <Tv className='h-5 w-5 text-white' />
                   </div>
-                  <div className='font-bold text-lg sm:text-xl text-gray-900 dark:text-white truncate'>
-                    {previewItem?.title || '详情预览'}
+                  <div className='min-w-0'>
+                    <div className='truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl'>
+                      {previewItem?.title || '详情预览'}
+                    </div>
+                    <div className='text-xs text-gray-500 dark:text-gray-400'>
+                      来源内容预览
+                    </div>
                   </div>
                 </div>
                 <button
-                  className='ml-3 shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
+                  className='ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white'
                   onClick={() => setPreviewOpen(false)}
                   title='关闭'
                 >
-                  <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-                  </svg>
+                  <X className='h-5 w-5' />
                 </button>
               </div>
               {/* 内容区 */}
-              <div className='p-5 sm:p-6 overflow-auto flex-1'>
+              <div className='flex-1 overflow-auto p-5 sm:p-6'>
                 {previewLoading ? (
                   <div className='flex flex-col items-center justify-center py-12'>
-                    <div className='w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4'></div>
+                    <div className='mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent'></div>
                     <div className='text-sm text-gray-500'>加载详情...</div>
                   </div>
                 ) : previewError ? (
-                  <div className='flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400'>
-                    <svg className='w-5 h-5 shrink-0' fill='currentColor' viewBox='0 0 20 20'>
-                      <path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z' clipRule='evenodd' />
+                  <div className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>
+                    <svg
+                      className='w-5 h-5 shrink-0'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path
+                        fillRule='evenodd'
+                        d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
+                        clipRule='evenodd'
+                      />
                     </svg>
                     {previewError}
                   </div>
                 ) : !previewData ? (
-                  <div className='text-center py-12'>
-                    <div className='w-20 h-20 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center'>
-                      <Tv className='w-10 h-10 text-gray-400' />
+                  <div className='py-12 text-center'>
+                    <div className='mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-700'>
+                      <Tv className='h-10 w-10 text-gray-400' />
                     </div>
                     <div className='text-sm text-gray-500'>暂无详情</div>
                   </div>
                 ) : (
-                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6'>
+                  <div className='grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3 md:gap-6'>
                     {/* 左侧封面 - 移动端紧凑显示 */}
                     <div className='md:col-span-1'>
                       <div className='md:sticky md:top-0'>
                         {previewItem?.poster ? (
-                          <div className='relative rounded-xl md:rounded-2xl overflow-hidden shadow-lg md:shadow-2xl border border-gray-200 dark:border-gray-700 md:border-2 group max-w-[200px] mx-auto md:max-w-none'>
+                          <div className='group relative mx-auto max-w-[200px] overflow-hidden rounded-xl border border-gray-200 shadow-lg md:max-w-none md:rounded-2xl md:border-2 md:shadow-2xl dark:border-gray-700'>
                             <img
                               src={previewItem.poster}
                               alt={previewItem.title}
                               className='w-full group-hover:scale-105 transition-transform duration-300'
                             />
-                            <div className='absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity'></div>
+                            <div className='absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100'></div>
                           </div>
                         ) : (
-                          <div className='w-full max-w-[200px] mx-auto md:max-w-none aspect-[2/3] bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-xl md:rounded-2xl flex items-center justify-center border border-gray-200 dark:border-gray-700 md:border-2'>
+                          <div className='mx-auto flex aspect-[2/3] w-full max-w-[200px] items-center justify-center rounded-xl border border-gray-200 bg-linear-to-br from-gray-100 to-gray-200 md:max-w-none md:rounded-2xl md:border-2 dark:border-gray-700 dark:from-gray-700 dark:to-gray-800'>
                             <div className='text-center text-gray-400'>
                               <Tv className='w-12 h-12 md:w-16 md:h-16 mx-auto mb-2 opacity-50' />
                               <div className='text-xs md:text-sm'>暂无封面</div>
@@ -971,9 +1019,9 @@ export default function SourceBrowserPage() {
                         )}
                       </div>
                     </div>
-                    <div className='md:col-span-2 space-y-2'>
-                      <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
-                        <div className='text-base sm:text-lg font-semibold text-gray-900 dark:text-white'>
+                    <div className='space-y-3 md:col-span-2'>
+                      <div className='flex flex-wrap items-center gap-2 sm:gap-3'>
+                        <div className='text-base font-semibold text-gray-900 sm:text-lg dark:text-white'>
                           {previewData.title || previewItem?.title}
                         </div>
                         {/* 评分徽章 */}
@@ -981,14 +1029,14 @@ export default function SourceBrowserPage() {
                           const d = previewDouban;
                           if (d?.rate) {
                             return (
-                              <span className='px-2 py-0.5 rounded-md text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                              <span className='rounded-md bg-green-100 px-2 py-0.5 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-300'>
                                 豆瓣 {d.rate}
                               </span>
                             );
                           }
                           if (previewBangumi?.rating?.score) {
                             return (
-                              <span className='px-2 py-0.5 rounded-md text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'>
+                              <span className='rounded-md bg-purple-100 px-2 py-0.5 text-xs text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'>
                                 Bangumi {previewBangumi.rating.score}
                               </span>
                             );
@@ -1004,7 +1052,7 @@ export default function SourceBrowserPage() {
                                 href={`https://movie.douban.com/subject/${d.id}/`}
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                className='inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline'
+                                className='inline-flex items-center gap-1 text-xs text-blue-600 hover:underline dark:text-blue-400'
                                 title='打开豆瓣页面'
                               >
                                 <ExternalLink className='w-3.5 h-3.5' /> 豆瓣
@@ -1017,7 +1065,7 @@ export default function SourceBrowserPage() {
                                 href={`https://bgm.tv/subject/${previewDoubanId}`}
                                 target='_blank'
                                 rel='noopener noreferrer'
-                                className='inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-300 hover:underline'
+                                className='inline-flex items-center gap-1 text-xs text-purple-600 hover:underline dark:text-purple-300'
                                 title='打开 Bangumi 页面'
                               >
                                 <ExternalLink className='w-3.5 h-3.5' /> Bangumi
@@ -1027,11 +1075,23 @@ export default function SourceBrowserPage() {
                           return null;
                         })()}
                       </div>
-                      <div className='text-xs sm:text-sm text-gray-600 dark:text-gray-300'>
-                        年份：{previewData.year || previewItem?.year || '—'}
-                      </div>
-                      <div className='text-xs sm:text-sm text-gray-600 dark:text-gray-300'>
-                        来源：{activeSource?.name}
+                      <div className='flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm'>
+                        <div>
+                          <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                            年份
+                          </span>
+                          <span className='ml-2 font-medium text-gray-900 dark:text-white'>
+                            {previewData.year || previewItem?.year || '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                            来源
+                          </span>
+                          <span className='ml-2 font-medium text-gray-900 dark:text-white'>
+                            {activeSource?.name || '—'}
+                          </span>
+                        </div>
                       </div>
                       <div className='flex flex-wrap gap-2 text-xs'>
                         {previewItem?.type_name && (
@@ -1052,7 +1112,7 @@ export default function SourceBrowserPage() {
                             String(previewSearchPick.desc).trim()) ||
                           (previewItem?.remarks && previewItem.remarks.trim());
                         return desc ? (
-                          <div className='mt-1 border rounded-md p-2 sm:p-3 bg-gray-50 dark:bg-gray-900 text-xs sm:text-sm text-gray-700 dark:text-gray-300 max-h-32 sm:max-h-40 overflow-auto whitespace-pre-line'>
+                          <div className='max-h-32 overflow-auto whitespace-pre-line text-xs text-gray-700 sm:max-h-40 sm:text-sm dark:text-gray-300'>
                             {desc}
                           </div>
                         ) : null;
@@ -1070,37 +1130,45 @@ export default function SourceBrowserPage() {
                           (() => {
                             const d = previewDouban;
                             return (
-                              <div className='text-sm text-gray-700 dark:text-gray-300 space-y-1'>
-                                <div className='font-semibold'>豆瓣信息</div>
+                              <div className='border-t border-black/6 pt-4 text-sm text-gray-700 dark:border-white/8 dark:text-gray-300'>
+                                <div className='mb-3 flex items-center justify-between gap-3'>
+                                  <div className='font-semibold text-gray-900 dark:text-white'>
+                                    豆瓣信息
+                                  </div>
+                                  {d.rate ? (
+                                    <span className='rounded-full bg-green-100 px-2.5 py-1 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-300'>
+                                      豆瓣 {d.rate}
+                                    </span>
+                                  ) : null}
+                                </div>
                                 {d.title && (
-                                  <div>
-                                    标题：{d.title}
-                                    {d.rate ? (
-                                      <span>（评分 {d.rate}）</span>
-                                    ) : null}
+                                  <div className='mb-2 text-sm font-medium text-gray-900 dark:text-white'>
+                                    {d.title}
                                   </div>
                                 )}
                                 {d.directors && d.directors.length > 0 && (
-                                  <div>导演：{d.directors.join('、')}</div>
+                                  <div className='text-xs sm:text-sm'>
+                                    导演：{d.directors.join('、')}
+                                  </div>
                                 )}
                                 {d.screenwriters &&
                                   d.screenwriters.length > 0 && (
-                                    <div>
+                                    <div className='text-xs sm:text-sm'>
                                       编剧：{d.screenwriters.join('、')}
                                     </div>
                                   )}
                                 {d.cast && d.cast.length > 0 && (
-                                  <div>
+                                  <div className='text-xs sm:text-sm'>
                                     主演：{d.cast.slice(0, 8).join('、')}
                                     {d.cast.length > 8 ? '…' : ''}
                                   </div>
                                 )}
-                                <div className='flex flex-wrap gap-2 text-xs'>
+                                <div className='mt-3 flex flex-wrap gap-2 text-xs'>
                                   {d.genres &&
                                     d.genres.map((g: string) => (
                                       <span
                                         key={g}
-                                        className='px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700'
+                                        className='rounded-full bg-gray-100 px-2 py-0.5 dark:bg-gray-700'
                                       >
                                         {g}
                                       </span>
@@ -1125,12 +1193,14 @@ export default function SourceBrowserPage() {
                                     ))}
                                 </div>
                                 {d.first_aired && (
-                                  <div>首播/上映：{d.first_aired}</div>
+                                  <div className='mt-3 text-xs sm:text-sm'>
+                                    首播/上映：{d.first_aired}
+                                  </div>
                                 )}
                                 {(d.episodes ||
                                   d.episode_length ||
                                   d.movie_duration) && (
-                                  <div className='text-xs text-gray-600 dark:text-gray-400'>
+                                  <div className='mt-2 text-xs text-gray-600 dark:text-gray-400'>
                                     {d.episodes ? `集数：${d.episodes} ` : ''}
                                     {d.episode_length
                                       ? `单集：${d.episode_length} 分钟 `
@@ -1141,7 +1211,7 @@ export default function SourceBrowserPage() {
                                   </div>
                                 )}
                                 {d.plot_summary && (
-                                  <div className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
+                                  <div className='mt-3 line-clamp-5 text-xs leading-relaxed text-gray-600 dark:text-gray-400'>
                                     {d.plot_summary}
                                   </div>
                                 )}
@@ -1156,38 +1226,41 @@ export default function SourceBrowserPage() {
                           </div>
                         )}
                         {previewBangumi && (
-                          <div className='text-sm text-gray-700 dark:text-gray-300 space-y-1'>
-                            <div className='font-semibold'>Bangumi 信息</div>
-                            <div>
-                              标题：
-                              {previewBangumi.name_cn || previewBangumi.name}
+                          <div className='border-t border-black/6 pt-4 text-sm text-gray-700 dark:border-white/8 dark:text-gray-300'>
+                            <div className='mb-3 flex items-center justify-between gap-3'>
+                              <div className='font-semibold text-gray-900 dark:text-white'>
+                                Bangumi 信息
+                              </div>
                               {previewBangumi.rating?.score ? (
-                                <span>
-                                  （评分 {previewBangumi.rating.score}）
+                                <span className='rounded-full bg-purple-100 px-2.5 py-1 text-xs text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'>
+                                  Bangumi {previewBangumi.rating.score}
                                 </span>
                               ) : null}
                             </div>
+                            <div className='text-sm font-medium text-gray-900 dark:text-white'>
+                              {previewBangumi.name_cn || previewBangumi.name}
+                            </div>
                             {previewBangumi.date && (
-                              <div>首播：{previewBangumi.date}</div>
+                              <div className='mt-2 text-xs sm:text-sm'>
+                                首播：{previewBangumi.date}
+                              </div>
                             )}
                             {Array.isArray(previewBangumi.tags) &&
                               previewBangumi.tags.length > 0 && (
-                                <div className='flex flex-wrap gap-2 text-xs'>
-                                  {previewBangumi.tags
-                                    .slice(0, 10)
-                                    .map((t) => (
-                                      <span
-                                        key={t.name}
-                                        className='px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700'
-                                      >
-                                        {t.name}
-                                      </span>
-                                    ))}
+                                <div className='mt-3 flex flex-wrap gap-2 text-xs'>
+                                  {previewBangumi.tags.slice(0, 10).map((t) => (
+                                    <span
+                                      key={t.name}
+                                      className='px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700'
+                                    >
+                                      {t.name}
+                                    </span>
+                                  ))}
                                 </div>
                               )}
                             {Array.isArray(previewBangumi.infobox) &&
                               previewBangumi.infobox.length > 0 && (
-                                <div className='text-xs space-y-0.5'>
+                                <div className='mt-3 space-y-1 text-xs text-gray-600 dark:text-gray-400'>
                                   {previewBangumi.infobox
                                     .slice(0, 10)
                                     .map((info, idx: number) => (
@@ -1196,18 +1269,18 @@ export default function SourceBrowserPage() {
                                         {Array.isArray(info.value)
                                           ? info.value
                                               .map((v) =>
-                                                typeof v === 'string' ? v : v.v
+                                                typeof v === 'string' ? v : v.v,
                                               )
                                               .join('、')
                                           : typeof info.value === 'string'
-                                          ? info.value
-                                          : info.value.v}
+                                            ? info.value
+                                            : info.value.v}
                                       </div>
                                     ))}
                                 </div>
                               )}
                             {previewBangumi.summary && (
-                              <div className='text-xs text-gray-600 dark:text-gray-400 leading-relaxed'>
+                              <div className='mt-3 line-clamp-5 text-xs leading-relaxed text-gray-600 dark:text-gray-400'>
                                 {previewBangumi.summary}
                               </div>
                             )}
@@ -1219,11 +1292,11 @@ export default function SourceBrowserPage() {
                 )}
               </div>
               {/* 底部操作栏 */}
-              <div className='px-5 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-linear-to-r from-white/90 via-blue-50/50 to-white/90 dark:from-gray-800/90 dark:via-blue-900/10 dark:to-gray-800/90 backdrop-blur-md flex items-center justify-between gap-3'>
-                <div className='text-xs sm:text-sm text-gray-500 dark:text-gray-400'>
+              <div className='flex items-center justify-end gap-3 border-t border-black/6 px-5 py-4 backdrop-blur-md dark:border-white/8 sm:justify-between sm:px-6'>
+                <div className='hidden text-xs text-gray-500 dark:text-gray-400 sm:block sm:text-sm'>
                   {previewData?.class && (
-                    <span className='inline-flex items-center gap-1.5'>
-                      <span className='w-1.5 h-1.5 rounded-full bg-blue-500'></span>
+                    <span className='inline-flex items-center gap-1.5 rounded-full border border-black/6 bg-white/70 px-3 py-1.5 dark:border-white/8 dark:bg-white/6'>
+                      <span className='h-1.5 w-1.5 rounded-full bg-blue-500'></span>
                       {previewData.class}
                     </span>
                   )}
@@ -1231,7 +1304,7 @@ export default function SourceBrowserPage() {
                 <div className='flex items-center gap-2 sm:gap-3'>
                   <button
                     onClick={() => setPreviewOpen(false)}
-                    className='px-3 sm:px-4 py-2 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm font-medium transition-colors'
+                    className='ui-control rounded-full px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300'
                   >
                     取消
                   </button>
@@ -1239,10 +1312,13 @@ export default function SourceBrowserPage() {
                     onClick={() => {
                       if (previewItem) goPlay(previewItem);
                     }}
-                    className='group relative inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105'
+                    className='group relative inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] text-sm font-semibold shadow-[0_10px_24px_rgba(244,194,77,0.28)] transition-all duration-300 hover:scale-[1.03]'
                   >
-                    <div className='absolute inset-0 rounded-xl bg-linear-to-r from-blue-400 to-indigo-400 blur-lg opacity-0 group-hover:opacity-50 transition-opacity -z-10'></div>
-                    <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
+                    <svg
+                      className='w-4 h-4'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
                       <path d='M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z' />
                     </svg>
                     立即播放

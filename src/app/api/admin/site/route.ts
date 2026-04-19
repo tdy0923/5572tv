@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-console */
+/* eslint-disable no-console */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { NextRequest, NextResponse } from 'next/server';
 
+import type { AdSettings } from '@/lib/ad-settings';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       {
         error: '不支持本地存储进行管理员配置',
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
 
     const {
       SiteName,
+      AnnouncementTitle,
       Announcement,
       SearchDownstreamMaxPage,
       SiteInterfaceCacheTime,
@@ -47,9 +49,11 @@ export async function POST(request: NextRequest) {
       TMDBApiKey,
       TMDBLanguage,
       EnableTMDBActorSearch,
+      AdSettings,
       cronConfig,
     } = body as {
       SiteName: string;
+      AnnouncementTitle?: string;
       Announcement: string;
       SearchDownstreamMaxPage: number;
       SiteInterfaceCacheTime: number;
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
       TMDBApiKey?: string;
       TMDBLanguage?: string;
       EnableTMDBActorSearch?: boolean;
+      AdSettings?: AdSettings;
       cronConfig?: {
         enableAutoRefresh: boolean;
         maxRecordsPerRun: number;
@@ -98,7 +103,7 @@ export async function POST(request: NextRequest) {
     if (username !== process.env.USERNAME) {
       // 管理员
       const user = adminConfig.UserConfig.Users.find(
-        (u) => u.username === username
+        (u) => u.username === username,
       );
       if (!user || user.role !== 'admin' || user.banned) {
         return NextResponse.json({ error: '权限不足' }, { status: 401 });
@@ -109,6 +114,7 @@ export async function POST(request: NextRequest) {
     adminConfig.SiteConfig = {
       ...adminConfig.SiteConfig, // 保留所有现有字段
       SiteName,
+      AnnouncementTitle: AnnouncementTitle || '站点公告',
       Announcement,
       SearchDownstreamMaxPage,
       SiteInterfaceCacheTime,
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
       TMDBApiKey: TMDBApiKey || '',
       TMDBLanguage: TMDBLanguage || 'zh-CN',
       EnableTMDBActorSearch: EnableTMDBActorSearch || false,
+      AdSettings: AdSettings || adminConfig.SiteConfig.AdSettings,
     };
 
     // 更新豆瓣配置
@@ -169,11 +176,12 @@ export async function POST(request: NextRequest) {
       { ok: true, shouldReload: true }, // 添加shouldReload标志通知前端刷新页面
       {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
+          'Cache-Control':
+            'no-store, no-cache, must-revalidate, proxy-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
         },
-      }
+      },
     );
   } catch (error) {
     console.error('更新站点配置失败:', error);
@@ -182,7 +190,7 @@ export async function POST(request: NextRequest) {
         error: '更新站点配置失败',
         details: (error as Error).message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

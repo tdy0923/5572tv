@@ -22,6 +22,7 @@ import {
   useState,
   useTransition,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import { BangumiCalendarData } from '@/lib/bangumi.client';
@@ -38,6 +39,7 @@ import {
 } from '@/lib/shortdrama-cache';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { DoubanItem } from '@/lib/types';
+import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 // 🚀 TanStack Query Mutations
 import { useClearFavoritesMutation } from '@/hooks/useFavoritesMutations';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
@@ -51,6 +53,7 @@ import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
 import ShortDramaCard from '@/components/ShortDramaCard';
+import { SiteAdSlot } from '@/components/SiteAdSlot';
 import { useSite } from '@/components/SiteProvider';
 import SkeletonCard from '@/components/SkeletonCard';
 import { TelegramWelcomeModal } from '@/components/TelegramWelcomeModal';
@@ -193,10 +196,15 @@ function HomeClient() {
     showAnnouncement: false,
   });
 
-  const { announcement } = useSite();
+  const { announcement, announcementTitle } = useSite();
 
   // 解构状态以便使用
   const { activeTab, upcomingReleases, username, showAnnouncement } = state;
+
+  const hasUnreadAnnouncement = useMemo(() => {
+    if (typeof window === 'undefined' || !announcement) return false;
+    return localStorage.getItem('hasSeenAnnouncement') !== announcement;
+  }, [announcement, showAnnouncement]);
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
@@ -297,6 +305,7 @@ function HomeClient() {
 
   const [requireClearConfirmation, setRequireClearConfirmation] =
     useState(false);
+  const [announcementPinned, setAnnouncementPinned] = useState(false);
 
   // 合并初始化逻辑 - 优化性能，减少重渲染
   useEffect(() => {
@@ -374,7 +383,7 @@ function HomeClient() {
           source,
           title: fav.title,
           year: fav.year,
-          poster: fav.cover,
+          poster: resolveCardPosterUrl(fav.cover),
           episodes: fav.total_episodes,
           source_name: fav.source_name,
           currentEpisode,
@@ -402,7 +411,7 @@ function HomeClient() {
           source,
           title: reminder.title,
           year: reminder.year,
-          poster: reminder.cover,
+          poster: resolveCardPosterUrl(reminder.cover),
           episodes: reminder.total_episodes,
           source_name: reminder.source_name,
           search_title: reminder?.search_title,
@@ -709,70 +718,71 @@ function HomeClient() {
     localStorage.setItem('hasSeenAnnouncement', announcement); // 记录已查看弹窗
   };
 
+  const handleOpenAnnouncement = () => {
+    dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: true });
+    setAnnouncementPinned(true);
+  };
+
   return (
-    <PageLayout>
+    <PageLayout
+      onAnnouncementClick={handleOpenAnnouncement}
+      hasUnreadAnnouncement={hasUnreadAnnouncement}
+    >
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
       <div className='overflow-visible -mt-2 pb-32 md:mt-0 md:pb-safe-bottom'>
-        {/* 欢迎横幅 - 现代化精简设计 */}
-        <div className='mb-6 overflow-hidden rounded-[28px] border border-black/6 bg-linear-to-r from-slate-950 via-slate-900 to-[#433010] shadow-[0_28px_80px_rgba(15,23,42,0.18)]'>
-          <div className='relative p-4 sm:p-5'>
-            {/* 动态渐变背景 */}
-            <div className='absolute inset-0 bg-linear-to-br from-white/8 via-transparent to-black/15'></div>
-            <div className='absolute -right-12 top-0 h-32 w-32 rounded-full bg-primary-400/18 blur-3xl'></div>
-            <div className='absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-blue-400/14 blur-3xl'></div>
+        <div className='mb-8 space-y-4 rounded-[32px] border border-black/6 bg-white/30 p-3 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-4'>
+          <SiteAdSlot position='home_hero' />
+          {/* 欢迎横幅 - 现代化精简设计 */}
+          <div className='overflow-hidden rounded-[28px] border border-black/6 bg-[#12161f] shadow-[0_22px_56px_rgba(15,23,42,0.14)]'>
+            <div className='relative p-4 sm:p-5'>
+              <div className='absolute inset-0 bg-linear-to-r from-white/[0.04] via-transparent to-transparent'></div>
 
-            <div className='relative z-10 flex items-center justify-between gap-4'>
-              <div className='flex-1 min-w-0'>
-                <div className='mb-2 inline-flex items-center rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary-200'>
-                  5572 curated picks
-                </div>
-                <h2 className='text-lg sm:text-xl font-bold text-white mb-1 flex items-center gap-2 flex-wrap'>
-                  <span>
-                    {greeting}
-                    {username && '，'}
-                  </span>
-                  {username && (
-                    <span className='text-yellow-300 font-semibold'>
-                      {username}
+              <div className='relative z-10 flex items-center justify-between gap-4'>
+                <div className='min-w-0 flex-1'>
+                  <h2 className='mb-1 flex flex-wrap items-center gap-2 text-lg font-bold text-white sm:text-xl'>
+                    <span>
+                      {greeting}
+                      {username && '，'}
                     </span>
-                  )}
-                  <span className='inline-block animate-wave origin-bottom-right'>
-                    👋
-                  </span>
-                </h2>
-                <p className='max-w-2xl text-sm text-white/76'>
-                  发现更多精彩影视内容，并在不改动现有架构的前提下持续升级体验。
-                </p>
-              </div>
-
-              {/* 装饰图标 - 更小更精致 */}
-              <div className='hidden md:flex items-center justify-center shrink-0 w-14 h-14 rounded-[20px] bg-white/8 backdrop-blur-sm border border-white/10'>
-                <Film className='w-7 h-7 text-primary-200' />
+                    {username && (
+                      <span className='font-semibold text-yellow-300'>
+                        {username}
+                      </span>
+                    )}
+                    <span className='inline-block origin-bottom-right animate-wave'>
+                      👋
+                    </span>
+                  </h2>
+                  <p className='max-w-2xl text-sm text-white/64'>
+                    发现更多精彩影视内容。
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
-        <div className='mb-8 flex items-center justify-center'>
-          <CapsuleSwitch
-            options={[
-              { label: '首页', value: 'home' },
-              { label: '收藏夹', value: 'favorites' },
-              { label: '想看', value: 'reminders' },
-            ]}
-            active={activeTab}
-            onChange={(value) =>
-              startTransition(() =>
-                dispatch({
-                  type: 'SET_ACTIVE_TAB',
-                  payload: value as 'home' | 'favorites' | 'reminders',
-                }),
-              )
-            }
-          />
+          {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
+          <div className='flex items-center justify-center'>
+            <CapsuleSwitch
+              className='bg-white/62 dark:bg-white/6'
+              options={[
+                { label: '首页', value: 'home' },
+                { label: '收藏夹', value: 'favorites' },
+                { label: '想看', value: 'reminders' },
+              ]}
+              active={activeTab}
+              onChange={(value) =>
+                startTransition(() =>
+                  dispatch({
+                    type: 'SET_ACTIVE_TAB',
+                    payload: value as 'home' | 'favorites' | 'reminders',
+                  }),
+                )
+              }
+            />
+          </div>
         </div>
 
         <div
@@ -780,14 +790,14 @@ function HomeClient() {
         >
           {activeTab === 'reminders' ? (
             // 想看视图
-            <section className='mb-8'>
+            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   我想看
                 </h2>
                 {reminderItems.length > 0 && (
                   <button
-                    className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 dark:text-red-400 dark:hover:text-white dark:hover:bg-red-500 border border-red-300 dark:border-red-700 hover:border-red-600 dark:hover:border-red-500 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md'
+                    className='ui-control flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
                     onClick={() => {
                       if (requireClearConfirmation) {
                         setShowClearRemindersDialog(true);
@@ -806,21 +816,20 @@ function HomeClient() {
               {reminderItems.length > 0 && (
                 <div className='mb-4 flex flex-wrap gap-2'>
                   {[
-                    { key: 'all' as const, label: '全部', icon: '📚' },
-                    { key: 'upcoming' as const, label: '即将上映', icon: '⏰' },
-                    { key: 'today' as const, label: '今日上映', icon: '🎉' },
-                    { key: 'released' as const, label: '已上映', icon: '✅' },
-                  ].map(({ key, label, icon }) => (
+                    { key: 'all' as const, label: '全部' },
+                    { key: 'upcoming' as const, label: '即将上映' },
+                    { key: 'today' as const, label: '今日上映' },
+                    { key: 'released' as const, label: '已上映' },
+                  ].map(({ key, label }) => (
                     <button
                       key={key}
                       onClick={() => setReminderFilter(key)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                         reminderFilter === key
-                          ? 'bg-linear-to-r from-orange-500 to-red-500 text-white shadow-lg scale-105'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                          : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
                       }`}
                     >
-                      <span className='mr-1'>{icon}</span>
                       {label}
                     </button>
                   ))}
@@ -972,14 +981,14 @@ function HomeClient() {
             </section>
           ) : activeTab === 'favorites' ? (
             // 收藏夹视图
-            <section className='mb-8'>
+            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   我的收藏
                 </h2>
                 {favoriteItems.length > 0 && (
                   <button
-                    className='flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-white hover:bg-red-600 dark:text-red-400 dark:hover:text-white dark:hover:bg-red-500 border border-red-300 dark:border-red-700 hover:border-red-600 dark:hover:border-red-500 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md'
+                    className='ui-control flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
                     onClick={() => {
                       // 根据用户设置决定是否显示确认对话框
                       if (requireClearConfirmation) {
@@ -1000,7 +1009,7 @@ function HomeClient() {
               {/* 统计信息 */}
               {favoriteStats && (
                 <div className='mb-4 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400'>
-                  <span className='px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full'>
+                  <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1 dark:border-white/8 dark:bg-white/6'>
                     共{' '}
                     <strong className='text-gray-900 dark:text-gray-100'>
                       {favoriteStats.total}
@@ -1008,32 +1017,32 @@ function HomeClient() {
                     项
                   </span>
                   {favoriteStats.movie > 0 && (
-                    <span className='px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full'>
+                    <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700 dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-300'>
                       电影 {favoriteStats.movie}
                     </span>
                   )}
                   {favoriteStats.tv > 0 && (
-                    <span className='px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full'>
+                    <span className='rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-purple-700 dark:border-purple-800/50 dark:bg-purple-900/20 dark:text-purple-300'>
                       剧集 {favoriteStats.tv}
                     </span>
                   )}
                   {favoriteStats.anime > 0 && (
-                    <span className='px-3 py-1 bg-pink-50 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 rounded-full'>
+                    <span className='rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-pink-700 dark:border-pink-800/50 dark:bg-pink-900/20 dark:text-pink-300'>
                       动漫 {favoriteStats.anime}
                     </span>
                   )}
                   {favoriteStats.shortdrama > 0 && (
-                    <span className='px-3 py-1 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 rounded-full'>
+                    <span className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 dark:border-rose-800/50 dark:bg-rose-900/20 dark:text-rose-300'>
                       短剧 {favoriteStats.shortdrama}
                     </span>
                   )}
                   {favoriteStats.live > 0 && (
-                    <span className='px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full'>
+                    <span className='rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-700 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300'>
                       直播 {favoriteStats.live}
                     </span>
                   )}
                   {favoriteStats.variety > 0 && (
-                    <span className='px-3 py-1 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-full'>
+                    <span className='rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700 dark:border-orange-800/50 dark:bg-orange-900/20 dark:text-orange-300'>
                       综艺 {favoriteStats.variety}
                     </span>
                   )}
@@ -1044,24 +1053,23 @@ function HomeClient() {
               {favoriteItems.length > 0 && (
                 <div className='mb-4 flex flex-wrap gap-2'>
                   {[
-                    { key: 'all' as const, label: '全部', icon: '📚' },
-                    { key: 'movie' as const, label: '电影', icon: '🎬' },
-                    { key: 'tv' as const, label: '剧集', icon: '📺' },
-                    { key: 'anime' as const, label: '动漫', icon: '🎌' },
-                    { key: 'shortdrama' as const, label: '短剧', icon: '🎭' },
-                    { key: 'live' as const, label: '直播', icon: '📡' },
-                    { key: 'variety' as const, label: '综艺', icon: '🎪' },
-                  ].map(({ key, label, icon }) => (
+                    { key: 'all' as const, label: '全部' },
+                    { key: 'movie' as const, label: '电影' },
+                    { key: 'tv' as const, label: '剧集' },
+                    { key: 'anime' as const, label: '动漫' },
+                    { key: 'shortdrama' as const, label: '短剧' },
+                    { key: 'live' as const, label: '直播' },
+                    { key: 'variety' as const, label: '综艺' },
+                  ].map(({ key, label }) => (
                     <button
                       key={key}
                       onClick={() => setFavoriteFilter(key)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                         favoriteFilter === key
-                          ? 'bg-linear-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                          : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
                       }`}
                     >
-                      <span className='mr-1'>{icon}</span>
                       {label}
                     </button>
                   ))}
@@ -1070,7 +1078,7 @@ function HomeClient() {
 
               {/* 排序选项 */}
               {favoriteItems.length > 0 && (
-                <div className='mb-4 flex items-center gap-2 text-sm'>
+                <div className='mb-4 flex flex-wrap items-center gap-2 text-sm'>
                   <span className='text-gray-600 dark:text-gray-400'>
                     排序：
                   </span>
@@ -1082,10 +1090,10 @@ function HomeClient() {
                       <button
                         key={key}
                         onClick={() => setFavoriteSortBy(key)}
-                        className={`px-3 py-1 rounded-md transition-colors ${
+                        className={`rounded-full px-3 py-1.5 transition-colors ${
                           favoriteSortBy === key
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                            : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
                         }`}
                       >
                         {label}
@@ -1301,7 +1309,7 @@ function HomeClient() {
                         ...hotMovies.slice(0, 2).map((movie) => ({
                           id: movie.id,
                           title: movie.title,
-                          poster: movie.poster,
+                          poster: resolveCardPosterUrl(movie.poster),
                           backdrop: movie.backdrop,
                           trailerUrl: movie.trailerUrl,
                           description: movie.plot_summary,
@@ -1314,7 +1322,7 @@ function HomeClient() {
                         ...hotTvShows.slice(0, 2).map((show) => ({
                           id: show.id,
                           title: show.title,
-                          poster: show.poster,
+                          poster: resolveCardPosterUrl(show.poster),
                           backdrop: show.backdrop,
                           trailerUrl: show.trailerUrl,
                           description: show.plot_summary,
@@ -1327,7 +1335,7 @@ function HomeClient() {
                         ...hotVarietyShows.slice(0, 1).map((show) => ({
                           id: show.id,
                           title: show.title,
-                          poster: show.poster,
+                          poster: resolveCardPosterUrl(show.poster),
                           backdrop: show.backdrop,
                           trailerUrl: show.trailerUrl,
                           description: show.plot_summary,
@@ -1340,7 +1348,7 @@ function HomeClient() {
                         ...hotAnime.slice(0, 1).map((anime) => ({
                           id: anime.id,
                           title: anime.title,
-                          poster: anime.poster,
+                          poster: resolveCardPosterUrl(anime.poster),
                           backdrop: anime.backdrop,
                           trailerUrl: anime.trailerUrl,
                           description: anime.plot_summary,
@@ -1361,7 +1369,10 @@ function HomeClient() {
                 )}
 
               {/* 继续观看 */}
-              <ContinueWatching />
+              <div className='relative mb-10'>
+                <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
+                <ContinueWatching className='mb-0' />
+              </div>
 
               {/* 即将上映 */}
               {!loading && upcomingReleases.length > 0 && (
@@ -1376,13 +1387,13 @@ function HomeClient() {
                       href='/release-calendar'
                       className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                     >
-                      查看更多
+                      更多内容
                       <ChevronRight className='w-4 h-4 ml-1' />
                     </Link>
                   </div>
 
                   {/* Tab 切换 */}
-                  <div className='mb-4 flex gap-2'>
+                  <div className='mb-4 flex flex-wrap gap-2'>
                     {[
                       {
                         key: 'all',
@@ -1408,10 +1419,10 @@ function HomeClient() {
                         onClick={() =>
                           setUpcomingFilter(key as 'all' | 'movie' | 'tv')
                         }
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                           upcomingFilter === key
-                            ? 'bg-orange-500 text-white shadow-md'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                            : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
                         }`}
                       >
                         {label}
@@ -1497,9 +1508,10 @@ function HomeClient() {
                               source_name='即将上映'
                               from='douban'
                               title={release.title}
-                              poster={
-                                release.cover || '/placeholder-poster.jpg'
-                              }
+                              poster={resolvePosterUrl(
+                                release.cover,
+                                '/placeholder-poster.jpg',
+                              )}
                               year={release.releaseDate.split('-')[0]}
                               type={release.type}
                               remarks={remarksText}
@@ -1529,7 +1541,7 @@ function HomeClient() {
                     href='/douban?type=movie'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    更多内容
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
@@ -1551,7 +1563,7 @@ function HomeClient() {
                             id={movie.id}
                             source_name='豆瓣'
                             title={movie.title}
-                            poster={movie.poster}
+                            poster={resolveCardPosterUrl(movie.poster)}
                             douban_id={Number(movie.id)}
                             rate={movie.rate}
                             year={movie.year}
@@ -1574,7 +1586,7 @@ function HomeClient() {
                     href='/douban?type=tv'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    更多内容
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
@@ -1596,7 +1608,7 @@ function HomeClient() {
                             id={show.id}
                             source_name='豆瓣'
                             title={show.title}
-                            poster={show.poster}
+                            poster={resolveCardPosterUrl(show.poster)}
                             douban_id={Number(show.id)}
                             rate={show.rate}
                             year={show.year}
@@ -1619,7 +1631,7 @@ function HomeClient() {
                     href='/douban?type=anime'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    更多内容
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
@@ -1641,14 +1653,13 @@ function HomeClient() {
                             id={anime.id.toString()}
                             source_name='Bangumi'
                             title={anime.name_cn || anime.name}
-                            poster={
-                              anime.images?.large ||
-                              anime.images?.common ||
-                              anime.images?.medium ||
-                              anime.images?.small ||
-                              anime.images?.grid ||
-                              '/placeholder-poster.jpg'
-                            }
+                            poster={resolveCardPosterUrl(
+                              anime.images?.large,
+                              anime.images?.common,
+                              anime.images?.medium,
+                              anime.images?.small,
+                              anime.images?.grid,
+                            )}
                             douban_id={anime.id}
                             rate={anime.rating?.score?.toFixed(1) || ''}
                             year={anime.air_date?.split('-')?.[0] || ''}
@@ -1671,7 +1682,7 @@ function HomeClient() {
                     href='/douban?type=show'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    更多内容
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
@@ -1693,7 +1704,7 @@ function HomeClient() {
                             id={show.id}
                             source_name='豆瓣'
                             title={show.title}
-                            poster={show.poster}
+                            poster={resolveCardPosterUrl(show.poster)}
                             douban_id={Number(show.id)}
                             rate={show.rate}
                             year={show.year}
@@ -1716,7 +1727,7 @@ function HomeClient() {
                     href='/shortdrama'
                     className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
                   >
-                    查看更多
+                    更多内容
                     <ChevronRight className='w-4 h-4 ml-1' />
                   </Link>
                 </div>
@@ -1740,66 +1751,66 @@ function HomeClient() {
           )}
         </div>
       </div>
-      {announcement && showAnnouncement && (
-        <div
-          className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm dark:bg-black/70 p-4 transition-opacity duration-300 ${
-            showAnnouncement ? '' : 'opacity-0 pointer-events-none'
-          }`}
-          onTouchStart={(e) => {
-            // 如果点击的是背景区域，阻止触摸事件冒泡，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          onTouchMove={(e) => {
-            // 如果触摸的是背景区域，阻止触摸移动，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          }}
-          onTouchEnd={(e) => {
-            // 如果触摸的是背景区域，阻止触摸结束事件，防止背景滚动
-            if (e.target === e.currentTarget) {
-              e.preventDefault();
-            }
-          }}
-          style={{
-            touchAction: 'none', // 禁用所有触摸操作
-          }}
-        >
+      {typeof document !== 'undefined' &&
+        announcement &&
+        (showAnnouncement || announcementPinned) &&
+        createPortal(
           <div
-            className='w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
+            className={`fixed inset-0 z-[9999] flex items-start justify-center bg-black/50 backdrop-blur-sm dark:bg-black/70 p-4 pt-20 sm:items-center sm:pt-4 transition-opacity duration-300 ${
+              showAnnouncement ? '' : 'opacity-0 pointer-events-none'
+            }`}
+            onTouchStart={(e) => {
+              if (e.target === e.currentTarget) {
+                e.preventDefault();
+              }
+            }}
             onTouchMove={(e) => {
-              // 允许公告内容区域正常滚动，阻止事件冒泡到外层
-              e.stopPropagation();
+              if (e.target === e.currentTarget) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            onTouchEnd={(e) => {
+              if (e.target === e.currentTarget) {
+                e.preventDefault();
+              }
             }}
             style={{
-              touchAction: 'auto', // 允许内容区域的正常触摸操作
+              touchAction: 'none',
             }}
           >
-            <div className='mb-4'>
-              <h3 className='text-2xl font-bold tracking-tight text-gray-800 dark:text-white border-b border-green-500 pb-1'>
-                提示
-              </h3>
-            </div>
-            <div className='mb-6'>
-              <div className='relative overflow-hidden rounded-lg mb-4 bg-green-50 dark:bg-green-900/20'>
-                <div className='absolute inset-y-0 left-0 w-1.5 bg-green-500 dark:bg-green-400'></div>
-                <p className='ml-4 text-gray-600 dark:text-gray-300 leading-relaxed'>
-                  {announcement}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleCloseAnnouncement(announcement)}
-              className='w-full rounded-lg bg-linear-to-r from-green-600 to-green-700 px-4 py-3 text-white font-medium shadow-md hover:shadow-lg hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800 transition-all duration-300 transform hover:-translate-y-0.5'
+            <div
+              className='w-full max-w-md max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
+              onTouchMove={(e) => {
+                e.stopPropagation();
+              }}
+              style={{
+                touchAction: 'auto',
+              }}
             >
-              我知道了
-            </button>
-          </div>
-        </div>
-      )}
+              <div className='mb-4'>
+                <h3 className='border-b border-green-500 pb-1 text-2xl font-bold tracking-tight text-gray-800 dark:text-white'>
+                  {announcementTitle || '站点公告'}
+                </h3>
+              </div>
+              <div className='mb-6'>
+                <div className='relative mb-4 overflow-hidden rounded-lg bg-green-50 dark:bg-green-900/20'>
+                  <div className='absolute inset-y-0 left-0 w-1.5 bg-green-500 dark:bg-green-400'></div>
+                  <p className='ml-4 leading-relaxed text-gray-600 dark:text-gray-300'>
+                    {announcement}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCloseAnnouncement(announcement)}
+                className='w-full rounded-lg bg-linear-to-r from-green-600 to-green-700 px-4 py-3 text-white font-medium shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:from-green-700 hover:to-green-800 dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800'
+              >
+                我知道了
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </PageLayout>
   );
 }

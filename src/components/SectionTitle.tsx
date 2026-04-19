@@ -14,7 +14,6 @@ export default function SectionTitle({
 }: SectionTitleProps) {
   return (
     <div className='group inline-flex flex-col gap-2'>
-      <span className='ui-section-kicker'>Featured</span>
       <div className='ui-section-heading'>
         {Icon && (
           <div

@@ -28,6 +28,7 @@ import {
   SHORTDRAMA_CACHE_EXPIRE,
 } from '@/lib/shortdrama-cache';
 import { ShortDramaItem } from '@/lib/types';
+import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import { useToggleFavoriteMutation } from '@/hooks/useFavoritesMutations';
 import { useLongPress } from '@/hooks/useLongPress';
 
@@ -60,7 +61,7 @@ function ShortDramaCard({
     drama.episode_count > 1,
   ); // 如果初始集数>1就显示
   const [imageLoaded, setImageLoaded] = useState(() =>
-    loadedImageUrls.has(drama.cover),
+    loadedImageUrls.has(processImageUrl(resolveCardPosterUrl(drama.cover))),
   ); // 图片加载状态，初始化时检查缓存
   const [favorited, setFavorited] = useState(false); // 收藏状态
   const [showMobileActions, setShowMobileActions] = useState(false); // 移动端操作面板
@@ -76,6 +77,7 @@ function ShortDramaCard({
   // 短剧的source固定为shortdrama
   const source = 'shortdrama';
   const id = drama.id.toString(); // 转换为字符串
+  const posterUrl = resolveCardPosterUrl(drama.cover);
 
   // 检查收藏状态
   useEffect(() => {
@@ -208,7 +210,7 @@ function ShortDramaCard({
             title: drama.name,
             source_name: '短剧',
             year: '',
-            cover: drama.cover,
+            cover: posterUrl,
             total_episodes: realEpisodeCount,
             save_time: Date.now(),
             search_title: drama.name,
@@ -229,7 +231,7 @@ function ShortDramaCard({
       source,
       id,
       drama.name,
-      drama.cover,
+      posterUrl,
       realEpisodeCount,
       toggleFavoriteMutation,
     ],
@@ -280,10 +282,6 @@ function ShortDramaCard({
     longPressDelay: 500,
   });
 
-  const formatScore = (score: number) => {
-    return score > 0 ? score.toFixed(1) : '--';
-  };
-
   const formatUpdateTime = (updateTime: string) => {
     try {
       const date = new Date(updateTime);
@@ -296,7 +294,7 @@ function ShortDramaCard({
   return (
     <>
       <div
-        className={`group relative ${className} transition-all duration-300 ease-in-out hover:scale-[1.05] hover:z-30 hover:shadow-2xl cursor-pointer`}
+        className={`group relative ${className} cursor-pointer transition-all duration-300 ease-in-out hover:z-30`}
         onClick={handleClick}
         onMouseEnter={handlePrefetch}
         onFocus={handlePrefetch}
@@ -323,33 +321,19 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_20px_44px_rgba(15,23,42,0.1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_28px_56px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/6'>
-          {/* 渐变光泽动画层 */}
-          <div
-            className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10'
-            style={{
-              background:
-                'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.15) 55%, transparent 70%)',
-              backgroundSize: '200% 100%',
-              animation: 'card-shimmer 2.5s ease-in-out infinite',
-            }}
-          />
-
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6'>
           <img
-            src={
-              drama.cover
-                ? `/api/image-proxy?url=${encodeURIComponent(drama.cover)}`
-                : '/placeholder-cover.jpg'
-            }
+            src={processImageUrl(posterUrl)}
             alt={drama.name}
             className={`h-full w-full object-cover transition-all duration-700 ease-out ${
               imageLoaded
                 ? 'opacity-100 blur-0 scale-100 group-hover:scale-105'
                 : 'opacity-0 blur-md scale-105'
             }`}
+            referrerPolicy='no-referrer'
             loading={priority ? undefined : 'lazy'}
             onLoad={() => {
-              loadedImageUrls.add(drama.cover);
+              loadedImageUrls.add(processImageUrl(posterUrl));
               setImageLoaded(true);
             }}
             onError={(e) => {
@@ -362,9 +346,8 @@ function ShortDramaCard({
             }}
           />
 
-          {/* 悬浮播放按钮 - 玻璃态效果 */}
-          <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/82 via-black/24 to-transparent backdrop-blur-[2px] opacity-0 transition-all duration-300 group-hover:opacity-100'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/90 text-black shadow-lg transition-transform group-hover:scale-110'>
+          <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/72 via-black/14 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100'>
+            <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/22 bg-white/88 text-black shadow-lg transition-transform duration-300 group-hover:scale-105'>
               <Play className='h-5 w-5 ml-0.5' fill='currentColor' />
             </div>
           </div>
@@ -382,7 +365,7 @@ function ShortDramaCard({
 
             {/* 评分 - 只在评分大于0时显示 */}
             {Number(drama.vote_average) > 0 && (
-              <div className='flex items-center rounded-lg bg-linear-to-br from-yellow-400 to-orange-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg backdrop-blur-sm ring-2 ring-white/30 transition-all duration-300 group-hover:scale-105'>
+              <div className='flex items-center rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-105'>
                 <Star className='h-3 w-3 mr-0.5 fill-current' />
                 {drama.vote_average.toFixed(1)}
               </div>
@@ -392,7 +375,7 @@ function ShortDramaCard({
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleToggleFavorite}
-            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-110 hover:bg-black/70'
+            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70'
             aria-label={favorited ? '取消收藏' : '添加收藏'}
           >
             <Heart
@@ -422,7 +405,7 @@ function ShortDramaCard({
                   setShowAIChat(true);
                 }}
                 className='
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                   bg-black/60 backdrop-blur-md
                   hover:bg-black/80 hover:scale-105 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)]
                   transition-all duration-300 ease-out
@@ -447,16 +430,16 @@ function ShortDramaCard({
 
         {/* 信息区域 */}
         <div className='mt-3 space-y-1.5 px-1'>
-          <h3 className='line-clamp-2 text-sm font-semibold text-gray-900 transition-all duration-300 group-hover:bg-linear-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent dark:text-white dark:group-hover:from-blue-400 dark:group-hover:to-purple-400'>
+          <h3 className='line-clamp-2 text-sm font-semibold text-gray-900 transition-colors duration-300 group-hover:text-gray-950 dark:text-white dark:group-hover:text-white'>
             {drama.name}
           </h3>
 
           {/* 演员信息 */}
           {drama.author && (
-            <div className='flex items-center gap-1.5 text-xs'>
-              <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200/50 dark:border-blue-700/50'>
+            <div className='flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400'>
+              <div className='flex items-center gap-1'>
                 <svg
-                  className='w-3 h-3 text-blue-600 dark:text-blue-400'
+                  className='w-3 h-3 text-gray-500 dark:text-gray-400'
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
@@ -468,17 +451,17 @@ function ShortDramaCard({
                     d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                   ></path>
                 </svg>
-                <span className='text-blue-700 dark:text-blue-300 font-medium line-clamp-1'>
+                <span className='line-clamp-1 font-medium text-gray-700 dark:text-gray-300'>
                   {drama.author}
                 </span>
               </div>
             </div>
           )}
 
-          <div className='flex items-center gap-1.5 text-xs'>
-            <div className='flex items-center gap-1 px-2 py-0.5 rounded-full bg-linear-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200/50 dark:border-green-700/50'>
+          <div className='flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400'>
+            <div className='flex items-center gap-1'>
               <svg
-                className='w-3 h-3 text-green-600 dark:text-green-400'
+                className='w-3 h-3 text-gray-500 dark:text-gray-400'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -490,7 +473,7 @@ function ShortDramaCard({
                   d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
                 ></path>
               </svg>
-              <span className='text-green-700 dark:text-green-300 font-medium'>
+              <span className='font-medium text-gray-700 dark:text-gray-300'>
                 {formatUpdateTime(drama.update_time)}
               </span>
             </div>
@@ -510,7 +493,7 @@ function ShortDramaCard({
         isOpen={showMobileActions}
         onClose={() => setShowMobileActions(false)}
         title={drama.name}
-        poster={drama.cover}
+        poster={posterUrl}
         actions={[
           {
             id: 'play',
@@ -544,7 +527,7 @@ function ShortDramaCard({
                     title: drama.name,
                     source_name: '短剧',
                     year: '',
-                    cover: drama.cover,
+                    cover: posterUrl,
                     total_episodes: realEpisodeCount,
                     save_time: Date.now(),
                     search_title: drama.name,

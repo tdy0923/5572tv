@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const cacheType = searchParams.get('type'); // all, douban, shortdrama, danmu, netdisk, youtube, search
+  const cacheType = searchParams.get('type'); // all, douban, shortdrama, danmu, netdisk, search
 
   try {
     let clearedCount = 0;
@@ -131,11 +131,6 @@ export async function DELETE(request: NextRequest) {
       case 'netdisk':
         clearedCount = await clearNetdiskCache();
         message = `已清理 ${clearedCount} 个网盘搜索缓存项`;
-        break;
-
-      case 'youtube':
-        clearedCount = await clearYouTubeCache();
-        message = `已清理 ${clearedCount} 个YouTube搜索缓存项`;
         break;
 
       case 'search':
@@ -197,7 +192,6 @@ async function getCacheStats() {
       tmdb: { count: 0, size: 0, types: {} },
       danmu: { count: 0, size: 0 },
       netdisk: { count: 0, size: 0 },
-      youtube: { count: 0, size: 0 },
       search: { count: 0, size: 0 },
       other: { count: 0, size: 0 },
       total: { count: 0, size: 0 },
@@ -210,7 +204,6 @@ async function getCacheStats() {
         tmdb: '0 B',
         danmu: '0 B',
         netdisk: '0 B',
-        youtube: '0 B',
         search: '0 B',
         other: '0 B',
         total: '0 B',
@@ -312,29 +305,6 @@ async function clearDanmuCache(): Promise<number> {
       clearedCount++;
     });
     console.log(`🗑️ localStorage中清理了 ${keys.length} 个弹幕缓存项`);
-  }
-
-  return clearedCount;
-}
-
-// 清理YouTube缓存
-async function clearYouTubeCache(): Promise<number> {
-  let clearedCount = 0;
-
-  // 清理数据库中的YouTube缓存
-  const dbCleared = await DatabaseCacheManager.clearCacheByType('youtube');
-  clearedCount += dbCleared;
-
-  // 清理localStorage中的YouTube缓存（兜底）
-  if (typeof localStorage !== 'undefined') {
-    const keys = Object.keys(localStorage).filter((key) =>
-      key.startsWith('youtube-search'),
-    );
-    keys.forEach((key) => {
-      localStorage.removeItem(key);
-      clearedCount++;
-    });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个YouTube搜索缓存项`);
   }
 
   return clearedCount;
@@ -445,7 +415,6 @@ async function clearAllCache(): Promise<number> {
   const tmdbCount = await clearTmdbCache();
   const danmuCount = await clearDanmuCache();
   const netdiskCount = await clearNetdiskCache();
-  const youtubeCount = await clearYouTubeCache();
   const searchCount = await clearSearchCache();
 
   return (
@@ -454,7 +423,6 @@ async function clearAllCache(): Promise<number> {
     tmdbCount +
     danmuCount +
     netdiskCount +
-    youtubeCount +
     searchCount
   );
 }

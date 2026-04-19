@@ -33,7 +33,11 @@ import {
   isReminded,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
-import { isSeriesCompleted, processImageUrl } from '@/lib/utils';
+import {
+  isSeriesCompleted,
+  processImageUrl,
+  resolveCardPosterUrl,
+} from '@/lib/utils';
 import { useToggleFavoriteMutation } from '@/hooks/useFavoritesMutations';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useDeletePlayRecordMutation } from '@/hooks/usePlayRecordsMutations';
@@ -185,7 +189,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
 
     // 使用 useMemo 缓存计算值，避免每次渲染重新计算
     const actualTitle = title;
-    const actualPoster = poster;
+    const actualPoster = resolveCardPosterUrl(poster);
     // 为豆瓣内容生成收藏用的source和id（仅用于收藏，不用于播放）
     const actualSource =
       source || (from === 'douban' && douban_id ? 'douban' : '');
@@ -1008,7 +1012,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         >
           {/* 海报容器 */}
           <div
-            className={`relative aspect-[2/3] overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_20px_44px_rgba(15,23,42,0.1)] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_28px_56px_rgba(15,23,42,0.16)] dark:border-white/8 dark:bg-white/6 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+            className={`relative aspect-[2/3] overflow-hidden rounded-[22px] border border-black/6 bg-white/40 shadow-[0_16px_34px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_20px_42px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/5 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
             style={
               {
                 WebkitUserSelect: 'none',
@@ -1021,17 +1025,6 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               return false;
             }}
           >
-            {/* 渐变光泽动画层 */}
-            <div
-              className='absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10'
-              style={{
-                background:
-                  'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.15) 55%, transparent 70%)',
-                backgroundSize: '200% 100%',
-                animation: 'card-shimmer 2.5s ease-in-out infinite',
-              }}
-            />
-
             {/* 骨架屏 */}
             {!isLoading && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
             {/* 图片 */}
@@ -1096,9 +1089,9 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               }}
             />
 
-            {/* 悬浮遮罩 - 玻璃态效果 */}
+            {/* 悬浮遮罩 */}
             <div
-              className='absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 backdrop-blur-[2px]'
+              className='absolute inset-0 bg-linear-to-t from-black/74 via-black/18 to-transparent opacity-0 transition-all duration-300 ease-in-out group-hover:opacity-100'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1131,8 +1124,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               >
                 {isUpcoming ? (
                   // 即将上映 - 显示敬请期待
-                  <div className='flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-black/60 px-6 py-4 backdrop-blur-md'>
-                    <span className='text-3xl'>📅</span>
+                  <div className='flex flex-col items-center gap-2 rounded-xl bg-black/58 px-6 py-4'>
                     <span className='text-white font-bold text-sm whitespace-nowrap'>
                       敬请期待
                     </span>
@@ -1326,7 +1318,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               !isUpcoming &&
               !(from === 'favorite' && actualEpisodes === 99) && (
                 <div
-                  className='absolute top-2 left-2 flex items-stretch overflow-hidden rounded-md shadow-lg transition-all duration-300 ease-out group-hover:scale-105 z-30'
+                  className='absolute top-2 left-2 z-30 flex items-stretch overflow-hidden rounded-md transition-all duration-300 ease-out group-hover:scale-105'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1365,7 +1357,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               actualYear !== 'unknown' &&
               actualYear.trim() !== '' && (
                 <div
-                  className={`absolute left-2 flex items-center bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-lg text-white/80 text-[10px] font-medium transition-all duration-300 ease-out group-hover:scale-105 z-30 ${
+                  className={`absolute left-2 z-30 flex items-center rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-hover:scale-105 ${
                     actualEpisodes &&
                     actualEpisodes > 1 &&
                     !isUpcoming &&
@@ -1392,7 +1384,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
             {/* 已完结徽章 - Netflix 风格 - 底部左侧 */}
             {remarks && isSeriesCompleted(remarks) && (
               <div
-                className='absolute bottom-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-lg text-white/80 text-[10px] font-medium transition-all duration-300 ease-out group-hover:scale-105 z-30'
+                className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-hover:scale-105'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1425,7 +1417,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
 
                 return (
                   <div
-                    className='absolute bottom-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2 py-0.5 rounded-md shadow-lg text-[10px] font-medium transition-all duration-300 ease-out group-hover:scale-105 z-30'
+                    className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium transition-all duration-300 ease-out group-hover:scale-105'
                     style={
                       {
                         WebkitUserSelect: 'none',
@@ -1447,7 +1439,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
             {/* 评分徽章 - 动态颜色 - 🎯 使用容器查询替代媒体查询 */}
             {config.showRating && rate && ratingBadgeStyle && (
               <div
-                className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} text-xs font-bold rounded-full flex flex-col items-center justify-center transition-all duration-300 ease-out group-hover:scale-110 backdrop-blur-sm w-9 h-9 @[180px]:w-10 @[180px]:h-10`}
+                className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-hover:scale-110 @[180px]:h-10 @[180px]:w-10`}
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1480,7 +1472,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                   target='_blank'
                   rel='noopener noreferrer'
                   onClick={(e) => e.stopPropagation()}
-                  className='absolute top-2 left-2 opacity-0 -translate-x-2 transition-all duration-300 ease-in-out delay-100 sm:group-hover:opacity-100 sm:group-hover:translate-x-0'
+                  className='absolute top-2 left-2 opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 sm:group-hover:opacity-100 sm:group-hover:translate-x-0'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1494,7 +1486,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                   }}
                 >
                   <div
-                    className='bg-green-500 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:bg-green-600 hover:scale-[1.1] transition-all duration-300 ease-out'
+                    className='flex h-7 w-7 items-center justify-center rounded-full bg-black/62 text-white transition-all duration-300 ease-out hover:scale-[1.05] hover:bg-black/78'
                     style={
                       {
                         WebkitUserSelect: 'none',
@@ -1546,7 +1538,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                     }}
                   >
                     <div
-                      className='relative group/sources'
+                      className='relative'
                       style={
                         {
                           WebkitUserSelect: 'none',
@@ -1557,7 +1549,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                     >
                       {/* 源数量徽章 */}
                       <div
-                        className='bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-lg flex items-center gap-1 hover:scale-105 transition-all duration-300 cursor-pointer'
+                        className='flex cursor-pointer items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white transition-all duration-300 hover:scale-105'
                         style={
                           {
                             WebkitUserSelect: 'none',
@@ -1573,104 +1565,6 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                         <span>{sourceCount}</span>
                         <span className='text-white/60'>源</span>
                       </div>
-
-                      {/* 播放源详情悬浮框 */}
-                      {(() => {
-                        // 优先显示的播放源（常见的主流平台）
-                        const prioritySources = [
-                          '爱奇艺',
-                          '腾讯视频',
-                          '优酷',
-                          '芒果TV',
-                          '哔哩哔哩',
-                          'Netflix',
-                          'Disney+',
-                        ];
-
-                        // 按优先级排序播放源
-                        const sortedSources = uniqueSources.sort((a, b) => {
-                          const aIndex = prioritySources.indexOf(a);
-                          const bIndex = prioritySources.indexOf(b);
-                          if (aIndex !== -1 && bIndex !== -1)
-                            return aIndex - bIndex;
-                          if (aIndex !== -1) return -1;
-                          if (bIndex !== -1) return 1;
-                          return a.localeCompare(b);
-                        });
-
-                        const maxDisplayCount = 6; // 最多显示6个
-                        const displaySources = sortedSources.slice(
-                          0,
-                          maxDisplayCount,
-                        );
-                        const hasMore = sortedSources.length > maxDisplayCount;
-                        const remainingCount =
-                          sortedSources.length - maxDisplayCount;
-
-                        return (
-                          <div
-                            className='absolute bottom-full mb-2 opacity-0 invisible group-hover/sources:opacity-100 group-hover/sources:visible transition-all duration-200 ease-out delay-100 pointer-events-none z-40 right-0 sm:right-0 -translate-x-0 sm:translate-x-0'
-                            style={
-                              {
-                                WebkitUserSelect: 'none',
-                                userSelect: 'none',
-                                WebkitTouchCallout: 'none',
-                              } as React.CSSProperties
-                            }
-                            onContextMenu={(e) => {
-                              e.preventDefault();
-                              return false;
-                            }}
-                          >
-                            <div
-                              className='bg-gray-800/90 backdrop-blur-sm text-white text-xs sm:text-xs rounded-lg shadow-xl border border-white/10 p-1.5 sm:p-2 min-w-[100px] sm:min-w-[120px] max-w-[140px] sm:max-w-[200px] overflow-hidden'
-                              style={
-                                {
-                                  WebkitUserSelect: 'none',
-                                  userSelect: 'none',
-                                  WebkitTouchCallout: 'none',
-                                } as React.CSSProperties
-                              }
-                              onContextMenu={(e) => {
-                                e.preventDefault();
-                                return false;
-                              }}
-                            >
-                              {/* 单列布局 */}
-                              <div className='space-y-0.5 sm:space-y-1'>
-                                {displaySources.map((sourceName, index) => (
-                                  <div
-                                    key={index}
-                                    className='flex items-center gap-1 sm:gap-1.5'
-                                  >
-                                    <div className='w-0.5 h-0.5 sm:w-1 sm:h-1 bg-blue-400 rounded-full shrink-0'></div>
-                                    <span
-                                      className='truncate text-[10px] sm:text-xs leading-tight'
-                                      title={sourceName}
-                                    >
-                                      {sourceName}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-
-                              {/* 显示更多提示 */}
-                              {hasMore && (
-                                <div className='mt-1 sm:mt-2 pt-1 sm:pt-1.5 border-t border-gray-700/50'>
-                                  <div className='flex items-center justify-center text-gray-400'>
-                                    <span className='text-[10px] sm:text-xs font-medium'>
-                                      +{remainingCount} 播放源
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* 小箭头 */}
-                              <div className='absolute top-full right-2 sm:right-3 w-0 h-0 border-l-[4px] border-r-[4px] border-t-[4px] sm:border-l-[6px] sm:border-r-[6px] sm:border-t-[6px] border-transparent border-t-gray-800/90'></div>
-                            </div>
-                          </div>
-                        );
-                      })()}
                     </div>
                   </div>
                 );
@@ -1792,11 +1686,8 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                 } as React.CSSProperties
               }
             >
-              {/* 背景高亮效果 */}
-              <div className='absolute inset-0 bg-linear-to-r from-transparent via-green-50/0 to-transparent dark:via-green-900/0 group-hover:via-green-50/50 dark:group-hover:via-green-900/30 transition-all duration-300 rounded-md'></div>
-
               <span
-                className='block text-xs @[140px]:text-sm font-bold line-clamp-2 text-gray-900 dark:text-gray-100 transition-all duration-300 ease-in-out group-hover:scale-[1.02] peer relative z-10 group-hover:bg-linear-to-r group-hover:from-green-600 group-hover:via-emerald-600 group-hover:to-teal-600 dark:group-hover:from-green-400 dark:group-hover:via-emerald-400 dark:group-hover:to-teal-400 group-hover:bg-clip-text group-hover:text-transparent group-hover:drop-shadow-[0_2px_8px_rgba(16,185,129,0.3)]'
+                className='relative z-10 block line-clamp-2 text-xs font-bold text-gray-900 transition-colors duration-300 ease-in-out group-hover:text-gray-950 dark:text-gray-100 dark:group-hover:text-white @[140px]:text-sm'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1816,44 +1707,12 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
               >
                 {actualTitle}
               </span>
-              {/* 增强的 tooltip */}
-              <div
-                className='absolute bottom-full left-0 mb-2 px-3 py-2 bg-linear-to-br from-gray-800 to-gray-900 text-white text-xs rounded-lg shadow-xl border border-white/10 opacity-0 invisible peer-hover:opacity-100 peer-hover:visible transition-all duration-200 ease-out delay-100 pointer-events-none z-40 backdrop-blur-sm'
-                style={
-                  {
-                    WebkitUserSelect: 'none',
-                    userSelect: 'none',
-                    WebkitTouchCallout: 'none',
-                    minWidth: '200px',
-                    maxWidth: 'min(90vw, 400px)',
-                    whiteSpace: 'normal',
-                    wordBreak: 'break-word',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                  } as React.CSSProperties
-                }
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  return false;
-                }}
-              >
-                <span className='font-medium leading-relaxed block text-center'>
-                  {actualTitle}
-                </span>
-                <div
-                  className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-gray-800'
-                  style={
-                    {
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                      WebkitTouchCallout: 'none',
-                    } as React.CSSProperties
-                  }
-                ></div>
-              </div>
             </div>
 
             {config.showSourceName &&
+              from !== 'favorite' &&
+              from !== 'playrecord' &&
+              from !== 'reminder' &&
               source_name &&
               (() => {
                 // 智能显示source_name：如果有上映状态标记，优先显示状态；否则显示来源
@@ -1884,22 +1743,13 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                     'group-hover:border-yellow-500/80 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 group-hover:shadow-yellow-500/20',
                 }[themeColor];
 
-                const bgGradient = {
-                  green:
-                    'group-hover:via-green-50/80 dark:group-hover:via-green-500/20',
-                  orange:
-                    'group-hover:via-orange-50/80 dark:group-hover:via-orange-500/20',
-                  yellow:
-                    'group-hover:via-yellow-50/80 dark:group-hover:via-yellow-500/20',
-                }[themeColor];
-
                 const dotColor = {
                   green:
-                    'group-hover:bg-green-500 dark:group-hover:bg-green-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.6)]',
+                    'group-hover:bg-green-500 dark:group-hover:bg-green-400',
                   orange:
-                    'group-hover:bg-orange-500 dark:group-hover:bg-orange-400 group-hover:shadow-[0_0_8px_rgba(249,115,22,0.6)]',
+                    'group-hover:bg-orange-500 dark:group-hover:bg-orange-400',
                   yellow:
-                    'group-hover:bg-yellow-500 dark:group-hover:bg-yellow-400 group-hover:shadow-[0_0_8px_rgba(234,179,8,0.6)]',
+                    'group-hover:bg-yellow-500 dark:group-hover:bg-yellow-400',
                 }[themeColor];
 
                 const iconColor = {
@@ -1927,7 +1777,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                     }}
                   >
                     <span
-                      className={`relative inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border border-gray-300/60 dark:border-gray-600/60 text-gray-600 dark:text-gray-400 transition-all duration-300 ease-out overflow-hidden group-hover:shadow-md group-hover:scale-105 ${colorClasses}`}
+                      className={`relative inline-flex items-center gap-1.5 rounded-full border border-gray-300/50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-300 ease-out group-hover:scale-[1.02] dark:border-gray-600/50 dark:text-gray-400 ${colorClasses}`}
                       style={
                         {
                           WebkitUserSelect: 'none',
@@ -1940,11 +1790,6 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                         return false;
                       }}
                     >
-                      {/* 背景渐变效果 */}
-                      <span
-                        className={`absolute inset-0 bg-linear-to-r from-transparent via-green-50/0 to-transparent dark:via-green-500/0 transition-all duration-300 ${bgGradient}`}
-                      ></span>
-
                       {/* 左侧装饰点 */}
                       <span
                         className={`relative w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500 transition-all duration-300 ${dotColor}`}

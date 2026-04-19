@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -19,7 +17,7 @@ export async function GET(request: NextRequest) {
       {
         error: '不支持本地存储进行播放统计查看',
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -39,7 +37,7 @@ export async function GET(request: NextRequest) {
       _operatorRole = 'owner';
     } else {
       const userEntry = config.UserConfig.Users.find(
-        (u) => u.username === username
+        (u) => u.username === username,
       );
       if (!userEntry || userEntry.role !== 'admin' || userEntry.banned) {
         return NextResponse.json({ error: '权限不足' }, { status: 401 });
@@ -65,11 +63,28 @@ export async function GET(request: NextRequest) {
     let totalWatchTime = 0;
     let totalPlays = 0;
     const sourceCount: Record<string, number> = {};
+    const contentStats: Record<
+      string,
+      {
+        title: string;
+        source_name: string;
+        cover: string;
+        year: string;
+        playCount: number;
+        totalWatchTime: number;
+        lastPlayed: number;
+        users: Set<string>;
+      }
+    > = {};
     const dailyData: Record<string, { watchTime: number; plays: number }> = {};
 
     // 用户注册统计
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    ).getTime();
     let todayNewUsers = 0;
     let totalRegisteredUsers = 0;
     const registrationData: Record<string, number> = {};
@@ -88,9 +103,20 @@ export async function GET(request: NextRequest) {
         // 使用自然日计算，与个人统计保持一致
         const firstDate = new Date(userCreatedAt);
         const currentDate = new Date();
-        const firstDay = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
-        const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        const registrationDays = Math.floor((currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const firstDay = new Date(
+          firstDate.getFullYear(),
+          firstDate.getMonth(),
+          firstDate.getDate(),
+        );
+        const currentDay = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+        );
+        const registrationDays =
+          Math.floor(
+            (currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24),
+          ) + 1;
 
         // 统计今日新增用户
         if (userCreatedAt >= todayStart) {
@@ -110,7 +136,11 @@ export async function GET(request: NextRequest) {
         try {
           const userPlayStat = await storage.getUserPlayStat(user.username);
           // 优先使用用户统计中的登入时间，这是真实的登录时间
-          lastLoginTime = userPlayStat.lastLoginTime || userPlayStat.lastLoginDate || userPlayStat.firstLoginTime || 0;
+          lastLoginTime =
+            userPlayStat.lastLoginTime ||
+            userPlayStat.lastLoginDate ||
+            userPlayStat.firstLoginTime ||
+            0;
           loginCount = userPlayStat.loginCount || 0;
         } catch (err) {
           // 获取失败时默认为0
@@ -161,6 +191,29 @@ export async function GET(request: NextRequest) {
           const sourceName = record.source_name || '未知来源';
           userSourceCount[sourceName] = (userSourceCount[sourceName] || 0) + 1;
           sourceCount[sourceName] = (sourceCount[sourceName] || 0) + 1;
+
+          // 聚合热门点播影片
+          const contentKey = `${record.search_title || record.title || 'unknown'}::${record.source_name || 'unknown'}::${record.year || 'unknown'}`;
+          if (!contentStats[contentKey]) {
+            contentStats[contentKey] = {
+              title: record.title || '未知影片',
+              source_name: sourceName,
+              cover: record.cover || '',
+              year: record.year || '',
+              playCount: 0,
+              totalWatchTime: 0,
+              lastPlayed: 0,
+              users: new Set<string>(),
+            };
+          }
+
+          contentStats[contentKey].playCount += 1;
+          contentStats[contentKey].totalWatchTime += record.play_time || 0;
+          contentStats[contentKey].lastPlayed = Math.max(
+            contentStats[contentKey].lastPlayed,
+            record.save_time || 0,
+          );
+          contentStats[contentKey].users.add(user.username);
 
           // 统计近7天数据
           const recordDate = new Date(record.save_time);
@@ -218,9 +271,20 @@ export async function GET(request: NextRequest) {
         // 使用自然日计算，与个人统计保持一致
         const firstDate = new Date(userCreatedAt);
         const currentDate = new Date();
-        const firstDay = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate());
-        const currentDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-        const registrationDays = Math.floor((currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const firstDay = new Date(
+          firstDate.getFullYear(),
+          firstDate.getMonth(),
+          firstDate.getDate(),
+        );
+        const currentDay = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+        );
+        const registrationDays =
+          Math.floor(
+            (currentDay.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24),
+          ) + 1;
 
         userStats.push({
           username: user.username,
@@ -247,8 +311,31 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([source, count]) => ({ source, count }));
 
+    const topVideos = Object.values(contentStats)
+      .sort((a, b) => {
+        if (b.playCount !== a.playCount) return b.playCount - a.playCount;
+        return b.totalWatchTime - a.totalWatchTime;
+      })
+      .slice(0, 10)
+      .map((item) => ({
+        title: item.title,
+        source_name: item.source_name,
+        cover: item.cover,
+        year: item.year,
+        playCount: item.playCount,
+        totalWatchTime: item.totalWatchTime,
+        averageWatchTime:
+          item.playCount > 0 ? item.totalWatchTime / item.playCount : 0,
+        lastPlayed: item.lastPlayed,
+        uniqueUsers: item.users.size,
+      }));
+
     // 整理近7天数据
-    const dailyStats: Array<{ date: string; watchTime: number; plays: number }> = [];
+    const dailyStats: Array<{
+      date: string;
+      watchTime: number;
+      plays: number;
+    }> = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dateKey = date.toISOString().split('T')[0];
@@ -278,19 +365,23 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = now.getTime() - 30 * 24 * 60 * 60 * 1000;
 
     const activeUsers = {
-      daily: userStats.filter(user => user.lastLoginTime >= oneDayAgo).length,
-      weekly: userStats.filter(user => user.lastLoginTime >= sevenDaysAgoTime).length,
-      monthly: userStats.filter(user => user.lastLoginTime >= thirtyDaysAgo).length,
+      daily: userStats.filter((user) => user.lastLoginTime >= oneDayAgo).length,
+      weekly: userStats.filter((user) => user.lastLoginTime >= sevenDaysAgoTime)
+        .length,
+      monthly: userStats.filter((user) => user.lastLoginTime >= thirtyDaysAgo)
+        .length,
     };
 
     const result = {
       totalUsers: allUsers.length,
       totalWatchTime,
       totalPlays,
-      avgWatchTimePerUser: allUsers.length > 0 ? totalWatchTime / allUsers.length : 0,
+      avgWatchTimePerUser:
+        allUsers.length > 0 ? totalWatchTime / allUsers.length : 0,
       avgPlaysPerUser: allUsers.length > 0 ? totalPlays / allUsers.length : 0,
       userStats,
       topSources,
+      topVideos,
       dailyStats,
       // 新增的注册和活跃度统计
       registrationStats: {
@@ -313,7 +404,7 @@ export async function GET(request: NextRequest) {
         error: '获取播放统计失败',
         details: (error as Error).message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

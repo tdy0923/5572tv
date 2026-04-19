@@ -63,10 +63,10 @@ export interface ShortDramaItem {
   score: number;
   episode_count: number;
   description?: string;
-  author?: string;        // 演员/导演信息
-  backdrop?: string;      // 高清背景图
-  vote_average?: number;  // 用户评分 (0-10)
-  tmdb_id?: number;       // TMDB ID
+  author?: string; // 演员/导演信息
+  backdrop?: string; // 高清背景图
+  vote_average?: number; // 用户评分 (0-10)
+  tmdb_id?: number; // TMDB ID
 }
 
 // 短剧解析结果数据结构
@@ -112,14 +112,14 @@ export interface IStorage {
   setPlayRecord(
     userName: string,
     key: string,
-    record: PlayRecord
+    record: PlayRecord,
   ): Promise<void>;
   getAllPlayRecords(userName: string): Promise<{ [key: string]: PlayRecord }>;
   deletePlayRecord(userName: string, key: string): Promise<void>;
   // 🚀 批量写入播放记录（Upstash 优化，使用 mset 只算1条命令）
   setPlayRecordsBatch?(
     userName: string,
-    records: { [key: string]: PlayRecord }
+    records: { [key: string]: PlayRecord },
   ): Promise<void>;
 
   // 收藏相关
@@ -130,7 +130,7 @@ export interface IStorage {
   // 🚀 批量写入收藏（Upstash 优化，使用 mset 只算1条命令）
   setFavoritesBatch?(
     userName: string,
-    favorites: { [key: string]: Favorite }
+    favorites: { [key: string]: Favorite },
   ): Promise<void>;
 
   // 提醒相关
@@ -165,16 +165,18 @@ export interface IStorage {
   getSkipConfig(
     userName: string,
     source: string,
-    id: string
+    id: string,
   ): Promise<EpisodeSkipConfig | null>;
   setSkipConfig(
     userName: string,
     source: string,
     id: string,
-    config: EpisodeSkipConfig
+    config: EpisodeSkipConfig,
   ): Promise<void>;
   deleteSkipConfig(userName: string, source: string, id: string): Promise<void>;
-  getAllSkipConfigs(userName: string): Promise<{ [key: string]: EpisodeSkipConfig }>;
+  getAllSkipConfigs(
+    userName: string,
+  ): Promise<{ [key: string]: EpisodeSkipConfig }>;
 
   // 数据清理相关
   clearAllData(): Promise<void>;
@@ -193,14 +195,14 @@ export interface IStorage {
     userName: string,
     source: string,
     id: string,
-    watchTime: number
+    watchTime: number,
   ): Promise<void>;
 
   // 登入统计相关
   updateUserLoginStats(
     userName: string,
     loginTime: number,
-    isFirstLogin?: boolean
+    isFirstLogin?: boolean,
   ): Promise<void>;
 }
 
@@ -257,8 +259,8 @@ export interface DoubanItem {
   first_aired?: string;
   plot_summary?: string;
   // 🎬 Netflix风格字段
-  backdrop?: string;      // 高清背景图（用于HeroBanner）
-  trailerUrl?: string;    // 预告片视频URL
+  backdrop?: string; // 高清背景图（用于HeroBanner）
+  trailerUrl?: string; // 预告片视频URL
 }
 
 export interface DoubanResult {
@@ -361,6 +363,17 @@ export interface PlayStatsResult {
     // 热门来源统计（前5名）
     source: string;
     count: number;
+  }>;
+  topVideos?: Array<{
+    title: string;
+    source_name: string;
+    cover: string;
+    year: string;
+    playCount: number;
+    totalWatchTime: number;
+    averageWatchTime: number;
+    lastPlayed: number;
+    uniqueUsers: number;
   }>;
   dailyStats: Array<{
     // 近7天每日统计

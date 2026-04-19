@@ -7,6 +7,7 @@ import {
   getAllReminders,
   PlayRecord,
 } from './db.client';
+import { resolveCardPosterUrl } from './utils';
 
 // 缓存键
 const WATCHING_UPDATES_CACHE_KEY = '5572tv_watching_updates';
@@ -177,7 +178,7 @@ export async function checkWatchingUpdates(
             title: record.title,
             source_name: record.source_name,
             year: record.year,
-            cover: record.cover,
+            cover: resolveCardPosterUrl(record.cover),
             sourceKey: sourceName,
             videoId: videoId,
             currentEpisode: record.index,
@@ -210,7 +211,7 @@ export async function checkWatchingUpdates(
             title: record.title,
             source_name: record.source_name,
             year: record.year,
-            cover: record.cover,
+            cover: resolveCardPosterUrl(record.cover),
             sourceKey: sourceName,
             videoId: videoId,
             currentEpisode: record.index,
@@ -295,7 +296,7 @@ export async function checkWatchingUpdates(
               title: reminder.title,
               source_name: reminder.source_name,
               year: reminder.year,
-              cover: reminder.cover,
+              cover: resolveCardPosterUrl(reminder.cover),
               sourceKey: sourceName || 'unknown',
               videoId: videoId || 'unknown',
               currentEpisode: 0,

@@ -1,10 +1,10 @@
 'use client';
 
+import { AlertCircle, Lock, Shield, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { useSite } from '@/components/SiteProvider';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { AuthShell } from '@/components/AuthShell';
 
 export default function OIDCRegisterPage() {
   const router = useRouter();
@@ -12,8 +12,6 @@ export default function OIDCRegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [oidcInfo, setOidcInfo] = useState<any>(null);
-
-  const { siteName } = useSite();
 
   // 检查OIDC session
   useEffect(() => {
@@ -25,7 +23,9 @@ export default function OIDCRegisterPage() {
           setOidcInfo(data);
         } else {
           // session无效,跳转到登录页
-          router.replace('/login?error=' + encodeURIComponent('OIDC会话已过期'));
+          router.replace(
+            '/login?error=' + encodeURIComponent('OIDC会话已过期'),
+          );
         }
       } catch (error) {
         console.error('检查session失败:', error);
@@ -75,106 +75,112 @@ export default function OIDCRegisterPage() {
   if (!oidcInfo) {
     return (
       <div className='relative min-h-screen flex items-center justify-center px-3 sm:px-4'>
-        <div className='text-sm sm:text-base text-gray-500 dark:text-gray-400'>加载中...</div>
+        <div className='text-sm sm:text-base text-gray-500 dark:text-gray-400'>
+          加载中...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='relative min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-0 overflow-hidden'>
-      <div className='absolute top-3 right-3 sm:top-4 sm:right-4 z-20'>
-        <ThemeToggle />
-      </div>
-      <div className='relative z-10 w-full max-w-md rounded-2xl sm:rounded-3xl bg-gradient-to-b from-white/90 via-white/70 to-white/40 dark:from-zinc-900/90 dark:via-zinc-900/70 dark:to-zinc-900/40 backdrop-blur-xl shadow-2xl p-6 sm:p-10 dark:border dark:border-zinc-800'
-        style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        }}
-      >
-        {/* Fallback for browsers without backdrop-filter support */}
-        <style jsx>{`
-          @supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px)) {
-            div {
-              background-color: transparent !important;
-            }
-          }
-        `}</style>
-        <h1 className='text-green-600 tracking-tight text-center text-2xl sm:text-3xl font-extrabold mb-2 bg-clip-text drop-shadow-sm'>
-          {siteName}
-        </h1>
-        <p className='text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-6 sm:mb-8'>
-          完成OIDC注册
-        </p>
-
-        {/* OIDC信息显示 */}
-        {oidcInfo && (
-          <div className='mb-5 sm:mb-6 p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg'>
-            <p className='text-xs sm:text-sm text-blue-700 dark:text-blue-400 leading-relaxed'>
-              {oidcInfo.email && (
-                <>
-                  邮箱: <strong className='break-all'>{oidcInfo.email}</strong>
-                  <br />
-                </>
-              )}
-              {oidcInfo.name && (
-                <>
-                  名称: <strong className='break-all'>{oidcInfo.name}</strong>
-                  <br />
-                </>
-              )}
-              {oidcInfo.trust_level !== undefined && (
-                <>
-                  信任等级: <strong>{oidcInfo.trust_level}</strong>
-                </>
-              )}
-            </p>
+    <AuthShell
+      title='完成 OIDC 注册'
+      subtitle='补充用户名后继续访问您的内容与播放记录'
+      icon={<Shield className='h-6 w-6 text-white' />}
+    >
+      {oidcInfo && (
+        <div className='mb-5 rounded-2xl border border-blue-200 bg-blue-50/90 p-4 dark:border-blue-800/60 dark:bg-blue-900/20'>
+          <div className='mb-3 text-sm font-semibold text-blue-800 dark:text-blue-300'>
+            OIDC 账户信息
           </div>
-        )}
+          <div className='grid gap-2 text-xs sm:text-sm'>
+            {oidcInfo.email && (
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+                <span className='text-blue-600 dark:text-blue-300'>邮箱</span>
+                <div className='mt-1 break-all font-medium'>
+                  {oidcInfo.email}
+                </div>
+              </div>
+            )}
+            {oidcInfo.name && (
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+                <span className='text-blue-600 dark:text-blue-300'>名称</span>
+                <div className='mt-1 break-all font-medium'>
+                  {oidcInfo.name}
+                </div>
+              </div>
+            )}
+            {oidcInfo.trust_level !== undefined && (
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+                <span className='text-blue-600 dark:text-blue-300'>
+                  信任等级
+                </span>
+                <div className='mt-1 font-medium'>{oidcInfo.trust_level}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className='space-y-5 sm:space-y-6'>
-          <div>
-            <label htmlFor='username' className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'>
-              选择用户名
-            </label>
+      <form onSubmit={handleSubmit} className='space-y-5 sm:space-y-6'>
+        <div className='group'>
+          <label
+            htmlFor='username'
+            className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300 sm:mb-2 sm:text-sm'
+          >
+            选择用户名
+          </label>
+          <div className='relative'>
+            <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4'>
+              <User className='h-4 w-4 text-gray-400 transition-colors group-focus-within:text-green-500 dark:text-gray-500 sm:h-5 sm:w-5' />
+            </div>
             <input
               id='username'
               type='text'
               autoComplete='username'
-              className='block w-full rounded-lg border-0 py-2.5 sm:py-3 px-3 sm:px-4 text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-white/60 dark:ring-white/20 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-green-500 focus:outline-none text-sm sm:text-base bg-white/60 dark:bg-zinc-800/60 backdrop-blur transition-all'
+              className='ui-input pl-10 pr-3 sm:pl-12 sm:pr-4'
               placeholder='输入用户名（3-20位）'
               value={username}
               onChange={(e) => setUsername(e.target.value)}
             />
-            <p className='mt-1.5 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400'>
-              用户名只能包含字母、数字、下划线，长度3-20位
+          </div>
+          <p className='mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs'>
+            用户名只能包含字母、数字、下划线，长度 3-20 位
+          </p>
+        </div>
+
+        {error && (
+          <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-2.5 animate-slide-down dark:border-red-800/50 dark:bg-red-900/20 sm:p-3'>
+            <AlertCircle className='h-4 w-4 shrink-0 text-red-600 dark:text-red-400' />
+            <p className='text-xs text-red-600 dark:text-red-400 sm:text-sm'>
+              {error}
             </p>
           </div>
+        )}
 
-          {error && (
-            <div className='p-2.5 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50'>
-              <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>{error}</p>
-            </div>
-          )}
+        <button
+          type='submit'
+          disabled={!username || loading}
+          className='ui-primary-button group relative w-full overflow-hidden'
+        >
+          <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
+          <Shield className='h-4 w-4 sm:h-5 sm:w-5' />
+          {loading ? '注册中...' : '完成注册'}
+        </button>
 
-          <button
-            type='submit'
-            disabled={!username || loading}
-            className='inline-flex w-full justify-center rounded-lg bg-green-600 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-green-700 hover:shadow-xl hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-lg active:scale-95'
-          >
-            {loading ? '注册中...' : '完成注册'}
-          </button>
-
-          {/* 返回登录链接 */}
-          <div className='text-center pt-2'>
-            <a
-              href='/login'
-              className='text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors inline-flex items-center gap-1'
-            >
-              <span>←</span>
-              <span>返回登录</span>
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className='mt-6 border-t border-gray-200 pt-6 dark:border-gray-700'>
+          <p className='mb-3 text-center text-sm text-gray-600 dark:text-gray-400'>
+            想先返回认证入口？
+          </p>
+          <a href='/login' className='ui-secondary-button group w-full text-sm'>
+            <Lock className='h-4 w-4' />
+            <span>返回登录</span>
+            <span className='inline-block transition-transform group-hover:translate-x-1'>
+              →
+            </span>
+          </a>
+        </div>
+      </form>
+    </AuthShell>
   );
 }

@@ -52,8 +52,21 @@ interface PerformanceData {
   };
 }
 
+interface TopVideoItem {
+  title: string;
+  source_name: string;
+  cover: string;
+  year: string;
+  playCount: number;
+  totalWatchTime: number;
+  uniqueUsers: number;
+}
+
 export default function PerformanceMonitor() {
   const [data, setData] = useState<PerformanceData | null>(null);
+  const [playStats, setPlayStats] = useState<{
+    topVideos?: TopVideoItem[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'1' | '24'>('1'); // 默认显示最近1小时
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -427,9 +440,14 @@ export default function PerformanceMonitor() {
     setLoading(true);
     try {
       const response = await fetch(`/api/admin/performance?hours=${timeRange}`);
+      const playStatsResponse = await fetch('/api/admin/play-stats');
       if (response.ok) {
         const result = await response.json();
         setData(result.data);
+      }
+      if (playStatsResponse.ok) {
+        const statsResult = await playStatsResponse.json();
+        setPlayStats(statsResult);
       }
     } catch (error) {
       console.error('获取性能数据失败:', error);
@@ -481,7 +499,47 @@ export default function PerformanceMonitor() {
 
   // 获取过滤后的统计数据
   const filteredStats = getFilteredStats();
+  const filteredRequests = filterRequestsForStats(data.recentRequests);
 
+  const topPaths = Object.entries(
+    filteredRequests.reduce<Record<string, number>>((acc, req: any) => {
+      const path = req.path || '/';
+      acc[path] = (acc[path] || 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8);
+
+  const errorPaths = Object.entries(
+    filteredRequests
+      .filter((req: any) => req.statusCode >= 400)
+      .reduce<Record<string, number>>((acc, req: any) => {
+        const path = req.path || '/';
+        acc[path] = (acc[path] || 0) + 1;
+        return acc;
+      }, {}),
+  )
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8);
+
+  const statusGroups = filteredRequests.reduce<Record<string, number>>(
+    (acc, req: any) => {
+      const code = String(req.statusCode || 0);
+      const key = code.startsWith('2')
+        ? '2xx'
+        : code.startsWith('3')
+          ? '3xx'
+          : code.startsWith('4')
+            ? '4xx'
+            : code.startsWith('5')
+              ? '5xx'
+              : 'other';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
   return (
     <div className='space-y-6 pb-safe-bottom'>
       {/* 标题和控制按钮 */}
@@ -556,211 +614,124 @@ export default function PerformanceMonitor() {
         </div>
       </div>
 
-      {/* 实时状态卡片 */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4'>
-        {/* 进程 CPU 使用率 */}
+      {/* 总览摘要 */}
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4'>
+        {/* 总请求 */}
         <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-sm text-gray-600 dark:text-gray-400'>
-              进程 CPU
+              总请求
+            </span>
+            <Activity className='w-5 h-5 text-emerald-500' />
+          </div>
+          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
+            {data.recentRequests.length}
+          </div>
+          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+            最近 {timeRange === '1' ? '1 小时' : '24 小时'}
+          </div>
+        </div>
+
+        {/* 平均响应时间 */}
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
+          <div className='flex items-center justify-between mb-2'>
+            <span className='text-sm text-gray-600 dark:text-gray-400'>
+              平均响应
             </span>
             <Zap className='w-5 h-5 text-yellow-500' />
           </div>
           <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {data.currentStatus.system.cpuUsage.toFixed(2)}%
-          </div>
-          <div
-            className='text-xs text-gray-500 dark:text-gray-400 mt-1 truncate'
-            title={data.currentStatus.system.cpuModel}
-          >
-            {data.currentStatus.system.cpuCores} 核 ·{' '}
-            {data.currentStatus.system.cpuModel.split('@')[0].trim()}
-          </div>
-        </div>
-
-        {/* 进程内存（5572影视 进程） */}
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
-              进程内存
-            </span>
-            <HardDrive className='w-5 h-5 text-blue-500' />
-          </div>
-          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {formatTraffic(
-              data.currentStatus.system.memoryUsage.rss * 1024 * 1024,
-            )}
+            {filteredStats?.avgResponseTime ?? 0}ms
           </div>
           <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            堆内存:{' '}
-            {formatTraffic(
-              data.currentStatus.system.memoryUsage.heapUsed * 1024 * 1024,
-            )}
-            <span className='ml-2 text-blue-600 dark:text-blue-400'>
-              /{' '}
-              {formatTraffic(
-                data.currentStatus.system.memoryUsage.heapTotal * 1024 * 1024,
-              )}
-            </span>
+            接口平均耗时
           </div>
         </div>
 
-        {/* 系统内存 */}
+        {/* 外部流量 */}
         <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-sm text-gray-600 dark:text-gray-400'>
-              系统内存
-            </span>
-            <HardDrive className='w-5 h-5 text-green-500' />
-          </div>
-          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {formatTraffic(
-              data.currentStatus.system.memoryUsage.systemUsed * 1024 * 1024,
-            )}
-          </div>
-          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            总共{' '}
-            {formatTraffic(
-              data.currentStatus.system.memoryUsage.systemTotal * 1024 * 1024,
-            )}
-            <span className='ml-2 text-blue-600 dark:text-blue-400'>
-              (
-              {(
-                (data.currentStatus.system.memoryUsage.systemUsed /
-                  data.currentStatus.system.memoryUsage.systemTotal) *
-                100
-              ).toFixed(1)}
-              %)
-            </span>
-          </div>
-        </div>
-
-        {/* 每分钟请求数 */}
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
-              请求/分钟
-            </span>
-            <Activity className='w-5 h-5 text-green-500' />
-          </div>
-          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {filteredStats?.requestsPerMinute ?? 0}
-          </div>
-          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            平均响应: {filteredStats?.avgResponseTime ?? 0}ms
-            {filteredStats && (
-              <span
-                className={`ml-2 font-semibold ${getResponseTimeRating(filteredStats.avgResponseTime, filteredStats.isCron ? '/api/cron' : undefined).color}`}
-              >
-                (
-                {
-                  getResponseTimeRating(
-                    filteredStats.avgResponseTime,
-                    filteredStats.isCron ? '/api/cron' : undefined,
-                  ).label
-                }
-                )
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* 数据库查询 */}
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
-              DB 查询/分钟
+              外部流量
             </span>
             <Database className='w-5 h-5 text-purple-500' />
           </div>
           <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {filteredStats?.dbQueriesPerMinute ?? 0}
-          </div>
-          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            {filteredStats && filteredStats.requestsPerMinute > 0 && (
-              <>
-                平均:{' '}
-                {(
-                  filteredStats.dbQueriesPerMinute /
-                  filteredStats.requestsPerMinute
-                ).toFixed(1)}{' '}
-                次/请求
-                <span
-                  className={`ml-2 font-semibold ${getDbQueriesRating(filteredStats.requestsPerMinute, filteredStats.dbQueriesPerMinute, filteredStats.isCron ? '/api/cron' : undefined).color}`}
-                >
-                  (
-                  {
-                    getDbQueriesRating(
-                      filteredStats.requestsPerMinute,
-                      filteredStats.dbQueriesPerMinute,
-                      filteredStats.isCron ? '/api/cron' : undefined,
-                    ).label
-                  }
-                  )
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* 流量/分钟 */}
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
-              API 流量/分钟
-            </span>
-            <Activity className='w-5 h-5 text-orange-500' />
-          </div>
-          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            {((filteredStats?.trafficPerMinute ?? 0) / 1024).toFixed(2)} KB
-          </div>
-          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            {filteredStats && (
-              <span
-                className={`font-semibold ${getTrafficRating(filteredStats.trafficPerMinute).color}`}
-              >
-                ({getTrafficRating(filteredStats.trafficPerMinute).label})
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* 外部流量/分钟 */}
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
-              外部流量/分钟
-            </span>
-            <Zap className='w-5 h-5 text-purple-500' />
-          </div>
-          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
             {data?.externalTraffic
-              ? formatTraffic(
-                  data.externalTraffic.totalTraffic / parseInt(timeRange) / 60,
-                )
+              ? formatTraffic(data.externalTraffic.totalTraffic)
               : '0.00 B'}
           </div>
           <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            {data?.externalTraffic && data.externalTraffic.totalRequests > 0 ? (
-              <>
-                {data.externalTraffic.totalRequests} 次外部请求
-                <span
-                  className={`ml-2 font-semibold ${getExternalTrafficRating(data.externalTraffic.totalTraffic / parseInt(timeRange) / 60).color}`}
-                >
-                  (
-                  {
-                    getExternalTrafficRating(
-                      data.externalTraffic.totalTraffic /
-                        parseInt(timeRange) /
-                        60,
-                    ).label
-                  }
-                  )
-                </span>
-              </>
-            ) : (
-              <span className='text-gray-400'>暂无外部请求</span>
+            {data?.externalTraffic?.totalRequests || 0} 次外部请求
+          </div>
+        </div>
+
+        {/* 资源状态 */}
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
+          <div className='flex items-center justify-between mb-2'>
+            <span className='text-sm text-gray-600 dark:text-gray-400'>
+              资源状态
+            </span>
+            <HardDrive className='w-5 h-5 text-blue-500' />
+          </div>
+          <div className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
+            {data.currentStatus.system.cpuUsage.toFixed(1)}%
+          </div>
+          <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+            CPU / 内存 / DB 负载
+          </div>
+        </div>
+      </div>
+
+      {/* 详细性能状态 */}
+      <div className='grid grid-cols-1 gap-4 xl:grid-cols-3'>
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
+          <div className='text-sm text-gray-600 dark:text-gray-400'>
+            进程内存
+          </div>
+          <div className='mt-2 text-xl font-semibold text-gray-800 dark:text-gray-200'>
+            {formatTraffic(
+              data.currentStatus.system.memoryUsage.rss * 1024 * 1024,
             )}
+          </div>
+          <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+            堆内存{' '}
+            {formatTraffic(
+              data.currentStatus.system.memoryUsage.heapUsed * 1024 * 1024,
+            )}{' '}
+            /{' '}
+            {formatTraffic(
+              data.currentStatus.system.memoryUsage.heapTotal * 1024 * 1024,
+            )}
+          </div>
+        </div>
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
+          <div className='text-sm text-gray-600 dark:text-gray-400'>
+            系统内存
+          </div>
+          <div className='mt-2 text-xl font-semibold text-gray-800 dark:text-gray-200'>
+            {formatTraffic(
+              data.currentStatus.system.memoryUsage.systemUsed * 1024 * 1024,
+            )}
+          </div>
+          <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+            总共{' '}
+            {formatTraffic(
+              data.currentStatus.system.memoryUsage.systemTotal * 1024 * 1024,
+            )}
+          </div>
+        </div>
+        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700'>
+          <div className='text-sm text-gray-600 dark:text-gray-400'>
+            数据库负载
+          </div>
+          <div className='mt-2 text-xl font-semibold text-gray-800 dark:text-gray-200'>
+            {filteredStats?.dbQueriesPerMinute ?? 0}
+          </div>
+          <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+            {filteredStats && filteredStats.requestsPerMinute > 0
+              ? `${(filteredStats.dbQueriesPerMinute / filteredStats.requestsPerMinute).toFixed(1)} 次/请求`
+              : '暂无数据'}
           </div>
         </div>
       </div>
@@ -813,6 +784,145 @@ export default function PerformanceMonitor() {
                     ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </details>
+      )}
+
+      {/* 热门点播影片 */}
+      {playStats?.topVideos && playStats.topVideos.length > 0 && (
+        <details
+          className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mt-6'
+          open
+        >
+          <summary className='px-4 sm:px-6 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+            <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 inline'>
+              热门点播影片
+            </h3>
+          </summary>
+          <div className='border-t border-gray-200 dark:border-gray-700'>
+            <div className='overflow-x-auto'>
+              <table className='min-w-full divide-y divide-gray-200 dark:divide-gray-700'>
+                <thead className='bg-gray-50 dark:bg-gray-700'>
+                  <tr>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase'>
+                      影片
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase'>
+                      来源
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase'>
+                      播放次数
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase'>
+                      观看用户
+                    </th>
+                    <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase'>
+                      累计时长
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700'>
+                  {playStats.topVideos.map((video, index) => (
+                    <tr key={`${video.title}-${index}`}>
+                      <td className='px-6 py-4 text-sm text-gray-900 dark:text-gray-100'>
+                        <div className='font-medium'>{video.title}</div>
+                        <div className='text-xs text-gray-500 dark:text-gray-400'>
+                          {video.year || '未知年份'}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                        {video.source_name || '未知来源'}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                        {video.playCount}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                        {video.uniqueUsers}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
+                        {Math.round(video.totalWatchTime / 60)} 分钟
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      )}
+
+      {/* 热门路径 */}
+      {topPaths.length > 0 && (
+        <details
+          className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mt-6'
+          open
+        >
+          <summary className='px-4 sm:px-6 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+            <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 inline'>
+              热门路径
+            </h3>
+          </summary>
+          <div className='border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4'>
+            <div className='space-y-3'>
+              {topPaths.map(([path, count]) => (
+                <div
+                  key={path}
+                  className='rounded-2xl border border-black/6 bg-white/70 px-4 py-3 dark:border-white/8 dark:bg-white/[0.04]'
+                >
+                  <div className='flex items-center justify-between gap-3'>
+                    <div className='min-w-0'>
+                      <div className='text-sm font-medium text-gray-900 dark:text-gray-100 truncate'>
+                        {getApiName(path)}
+                      </div>
+                      <div className='text-xs text-gray-500 dark:text-gray-400 truncate'>
+                        {path}
+                      </div>
+                    </div>
+                    <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                      {count}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </details>
+      )}
+
+      {/* 错误接口排行 */}
+      {errorPaths.length > 0 && (
+        <details
+          className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mt-6'
+          open
+        >
+          <summary className='px-4 sm:px-6 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+            <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 inline'>
+              错误接口排行
+            </h3>
+          </summary>
+          <div className='border-t border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4'>
+            <div className='space-y-3'>
+              {errorPaths.map(([path, count]) => (
+                <div
+                  key={path}
+                  className='rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 dark:border-red-900/40 dark:bg-red-950/20'
+                >
+                  <div className='flex items-center justify-between gap-3'>
+                    <div className='min-w-0'>
+                      <div className='text-sm font-medium text-red-800 dark:text-red-200 truncate'>
+                        {getApiName(path)}
+                      </div>
+                      <div className='text-xs text-red-600/80 dark:text-red-300/80 truncate'>
+                        {path}
+                      </div>
+                    </div>
+                    <div className='text-sm font-semibold text-red-800 dark:text-red-200'>
+                      {count}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </details>

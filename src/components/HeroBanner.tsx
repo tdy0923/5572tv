@@ -218,7 +218,7 @@ function HeroBanner({
 
   return (
     <div
-      className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden group'
+      className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden group rounded-[28px]'
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...swipeHandlers}
@@ -342,27 +342,22 @@ function HeroBanner({
           );
         })}
 
-        {/* Netflix经典渐变遮罩：底部黑→中间透明→顶部黑 */}
-        <div className='absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80' />
-
-        {/* 左侧额外渐变（增强文字可读性） */}
-        <div className='absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent' />
+        <div className='absolute inset-0 bg-gradient-to-t from-black/78 via-black/20 to-black/56' />
       </div>
 
-      {/* 内容叠加层 - Netflix风格：左下角 */}
-      <div className='absolute bottom-0 left-0 right-0 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 pb-12 sm:pb-16 md:pb-20 lg:pb-24'>
-        <div className='space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6'>
-          {/* 标题 - Netflix风格：超大字体 */}
-          <h1 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white drop-shadow-2xl leading-tight break-words'>
+      {/* 内容叠加层 */}
+      <div className='absolute bottom-0 left-0 right-0 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 pb-10 sm:pb-12 md:pb-14 lg:pb-16'>
+        <div className='max-w-3xl space-y-3 sm:space-y-4'>
+          <h1 className='break-words text-2xl font-bold leading-tight text-white drop-shadow-2xl sm:text-3xl md:text-4xl lg:text-5xl'>
             {currentItem.title}
           </h1>
 
           {/* 元数据 */}
           <div className='flex items-center gap-3 sm:gap-4 text-sm sm:text-base md:text-lg flex-wrap'>
             {currentItem.rate && (
-              <div className='flex items-center gap-1.5 px-2.5 py-1 bg-yellow-500/90 backdrop-blur-sm rounded'>
-                <span className='text-white font-bold'>★</span>
-                <span className='text-white font-bold'>{currentItem.rate}</span>
+              <div className='flex items-center gap-1.5 rounded-full border border-[#f4c24d]/24 bg-black/24 px-2.5 py-1 backdrop-blur-[6px]'>
+                <span className='font-bold text-[#ffe7a7]'>★</span>
+                <span className='font-bold text-white'>{currentItem.rate}</span>
               </div>
             )}
             {currentItem.year && (
@@ -371,7 +366,7 @@ function HeroBanner({
               </span>
             )}
             {currentItem.type && (
-              <span className='px-3 py-1 bg-white/20 backdrop-blur-sm rounded text-white/90 font-medium border border-white/30'>
+              <span className='rounded-full border border-white/12 bg-black/24 px-3 py-1 font-medium text-white/90 backdrop-blur-[6px]'>
                 {currentItem.type === 'movie'
                   ? '电影'
                   : currentItem.type === 'tv'
@@ -389,12 +384,12 @@ function HeroBanner({
 
           {/* 描述 - 限制3行 */}
           {currentItem.description && (
-            <p className='text-sm sm:text-base md:text-lg lg:text-xl text-white/90 line-clamp-3 drop-shadow-lg leading-relaxed max-w-xl'>
+            <p className='max-w-xl line-clamp-2 text-sm leading-relaxed text-white/78 sm:text-base md:text-base lg:text-lg'>
               {currentItem.description}
             </p>
           )}
 
-          {/* 操作按钮 - Netflix风格 */}
+          {/* 操作按钮 */}
           <div className='flex gap-3 sm:gap-4 pt-2'>
             <Link
               href={
@@ -402,7 +397,7 @@ function HeroBanner({
                   ? `/play?title=${encodeURIComponent(currentItem.title)}&shortdrama_id=${currentItem.id}`
                   : `/play?title=${encodeURIComponent(currentItem.title)}${currentItem.year ? `&year=${currentItem.year}` : ''}${currentItem.douban_id ? `&douban_id=${currentItem.douban_id}` : ''}${currentItem.type ? `&stype=${currentItem.type}` : ''}`
               }
-              className='flex items-center gap-2 px-6 sm:px-8 md:px-10 py-2.5 sm:py-3 md:py-4 bg-white text-black font-bold rounded hover:bg-white/90 transition-all transform hover:scale-105 active:scale-95 shadow-xl text-base sm:text-lg md:text-xl'
+              className='flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-base font-semibold text-black shadow-[0_18px_40px_rgba(0,0,0,0.22)] transition-all hover:scale-[1.03] hover:bg-white/95 active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
             >
               <Play
                 className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'
@@ -420,7 +415,7 @@ function HeroBanner({
                         : currentItem.type || 'movie'
                     }`
               }
-              className='flex items-center gap-2 px-6 sm:px-8 md:px-10 py-2.5 sm:py-3 md:py-4 bg-white/30 backdrop-blur-md text-white font-bold rounded hover:bg-white/40 transition-all transform hover:scale-105 active:scale-95 shadow-xl text-base sm:text-lg md:text-xl border border-white/50'
+              className='flex items-center gap-2 rounded-full border border-white/16 bg-black/24 px-6 py-2.5 text-base font-semibold text-white shadow-[0_18px_40px_rgba(0,0,0,0.18)] backdrop-blur-[6px] transition-all hover:scale-[1.03] hover:bg-black/32 active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
             >
               <Info className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7' />
               <span>更多信息</span>
@@ -433,7 +428,7 @@ function HeroBanner({
       {enableVideo && getEffectiveTrailerUrl(currentItem) && (
         <button
           onClick={toggleMute}
-          className='absolute bottom-6 sm:bottom-8 right-4 sm:right-8 md:right-12 lg:right-16 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center hover:bg-black/70 transition-all border border-white/50 z-10'
+          className='absolute bottom-6 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white backdrop-blur-sm transition-all hover:bg-black/55 sm:bottom-8 sm:right-8 sm:h-12 sm:w-12 md:right-12 lg:right-16'
           aria-label={isMuted ? '取消静音' : '静音'}
         >
           {isMuted ? (
@@ -449,14 +444,14 @@ function HeroBanner({
         <>
           <button
             onClick={handlePrev}
-            className='hidden md:flex absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-black/50 backdrop-blur-sm text-white items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all transform hover:scale-110 border border-white/30'
+            className='absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:left-8 lg:h-14 lg:w-14'
             aria-label='上一张'
           >
             <ChevronLeft className='w-7 h-7 lg:w-8 lg:h-8' />
           </button>
           <button
             onClick={handleNext}
-            className='hidden md:flex absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-black/50 backdrop-blur-sm text-white items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-black/70 transition-all transform hover:scale-110 border border-white/30'
+            className='absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:right-8 lg:h-14 lg:w-14'
             aria-label='下一张'
           >
             <ChevronRight className='w-7 h-7 lg:w-8 lg:h-8' />
@@ -466,7 +461,7 @@ function HeroBanner({
 
       {/* 指示器 - Netflix风格：底部居中 */}
       {showIndicators && items.length > 1 && (
-        <div className='absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2'>
+        <div className='absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 backdrop-blur-sm sm:bottom-6'>
           {items.map((_, index) => (
             <button
               key={index}
@@ -482,9 +477,8 @@ function HeroBanner({
         </div>
       )}
 
-      {/* 年龄分级标识（可选） */}
-      <div className='absolute top-4 sm:top-6 md:top-8 right-4 sm:right-8 md:right-12'>
-        <div className='px-2 py-1 bg-black/60 backdrop-blur-sm border-2 border-white/70 rounded text-white text-xs sm:text-sm font-bold'>
+      <div className='absolute right-4 top-4 sm:right-8 sm:top-6 md:right-12 md:top-8'>
+        <div className='rounded-full border border-white/16 bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm sm:text-sm'>
           {currentIndex + 1} / {items.length}
         </div>
       </div>

@@ -211,27 +211,11 @@ export async function POST(request: NextRequest) {
     const videoLinks = detectVideoLinks(userMessage);
     const hasVideoLinks = videoLinks.length > 0;
 
-    // 获取YouTube配置，判断是否启用YouTube推荐功能
-    const youtubeConfig = adminConfig.YouTubeConfig;
-    const youtubeEnabled = youtubeConfig?.enabled;
-
     // 构建功能列表和详细说明
     const capabilities = ['影视剧推荐'];
-    let youtubeSearchStatus = '';
 
     // 视频链接解析功能（所有用户可用）
     capabilities.push('YouTube视频链接解析');
-
-    // YouTube推荐功能状态判断
-    if (youtubeEnabled && youtubeConfig.apiKey) {
-      capabilities.push('YouTube视频搜索推荐');
-      youtubeSearchStatus = '✅ 支持YouTube视频搜索推荐（真实API）';
-    } else if (youtubeEnabled) {
-      youtubeSearchStatus =
-        '⚠️ YouTube搜索功能已开启但未配置API Key，无法提供搜索结果';
-    } else {
-      youtubeSearchStatus = '❌ YouTube搜索功能未启用，无法搜索推荐YouTube视频';
-    }
 
     // 🔥 如果 Orchestrator 启用，使用增强的 systemPrompt（包含video context和可选的搜索结果）
     let systemPrompt = '';
@@ -245,7 +229,6 @@ export async function POST(request: NextRequest) {
 支持：${capabilities.join('、')}
 当前日期：${currentDate}
 
-${youtubeSearchStatus}
 `;
     } else {
       // 使用原有的 systemPrompt（兼容旧逻辑）
@@ -254,17 +237,10 @@ ${youtubeSearchStatus}
 
 ## 功能状态：
 1. **影视剧推荐** ✅ 始终可用
-2. **YouTube视频链接解析** ✅ 始终可用（无需API Key）
-3. **YouTube视频搜索推荐** ${youtubeSearchStatus}
+2. **视频链接解析** ✅ 始终可用
 
 ## 判断用户需求：
-- 如果用户发送了YouTube链接 → 使用视频链接解析功能
-- 如果用户想要新闻、教程、音乐、娱乐视频等内容：
-  ${
-    youtubeEnabled && youtubeConfig.apiKey
-      ? '→ 使用YouTube推荐功能'
-      : '→ 告知用户"YouTube搜索功能暂不可用，请联系管理员配置YouTube API Key"'
-  }
+- 如果用户发送了视频链接 → 使用视频链接解析功能
 - 如果用户想要电影、电视剧、动漫等影视内容 → 使用影视推荐功能
 - 其他无关内容 → 直接拒绝回答
 
@@ -274,19 +250,8 @@ ${youtubeSearchStatus}
 《片名》 (年份) [类型] - 简短描述
 
 ### 视频链接解析格式：
-检测到用户发送了YouTube链接时，回复：
-我识别到您发送了YouTube视频链接，正在为您解析视频信息...
-
-${
-  youtubeEnabled && youtubeConfig.apiKey
-    ? `### YouTube推荐格式：
-【视频标题】 - 简短描述
-
-示例：
-【如何学习编程】 - 适合初学者的编程入门教程
-【今日新闻速报】 - 最新国际新闻资讯`
-    : '### YouTube搜索不可用时的回复：\n当用户请求YouTube视频搜索时，请回复：\n"很抱歉，YouTube视频搜索功能暂不可用。管理员尚未配置YouTube API Key。\n\n不过您可以：\n- 直接发送YouTube链接给我解析\n- 让我为您推荐影视剧内容"'
-}
+检测到用户发送了视频链接时，回复：
+我识别到您发送了视频链接，正在为您解析视频信息...
 
 ## 推荐要求：
 - ${randomHint}
@@ -322,14 +287,14 @@ ${
       }
     }
 
-    // 🎥 如果检测到YouTube链接，先解析视频信息并加入系统提示词
+    // 🎥 如果检测到视频链接，先解析视频信息并加入系统提示词
     if (hasVideoLinks) {
       try {
-        console.log('🔍 检测到YouTube链接，开始预解析视频信息...');
+        console.log('🔍 检测到视频链接，开始预解析视频信息...');
         const parsedVideos = await handleVideoLinkParsing(videoLinks);
 
         if (parsedVideos.length > 0) {
-          systemPrompt += `\n\n## 【用户发送的YouTube视频信息】\n`;
+          systemPrompt += `\n\n## 【用户发送的视频信息】\n`;
           parsedVideos.forEach((video, index) => {
             systemPrompt += `\n视频 ${index + 1}:\n`;
             systemPrompt += `- 标题: ${video.title}\n`;
@@ -342,7 +307,7 @@ ${
           );
         }
       } catch (error) {
-        console.error('预解析YouTube视频失败:', error);
+        console.error('预解析视频失败:', error);
       }
     }
 
@@ -670,38 +635,9 @@ ${
               const data = line.slice(6);
 
               if (data === '[DONE]') {
-                // 流式结束，处理YouTube功能
-                console.log('📡 流式响应完成，处理YouTube相关功能');
+                console.log('📡 流式响应完成，处理视频链接相关功能');
 
                 try {
-                  // 检测YouTube推荐
-                  const isYouTubeRecommendation =
-                    youtubeEnabled &&
-                    youtubeConfig.apiKey &&
-                    fullContent.includes('【') &&
-                    fullContent.includes('】');
-
-                  if (isYouTubeRecommendation) {
-                    const searchKeywords =
-                      extractYouTubeSearchKeywords(fullContent);
-                    const youtubeVideos = await searchYouTubeVideos(
-                      searchKeywords,
-                      youtubeConfig,
-                    );
-
-                    if (youtubeVideos.length > 0) {
-                      // 发送YouTube数据
-                      controller.enqueue(
-                        new TextEncoder().encode(
-                          `data: ${JSON.stringify({
-                            youtubeVideos,
-                            type: 'youtube_data',
-                          })}\n\n`,
-                        ),
-                      );
-                    }
-                  }
-
                   // 检测视频链接解析
                   if (hasVideoLinks) {
                     const parsedVideos =
@@ -897,62 +833,6 @@ ${
       );
     }
 
-    // 检测是否为YouTube视频推荐（参考alpha逻辑）
-    const isYouTubeRecommendation =
-      youtubeEnabled &&
-      youtubeConfig.apiKey &&
-      aiContent.includes('【') &&
-      aiContent.includes('】');
-
-    if (isYouTubeRecommendation) {
-      try {
-        const searchKeywords = extractYouTubeSearchKeywords(aiContent);
-        const youtubeVideos = await searchYouTubeVideos(
-          searchKeywords,
-          youtubeConfig,
-        );
-
-        // 构建YouTube推荐响应
-        const response = {
-          id: aiResult.id || `chatcmpl-${Date.now()}`,
-          object: 'chat.completion',
-          created: aiResult.created || Math.floor(Date.now() / 1000),
-          model: aiResult.model || requestBody.model,
-          choices: aiResult.choices || [
-            {
-              index: 0,
-              message: {
-                role: 'assistant',
-                content:
-                  aiContent +
-                  (youtubeVideos.length > 0
-                    ? `\n\n为您推荐以下${youtubeVideos.length}个YouTube视频：`
-                    : '\n\n抱歉，没有找到相关的YouTube视频，请尝试其他关键词。'),
-              },
-              finish_reason: aiResult.choices?.[0]?.finish_reason || 'stop',
-            },
-          ],
-          usage: aiResult.usage || {
-            prompt_tokens: 0,
-            completion_tokens: 0,
-            total_tokens: 0,
-          },
-          youtubeVideos,
-          type: 'youtube_recommend',
-        };
-
-        // 缓存结果
-        if (cacheKey) {
-          await db.setCache(cacheKey, response, 900);
-        }
-
-        return NextResponse.json(response);
-      } catch (error) {
-        console.error('YouTube推荐失败:', error);
-        // 推荐失败时继续正常流程
-      }
-    }
-
     // 提取结构化推荐信息
     const recommendations = extractRecommendations(aiContent);
 
@@ -1110,67 +990,6 @@ async function handleVideoLinkParsing(videoLinks: any[]) {
   }
 
   return parsedVideos;
-}
-
-// 从AI回复中提取YouTube搜索关键词（参考alpha逻辑）
-function extractYouTubeSearchKeywords(content: string): string[] {
-  const keywords: string[] = [];
-  const videoPattern = /【([^】]+)】/g;
-  let match;
-
-  while ((match = videoPattern.exec(content)) !== null && keywords.length < 4) {
-    keywords.push(match[1].trim());
-  }
-
-  return keywords;
-}
-
-// YouTube视频搜索函数（仅支持真实API）
-async function searchYouTubeVideos(keywords: string[], youtubeConfig: any) {
-  const videos = [];
-
-  // 检查API Key
-  if (!youtubeConfig.apiKey) {
-    throw new Error('YouTube API Key未配置');
-  }
-
-  // 使用真实YouTube API
-  for (const keyword of keywords) {
-    if (videos.length >= 4) break;
-
-    try {
-      const searchUrl = new URL('https://www.googleapis.com/youtube/v3/search');
-      searchUrl.searchParams.set('key', youtubeConfig.apiKey);
-      searchUrl.searchParams.set('q', keyword);
-      searchUrl.searchParams.set('part', 'snippet');
-      searchUrl.searchParams.set('type', 'video');
-      searchUrl.searchParams.set('maxResults', '1');
-      searchUrl.searchParams.set('order', 'relevance');
-
-      const response = await fetch(searchUrl.toString());
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-          const video = data.items[0];
-          videos.push({
-            id: video.id.videoId,
-            title: video.snippet.title,
-            description: video.snippet.description,
-            thumbnail:
-              video.snippet.thumbnails?.medium?.url ||
-              video.snippet.thumbnails?.default?.url,
-            channelTitle: video.snippet.channelTitle,
-            publishedAt: video.snippet.publishedAt,
-          });
-        }
-      }
-    } catch (error) {
-      console.error(`搜索关键词 "${keyword}" 失败:`, error);
-    }
-  }
-
-  return videos;
 }
 
 // 从AI回复中提取推荐信息的辅助函数

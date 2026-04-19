@@ -14,6 +14,7 @@ import {
 } from '@/lib/performance-monitor';
 import { getSpiderJar } from '@/lib/spiderJar';
 import { Favorite, PlayRecord, SearchResult } from '@/lib/types';
+import { resolveCardPosterUrl } from '@/lib/utils';
 import {
   cleanupExpiredCache,
   migrateOldCache,
@@ -707,6 +708,10 @@ async function refreshRecordAndFavorites() {
                 return null;
               }
 
+              if (source === 'douban') {
+                return null;
+              }
+
               // 🔥 优化 3: 仅刷新连载中的剧集（已完结的跳过）
               if (cronConfig.onlyRefreshOngoing) {
                 if (
@@ -735,7 +740,7 @@ async function refreshRecordAndFavorites() {
                   record: {
                     title: detail.title || record.title,
                     source_name: record.source_name,
-                    cover: detail.poster || record.cover,
+                    cover: resolveCardPosterUrl(detail.poster, record.cover),
                     index: record.index,
                     total_episodes: episodeCount,
                     play_time: record.play_time,
@@ -836,6 +841,10 @@ async function refreshRecordAndFavorites() {
               return null;
             }
 
+            if (source === 'douban') {
+              return null;
+            }
+
             const favDetail = await getDetail(source, id, fav.title);
             if (!favDetail) {
               console.warn(`跳过无法获取详情的收藏: ${key}`);
@@ -851,7 +860,7 @@ async function refreshRecordAndFavorites() {
                 favorite: {
                   title: favDetail.title || fav.title,
                   source_name: fav.source_name,
-                  cover: favDetail.poster || fav.cover,
+                  cover: resolveCardPosterUrl(favDetail.poster, fav.cover),
                   year: favDetail.year || fav.year,
                   total_episodes: favEpisodeCount,
                   save_time: fav.save_time,

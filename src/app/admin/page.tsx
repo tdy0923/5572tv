@@ -29,7 +29,6 @@ import {
   Check,
   CheckCircle,
   ChevronDown,
-  ChevronUp,
   Database,
   Download,
   ExternalLink,
@@ -44,10 +43,22 @@ import {
   Users,
   Video,
 } from 'lucide-react';
-import { GripVertical, KeyRound, MessageSquare } from 'lucide-react';
+import {
+  GripVertical,
+  KeyRound,
+  LayoutTemplate,
+  MessageSquare,
+} from 'lucide-react';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import {
+  AD_POSITION_META,
+  AD_POSITIONS,
+  type AdSettings,
+  DEFAULT_AD_SETTINGS,
+  mergeAdSettings,
+} from '@/lib/ad-settings';
 import { AdminConfig, AdminConfigResult } from '@/lib/admin.types';
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 
@@ -73,7 +84,6 @@ import {
   TVBoxTokenModal,
 } from '@/components/TVBoxTokenManager';
 import WatchRoomConfig from '@/components/WatchRoomConfig';
-import YouTubeConfig from '@/components/YouTubeConfig';
 
 // 统一按钮样式系统
 const buttonStyles = {
@@ -305,6 +315,7 @@ const useLoadingState = () => {
 // 新增站点配置类型
 interface SiteConfig {
   SiteName: string;
+  AnnouncementTitle?: string;
   Announcement: string;
   SearchDownstreamMaxPage: number;
   SiteInterfaceCacheTime: number;
@@ -322,6 +333,7 @@ interface SiteConfig {
   TMDBApiKey?: string;
   TMDBLanguage?: string;
   EnableTMDBActorSearch?: boolean;
+  AdSettings?: AdSettings;
 }
 
 // Cron 配置类型
@@ -368,43 +380,69 @@ interface CustomCategory {
   from: 'config' | 'custom';
 }
 
-// 可折叠标签组件
-interface CollapsibleTabProps {
+// 管理模块工作区组件
+interface AdminModulePanelProps {
   title: string;
   icon?: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
   children: React.ReactNode;
 }
 
-const CollapsibleTab = ({
-  title,
-  icon,
-  isExpanded,
-  onToggle,
-  children,
-}: CollapsibleTabProps) => {
+const AdminModulePanel = ({ title, icon, children }: AdminModulePanelProps) => {
   return (
-    <div className='rounded-xl shadow-sm mb-4 overflow-hidden bg-white/80 backdrop-blur-md dark:bg-gray-800/50 dark:ring-1 dark:ring-gray-700'>
-      <button
-        onClick={onToggle}
-        className='w-full px-6 py-4 flex items-center justify-between bg-gray-50/70 dark:bg-gray-800/60 hover:bg-gray-100/80 dark:hover:bg-gray-700/60 transition-colors'
-      >
-        <div className='flex items-center gap-3'>
-          {icon}
-          <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100'>
+    <div className='overflow-hidden rounded-[28px] border border-black/6 bg-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-white/8 dark:bg-gray-800/55'>
+      <div className='flex items-center gap-3 border-b border-black/6 bg-gray-50/70 px-6 py-4 dark:border-white/8 dark:bg-gray-800/60'>
+        {icon}
+        <div>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
             {title}
           </h3>
+          <p className='mt-1 text-xs uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
+            Module Workspace
+          </p>
         </div>
-        <div className='text-gray-500 dark:text-gray-400'>
-          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </div>
-      </button>
+      </div>
 
-      {isExpanded && <div className='px-6 py-4'>{children}</div>}
+      <div className='border-b border-black/6 bg-white/60 px-6 py-3 dark:border-white/8 dark:bg-white/[0.03]'>
+        <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+            Single Module
+          </span>
+          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+            Admin Workspace
+          </span>
+        </div>
+      </div>
+
+      <div className='px-6 py-5'>{children}</div>
     </div>
   );
 };
+
+function AdminMetricCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: string | number;
+  helper?: string;
+}) {
+  return (
+    <div className='rounded-2xl border border-black/6 bg-white/70 px-4 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]'>
+      <div className='text-[11px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
+        {label}
+      </div>
+      <div className='mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100'>
+        {value}
+      </div>
+      {helper && (
+        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+          {helper}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // 用户配置组件
 interface UserConfigProps {
@@ -1365,7 +1403,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
       )}
 
       {/* 用户统计 */}
-      <div>
+      <div className='rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
         <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-3'>
           用户统计
         </h4>
@@ -1380,7 +1418,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
       </div>
 
       {/* 用户组管理 */}
-      <div>
+      <div className='rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
         <div className='flex items-center justify-between mb-3'>
           <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
             用户组管理
@@ -1492,9 +1530,9 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
       </div>
 
       {/* 用户列表 */}
-      <div>
-        <div className='flex items-center justify-between mb-3'>
-          <div className='flex items-center space-x-3'>
+      <div className='rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
+        <div className='mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between'>
+          <div className='flex flex-wrap items-center gap-3'>
             <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
               用户列表
             </h4>
@@ -1513,7 +1551,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
               ))}
             </select>
           </div>
-          <div className='flex items-center space-x-2'>
+          <div className='flex flex-wrap items-center gap-2'>
             {/* 批量操作按钮 */}
             {selectedUsers.size > 0 && (
               <>
@@ -1941,12 +1979,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                                       );
                                       if (tag?.enabledApis) {
                                         tag.enabledApis.forEach((apiKey) => {
-                                          if (
-                                            ![
-                                              'ai-recommend',
-                                              'youtube-search',
-                                            ].includes(apiKey)
-                                          ) {
+                                          if (apiKey !== 'ai-recommend') {
                                             tagAllowedSources.add(apiKey);
                                           }
                                         });
@@ -1956,11 +1989,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
 
                                   const directAllowedSources = new Set(
                                     (user.enabledApis || []).filter(
-                                      (apiKey) =>
-                                        ![
-                                          'ai-recommend',
-                                          'youtube-search',
-                                        ].includes(apiKey),
+                                      (apiKey) => apiKey !== 'ai-recommend',
                                     ),
                                   );
 
@@ -2493,43 +2522,6 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                             </div>
                           </div>
                         </label>
-
-                        {/* YouTube搜索功能 */}
-                        <label className='flex items-center space-x-3 p-3 border border-red-200 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 cursor-pointer transition-colors'>
-                          <input
-                            type='checkbox'
-                            checked={newUserGroup.enabledApis.includes(
-                              'youtube-search',
-                            )}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setNewUserGroup((prev) => ({
-                                  ...prev,
-                                  enabledApis: [
-                                    ...prev.enabledApis,
-                                    'youtube-search',
-                                  ],
-                                }));
-                              } else {
-                                setNewUserGroup((prev) => ({
-                                  ...prev,
-                                  enabledApis: prev.enabledApis.filter(
-                                    (api) => api !== 'youtube-search',
-                                  ),
-                                }));
-                              }
-                            }}
-                            className='rounded border-red-300 text-red-600 focus:ring-red-500 dark:border-red-600 dark:bg-red-700'
-                          />
-                          <div className='flex-1'>
-                            <div className='text-sm font-medium text-red-900 dark:text-red-100'>
-                              📺 YouTube搜索功能
-                            </div>
-                            <div className='text-xs text-red-700 dark:text-red-300'>
-                              搜索和推荐YouTube视频 (消耗YouTube API配额)
-                            </div>
-                          </div>
-                        </label>
                       </div>
                     </div>
 
@@ -2552,10 +2544,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                             config?.SourceConfig?.filter(
                               (source) => !source.disabled,
                             ).map((s) => s.key) || [];
-                          const specialFeatures = [
-                            'ai-recommend',
-                            'youtube-search',
-                          ];
+                          const specialFeatures = ['ai-recommend'];
                           setNewUserGroup((prev) => ({
                             ...prev,
                             enabledApis: [...allApis, ...specialFeatures],
@@ -2786,51 +2775,6 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                             </div>
                           </div>
                         </label>
-
-                        {/* YouTube搜索功能 */}
-                        <label className='flex items-center space-x-3 p-3 border border-red-200 dark:border-red-700 rounded-lg bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 cursor-pointer transition-colors'>
-                          <input
-                            type='checkbox'
-                            checked={editingUserGroup.enabledApis.includes(
-                              'youtube-search',
-                            )}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setEditingUserGroup((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        enabledApis: [
-                                          ...prev.enabledApis,
-                                          'youtube-search',
-                                        ],
-                                      }
-                                    : null,
-                                );
-                              } else {
-                                setEditingUserGroup((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        enabledApis: prev.enabledApis.filter(
-                                          (api) => api !== 'youtube-search',
-                                        ),
-                                      }
-                                    : null,
-                                );
-                              }
-                            }}
-                            className='rounded border-red-300 text-red-600 focus:ring-red-500 dark:border-red-600 dark:bg-red-700'
-                          />
-                          <div className='flex-1'>
-                            <div className='text-sm font-medium text-red-900 dark:text-red-100'>
-                              📺 YouTube搜索功能
-                            </div>
-                            <div className='text-xs text-red-700 dark:text-red-300'>
-                              搜索和推荐YouTube视频 (消耗YouTube API配额)
-                            </div>
-                          </div>
-                        </label>
                       </div>
                     </div>
 
@@ -2852,10 +2796,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                             config?.SourceConfig?.filter(
                               (source) => !source.disabled,
                             ).map((s) => s.key) || [];
-                          const specialFeatures = [
-                            'ai-recommend',
-                            'youtube-search',
-                          ];
+                          const specialFeatures = ['ai-recommend'];
                           setEditingUserGroup((prev) =>
                             prev
                               ? {
@@ -6199,14 +6140,21 @@ const ConfigFileComponent = ({
 const SiteConfigComponent = ({
   config,
   refreshConfig,
+  section = 'general',
 }: {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
+  section?: 'general' | 'ads';
 }) => {
   const { alertModal, showAlert, hideAlert } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
+  const [activeAdSlot, setActiveAdSlot] = useState<
+    'home_hero' | 'search_top' | 'search_sidebar' | 'play_sidebar' | 'footer'
+  >('home_hero');
+  const activeAdMeta = AD_POSITION_META[activeAdSlot];
   const [siteSettings, setSiteSettings] = useState<SiteConfig>({
     SiteName: '',
+    AnnouncementTitle: '站点公告',
     Announcement: '',
     SearchDownstreamMaxPage: 1,
     SiteInterfaceCacheTime: 7200,
@@ -6224,6 +6172,7 @@ const SiteConfigComponent = ({
     TMDBApiKey: '',
     TMDBLanguage: 'zh-CN',
     EnableTMDBActorSearch: false,
+    AdSettings: mergeAdSettings(undefined),
   });
 
   // Cron 配置状态
@@ -6289,6 +6238,7 @@ const SiteConfigComponent = ({
     if (config?.SiteConfig) {
       setSiteSettings({
         ...config.SiteConfig,
+        AnnouncementTitle: config.SiteConfig.AnnouncementTitle || '站点公告',
         DoubanProxyType: config.SiteConfig.DoubanProxyType || 'direct',
         DoubanProxy: config.SiteConfig.DoubanProxy || '',
         DoubanImageProxyType:
@@ -6304,9 +6254,14 @@ const SiteConfigComponent = ({
         TMDBApiKey: config.SiteConfig.TMDBApiKey || '',
         TMDBLanguage: config.SiteConfig.TMDBLanguage || 'zh-CN',
         EnableTMDBActorSearch: config.SiteConfig.EnableTMDBActorSearch || false,
+        AdSettings: mergeAdSettings(config.SiteConfig.AdSettings),
       });
     }
   }, [config]);
+
+  const currentAdSettings =
+    siteSettings.AdSettings?.[activeAdSlot] ||
+    DEFAULT_AD_SETTINGS[activeAdSlot];
 
   // 加载 Cron 配置
   useEffect(() => {
@@ -6423,150 +6378,182 @@ const SiteConfigComponent = ({
 
   return (
     <div className='space-y-6'>
-      {/* 站点名称 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          站点名称
-        </label>
-        <input
-          type='text'
-          value={siteSettings.SiteName}
-          onChange={(e) =>
-            setSiteSettings((prev) => ({ ...prev, SiteName: e.target.value }))
-          }
-          className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-        />
-      </div>
-
-      {/* 站点公告 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          站点公告
-        </label>
-        <textarea
-          value={siteSettings.Announcement}
-          onChange={(e) =>
-            setSiteSettings((prev) => ({
-              ...prev,
-              Announcement: e.target.value,
-            }))
-          }
-          rows={3}
-          className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-        />
-      </div>
-
-      {/* 豆瓣数据源设置 */}
-      <div className='space-y-3'>
-        <div>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            豆瓣数据代理
-          </label>
-          <div className='relative' data-dropdown='douban-datasource'>
-            {/* 自定义下拉选择框 */}
-            <button
-              type='button'
-              onClick={() => setIsDoubanDropdownOpen(!isDoubanDropdownOpen)}
-              className='w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
-            >
-              {
-                doubanDataSourceOptions.find(
-                  (option) => option.value === siteSettings.DoubanProxyType,
-                )?.label
-              }
-            </button>
-
-            {/* 下拉箭头 */}
-            <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${
-                  isDoubanDropdownOpen ? 'rotate-180' : ''
-                }`}
+      {section === 'general' && (
+        <section className='rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
+          <div className='mb-4 text-sm font-semibold text-gray-900 dark:text-gray-100'>
+            基础信息
+          </div>
+          <div className='space-y-4'>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                站点名称
+              </label>
+              <input
+                type='text'
+                value={siteSettings.SiteName}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    SiteName: e.target.value,
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
               />
             </div>
 
-            {/* 下拉选项列表 */}
-            {isDoubanDropdownOpen && (
-              <div className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto'>
-                {doubanDataSourceOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type='button'
-                    onClick={() => {
-                      handleDoubanDataSourceChange(option.value);
-                      setIsDoubanDropdownOpen(false);
-                    }}
-                    className={`w-full px-3 py-2.5 text-left text-sm transition-colors duration-150 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      siteSettings.DoubanProxyType === option.value
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-                        : 'text-gray-900 dark:text-gray-100'
-                    }`}
-                  >
-                    <span className='truncate'>{option.label}</span>
-                    {siteSettings.DoubanProxyType === option.value && (
-                      <Check className='w-4 h-4 text-green-600 dark:text-green-400 shrink-0 ml-2' />
-                    )}
-                  </button>
-                ))}
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                标题
+              </label>
+              <input
+                type='text'
+                value={siteSettings.AnnouncementTitle || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AnnouncementTitle: e.target.value,
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
+
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                公告
+              </label>
+              <textarea
+                value={siteSettings.Announcement}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    Announcement: e.target.value,
+                  }))
+                }
+                rows={3}
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 豆瓣数据源设置 */}
+      {section === 'general' && (
+        <section className='space-y-3 rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
+          <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+            豆瓣链路
+          </div>
+          <div>
+            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              豆瓣数据代理
+            </label>
+            <div className='relative' data-dropdown='douban-datasource'>
+              {/* 自定义下拉选择框 */}
+              <button
+                type='button'
+                onClick={() => setIsDoubanDropdownOpen(!isDoubanDropdownOpen)}
+                className='w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
+              >
+                {
+                  doubanDataSourceOptions.find(
+                    (option) => option.value === siteSettings.DoubanProxyType,
+                  )?.label
+                }
+              </button>
+
+              {/* 下拉箭头 */}
+              <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${
+                    isDoubanDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+
+              {/* 下拉选项列表 */}
+              {isDoubanDropdownOpen && (
+                <div className='absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto'>
+                  {doubanDataSourceOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type='button'
+                      onClick={() => {
+                        handleDoubanDataSourceChange(option.value);
+                        setIsDoubanDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 text-left text-sm transition-colors duration-150 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                        siteSettings.DoubanProxyType === option.value
+                          ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                          : 'text-gray-900 dark:text-gray-100'
+                      }`}
+                    >
+                      <span className='truncate'>{option.label}</span>
+                      {siteSettings.DoubanProxyType === option.value && (
+                        <Check className='w-4 h-4 text-green-600 dark:text-green-400 shrink-0 ml-2' />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              豆瓣数据源
+            </p>
+
+            {/* 感谢信息 */}
+            {getThanksInfo(siteSettings.DoubanProxyType) && (
+              <div className='mt-3'>
+                <button
+                  type='button'
+                  onClick={() =>
+                    window.open(
+                      getThanksInfo(siteSettings.DoubanProxyType)!.url,
+                      '_blank',
+                    )
+                  }
+                  className='flex w-full items-center justify-center gap-1.5 px-3 text-xs text-gray-500 dark:text-gray-400 cursor-pointer'
+                >
+                  <span className='font-medium'>
+                    {getThanksInfo(siteSettings.DoubanProxyType)!.text}
+                  </span>
+                  <ExternalLink className='w-3.5 opacity-70' />
+                </button>
               </div>
             )}
           </div>
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            选择获取豆瓣数据的方式
-          </p>
 
-          {/* 感谢信息 */}
-          {getThanksInfo(siteSettings.DoubanProxyType) && (
-            <div className='mt-3'>
-              <button
-                type='button'
-                onClick={() =>
-                  window.open(
-                    getThanksInfo(siteSettings.DoubanProxyType)!.url,
-                    '_blank',
-                  )
+          {/* 自定义代理 */}
+          {siteSettings.DoubanProxyType === 'custom' && (
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                代理地址
+              </label>
+              <input
+                type='text'
+                placeholder='例如: https://proxy.example.com/fetch?url='
+                value={siteSettings.DoubanProxy}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    DoubanProxy: e.target.value,
+                  }))
                 }
-                className='flex items-center justify-center gap-1.5 w-full px-3 text-xs text-gray-500 dark:text-gray-400 cursor-pointer'
-              >
-                <span className='font-medium'>
-                  {getThanksInfo(siteSettings.DoubanProxyType)!.text}
-                </span>
-                <ExternalLink className='w-3.5 opacity-70' />
-              </button>
+                className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                自定义代理
+              </p>
             </div>
           )}
-        </div>
-
-        {/* 豆瓣代理地址设置 - 仅在选择自定义代理时显示 */}
-        {siteSettings.DoubanProxyType === 'custom' && (
-          <div>
-            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              豆瓣代理地址
-            </label>
-            <input
-              type='text'
-              placeholder='例如: https://proxy.example.com/fetch?url='
-              value={siteSettings.DoubanProxy}
-              onChange={(e) =>
-                setSiteSettings((prev) => ({
-                  ...prev,
-                  DoubanProxy: e.target.value,
-                }))
-              }
-              className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
-            />
-            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              自定义代理服务器地址
-            </p>
-          </div>
-        )}
-      </div>
+        </section>
+      )}
 
       {/* 豆瓣图片代理设置 */}
       <div className='space-y-3'>
         <div>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            豆瓣图片代理
+            图片代理
           </label>
           <div className='relative' data-dropdown='douban-image-proxy'>
             {/* 自定义下拉选择框 */}
@@ -6674,460 +6661,802 @@ const SiteConfigComponent = ({
       </div>
 
       {/* 豆瓣 Cookies 设置 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          豆瓣认证 Cookies（推荐）
-        </label>
-        <textarea
-          value={siteSettings.DoubanCookies || ''}
-          onChange={(e) =>
-            setSiteSettings((prev) => ({
-              ...prev,
-              DoubanCookies: e.target.value,
-            }))
-          }
-          placeholder='bid=xxx; dbcl2="xxx"; ck=xxx; frodotk_db="xxx"; ...'
-          rows={3}
-          className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 font-mono'
-        />
-        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-          配置豆瓣认证 Cookies 后可直接访问 Web 页面获取完整数据。需包含{' '}
-          <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
-            dbcl2
-          </code>
-          、
-          <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
-            frodotk_db
-          </code>
-          、
-          <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
-            ck
-          </code>{' '}
-          等关键字段。
-        </p>
-      </div>
-
-      {/* Cron 定时任务配置 */}
-      <div className='border-t border-gray-200 dark:border-gray-700 pt-6 mt-6'>
-        <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4'>
-          定时任务配置
-        </h3>
-
-        {/* 启用自动刷新 */}
-        <div className='mb-4'>
-          <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
-            <span>启用自动刷新播放记录和收藏</span>
-            <button
-              type='button'
-              onClick={() =>
-                setCronSettings((prev) => ({
-                  ...prev,
-                  enableAutoRefresh: !prev.enableAutoRefresh,
-                }))
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                cronSettings.enableAutoRefresh
-                  ? 'bg-green-600'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  cronSettings.enableAutoRefresh
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </label>
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            每天凌晨 1
-            点自动更新播放记录和收藏的剧集信息。关闭可减少服务器出站流量。
-          </p>
-        </div>
-
-        {/* 每次最多处理记录数 */}
-        <div className='mb-4'>
+      {section === 'general' && (
+        <div className='rounded-2xl border border-black/6 bg-white/60 p-4 dark:border-white/8 dark:bg-white/[0.03]'>
           <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            每次最多处理记录数
+            豆瓣认证 Cookies（推荐）
           </label>
-          <input
-            type='number'
-            min={10}
-            max={1000}
-            value={cronSettings.maxRecordsPerRun}
+          <textarea
+            value={siteSettings.DoubanCookies || ''}
             onChange={(e) =>
-              setCronSettings((prev) => ({
+              setSiteSettings((prev) => ({
                 ...prev,
-                maxRecordsPerRun: Number(e.target.value),
+                DoubanCookies: e.target.value,
               }))
             }
-            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+            placeholder='bid=xxx; dbcl2="xxx"; ck=xxx; frodotk_db="xxx"; ...'
+            rows={3}
+            className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 font-mono'
           />
           <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            限制每次 Cron 任务处理的记录数量，避免一次性请求过多。
+            配置豆瓣认证 Cookies 后可直接访问 Web 页面获取完整数据。需包含{' '}
+            <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
+              dbcl2
+            </code>
+            、
+            <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
+              frodotk_db
+            </code>
+            、
+            <code className='px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded'>
+              ck
+            </code>{' '}
+            等关键字段。
           </p>
         </div>
+      )}
 
-        {/* 仅刷新最近活跃记录 */}
-        <div className='mb-4'>
-          <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
-            <span>仅刷新最近活跃的记录</span>
-            <button
-              type='button'
-              onClick={() =>
-                setCronSettings((prev) => ({
-                  ...prev,
-                  onlyRefreshRecent: !prev.onlyRefreshRecent,
-                }))
-              }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                cronSettings.onlyRefreshRecent
-                  ? 'bg-green-600'
-                  : 'bg-gray-300 dark:bg-gray-600'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  cronSettings.onlyRefreshRecent
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+      {/* Cron 定时任务配置 */}
+      {section === 'general' && (
+        <section className='border border-black/6 bg-white/60 rounded-2xl p-4 dark:border-white/8 dark:bg-white/[0.03]'>
+          <h3 className='mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200'>
+            定时任务配置
+          </h3>
+
+          {/* 启用自动刷新 */}
+          <div className='mb-4'>
+            <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <span>启用自动刷新播放记录和收藏</span>
+              <button
+                type='button'
+                onClick={() =>
+                  setCronSettings((prev) => ({
+                    ...prev,
+                    enableAutoRefresh: !prev.enableAutoRefresh,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  cronSettings.enableAutoRefresh
+                    ? 'bg-green-600'
+                    : 'bg-gray-300 dark:bg-gray-600'
                 }`}
-              />
-            </button>
-          </label>
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            只更新最近活跃的播放记录和收藏，跳过长时间未观看的内容。
-          </p>
-        </div>
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                    cronSettings.enableAutoRefresh
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              每天凌晨 1
+              点自动更新播放记录和收藏的剧集信息。关闭可减少服务器出站流量。
+            </p>
+          </div>
 
-        {/* 最近活跃天数 */}
-        {cronSettings.onlyRefreshRecent && (
-          <div className='mb-4 ml-4'>
+          {/* 每次最多处理记录数 */}
+          <div className='mb-4'>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              最近活跃天数
+              每次最多处理记录数
             </label>
             <input
               type='number'
-              min={1}
-              max={365}
-              value={cronSettings.recentDays}
+              min={10}
+              max={1000}
+              value={cronSettings.maxRecordsPerRun}
               onChange={(e) =>
                 setCronSettings((prev) => ({
                   ...prev,
-                  recentDays: Number(e.target.value),
+                  maxRecordsPerRun: Number(e.target.value),
                 }))
               }
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
             />
             <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              定义"最近活跃"的天数范围，只更新此时间范围内的记录。
+              限制每次 Cron 任务处理的记录数量，避免一次性请求过多。
             </p>
           </div>
-        )}
 
-        {/* 仅刷新连载中剧集 */}
-        <div className='mb-4'>
-          <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
-            <span>仅刷新连载中的剧集</span>
+          {/* 仅刷新最近活跃记录 */}
+          <div className='mb-4'>
+            <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <span>仅刷新最近活跃的记录</span>
+              <button
+                type='button'
+                onClick={() =>
+                  setCronSettings((prev) => ({
+                    ...prev,
+                    onlyRefreshRecent: !prev.onlyRefreshRecent,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  cronSettings.onlyRefreshRecent
+                    ? 'bg-green-600'
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                    cronSettings.onlyRefreshRecent
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              只更新最近活跃的播放记录和收藏，跳过长时间未观看的内容。
+            </p>
+          </div>
+
+          {/* 最近活跃天数 */}
+          {cronSettings.onlyRefreshRecent && (
+            <div className='mb-4 ml-4'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                最近活跃天数
+              </label>
+              <input
+                type='number'
+                min={1}
+                max={365}
+                value={cronSettings.recentDays}
+                onChange={(e) =>
+                  setCronSettings((prev) => ({
+                    ...prev,
+                    recentDays: Number(e.target.value),
+                  }))
+                }
+                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                定义"最近活跃"的天数范围，只更新此时间范围内的记录。
+              </p>
+            </div>
+          )}
+
+          {/* 仅刷新连载中剧集 */}
+          <div className='mb-4'>
+            <label className='flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <span>仅刷新连载中的剧集</span>
+              <button
+                type='button'
+                onClick={() =>
+                  setCronSettings((prev) => ({
+                    ...prev,
+                    onlyRefreshOngoing: !prev.onlyRefreshOngoing,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  cronSettings.onlyRefreshOngoing
+                    ? 'bg-green-600'
+                    : 'bg-gray-300 dark:bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                    cronSettings.onlyRefreshOngoing
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </label>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              跳过已完结的剧集，只更新正在连载的内容，大幅减少不必要的请求。
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* 广告管理 */}
+      {section === 'ads' && (
+        <section className='border border-black/6 bg-white/60 rounded-2xl p-4 dark:border-white/8 dark:bg-white/[0.03]'>
+          <h3 className='mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200'>
+            广告管理
+          </h3>
+
+          <div className='mb-4 rounded-2xl border border-black/6 bg-white/70 p-4 dark:border-white/8 dark:bg-white/[0.04]'>
+            <div className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+              {activeAdMeta.label}
+            </div>
+            <p className='mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400'>
+              {activeAdMeta.description}
+            </p>
+          </div>
+
+          <div className='mb-4 flex flex-wrap gap-2'>
+            {AD_POSITIONS.map((slot) => (
+              <button
+                key={slot}
+                type='button'
+                onClick={() => setActiveAdSlot(slot)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                  activeAdSlot === slot
+                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                    : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                }`}
+              >
+                {AD_POSITION_META[slot].label}
+              </button>
+            ))}
+          </div>
+
+          <div className='mb-4 flex items-center justify-between'>
+            <div>
+              <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                启用广告位
+              </label>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                关闭后前台不显示任何广告内容
+              </p>
+            </div>
             <button
               type='button'
               onClick={() =>
-                setCronSettings((prev) => ({
+                setSiteSettings((prev) => ({
                   ...prev,
-                  onlyRefreshOngoing: !prev.onlyRefreshOngoing,
+                  AdSettings: {
+                    ...mergeAdSettings(prev.AdSettings),
+                    [activeAdSlot]: {
+                      ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                      enabled: !currentAdSettings.enabled,
+                    },
+                  },
                 }))
               }
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                cronSettings.onlyRefreshOngoing
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                currentAdSettings.enabled
                   ? 'bg-green-600'
-                  : 'bg-gray-300 dark:bg-gray-600'
+                  : 'bg-gray-200 dark:bg-gray-700'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  cronSettings.onlyRefreshOngoing
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  currentAdSettings.enabled ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
-          </label>
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            跳过已完结的剧集，只更新正在连载的内容，大幅减少不必要的请求。
-          </p>
-        </div>
-      </div>
+          </div>
 
-      {/* 搜索接口可拉取最大页数 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          搜索接口可拉取最大页数
-        </label>
-        <input
-          type='number'
-          min={1}
-          value={siteSettings.SearchDownstreamMaxPage}
-          onChange={(e) =>
-            setSiteSettings((prev) => ({
-              ...prev,
-              SearchDownstreamMaxPage: Number(e.target.value),
-            }))
-          }
-          className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-        />
-      </div>
+          <div className='grid gap-4 md:grid-cols-2'>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                广告样式
+              </label>
+              <select
+                value={currentAdSettings.style || 'card'}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        style: e.target.value as any,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              >
+                <option value='card'>卡片</option>
+                <option value='image'>图片</option>
+                <option value='text'>文字</option>
+              </select>
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                当前位置推荐样式：{activeAdMeta.recommendedStyle.join(' / ')}
+              </p>
+            </div>
 
-      {/* 站点接口缓存时间 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          站点接口缓存时间（秒）
-        </label>
-        <input
-          type='number'
-          min={1}
-          value={siteSettings.SiteInterfaceCacheTime}
-          onChange={(e) =>
-            setSiteSettings((prev) => ({
-              ...prev,
-              SiteInterfaceCacheTime: Number(e.target.value),
-            }))
-          }
-          className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-        />
-      </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                广告标题
+              </label>
+              <input
+                type='text'
+                value={currentAdSettings.title || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        title: e.target.value,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
 
-      {/* 启用关键词过滤 */}
-      <div>
-        <div className='flex items-center justify-between'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            启用关键词过滤
-          </label>
-          <button
-            type='button'
-            onClick={() =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                DisableYellowFilter: !prev.DisableYellowFilter,
-              }))
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-              !siteSettings.DisableYellowFilter
-                ? buttonStyles.toggleOn
-                : buttonStyles.toggleOff
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
-                !siteSettings.DisableYellowFilter
-                  ? buttonStyles.toggleThumbOn
-                  : buttonStyles.toggleThumbOff
-              }`}
-            />
-          </button>
-        </div>
-        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-          开启后将过滤包含敏感关键词的视频分类（如"伦理"、"福利"等）。关闭后显示所有分类。
-        </p>
-      </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                跳转链接
+              </label>
+              <input
+                type='url'
+                value={currentAdSettings.linkUrl || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        linkUrl: e.target.value,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
 
-      {/* 显示成人内容 */}
-      <div>
-        <div className='flex items-center justify-between'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            显示成人内容{' '}
-            <span className='text-red-600 dark:text-red-400'>🔞</span>
-          </label>
-          <button
-            type='button'
-            onClick={() =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                ShowAdultContent: !prev.ShowAdultContent,
-              }))
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              siteSettings.ShowAdultContent
-                ? 'bg-linear-to-r from-red-600 to-pink-600 focus:ring-red-500'
-                : buttonStyles.toggleOff + ' focus:ring-gray-500'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
-                siteSettings.ShowAdultContent
-                  ? buttonStyles.toggleThumbOn
-                  : buttonStyles.toggleThumbOff
-              }`}
-            />
-          </button>
-        </div>
-        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-          开启后将显示标记为成人资源的视频源内容。关闭后将自动过滤所有成人内容。
-        </p>
-      </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                图片地址
+              </label>
+              <input
+                type='url'
+                value={currentAdSettings.imageUrl || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        imageUrl: e.target.value,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
 
-      {/* 流式搜索 */}
-      <div>
-        <div className='flex items-center justify-between'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            启用流式搜索
-          </label>
-          <button
-            type='button'
-            onClick={() =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                FluidSearch: !prev.FluidSearch,
-              }))
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-              siteSettings.FluidSearch
-                ? buttonStyles.toggleOn
-                : buttonStyles.toggleOff
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
-                siteSettings.FluidSearch
-                  ? buttonStyles.toggleThumbOn
-                  : buttonStyles.toggleThumbOff
-              }`}
-            />
-          </button>
-        </div>
-        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-          启用后搜索结果将实时流式返回，提升用户体验。
-        </p>
-      </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                图片提示
+              </label>
+              <input
+                type='text'
+                value={currentAdSettings.altText || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        altText: e.target.value,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
 
-      {/* 启用网页直播 */}
-      <div>
-        <div className='flex items-center justify-between'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            启用网页直播
-          </label>
-          <button
-            type='button'
-            onClick={() =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                EnableWebLive: !prev.EnableWebLive,
-              }))
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-              siteSettings.EnableWebLive
-                ? buttonStyles.toggleOn
-                : buttonStyles.toggleOff
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
-                siteSettings.EnableWebLive
-                  ? buttonStyles.toggleThumbOn
-                  : buttonStyles.toggleThumbOff
-              }`}
-            />
-          </button>
-        </div>
-        <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-          网页直播性能较差，会导致服务器内存泄露，建议谨慎开启。
-        </p>
-      </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                文案内容
+              </label>
+              <textarea
+                value={currentAdSettings.content || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        content: e.target.value,
+                      },
+                    },
+                  }))
+                }
+                rows={3}
+                maxLength={currentAdSettings.maxTextLength || 120}
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                文字广告支持每行一条，格式可写成 `文案|链接`。
+              </p>
+            </div>
 
-      {/* TMDB配置 */}
-      <div className='border-t border-gray-200 dark:border-gray-700 pt-6'>
-        <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100 mb-4'>
-          TMDB 演员搜索配置
-        </h3>
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  最大宽度
+                </label>
+                <input
+                  type='number'
+                  value={currentAdSettings.maxWidth || 1200}
+                  onChange={(e) =>
+                    setSiteSettings((prev) => ({
+                      ...prev,
+                      AdSettings: {
+                        ...mergeAdSettings(prev.AdSettings),
+                        [activeAdSlot]: {
+                          ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                          maxWidth: Number(e.target.value) || 1200,
+                        },
+                      },
+                    }))
+                  }
+                  className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+                />
+              </div>
+              <div>
+                <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  最大高度
+                </label>
+                <input
+                  type='number'
+                  value={currentAdSettings.maxHeight || 320}
+                  onChange={(e) =>
+                    setSiteSettings((prev) => ({
+                      ...prev,
+                      AdSettings: {
+                        ...mergeAdSettings(prev.AdSettings),
+                        [activeAdSlot]: {
+                          ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                          maxHeight: Number(e.target.value) || 320,
+                        },
+                      },
+                    }))
+                  }
+                  className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+                />
+                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                  图片广告会按此尺寸限制显示，避免撑破页面结构。
+                </p>
+              </div>
+            </div>
 
-        {/* TMDB API Key */}
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            TMDB API Key
-          </label>
-          <input
-            type='password'
-            value={siteSettings.TMDBApiKey || ''}
-            onChange={(e) =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                TMDBApiKey: e.target.value,
-              }))
-            }
-            placeholder='请输入TMDB API Key'
-            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-          />
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            请在{' '}
-            <a
-              href='https://www.themoviedb.org/settings/api'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-blue-500 hover:text-blue-600'
-            >
-              TMDB 官网
-            </a>{' '}
-            申请免费的 API Key
-          </p>
-        </div>
+            <div>
+              <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
+                文本字数上限
+              </label>
+              <input
+                type='number'
+                value={currentAdSettings.maxTextLength || 120}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        maxTextLength: Number(e.target.value) || 120,
+                      },
+                    },
+                  }))
+                }
+                className='w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-transparent focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100'
+              />
+            </div>
 
-        {/* TMDB 语言配置 */}
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-            TMDB 语言
-          </label>
-          <select
-            value={siteSettings.TMDBLanguage || 'zh-CN'}
-            onChange={(e) =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                TMDBLanguage: e.target.value,
-              }))
-            }
-            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
-          >
-            <option value='zh-CN'>中文（简体）</option>
-            <option value='zh-TW'>中文（繁体）</option>
-            <option value='en-US'>英语</option>
-            <option value='ja-JP'>日语</option>
-            <option value='ko-KR'>韩语</option>
-          </select>
-        </div>
+            <div className='flex items-center justify-between rounded-2xl border border-black/6 bg-white/70 px-4 py-3 dark:border-white/8 dark:bg-white/[0.04]'>
+              <div>
+                <div className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+                  新标签页打开
+                </div>
+                <div className='text-xs text-gray-500 dark:text-gray-400'>
+                  点击广告后是否打开新窗口
+                </div>
+              </div>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    AdSettings: {
+                      ...mergeAdSettings(prev.AdSettings),
+                      [activeAdSlot]: {
+                        ...mergeAdSettings(prev.AdSettings)[activeAdSlot],
+                        openInNewTab: !currentAdSettings.openInNewTab,
+                      },
+                    },
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  currentAdSettings.openInNewTab
+                    ? 'bg-green-600'
+                    : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    currentAdSettings.openInNewTab
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
-        {/* 启用TMDB演员搜索 */}
-        <div className='flex items-center justify-between'>
+      {section === 'general' && (
+        <>
+          {/* 搜索接口可拉取最大页数 */}
           <div>
-            <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-              启用 TMDB 演员搜索
+            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              搜索接口可拉取最大页数
             </label>
+            <input
+              type='number'
+              min={1}
+              value={siteSettings.SearchDownstreamMaxPage}
+              onChange={(e) =>
+                setSiteSettings((prev) => ({
+                  ...prev,
+                  SearchDownstreamMaxPage: Number(e.target.value),
+                }))
+              }
+              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+            />
+          </div>
+
+          {/* 站点接口缓存时间 */}
+          <div>
+            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              站点接口缓存时间（秒）
+            </label>
+            <input
+              type='number'
+              min={1}
+              value={siteSettings.SiteInterfaceCacheTime}
+              onChange={(e) =>
+                setSiteSettings((prev) => ({
+                  ...prev,
+                  SiteInterfaceCacheTime: Number(e.target.value),
+                }))
+              }
+              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+            />
+          </div>
+
+          {/* 启用关键词过滤 */}
+          <div>
+            <div className='flex items-center justify-between'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                启用关键词过滤
+              </label>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    DisableYellowFilter: !prev.DisableYellowFilter,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  !siteSettings.DisableYellowFilter
+                    ? buttonStyles.toggleOn
+                    : buttonStyles.toggleOff
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
+                    !siteSettings.DisableYellowFilter
+                      ? buttonStyles.toggleThumbOn
+                      : buttonStyles.toggleThumbOff
+                  }`}
+                />
+              </button>
+            </div>
             <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              启用后用户可以在搜索页面按演员名字搜索相关影视作品
+              开启后将过滤包含敏感关键词的视频分类（如"伦理"、"福利"等）。关闭后显示所有分类。
             </p>
           </div>
-          <button
-            type='button'
-            onClick={() =>
-              setSiteSettings((prev) => ({
-                ...prev,
-                EnableTMDBActorSearch: !prev.EnableTMDBActorSearch,
-              }))
-            }
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              siteSettings.EnableTMDBActorSearch
-                ? 'bg-green-600'
-                : 'bg-gray-200 dark:bg-gray-700'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                siteSettings.EnableTMDBActorSearch
-                  ? 'translate-x-6'
-                  : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
+
+          {/* 显示成人内容 */}
+          <div>
+            <div className='flex items-center justify-between'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                显示成人内容{' '}
+                <span className='text-red-600 dark:text-red-400'>🔞</span>
+              </label>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    ShowAdultContent: !prev.ShowAdultContent,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  siteSettings.ShowAdultContent
+                    ? 'bg-linear-to-r from-red-600 to-pink-600 focus:ring-red-500'
+                    : buttonStyles.toggleOff + ' focus:ring-gray-500'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
+                    siteSettings.ShowAdultContent
+                      ? buttonStyles.toggleThumbOn
+                      : buttonStyles.toggleThumbOff
+                  }`}
+                />
+              </button>
+            </div>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              开启后将显示标记为成人资源的视频源内容。关闭后将自动过滤所有成人内容。
+            </p>
+          </div>
+
+          {/* 流式搜索 */}
+          <div>
+            <div className='flex items-center justify-between'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                启用流式搜索
+              </label>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    FluidSearch: !prev.FluidSearch,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  siteSettings.FluidSearch
+                    ? buttonStyles.toggleOn
+                    : buttonStyles.toggleOff
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
+                    siteSettings.FluidSearch
+                      ? buttonStyles.toggleThumbOn
+                      : buttonStyles.toggleThumbOff
+                  }`}
+                />
+              </button>
+            </div>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              启用后搜索结果将实时流式返回，提升用户体验。
+            </p>
+          </div>
+
+          {/* 启用网页直播 */}
+          <div>
+            <div className='flex items-center justify-between'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                启用网页直播
+              </label>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    EnableWebLive: !prev.EnableWebLive,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  siteSettings.EnableWebLive
+                    ? buttonStyles.toggleOn
+                    : buttonStyles.toggleOff
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full ${buttonStyles.toggleThumb} transition-transform ${
+                    siteSettings.EnableWebLive
+                      ? buttonStyles.toggleThumbOn
+                      : buttonStyles.toggleThumbOff
+                  }`}
+                />
+              </button>
+            </div>
+            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              网页直播性能较差，会导致服务器内存泄露，建议谨慎开启。
+            </p>
+          </div>
+
+          {/* TMDB配置 */}
+          <div className='border-t border-gray-200 dark:border-gray-700 pt-6'>
+            <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100 mb-4'>
+              TMDB 演员搜索配置
+            </h3>
+
+            {/* TMDB API Key */}
+            <div className='mb-6'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                TMDB API Key
+              </label>
+              <input
+                type='password'
+                value={siteSettings.TMDBApiKey || ''}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    TMDBApiKey: e.target.value,
+                  }))
+                }
+                placeholder='请输入TMDB API Key'
+                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                请在{' '}
+                <a
+                  href='https://www.themoviedb.org/settings/api'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-blue-500 hover:text-blue-600'
+                >
+                  TMDB 官网
+                </a>{' '}
+                申请免费的 API Key
+              </p>
+            </div>
+
+            {/* TMDB 语言配置 */}
+            <div className='mb-6'>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                TMDB 语言
+              </label>
+              <select
+                value={siteSettings.TMDBLanguage || 'zh-CN'}
+                onChange={(e) =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    TMDBLanguage: e.target.value,
+                  }))
+                }
+                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              >
+                <option value='zh-CN'>中文（简体）</option>
+                <option value='zh-TW'>中文（繁体）</option>
+                <option value='en-US'>英语</option>
+                <option value='ja-JP'>日语</option>
+                <option value='ko-KR'>韩语</option>
+              </select>
+            </div>
+
+            {/* 启用TMDB演员搜索 */}
+            <div className='flex items-center justify-between'>
+              <div>
+                <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  启用 TMDB 演员搜索
+                </label>
+                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                  启用后用户可以在搜索页面按演员名字搜索相关影视作品
+                </p>
+              </div>
+              <button
+                type='button'
+                onClick={() =>
+                  setSiteSettings((prev) => ({
+                    ...prev,
+                    EnableTMDBActorSearch: !prev.EnableTMDBActorSearch,
+                  }))
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  siteSettings.EnableTMDBActorSearch
+                    ? 'bg-green-600'
+                    : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    siteSettings.EnableTMDBActorSearch
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 操作按钮 */}
       <div className='flex justify-end'>
@@ -8275,6 +8604,67 @@ function AdminPageClient() {
   const { alertModal, showAlert, hideAlert } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
   const [config, setConfig] = useState<AdminConfig | null>(null);
+  const [activeAdminSection, setActiveAdminSection] = useState('site-config');
+  const [activeAdminGroup, setActiveAdminGroup] = useState('站点基础');
+  const adminSections = useMemo(
+    () => [
+      {
+        group: '站点基础',
+        items: [
+          { id: 'site-config', label: '站点配置', icon: Settings },
+          { id: 'config-file', label: '配置文件', icon: FileText },
+        ],
+      },
+      {
+        group: '广告管理',
+        items: [{ id: 'site-ads', label: '广告位配置', icon: LayoutTemplate }],
+      },
+      {
+        group: '用户与权限',
+        items: [
+          { id: 'user-config', label: '用户配置', icon: Users },
+          { id: 'invite-tools', label: '邀请码', icon: Ticket },
+          { id: 'security-tools', label: '安全配置', icon: Shield },
+          { id: 'trusted-network', label: '信任网络', icon: Shield },
+          { id: 'telegram-auth', label: 'Telegram 登录', icon: KeyRound },
+          { id: 'oidc-auth', label: 'OIDC 登录', icon: KeyRound },
+        ],
+      },
+      {
+        group: '内容源与发现',
+        items: [
+          { id: 'source-config', label: '视频源', icon: Video },
+          { id: 'live-config', label: '直播源', icon: Tv },
+          { id: 'system-tools', label: '源检测', icon: TestTube },
+          { id: 'category-config', label: '分类配置', icon: FolderOpen },
+          { id: 'netdisk-config', label: '网盘搜索', icon: Database },
+        ],
+      },
+      {
+        group: '播放与媒体',
+        items: [
+          { id: 'media-tools', label: '媒体工具', icon: FolderOpen },
+          { id: 'download-tools', label: '下载工具', icon: Download },
+          { id: 'watchroom-tools', label: '观影室', icon: Users },
+          { id: 'adfilter-tools', label: '去广告', icon: Video },
+          { id: 'danmu-tools', label: '弹幕能力', icon: MessageSquare },
+        ],
+      },
+      {
+        group: '智能增强',
+        items: [{ id: 'ai-config', label: 'AI 推荐', icon: Brain }],
+      },
+      {
+        group: '系统运维',
+        items: [
+          { id: 'cache-tools', label: '缓存管理', icon: Database },
+          { id: 'data-migration', label: '数据迁移', icon: Database },
+          { id: 'system-performance', label: '统计中心', icon: Activity },
+        ],
+      },
+    ],
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<'owner' | 'admin' | null>(null);
@@ -8288,7 +8678,6 @@ function AdminPageClient() {
     categoryConfig: false,
     netdiskConfig: false,
     aiRecommendConfig: false,
-    youtubeConfig: false,
     shortDramaConfig: false,
     embyConfig: false,
     downloadConfig: false,
@@ -8305,6 +8694,68 @@ function AdminPageClient() {
     dataMigration: false,
     performanceMonitor: false,
   });
+
+  const adminSectionGroups = useMemo(
+    () => ({
+      站点基础: new Set(['config-file', 'site-config']),
+      广告管理: new Set(['site-ads']),
+      用户与权限: new Set([
+        'user-config',
+        'invite-tools',
+        'security-tools',
+        'trusted-network',
+        'telegram-auth',
+        'oidc-auth',
+      ]),
+      内容源与发现: new Set([
+        'source-config',
+        'live-config',
+        'system-tools',
+        'category-config',
+        'netdisk-config',
+      ]),
+      播放与媒体: new Set([
+        'media-tools',
+        'download-tools',
+        'watchroom-tools',
+        'adfilter-tools',
+        'danmu-tools',
+      ]),
+      智能增强: new Set(['ai-config']),
+      系统运维: new Set([
+        'cache-tools',
+        'data-migration',
+        'system-performance',
+      ]),
+    }),
+    [],
+  );
+
+  const adminGroupDescriptions = useMemo(
+    () => ({
+      站点基础: '管理站点基础信息、公告和核心配置文件。',
+      广告管理: '管理前台固定广告位与受控广告样式。',
+      用户与权限: '集中处理用户、邀请码、登录方式、访问控制与安全。',
+      内容源与发现: '维护视频源、直播源、源检测、分类和内容发现入口。',
+      播放与媒体: '管理影库、下载、观影室、去广告和弹幕等播放能力。',
+      智能增强: '集中管理 AI 推荐等智能化能力。',
+      系统运维: '处理缓存、迁移和统计监控。',
+    }),
+    [],
+  );
+
+  const activeAdminSectionMeta = useMemo(() => {
+    for (const group of adminSections) {
+      const found = group.items.find((item) => item.id === activeAdminSection);
+      if (found) return found;
+    }
+    return null;
+  }, [activeAdminSection, adminSections]);
+
+  const activeAdminGroupMeta = useMemo(
+    () => adminSections.find((group) => group.group === activeAdminGroup),
+    [activeAdminGroup, adminSections],
+  );
 
   // 获取管理员配置
   // showLoading 用于控制是否在请求期间显示整体加载骨架。
@@ -8399,193 +8850,623 @@ function AdminPageClient() {
     return null;
   }
 
+  const isSectionActive = (sectionId: string) =>
+    activeAdminSection === sectionId;
+
   return (
     <PageLayout activePath='/admin'>
       <div className='-mt-6 md:mt-0'>
-        <div className='max-w-[95%] mx-auto pb-40 md:pb-safe-bottom'>
-          {/* 标题 + 重置配置按钮 */}
-          <div className='flex items-center gap-2 mb-8'>
+        <div className='mx-auto max-w-[95%] pb-40 md:pb-safe-bottom'>
+          <div className='mb-8 flex items-center gap-2'>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100'>
               管理员设置
             </h1>
             {config && role === 'owner' && (
               <button
                 onClick={handleResetConfig}
-                className={`px-3 py-1 text-xs rounded-md transition-colors ${buttonStyles.dangerSmall}`}
+                className={`rounded-md px-3 py-1 text-xs transition-colors ${buttonStyles.dangerSmall}`}
               >
                 重置配置
               </button>
             )}
           </div>
 
-          {/* 所有配置标签容器 */}
-          <div className='space-y-6'>
-            {/* 配置文件标签 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='配置文件'
-                icon={
-                  <FileText
-                    size={20}
-                    className='text-gray-600 dark:text-gray-400'
-                  />
-                }
-                isExpanded={expandedTabs.configFile}
-                onToggle={() => toggleTab('configFile')}
-              >
-                <ConfigFileComponent
-                  config={config}
-                  refreshConfig={fetchConfig}
-                />
-              </CollapsibleTab>
-            )}
+          <div className='grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]'>
+            <aside className='ui-surface sticky top-24 h-fit overflow-hidden p-4'>
+              <div className='mb-4'>
+                <div className='text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
+                  Admin Console
+                </div>
+                <div className='mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100'>
+                  后台
+                </div>
+              </div>
 
-            {/* 站点配置标签 */}
-            <CollapsibleTab
-              title='站点配置'
-              icon={
-                <Settings
-                  size={20}
-                  className='text-gray-600 dark:text-gray-400'
-                />
-              }
-              isExpanded={expandedTabs.siteConfig}
-              onToggle={() => toggleTab('siteConfig')}
-            >
-              <SiteConfigComponent
-                config={config}
-                refreshConfig={fetchConfig}
-              />
-            </CollapsibleTab>
+              <div className='space-y-3'>
+                {adminSections.map((group) => (
+                  <div key={group.group} className='space-y-2'>
+                    <button
+                      onClick={() => {
+                        setActiveAdminGroup(group.group);
+                        const firstSection = group.items[0]?.id;
+                        if (firstSection) {
+                          setActiveAdminSection(firstSection);
+                        }
+                      }}
+                      className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition-colors ${
+                        activeAdminGroup === group.group
+                          ? 'bg-primary-100 text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
+                          : 'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/6'
+                      }`}
+                    >
+                      <span className='text-sm font-semibold'>
+                        {group.group}
+                      </span>
+                      <span className='text-xs opacity-70'>
+                        {group.items.length}
+                      </span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </aside>
 
-            {/* 用户配置标签 */}
-            <CollapsibleTab
-              title='用户配置'
-              icon={
-                <Users size={20} className='text-gray-600 dark:text-gray-400' />
-              }
-              isExpanded={expandedTabs.userConfig}
-              onToggle={() => toggleTab('userConfig')}
-            >
-              <UserConfig
-                config={config}
-                role={role}
-                refreshConfig={fetchConfig}
-              />
-            </CollapsibleTab>
+            <section className='space-y-6'>
+              <div className='ui-surface p-5'>
+                <div className='text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
+                  {activeAdminGroup}
+                </div>
+                <div className='mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100'>
+                  {activeAdminSectionMeta?.label || '后台工作区'}
+                </div>
+                {activeAdminGroupMeta && (
+                  <div className='mt-5 border-t border-black/6 pt-4 dark:border-white/8'>
+                    <div className='flex flex-wrap gap-2'>
+                      {activeAdminGroupMeta.items.map((section) => {
+                        const Icon = section.icon;
+                        return (
+                          <button
+                            key={section.id}
+                            onClick={() => setActiveAdminSection(section.id)}
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+                              activeAdminSection === section.id
+                                ? 'bg-primary-100 text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
+                                : 'border border-black/6 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:bg-white/10'
+                            }`}
+                          >
+                            <Icon size={15} />
+                            <span>{section.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-            {/* 邀请码管理标签 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='邀请码管理'
-                icon={
-                  <Ticket
-                    size={20}
-                    className='text-blue-500 dark:text-blue-400'
-                  />
-                }
-                isExpanded={expandedTabs.inviteCodeManager}
-                onToggle={() => toggleTab('inviteCodeManager')}
-              >
-                <InviteCodeManager />
-              </CollapsibleTab>
-            )}
+                <div className='mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4'>
+                  {activeAdminSection === 'site-config' && (
+                    <>
+                      <AdminMetricCard
+                        label='站点名称'
+                        value={config?.SiteConfig?.SiteName || '未设置'}
+                        helper='前台显示'
+                      />
+                      <AdminMetricCard
+                        label='公告状态'
+                        value={
+                          config?.SiteConfig?.Announcement ? '已启用' : '未配置'
+                        }
+                        helper='公告配置'
+                      />
+                      <AdminMetricCard
+                        label='默认用户组'
+                        value={config?.SiteConfig?.DefaultUserTags?.length || 0}
+                        helper='默认分组'
+                      />
+                      <AdminMetricCard
+                        label='豆瓣代理'
+                        value={config?.SiteConfig?.DoubanProxyType || 'direct'}
+                        helper='数据链路'
+                      />
+                    </>
+                  )}
 
-            {/* 视频源配置标签 */}
-            <CollapsibleTab
-              title='视频源配置'
-              icon={
-                <Video size={20} className='text-gray-600 dark:text-gray-400' />
-              }
-              isExpanded={expandedTabs.videoSource}
-              onToggle={() => toggleTab('videoSource')}
-            >
-              <VideoSourceConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminSection === 'user-config' && (
+                    <>
+                      <AdminMetricCard
+                        label='用户总数'
+                        value={config?.UserConfig?.Users?.length || 0}
+                        helper='账号数'
+                      />
+                      <AdminMetricCard
+                        label='管理员'
+                        value={
+                          config?.UserConfig?.Users?.filter(
+                            (user) => user.role === 'admin',
+                          ).length || 0
+                        }
+                        helper='不含站长'
+                      />
+                      <AdminMetricCard
+                        label='站长'
+                        value={
+                          config?.UserConfig?.Users?.filter(
+                            (user) => user.role === 'owner',
+                          ).length || 0
+                        }
+                        helper='最高权限'
+                      />
+                      <AdminMetricCard
+                        label='用户组'
+                        value={config?.UserConfig?.Tags?.length || 0}
+                        helper='权限分组'
+                      />
+                    </>
+                  )}
 
-            {/* 源检测标签 */}
-            <CollapsibleTab
-              title='源检测'
-              icon={
-                <TestTube
-                  size={20}
-                  className='text-gray-600 dark:text-gray-400'
-                />
-              }
-              isExpanded={expandedTabs.sourceTest}
-              onToggle={() => toggleTab('sourceTest')}
-            >
-              <SourceTestModule />
-            </CollapsibleTab>
+                  {activeAdminSection === 'source-config' && (
+                    <>
+                      <AdminMetricCard
+                        label='视频源总数'
+                        value={config?.SourceConfig?.length || 0}
+                        helper='视频源'
+                      />
+                      <AdminMetricCard
+                        label='启用中'
+                        value={
+                          config?.SourceConfig?.filter(
+                            (source) => !source.disabled,
+                          ).length || 0
+                        }
+                        helper='已启用'
+                      />
+                      <AdminMetricCard
+                        label='成人源'
+                        value={
+                          config?.SourceConfig?.filter(
+                            (source) => source.is_adult,
+                          ).length || 0
+                        }
+                        helper='成人源'
+                      />
+                      <AdminMetricCard
+                        label='短剧源'
+                        value={
+                          config?.SourceConfig?.filter(
+                            (source) => source.type === 'shortdrama',
+                          ).length || 0
+                        }
+                        helper='短剧源'
+                      />
+                    </>
+                  )}
 
-            {/* 直播源配置标签 */}
-            <CollapsibleTab
-              title='直播源配置'
-              icon={
-                <Tv size={20} className='text-gray-600 dark:text-gray-400' />
-              }
-              isExpanded={expandedTabs.liveSource}
-              onToggle={() => toggleTab('liveSource')}
-            >
-              <LiveSourceConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminSection === 'live-config' && (
+                    <>
+                      <AdminMetricCard
+                        label='直播源总数'
+                        value={config?.LiveConfig?.length || 0}
+                        helper='直播源'
+                      />
+                      <AdminMetricCard
+                        label='启用中'
+                        value={
+                          config?.LiveConfig?.filter(
+                            (source) => !source.disabled,
+                          ).length || 0
+                        }
+                        helper='已启用'
+                      />
+                      <AdminMetricCard
+                        label='TVBox 源'
+                        value={
+                          config?.LiveConfig?.filter((source) => source.isTvBox)
+                            .length || 0
+                        }
+                        helper='TVBox'
+                      />
+                      <AdminMetricCard
+                        label='EPG 配置'
+                        value={
+                          config?.LiveConfig?.filter((source) => !!source.epg)
+                            .length || 0
+                        }
+                        helper='EPG'
+                      />
+                    </>
+                  )}
 
-            {/* 分类配置标签 */}
-            <CollapsibleTab
-              title='分类配置'
-              icon={
-                <FolderOpen
-                  size={20}
-                  className='text-gray-600 dark:text-gray-400'
-                />
-              }
-              isExpanded={expandedTabs.categoryConfig}
-              onToggle={() => toggleTab('categoryConfig')}
-            >
-              <CategoryConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminGroup === '系统运维' && (
+                    <>
+                      <AdminMetricCard
+                        label='当前模块'
+                        value={activeAdminSectionMeta?.label || '系统运维'}
+                        helper='工作区'
+                      />
+                      <AdminMetricCard
+                        label='缓存能力'
+                        value='已启用'
+                        helper='缓存'
+                      />
+                      <AdminMetricCard
+                        label='迁移能力'
+                        value='已启用'
+                        helper='迁移'
+                      />
+                      <AdminMetricCard
+                        label='性能监控'
+                        value='可用'
+                        helper='监控'
+                      />
+                    </>
+                  )}
 
-            {/* 网盘搜索配置标签 */}
-            <CollapsibleTab
-              title='网盘搜索配置'
-              icon={
-                <Database
-                  size={20}
-                  className='text-gray-600 dark:text-gray-400'
-                />
-              }
-              isExpanded={expandedTabs.netdiskConfig}
-              onToggle={() => toggleTab('netdiskConfig')}
-            >
-              <NetDiskConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminGroup === '系统运维' && (
+                    <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-3'>
+                      <button
+                        onClick={() => setActiveAdminSection('cache-tools')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          缓存管理
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          清理和统计缓存数据
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('data-migration')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          数据迁移
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          导入、导出和升级数据
+                        </div>
+                      </button>
+                      <button
+                        onClick={() =>
+                          setActiveAdminSection('system-performance')
+                        }
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          统计中心
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          访问、来源和性能数据
+                        </div>
+                      </button>
+                    </div>
+                  )}
 
-            {/* AI推荐配置标签 */}
-            <CollapsibleTab
-              title='AI推荐配置'
-              icon={
-                <Brain size={20} className='text-gray-600 dark:text-gray-400' />
-              }
-              isExpanded={expandedTabs.aiRecommendConfig}
-              onToggle={() => toggleTab('aiRecommendConfig')}
-            >
-              <AIRecommendConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminGroup === '内容源与发现' && (
+                    <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
+                      <button
+                        onClick={() => setActiveAdminSection('source-config')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          视频源
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          普通视频内容源管理
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('live-config')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          直播源
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          频道与节目单配置
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('category-config')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          分类配置
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          分类与展示结构
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('netdisk-config')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          网盘搜索
+                        </div>
+                        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                          网盘内容聚合入口
+                        </div>
+                      </button>
+                    </div>
+                  )}
 
-            {/* YouTube配置标签 */}
-            <CollapsibleTab
-              title='YouTube配置'
-              icon={
-                <Video size={20} className='text-gray-600 dark:text-gray-400' />
-              }
-              isExpanded={expandedTabs.youtubeConfig}
-              onToggle={() => toggleTab('youtubeConfig')}
-            >
-              <YouTubeConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                  {activeAdminGroup === '播放与媒体' && (
+                    <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
+                      <button
+                        onClick={() => setActiveAdminSection('media-tools')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          Emby 集成
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('download-tools')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          下载中心
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('watchroom-tools')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          观影室
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setActiveAdminSection('adfilter-tools')}
+                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                      >
+                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                          播放增强
+                        </div>
+                      </button>
+                    </div>
+                  )}
 
-            {/* 短剧API配置标签 - 暂时隐藏，代码保留以后有用再显示
-            <CollapsibleTab
+                  {activeAdminGroup === '系统运维' &&
+                    activeAdminSection === 'system-performance' && (
+                      <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
+                        <AdminMetricCard
+                          label='总请求'
+                          value='--'
+                          helper='最近 24 小时'
+                        />
+                        <AdminMetricCard
+                          label='外部流量'
+                          value='--'
+                          helper='按域名统计'
+                        />
+                        <AdminMetricCard
+                          label='平均响应'
+                          value='--'
+                          helper='性能趋势'
+                        />
+                        <AdminMetricCard
+                          label='访客来源'
+                          value='--'
+                          helper='来源域名 / 入口页'
+                        />
+                      </div>
+                    )}
+                </div>
+              </div>
+
+              <div className='space-y-6'>
+                {/* 配置文件标签 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('config-file') && (
+                  <div id='config-file'>
+                    <AdminModulePanel
+                      title='配置文件'
+                      icon={
+                        <FileText
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <ConfigFileComponent
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 站点配置标签 */}
+                {isSectionActive('site-config') && (
+                  <div id='site-config'>
+                    <AdminModulePanel
+                      title='站点配置'
+                      icon={
+                        <Settings
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <SiteConfigComponent
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {isSectionActive('site-ads') && (
+                  <div id='site-ads'>
+                    <AdminModulePanel
+                      title='广告位配置'
+                      icon={
+                        <LayoutTemplate
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <SiteConfigComponent
+                        config={config}
+                        refreshConfig={fetchConfig}
+                        section='ads'
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 用户配置标签 */}
+                {isSectionActive('user-config') && (
+                  <div id='user-config'>
+                    <AdminModulePanel
+                      title='用户配置'
+                      icon={
+                        <Users
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <UserConfig
+                        config={config}
+                        role={role}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 邀请码管理标签 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('invite-tools') && (
+                  <div id='invite-tools'>
+                    <AdminModulePanel
+                      title='邀请码管理'
+                      icon={
+                        <Ticket
+                          size={20}
+                          className='text-blue-500 dark:text-blue-400'
+                        />
+                      }
+                    >
+                      <InviteCodeManager />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 视频源配置标签 */}
+                {isSectionActive('source-config') && (
+                  <div id='source-config'>
+                    <AdminModulePanel
+                      title='视频源配置'
+                      icon={
+                        <Video
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <VideoSourceConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 源检测标签 */}
+                {isSectionActive('system-tools') && (
+                  <div id='system-tools'>
+                    <AdminModulePanel
+                      title='源检测'
+                      icon={
+                        <TestTube
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <SourceTestModule />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 直播源配置标签 */}
+                {isSectionActive('live-config') && (
+                  <div id='live-config'>
+                    <AdminModulePanel
+                      title='直播源配置'
+                      icon={
+                        <Tv
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <LiveSourceConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 分类配置标签 */}
+                {isSectionActive('category-config') && (
+                  <AdminModulePanel
+                    title='分类配置'
+                    icon={
+                      <FolderOpen
+                        size={20}
+                        className='text-gray-600 dark:text-gray-400'
+                      />
+                    }
+                  >
+                    <CategoryConfig
+                      config={config}
+                      refreshConfig={fetchConfig}
+                    />
+                  </AdminModulePanel>
+                )}
+
+                {/* 网盘搜索配置标签 */}
+                {isSectionActive('netdisk-config') && (
+                  <AdminModulePanel
+                    title='网盘搜索配置'
+                    icon={
+                      <Database
+                        size={20}
+                        className='text-gray-600 dark:text-gray-400'
+                      />
+                    }
+                  >
+                    <NetDiskConfig
+                      config={config}
+                      refreshConfig={fetchConfig}
+                    />
+                  </AdminModulePanel>
+                )}
+
+                {/* AI推荐配置标签 */}
+                {isSectionActive('ai-config') && (
+                  <AdminModulePanel
+                    title='AI推荐配置'
+                    icon={
+                      <Brain
+                        size={20}
+                        className='text-gray-600 dark:text-gray-400'
+                      />
+                    }
+                  >
+                    <AIRecommendConfig
+                      config={config}
+                      refreshConfig={fetchConfig}
+                    />
+                  </AdminModulePanel>
+                )}
+
+                {/* 短剧API配置标签 - 暂时隐藏，代码保留以后有用再显示
+            <AdminModulePanel
               title='短剧API配置'
               icon={
                 <Video
@@ -8600,282 +9481,297 @@ function AdminPageClient() {
             </CollapsibleTab>
             */}
 
-            {/* Emby配置标签 */}
-            <CollapsibleTab
-              title='Emby私人影库'
-              icon={
-                <FolderOpen
-                  size={20}
-                  className='text-indigo-600 dark:text-indigo-400'
-                />
-              }
-              isExpanded={expandedTabs.embyConfig}
-              onToggle={() => toggleTab('embyConfig')}
-            >
-              <EmbyConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                {/* Emby配置标签 */}
+                {isSectionActive('media-tools') && (
+                  <div id='media-tools'>
+                    <AdminModulePanel
+                      title='Emby私人影库'
+                      icon={
+                        <FolderOpen
+                          size={20}
+                          className='text-indigo-600 dark:text-indigo-400'
+                        />
+                      }
+                    >
+                      <EmbyConfig config={config} refreshConfig={fetchConfig} />
+                    </AdminModulePanel>
+                  </div>
+                )}
 
-            {/* 下载配置标签 */}
-            <CollapsibleTab
-              title='下载配置'
-              icon={
-                <Download
-                  size={20}
-                  className='text-green-600 dark:text-green-400'
-                />
-              }
-              isExpanded={expandedTabs.downloadConfig}
-              onToggle={() => toggleTab('downloadConfig')}
-            >
-              <DownloadConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
+                {/* 下载配置标签 */}
+                {isSectionActive('download-tools') && (
+                  <div id='download-tools'>
+                    <AdminModulePanel
+                      title='下载配置'
+                      icon={
+                        <Download
+                          size={20}
+                          className='text-green-600 dark:text-green-400'
+                        />
+                      }
+                    >
+                      <DownloadConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
 
-            {/* 自定义去广告标签 */}
-            <CollapsibleTab
-              title='自定义去广告'
-              icon={
-                <Video
-                  size={20}
-                  className='text-purple-600 dark:text-purple-400'
-                />
-              }
-              isExpanded={expandedTabs.customAdFilter}
-              onToggle={() => toggleTab('customAdFilter')}
-            >
-              <CustomAdFilterConfig
-                config={config}
-                refreshConfig={fetchConfig}
-              />
-            </CollapsibleTab>
-
-            {/* 观影室配置标签 */}
-            <CollapsibleTab
-              title='观影室配置'
-              icon={
-                <Users
-                  size={20}
-                  className='text-indigo-600 dark:text-indigo-400'
-                />
-              }
-              isExpanded={expandedTabs.watchRoomConfig}
-              onToggle={() => toggleTab('watchRoomConfig')}
-            >
-              <WatchRoomConfig config={config} refreshConfig={fetchConfig} />
-            </CollapsibleTab>
-
-            {/* TVBox安全配置标签 */}
-            <CollapsibleTab
-              title='TVBox安全配置'
-              icon={
-                <Settings
-                  size={20}
-                  className='text-gray-600 dark:text-gray-400'
-                />
-              }
-              isExpanded={expandedTabs.tvboxSecurityConfig}
-              onToggle={() => toggleTab('tvboxSecurityConfig')}
-            >
-              <TVBoxSecurityConfig
-                config={config}
-                refreshConfig={fetchConfig}
-              />
-            </CollapsibleTab>
-
-            {/* 信任网络配置 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='信任网络配置'
-                icon={
-                  <Shield
-                    size={20}
-                    className='text-green-600 dark:text-green-400'
-                  />
-                }
-                isExpanded={expandedTabs.trustedNetworkConfig}
-                onToggle={() => toggleTab('trustedNetworkConfig')}
-              >
-                <TrustedNetworkConfig
-                  config={config}
-                  refreshConfig={fetchConfig}
-                />
-              </CollapsibleTab>
-            )}
-
-            {/* 弹幕API配置 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='弹幕API配置'
-                icon={
-                  <MessageSquare
-                    size={20}
-                    className='text-purple-600 dark:text-purple-400'
-                  />
-                }
-                isExpanded={expandedTabs.danmuApiConfig}
-                onToggle={() => toggleTab('danmuApiConfig')}
-              >
-                <DanmuApiConfig config={config} refreshConfig={fetchConfig} />
-              </CollapsibleTab>
-            )}
-
-            {/* Telegram 登录配置 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='Telegram 登录配置'
-                icon={
-                  <svg
-                    viewBox='0 0 24 24'
-                    width='20'
-                    height='20'
-                    className='text-blue-500 dark:text-blue-400'
-                    fill='currentColor'
+                {/* 自定义去广告标签 */}
+                {isSectionActive('adfilter-tools') && (
+                  <AdminModulePanel
+                    title='自定义去广告'
+                    icon={
+                      <Video
+                        size={20}
+                        className='text-purple-600 dark:text-purple-400'
+                      />
+                    }
                   >
-                    <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.05-.49-.82-.27-1.47-.42-1.42-.88.03-.24.37-.48 1.02-.73 4-1.74 6.68-2.88 8.03-3.44 3.82-1.58 4.61-1.85 5.13-1.86.11 0 .37.03.54.17.14.11.18.26.2.37.02.08.03.29.01.45z' />
-                  </svg>
-                }
-                isExpanded={expandedTabs.telegramAuthConfig}
-                onToggle={() => toggleTab('telegramAuthConfig')}
-              >
-                <TelegramAuthConfig
-                  config={
-                    config?.TelegramAuthConfig || {
-                      enabled: false,
-                      botToken: '',
-                      botUsername: '',
-                      autoRegister: true,
-                      buttonSize: 'large',
-                      showAvatar: true,
-                      requestWriteAccess: false,
+                    <CustomAdFilterConfig
+                      config={config}
+                      refreshConfig={fetchConfig}
+                    />
+                  </AdminModulePanel>
+                )}
+
+                {/* 观影室配置标签 */}
+                {isSectionActive('watchroom-tools') && (
+                  <div id='watchroom-tools'>
+                    <AdminModulePanel
+                      title='观影室配置'
+                      icon={
+                        <Users
+                          size={20}
+                          className='text-indigo-600 dark:text-indigo-400'
+                        />
+                      }
+                    >
+                      <WatchRoomConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* TVBox安全配置标签 */}
+                {isSectionActive('security-tools') && (
+                  <div id='security-tools'>
+                    <AdminModulePanel
+                      title='TVBox安全配置'
+                      icon={
+                        <Settings
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <TVBoxSecurityConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 信任网络配置 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('trusted-network') && (
+                  <AdminModulePanel
+                    title='信任网络配置'
+                    icon={
+                      <Shield
+                        size={20}
+                        className='text-green-600 dark:text-green-400'
+                      />
                     }
-                  }
-                  onSave={async (newConfig) => {
-                    if (!config) return;
-                    await fetch('/api/admin/config', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        ...config,
-                        TelegramAuthConfig: newConfig,
-                      }),
-                    });
-                    await fetchConfig();
-                  }}
-                />
-              </CollapsibleTab>
-            )}
+                  >
+                    <TrustedNetworkConfig
+                      config={config}
+                      refreshConfig={fetchConfig}
+                    />
+                  </AdminModulePanel>
+                )}
 
-            {/* OIDC 登录配置 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='OIDC 登录配置'
-                icon={
-                  <KeyRound
-                    size={20}
-                    className='text-purple-500 dark:text-purple-400'
-                  />
-                }
-                isExpanded={expandedTabs.oidcAuthConfig}
-                onToggle={() => toggleTab('oidcAuthConfig')}
-              >
-                <OIDCAuthConfig
-                  config={
-                    config?.OIDCAuthConfig || {
-                      enabled: false,
-                      enableRegistration: false,
-                      issuer: '',
-                      authorizationEndpoint: '',
-                      tokenEndpoint: '',
-                      userInfoEndpoint: '',
-                      clientId: '',
-                      clientSecret: '',
-                      buttonText: '',
-                      minTrustLevel: 0,
+                {/* 弹幕API配置 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('danmu-tools') && (
+                  <div id='danmu-tools'>
+                    <AdminModulePanel
+                      title='弹幕API配置'
+                      icon={
+                        <MessageSquare
+                          size={20}
+                          className='text-purple-600 dark:text-purple-400'
+                        />
+                      }
+                    >
+                      <DanmuApiConfig
+                        config={config}
+                        refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* Telegram 登录配置 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('telegram-auth') && (
+                  <div id='auth-tools'>
+                    <AdminModulePanel
+                      title='Telegram 登录配置'
+                      icon={
+                        <svg
+                          viewBox='0 0 24 24'
+                          width='20'
+                          height='20'
+                          className='text-blue-500 dark:text-blue-400'
+                          fill='currentColor'
+                        >
+                          <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.05-.49-.82-.27-1.47-.42-1.42-.88.03-.24.37-.48 1.02-.73 4-1.74 6.68-2.88 8.03-3.44 3.82-1.58 4.61-1.85 5.13-1.86.11 0 .37.03.54.17.14.11.18.26.2.37.02.08.03.29.01.45z' />
+                        </svg>
+                      }
+                    >
+                      <TelegramAuthConfig
+                        config={
+                          config?.TelegramAuthConfig || {
+                            enabled: false,
+                            botToken: '',
+                            botUsername: '',
+                            autoRegister: true,
+                            buttonSize: 'large',
+                            showAvatar: true,
+                            requestWriteAccess: false,
+                          }
+                        }
+                        onSave={async (newConfig) => {
+                          if (!config) return;
+                          await fetch('/api/admin/config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              ...config,
+                              TelegramAuthConfig: newConfig,
+                            }),
+                          });
+                          await fetchConfig();
+                        }}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* OIDC 登录配置 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('oidc-auth') && (
+                  <AdminModulePanel
+                    title='OIDC 登录配置'
+                    icon={
+                      <KeyRound
+                        size={20}
+                        className='text-purple-500 dark:text-purple-400'
+                      />
                     }
-                  }
-                  providers={config?.OIDCProviders || []}
-                  onSave={async (newConfig) => {
-                    if (!config) return;
-                    await fetch('/api/admin/config', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        ...config,
-                        OIDCAuthConfig: newConfig,
-                      }),
-                    });
-                    await fetchConfig();
-                  }}
-                  onSaveProviders={async (newProviders) => {
-                    if (!config) return;
-                    const updatedConfig = {
-                      ...config,
-                      OIDCProviders: newProviders,
-                    };
-                    // 如果切换到多provider模式，删除旧的单provider配置
-                    if (newProviders.length > 0) {
-                      delete updatedConfig.OIDCAuthConfig;
-                    }
-                    await fetch('/api/admin/config', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(updatedConfig),
-                    });
-                    await fetchConfig();
-                  }}
-                />
-              </CollapsibleTab>
-            )}
+                  >
+                    <OIDCAuthConfig
+                      config={
+                        config?.OIDCAuthConfig || {
+                          enabled: false,
+                          enableRegistration: false,
+                          issuer: '',
+                          authorizationEndpoint: '',
+                          tokenEndpoint: '',
+                          userInfoEndpoint: '',
+                          clientId: '',
+                          clientSecret: '',
+                          buttonText: '',
+                          minTrustLevel: 0,
+                        }
+                      }
+                      providers={config?.OIDCProviders || []}
+                      onSave={async (newConfig) => {
+                        if (!config) return;
+                        await fetch('/api/admin/config', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            ...config,
+                            OIDCAuthConfig: newConfig,
+                          }),
+                        });
+                        await fetchConfig();
+                      }}
+                      onSaveProviders={async (newProviders) => {
+                        if (!config) return;
+                        const updatedConfig = {
+                          ...config,
+                          OIDCProviders: newProviders,
+                        };
+                        // 如果切换到多provider模式，删除旧的单provider配置
+                        if (newProviders.length > 0) {
+                          delete updatedConfig.OIDCAuthConfig;
+                        }
+                        await fetch('/api/admin/config', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(updatedConfig),
+                        });
+                        await fetchConfig();
+                      }}
+                    />
+                  </AdminModulePanel>
+                )}
 
-            {/* 缓存管理标签 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='缓存管理'
-                icon={
-                  <Database
-                    size={20}
-                    className='text-gray-600 dark:text-gray-400'
-                  />
-                }
-                isExpanded={expandedTabs.cacheManager}
-                onToggle={() => toggleTab('cacheManager')}
-              >
-                <CacheManager />
-              </CollapsibleTab>
-            )}
+                {/* 缓存管理标签 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('cache-tools') && (
+                  <div id='cache-tools'>
+                    <AdminModulePanel
+                      title='缓存管理'
+                      icon={
+                        <Database
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <CacheManager />
+                    </AdminModulePanel>
+                  </div>
+                )}
 
-            {/* 数据迁移标签 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='数据迁移'
-                icon={
-                  <Database
-                    size={20}
-                    className='text-gray-600 dark:text-gray-400'
-                  />
-                }
-                isExpanded={expandedTabs.dataMigration}
-                onToggle={() => toggleTab('dataMigration')}
-              >
-                <DataMigration onRefreshConfig={fetchConfig} />
-              </CollapsibleTab>
-            )}
+                {/* 数据迁移标签 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('data-migration') && (
+                  <div id='cache-tools'>
+                    <AdminModulePanel
+                      title='数据迁移'
+                      icon={
+                        <Database
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <DataMigration onRefreshConfig={fetchConfig} />
+                    </AdminModulePanel>
+                  </div>
+                )}
 
-            {/* 性能监控标签 - 仅站长可见 */}
-            {role === 'owner' && (
-              <CollapsibleTab
-                title='性能监控'
-                icon={
-                  <Activity
-                    size={20}
-                    className='text-gray-600 dark:text-gray-400'
-                  />
-                }
-                isExpanded={expandedTabs.performanceMonitor}
-                onToggle={() => toggleTab('performanceMonitor')}
-              >
-                <PerformanceMonitor />
-              </CollapsibleTab>
-            )}
+                {/* 性能监控标签 - 仅站长可见 */}
+                {role === 'owner' && isSectionActive('system-performance') && (
+                  <div id='system-performance'>
+                    <AdminModulePanel
+                      title='性能监控'
+                      icon={
+                        <Activity
+                          size={20}
+                          className='text-gray-600 dark:text-gray-400'
+                        />
+                      }
+                    >
+                      <PerformanceMonitor />
+                    </AdminModulePanel>
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </div>

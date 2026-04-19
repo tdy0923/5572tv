@@ -2,6 +2,7 @@
 
 import { unstable_noStore } from 'next/cache';
 
+import { DEFAULT_AD_SETTINGS } from '@/lib/ad-settings';
 import { db } from '@/lib/db';
 
 import { AdminConfig } from './admin.types';
@@ -227,6 +228,7 @@ async function getInitConfig(
     ConfigSubscribtion: subConfig,
     SiteConfig: {
       SiteName: process.env.NEXT_PUBLIC_SITE_NAME || '5572影视',
+      AnnouncementTitle: process.env.ANNOUNCEMENT_TITLE || '站点公告',
       Announcement:
         process.env.ANNOUNCEMENT ||
         '本网站仅提供影视信息搜索服务，所有内容均来自第三方网站。本站不存储任何视频资源，不对任何内容的准确性、合法性、完整性负责。',
@@ -247,6 +249,7 @@ async function getInitConfig(
       TMDBApiKey: process.env.TMDB_API_KEY || '',
       TMDBLanguage: 'zh-CN',
       EnableTMDBActorSearch: false, // 默认关闭，需要配置API Key后手动开启
+      AdSettings: DEFAULT_AD_SETTINGS,
     },
     UserConfig: {
       AllowRegister: true, // 默认允许注册
@@ -490,24 +493,6 @@ export async function configSelfCheck(
       model: 'gpt-3.5-turbo', // 默认模型
       temperature: 0.7, // 默认温度
       maxTokens: 3000, // 默认最大token数
-    };
-  }
-
-  // 确保YouTube配置有默认值
-  if (!adminConfig.YouTubeConfig) {
-    adminConfig.YouTubeConfig = {
-      enabled: false, // 默认关闭
-      apiKey: '', // 默认为空，需要管理员配置
-      enableDemo: true, // 默认启用演示模式
-      maxResults: 25, // 默认每页25个结果
-      enabledRegions: ['US', 'CN', 'JP', 'KR', 'GB', 'DE', 'FR'], // 默认启用的地区
-      enabledCategories: [
-        'Film & Animation',
-        'Music',
-        'Gaming',
-        'News & Politics',
-        'Entertainment',
-      ], // 默认启用的分类
     };
   }
 
@@ -857,7 +842,7 @@ export async function setCachedConfig(config: AdminConfig) {
 // 特殊功能权限检查
 export async function hasSpecialFeaturePermission(
   username: string,
-  feature: 'ai-recommend' | 'youtube-search',
+  feature: 'ai-recommend',
   providedConfig?: AdminConfig,
 ): Promise<boolean> {
   try {
@@ -875,7 +860,7 @@ export async function hasSpecialFeaturePermission(
     // 如果用户不在配置中，检查是否是新注册用户
     if (!userConfig) {
       // 新注册用户默认无特殊功能权限，但不阻止基本访问
-      // 这里返回false是正确的，因为新用户默认不应该有AI/YouTube权限
+      // 这里返回false是正确的，因为新用户默认不应该有AI权限
       return false;
     }
 
