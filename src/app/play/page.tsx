@@ -3536,6 +3536,13 @@ function PlayPageClient() {
         }
       }
 
+      const hasSearchFallbackContext = Boolean(
+        searchTitle ||
+        videoTitle ||
+        videoDoubanIdRef.current ||
+        videoYearRef.current,
+      );
+
       // 如果已经有了source和id，优先通过单个详情接口快速获取
       if (currentSource && currentId) {
         // 先快速获取当前源的详情
@@ -3643,6 +3650,12 @@ function PlayPageClient() {
             console.warn(
               '[Play] 当前源详情已存在，但全源搜索未命中当前 source/id，回退使用当前详情',
             );
+          } else if (hasSearchFallbackContext && sourcesInfo.length > 0) {
+            console.warn(
+              '[Play] 当前 source/id 未命中，使用回退候选源进入优选流程',
+            );
+            needPreferRef.current = true;
+            setNeedPrefer(true);
           } else {
             setError('当前线路已失效，且未找到其他严格匹配的可用线路');
             setLoading(false);
