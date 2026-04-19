@@ -66,22 +66,26 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
 
     if (invalidRecords.length === 0) return;
 
-    void (async () => {
-      await Promise.all(
-        invalidRecords.map(async (record) => {
-          const { source, id } = parsePlayRecordKey(record.key);
-          const fixedCover = resolveCardPosterUrl(record.cover);
-          if (!fixedCover || fixedCover === record.cover) return;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        await Promise.all(
+          invalidRecords.map(async (record) => {
+            const { source, id } = parsePlayRecordKey(record.key);
+            const fixedCover = resolveCardPosterUrl(record.cover);
+            if (!fixedCover || fixedCover === record.cover) return;
 
-          await savePlayRecord(source, id, {
-            ...record,
-            cover: fixedCover,
-          });
-        }),
-      );
+            await savePlayRecord(source, id, {
+              ...record,
+              cover: fixedCover,
+            });
+          }),
+        );
 
-      queryClient.invalidateQueries({ queryKey: ['playRecords'] });
-    })();
+        queryClient.invalidateQueries({ queryKey: ['playRecords'] });
+      })();
+    }, 1200);
+
+    return () => window.clearTimeout(timer);
   }, [loading, playRecords, queryClient]);
 
   // 如果没有播放记录，则不渲染组件
