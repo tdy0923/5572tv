@@ -575,15 +575,21 @@ export const UserMenu: React.FC = () => {
   const showFavorites = !!authInfo?.username;
   const showContinueWatching = !!authInfo?.username;
   // 检查是否有实际更新（用于显示红点）- 包括新剧集更新和新上映
+  const visibleWatchingUpdates = showWatchingUpdates
+    ? watchingUpdates?.updatedSeries?.filter(
+        (series) =>
+          series.hasNewRelease &&
+          !dismissedReleases.has(`${series.sourceKey}+${series.videoId}`),
+      ) || []
+    : [];
   const hasActualUpdates =
     watchingUpdates &&
     ((watchingUpdates.updatedCount || 0) > 0 ||
-      (watchingUpdates.newReleasesCount || 0) > 0);
+      visibleWatchingUpdates.length > 0);
 
   // 计算更新数量（新剧集更新 + 新上映）
   const totalUpdates =
-    (watchingUpdates?.updatedCount || 0) +
-    (watchingUpdates?.newReleasesCount || 0);
+    (watchingUpdates?.updatedCount || 0) + visibleWatchingUpdates.length;
 
   // 角色中文映射
   const getRoleText = (role?: string) => {
