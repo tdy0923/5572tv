@@ -1,9 +1,16 @@
-/* eslint-disable no-console */
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 
-import { useQuery, useMutation, useQueryClient, queryOptions } from '@tanstack/react-query';
-import { getAllPlayRecords, forceRefreshPlayRecordsCache } from '@/lib/db.client';
+import {
+  forceRefreshPlayRecordsCache,
+  getAllPlayRecords,
+} from '@/lib/db.client';
+import type { Favorite } from '@/lib/types';
 import { checkForUpdates, type UpdateStatus } from '@/lib/version_check';
-import type { Favorite, PlayRecord } from '@/lib/types';
 
 // ─── Emby Config Types ──────────────────────────────────────────────────────
 
@@ -37,7 +44,7 @@ export const embyConfigQueryOptions = queryOptions({
     }
     return { sources: [] };
   },
-  staleTime: 5 * 60 * 1000,  // 5 minutes - config rarely changes
+  staleTime: 5 * 60 * 1000, // 5 minutes - config rarely changes
   gcTime: 30 * 60 * 1000,
 });
 
@@ -72,7 +79,9 @@ export function useSaveEmbyConfigMutation() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: embyConfigQueryOptions.queryKey });
+      queryClient.invalidateQueries({
+        queryKey: embyConfigQueryOptions.queryKey,
+      });
     },
   });
 }
@@ -80,16 +89,17 @@ export function useSaveEmbyConfigMutation() {
 /**
  * Query options for watch room config
  */
-const watchRoomConfigOptions = () => queryOptions({
-  queryKey: ['watchRoomConfig'],
-  queryFn: async () => {
-    const response = await fetch('/api/watch-room/config');
-    const config = await response.json();
-    return config.enabled === true;
-  },
-  staleTime: 10 * 60 * 1000, // 10 minutes - config rarely changes
-  gcTime: 30 * 60 * 1000,
-});
+const watchRoomConfigOptions = () =>
+  queryOptions({
+    queryKey: ['watchRoomConfig'],
+    queryFn: async () => {
+      const response = await fetch('/api/watch-room/config');
+      const config = await response.json();
+      return config.enabled === true;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes - config rarely changes
+    gcTime: 30 * 60 * 1000,
+  });
 
 /**
  * Fetch watch room config
@@ -101,19 +111,20 @@ export function useWatchRoomConfigQuery() {
 /**
  * Query options for server config
  */
-const serverConfigOptions = () => queryOptions({
-  queryKey: ['serverConfig'],
-  queryFn: async () => {
-    const response = await fetch('/api/server-config');
-    if (response.ok) {
-      const config = await response.json();
-      return { downloadEnabled: config.DownloadEnabled ?? true };
-    }
-    return { downloadEnabled: true };
-  },
-  staleTime: 10 * 60 * 1000, // 10 minutes
-  gcTime: 30 * 60 * 1000,
-});
+const serverConfigOptions = () =>
+  queryOptions({
+    queryKey: ['serverConfig'],
+    queryFn: async () => {
+      const response = await fetch('/api/server-config');
+      if (response.ok) {
+        const config = await response.json();
+        return { downloadEnabled: config.DownloadEnabled ?? true };
+      }
+      return { downloadEnabled: true };
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000,
+  });
 
 /**
  * Fetch server config (download enabled, etc.)
@@ -125,13 +136,14 @@ export function useServerConfigQuery() {
 /**
  * Query options for version check
  */
-const versionCheckOptions = () => queryOptions<UpdateStatus>({
-  queryKey: ['versionCheck'],
-  queryFn: () => checkForUpdates(),
-  staleTime: 30 * 60 * 1000, // 30 minutes - no need to check frequently
-  gcTime: 60 * 60 * 1000,
-  retry: 1,
-});
+const versionCheckOptions = () =>
+  queryOptions<UpdateStatus>({
+    queryKey: ['versionCheck'],
+    queryFn: () => checkForUpdates(),
+    staleTime: 30 * 60 * 1000, // 30 minutes - no need to check frequently
+    gcTime: 60 * 60 * 1000,
+    retry: 1,
+  });
 
 /**
  * Check for version updates
@@ -145,6 +157,7 @@ interface UsePlayRecordsQueryOptions {
   enableFilter: boolean;
   minProgress: number;
   maxProgress: number;
+  limit?: number;
 }
 
 /**
@@ -153,39 +166,50 @@ interface UsePlayRecordsQueryOptions {
 const playRecordsOptions = (
   enableFilter: boolean,
   minProgress: number,
-  maxProgress: number
-) => queryOptions({
-  queryKey: ['playRecords', 'userMenu', enableFilter, minProgress, maxProgress],
-  queryFn: async () => {
-    const records = await getAllPlayRecords();
-    const recordsArray = Object.entries(records).map(([key, record]) => ({
-      ...record,
-      key,
-    }));
+  maxProgress: number,
+  limit = 12,
+) =>
+  queryOptions({
+    queryKey: [
+      'playRecords',
+      'userMenu',
+      enableFilter,
+      minProgress,
+      maxProgress,
+    ],
+    queryFn: async () => {
+      const records = await getAllPlayRecords();
+      const recordsArray = Object.entries(records).map(([key, record]) => ({
+        ...record,
+        key,
+      }));
 
-    // Filter records that need continue watching
-    const validPlayRecords = recordsArray.filter(record => {
-      const progress = record.total_time === 0
-        ? 0
-        : (record.play_time / record.total_time) * 100;
+      // Filter records that need continue watching
+      const validPlayRecords = recordsArray.filter((record) => {
+        const progress =
+          record.total_time === 0
+            ? 0
+            : (record.play_time / record.total_time) * 100;
 
-      // Play time must exceed 2 minutes
-      if (record.play_time < 120) return false;
+        // Play time must exceed 2 minutes
+        if (record.play_time < 120) return false;
 
-      // If filter is disabled, show all records with > 2 min playtime
-      if (!enableFilter) return true;
+        // If filter is disabled, show all records with > 2 min playtime
+        if (!enableFilter) return true;
 
-      // Filter by user's custom progress range
-      return progress >= minProgress && progress <= maxProgress;
-    });
+        // Filter by user's custom progress range
+        return progress >= minProgress && progress <= maxProgress;
+      });
 
-    // Sort by last play time descending
-    const sortedRecords = validPlayRecords.sort((a, b) => b.save_time - a.save_time);
-    return sortedRecords.slice(0, 12); // Only take the latest 12
-  },
-  staleTime: 2 * 60 * 1000, // 2 minutes
-  gcTime: 10 * 60 * 1000,
-});
+      // Sort by last play time descending
+      const sortedRecords = validPlayRecords.sort(
+        (a, b) => b.save_time - a.save_time,
+      );
+      return sortedRecords.slice(0, limit);
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000,
+  });
 
 /**
  * Fetch play records with filtering
@@ -195,9 +219,10 @@ export function usePlayRecordsQuery({
   enableFilter,
   minProgress,
   maxProgress,
+  limit,
 }: UsePlayRecordsQueryOptions) {
   return useQuery({
-    ...playRecordsOptions(enableFilter, minProgress, maxProgress),
+    ...playRecordsOptions(enableFilter, minProgress, maxProgress, limit),
     enabled,
   });
 }
@@ -209,24 +234,30 @@ interface UseFavoritesQueryOptions {
 /**
  * Query options for favorites list
  */
-const favoritesOptions = () => queryOptions({
-  queryKey: ['favorites', 'userMenu'],
-  queryFn: async () => {
-    const response = await fetch('/api/favorites');
-    if (response.ok) {
-      const favoritesData = await response.json() as Record<string, Favorite>;
-      const favoritesArray = Object.entries(favoritesData).map(([key, favorite]) => ({
-        ...(favorite as Favorite),
-        key,
-      }));
-      // Sort by save time descending
-      return favoritesArray.sort((a, b) => b.save_time - a.save_time);
-    }
-    return [];
-  },
-  staleTime: 2 * 60 * 1000, // 2 minutes
-  gcTime: 10 * 60 * 1000,
-});
+const favoritesOptions = () =>
+  queryOptions({
+    queryKey: ['favorites', 'userMenu'],
+    queryFn: async () => {
+      const response = await fetch('/api/favorites');
+      if (response.ok) {
+        const favoritesData = (await response.json()) as Record<
+          string,
+          Favorite
+        >;
+        const favoritesArray = Object.entries(favoritesData).map(
+          ([key, favorite]) => ({
+            ...(favorite as Favorite),
+            key,
+          }),
+        );
+        // Sort by save time descending
+        return favoritesArray.sort((a, b) => b.save_time - a.save_time);
+      }
+      return [];
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000,
+  });
 
 /**
  * Fetch favorites list

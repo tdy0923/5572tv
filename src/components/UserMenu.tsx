@@ -180,6 +180,7 @@ export const UserMenu: React.FC = () => {
     enableFilter: enableContinueWatchingFilter,
     minProgress: continueWatchingMinProgress,
     maxProgress: continueWatchingMaxProgress,
+    limit: 60,
   });
 
   // 🚀 TanStack Query - 收藏列表
