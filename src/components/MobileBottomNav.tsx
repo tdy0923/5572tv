@@ -52,81 +52,89 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
   const currentActive = activePath ?? pathname;
 
   // 导航项配置 - 统一色彩语言，避免彩虹色带来的违和感
-  const baseNavItems: NavItem[] = [
-    {
-      icon: Home,
-      label: '首页',
-      href: '/',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Globe,
-      label: '源浏览',
-      href: '/source-browser',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Film,
-      label: '电影',
-      href: '/douban?type=movie',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Tv,
-      label: '剧集',
-      href: '/douban?type=tv',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: PlaySquare,
-      label: '短剧',
-      href: '/shortdrama',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Cat,
-      label: '动漫',
-      href: '/douban?type=anime',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Clover,
-      label: '综艺',
-      href: '/douban?type=show',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-    {
-      icon: Radio,
-      label: '直播',
-      href: '/live',
-      activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-      activeTextColor: 'text-white',
-      hoverBg: 'hover:bg-[#f4c24d]/12',
-    },
-  ];
+  const baseNavItems = useMemo<NavItem[]>(
+    () => [
+      {
+        icon: Home,
+        label: '首页',
+        href: '/',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Globe,
+        label: '源浏览',
+        href: '/source-browser',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Film,
+        label: '电影',
+        href: '/douban?type=movie',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Tv,
+        label: '剧集',
+        href: '/douban?type=tv',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: PlaySquare,
+        label: '短剧',
+        href: '/shortdrama',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Cat,
+        label: '动漫',
+        href: '/douban?type=anime',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Clover,
+        label: '综艺',
+        href: '/douban?type=show',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+      {
+        icon: Radio,
+        label: '直播',
+        href: '/live',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+        hoverBg: 'hover:bg-[#f4c24d]/12',
+      },
+    ],
+    [],
+  );
 
   const navItems = useMemo(() => {
     const runtimeConfig =
       typeof window !== 'undefined'
         ? (window as any).RUNTIME_CONFIG
         : undefined;
+    const allowLive = runtimeConfig?.ENABLE_WEB_LIVE === true;
+    const filteredBaseItems = allowLive
+      ? baseNavItems
+      : baseNavItems.filter((item) => item.href !== '/live');
+
     if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0) {
       return [
-        ...baseNavItems,
+        ...filteredBaseItems,
         {
           icon: Star,
           label: '自定义',
@@ -138,7 +146,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       ];
     }
 
-    return baseNavItems;
+    return filteredBaseItems;
   }, [baseNavItems]);
 
   // 判断是否激活

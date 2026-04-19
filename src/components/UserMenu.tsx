@@ -101,7 +101,7 @@ export const UserMenu: React.FC = () => {
   const { data: showWatchRoom = false } = useWatchRoomConfigQuery();
   // 🚀 TanStack Query - 下载功能配置
   const { data: serverConfig } = useServerConfigQuery();
-  const downloadEnabled = serverConfig?.downloadEnabled ?? true;
+  const downloadEnabled = serverConfig?.downloadEnabled === true;
   const { tasks, setShowDownloadPanel } = useDownload();
 
   // 🚀 TanStack Query - 数据失效工具
@@ -561,7 +561,9 @@ export const UserMenu: React.FC = () => {
 
   // 检查是否显示修改密码按钮
   const showChangePassword =
-    authInfo?.role !== 'owner' && storageType !== 'localstorage';
+    !!authInfo?.username &&
+    authInfo?.role !== 'owner' &&
+    storageType !== 'localstorage';
 
   // 普通用户显示个人统计；管理员统一从后台进入统计中心
   const showPlayStats =
@@ -575,6 +577,7 @@ export const UserMenu: React.FC = () => {
     authInfo?.username && storageType !== 'localstorage';
 
   const showFavorites = authInfo?.username && storageType !== 'localstorage';
+  const showContinueWatching = !!authInfo?.username;
   // 检查是否有实际更新（用于显示红点）- 包括新剧集更新和新上映
   const hasActualUpdates =
     watchingUpdates &&
@@ -669,7 +672,7 @@ export const UserMenu: React.FC = () => {
           )}
 
           {/* 继续观看按钮 */}
-          {showWatchingUpdates && (
+          {showContinueWatching && (
             <button
               onClick={handleContinueWatching}
               className='ui-menu-button relative'
