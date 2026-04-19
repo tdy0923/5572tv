@@ -564,8 +564,11 @@ export const UserMenu: React.FC = () => {
     authInfo?.role !== 'owner' &&
     storageType !== 'localstorage';
 
-  // 所有登录用户都显示统计入口；管理员显示“统计中心”，普通用户显示“个人统计”
-  const showPlayStats = !!authInfo?.username;
+  // 普通用户显示个人统计；管理员统一从后台进入统计中心
+  const showPlayStats =
+    !!authInfo?.username &&
+    authInfo?.role !== 'owner' &&
+    authInfo?.role !== 'admin';
 
   const showWatchingUpdates = !!authInfo?.username;
 
