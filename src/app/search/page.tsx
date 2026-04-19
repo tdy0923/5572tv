@@ -1661,13 +1661,7 @@ function SearchPageClient() {
               ) : (
                 /* 原有的影视搜索结果 */
                 <>
-                  <div
-                    className={
-                      hasSearchSidebarAd
-                        ? 'grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]'
-                        : 'grid gap-8'
-                    }
-                  >
+                  <div className='grid gap-8'>
                     <div className='min-w-0 space-y-6'>
                       <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
                         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
@@ -2038,11 +2032,9 @@ function SearchPageClient() {
                     </div>
 
                     {hasSearchSidebarAd ? (
-                      <aside className='hidden xl:block'>
-                        <div className='sticky top-24'>
-                          <SiteAdSlot position='search_sidebar' />
-                        </div>
-                      </aside>
+                      <div className='mt-2'>
+                        <SiteAdSlot position='search_sidebar' />
+                      </div>
                     ) : null}
                   </div>
                 </>
