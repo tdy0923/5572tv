@@ -1978,7 +1978,7 @@ function SearchPageClient() {
                       {isLoading &&
                       (filteredAggResults.length > 0 ||
                         filteredAllResults.length > 0) ? (
-                        <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center py-3'>
+                        <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
                           <div className='rounded-full border border-black/6 bg-white/78 px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-white/6'>
                             <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
                               <div className='animate-spin rounded-full h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
@@ -2088,7 +2088,7 @@ function SearchPageClient() {
       {/* 返回顶部悬浮按钮 */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-20 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
+        className={`fixed bottom-24 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
           showBackToTop
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-4 pointer-events-none'
