@@ -3750,8 +3750,12 @@ function PlayPageClient() {
       // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
       setVideoDoubanId(videoDoubanIdRef.current || detailData.douban_id || 0);
       setDetail(detailData);
-      if (currentEpisodeIndex >= detailData.episodes.length) {
-        setCurrentEpisodeIndex(0);
+      const resolvedEpisodeIndex =
+        currentEpisodeIndex >= detailData.episodes.length
+          ? 0
+          : currentEpisodeIndex;
+      if (resolvedEpisodeIndex !== currentEpisodeIndex) {
+        setCurrentEpisodeIndex(resolvedEpisodeIndex);
       }
 
       // 规范URL参数
@@ -3760,6 +3764,7 @@ function PlayPageClient() {
       newUrl.searchParams.set('id', detailData.id);
       newUrl.searchParams.set('year', detailData.year);
       newUrl.searchParams.set('title', detailData.title);
+      newUrl.searchParams.set('index', resolvedEpisodeIndex.toString());
       if (searchTitle || videoTitleRef.current || detailData.title) {
         newUrl.searchParams.set(
           'stitle',
@@ -4517,7 +4522,7 @@ function PlayPageClient() {
           });
 
           // 提取收藏key中的source和id
-          const [favSource, favId] = favoriteKey.split('+');
+          const { source: favSource, id: favId } = parseStorageKey(favoriteKey);
 
           // 根据 type_name 推断内容类型
           const inferType = (typeName?: string): string | undefined => {
@@ -4610,7 +4615,7 @@ function PlayPageClient() {
       const keyToDelete =
         favoritedKeyRef.current ||
         `${currentSourceRef.current}+${currentIdRef.current}`;
-      const [delSource, delId] = keyToDelete.split('+');
+      const { source: delSource, id: delId } = parseStorageKey(keyToDelete);
 
       deleteFavoriteMutation.mutate(
         {
