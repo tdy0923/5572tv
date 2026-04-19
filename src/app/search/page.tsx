@@ -442,6 +442,8 @@ function SearchPageClient() {
     return true;
   });
 
+  const [searchPrefsLoaded, setSearchPrefsLoaded] = useState(false);
+
   const hasSearchSidebarAd = isAdSettingRenderable(adSettings?.search_sidebar);
   // 精确搜索开关
   const [exactSearch, setExactSearch] = useState(true);
@@ -989,8 +991,8 @@ function SearchPageClient() {
       }
     }
 
-    // 读取流式搜索设置
-    if (typeof window !== 'undefined') {
+    // 读取搜索偏好设置（仅初始化一次）
+    if (typeof window !== 'undefined' && !searchPrefsLoaded) {
       const savedFluidSearch = localStorage.getItem('fluidSearch');
       const defaultFluidSearch =
         (window as any).RUNTIME_CONFIG?.FLUID_SEARCH !== false;
@@ -1000,11 +1002,12 @@ function SearchPageClient() {
         setUseFluidSearch(defaultFluidSearch);
       }
 
-      // 读取精确搜索设置
       const savedExactSearch = localStorage.getItem('exactSearch');
       if (savedExactSearch !== null) {
         setExactSearch(savedExactSearch === 'true');
       }
+
+      setSearchPrefsLoaded(true);
     }
 
     // 监听搜索历史更新事件
@@ -1051,7 +1054,7 @@ function SearchPageClient() {
       // 移除 body 滚动事件监听器
       document.body.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [searchPrefsLoaded]);
 
   // 监听搜索类型变化，如果切换到网盘/TMDB演员搜索且有搜索词，立即搜索
   useEffect(() => {
@@ -1105,16 +1108,6 @@ function SearchPageClient() {
       setSearchQuery(query);
       setShowResults(true);
       setShowSuggestions(false);
-
-      // 每次搜索时重新读取流式搜索设置
-      if (typeof window !== 'undefined') {
-        const savedFluidSearch = localStorage.getItem('fluidSearch');
-        const next =
-          savedFluidSearch !== null
-            ? JSON.parse(savedFluidSearch)
-            : (window as any).RUNTIME_CONFIG?.FLUID_SEARCH !== false;
-        if (next !== useFluidSearch) setUseFluidSearch(next);
-      }
 
       addSearchHistory(query);
     } else {
