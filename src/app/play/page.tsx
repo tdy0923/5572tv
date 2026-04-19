@@ -99,6 +99,18 @@ function loadPlaybackRate(): number {
   }
 }
 
+function parseStorageKey(key: string) {
+  const separatorIndex = key.indexOf('+');
+  if (separatorIndex === -1) {
+    return { source: '', id: key };
+  }
+
+  return {
+    source: key.slice(0, separatorIndex),
+    id: key.slice(separatorIndex + 1),
+  };
+}
+
 // 音轨辅助函数
 function normalizeAudioLang(rawLang?: string): string {
   if (!rawLang) return '';
