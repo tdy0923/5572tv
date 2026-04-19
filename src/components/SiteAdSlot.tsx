@@ -109,7 +109,9 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
           <span>广告</span>
         </div>
         {textAds.length > 0 && (
-          <div className='mt-3 space-y-2'>
+          <div
+            className={`mt-3 grid gap-2 ${position === 'search_top' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}
+          >
             {textAds.map((line, index) => {
               const [label, maybeUrl, desc] = line
                 .split('|')

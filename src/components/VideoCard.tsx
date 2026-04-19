@@ -474,11 +474,6 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
     }, [actualSource, actualId, queryClient]);
 
     const handleClick = useCallback(() => {
-      // 如果是即将上映的内容，不执行跳转，显示提示
-      if (isUpcoming) {
-        return;
-      }
-
       // 构建豆瓣ID参数
       const doubanIdParam =
         actualDoubanId && actualDoubanId > 0
