@@ -1447,7 +1447,7 @@ function SearchPageClient() {
         </div>
 
         {/* 搜索结果或搜索历史 */}
-        <div className='mx-auto mt-12 max-w-5xl overflow-visible px-3 sm:px-0'>
+        <div className='mx-auto mt-12 max-w-[2560px] overflow-visible px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           {showResults ? (
             <section className='mb-12 space-y-6'>
               {searchType === 'netdisk' ? (
