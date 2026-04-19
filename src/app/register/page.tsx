@@ -162,7 +162,7 @@ function RegisterPageClient() {
           <ThemeToggle />
         </div>
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12),_transparent_26%),linear-gradient(180deg,_#f6f7fb,_#eef2f7)] dark:bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.1),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.08),_transparent_24%),linear-gradient(180deg,_#0b0f14,_#111827)]' />
-        <div className='relative z-10 flex min-h-screen items-center justify-center'>
+        <div className='relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center sm:min-h-screen'>
           <div className='w-full max-w-md overflow-hidden rounded-[28px] border border-black/6 bg-white/82 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0f131a]/82 sm:p-10'>
             <div className='mb-8 text-center'>
               <div className='mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#f59e0b] via-[#ea580c] to-[#dc2626] text-white shadow-[0_12px_28px_rgba(249,115,22,0.22)]'>
