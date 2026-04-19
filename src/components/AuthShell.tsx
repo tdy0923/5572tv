@@ -16,7 +16,7 @@ export function AuthShell({ title, subtitle, icon, children }: AuthShellProps) {
   const { siteName } = useSite();
 
   return (
-    <div className='relative min-h-screen overflow-hidden px-3 py-8 sm:px-4 sm:py-0'>
+    <div className='relative min-h-screen overflow-x-hidden overflow-y-auto px-3 py-8 sm:px-4 sm:py-0'>
       <div className='absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.12),_transparent_28%),linear-gradient(180deg,_#f6f7fb,_#eef2f7)] dark:bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.1),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(59,130,246,0.08),_transparent_20%),linear-gradient(180deg,_#0b0f14,_#111827)]' />
 
       <div className='absolute right-3 top-3 z-20 sm:right-4 sm:top-4'>

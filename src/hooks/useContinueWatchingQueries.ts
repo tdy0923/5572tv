@@ -21,8 +21,19 @@ const continueWatchingOptions = () =>
         ...record,
         key,
       }));
-      // Sort by save_time descending (newest first)
-      return recordsArray.sort((a, b) => b.save_time - a.save_time);
+
+      const validPlayRecords = recordsArray.filter((record) => {
+        const progress =
+          record.total_time === 0
+            ? 0
+            : (record.play_time / record.total_time) * 100;
+
+        if (record.play_time < 120) return false;
+
+        return progress > 0 && progress < 100;
+      });
+
+      return validPlayRecords.sort((a, b) => b.save_time - a.save_time);
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 10 * 60 * 1000,
