@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 
 import './globals.css';
-
-import { getConfig } from '@/lib/config';
 
 import { DownloadPanel } from '../components/download/DownloadPanel';
 import { GlobalErrorIndicator } from '../components/GlobalErrorIndicator';
@@ -20,20 +17,9 @@ import { DownloadProvider } from '../contexts/DownloadContext';
 import { GlobalCacheProvider } from '../contexts/GlobalCacheContext';
 
 const inter = Inter({ subsets: ['latin'] });
-export const dynamic = 'force-dynamic';
 
-// 动态生成 metadata，支持配置更新后的标题变化
 export async function generateMetadata(): Promise<Metadata> {
-  // 🔥 调用 cookies() 强制动态渲染，防止 Docker 环境下的缓存问题
-  await cookies();
-
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
-  const config = await getConfig();
-  let siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
-  if (storageType !== 'localstorage') {
-    siteName = config.SiteConfig.SiteName;
-  }
-
+  const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   return {
     title: siteName,
     description: '5572影视 - 影视聚合与在线播放',
@@ -58,11 +44,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 🔥 调用 cookies() 强制动态渲染，防止 Docker 环境下的缓存问题
-  await cookies();
-
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
-
   let siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   let announcementTitle = process.env.ANNOUNCEMENT_TITLE || '站点公告';
   let announcement =
@@ -82,41 +63,6 @@ export default async function RootLayout({
   let aiRecommendEnabled = false;
   let embyEnabled = false;
   let adSettings = undefined as any;
-  let customCategories = [] as {
-    name: string;
-    type: 'movie' | 'tv';
-    query: string;
-  }[];
-  if (storageType !== 'localstorage') {
-    const config = await getConfig();
-    siteName = config.SiteConfig.SiteName;
-    announcementTitle = config.SiteConfig.AnnouncementTitle || '站点公告';
-    announcement = config.SiteConfig.Announcement;
-
-    doubanProxyType = config.SiteConfig.DoubanProxyType;
-    doubanProxy = config.SiteConfig.DoubanProxy;
-    doubanImageProxyType = config.SiteConfig.DoubanImageProxyType;
-    doubanImageProxy = config.SiteConfig.DoubanImageProxy;
-    disableYellowFilter = config.SiteConfig.DisableYellowFilter;
-    customCategories = config.CustomCategories.filter(
-      (category) => !category.disabled,
-    ).map((category) => ({
-      name: category.name || '',
-      type: category.type,
-      query: category.query,
-    }));
-    fluidSearch = config.SiteConfig.FluidSearch;
-    enableWebLive = config.SiteConfig.EnableWebLive ?? false;
-    customAdFilterVersion = config.SiteConfig?.CustomAdFilterVersion || 0;
-    aiRecommendEnabled = config.AIRecommendConfig?.enabled ?? false;
-    adSettings = config.SiteConfig?.AdSettings;
-    // 检查是否启用了 Emby 功能（支持多源）
-    embyEnabled = !!(
-      config.EmbyConfig?.Sources &&
-      config.EmbyConfig.Sources.length > 0 &&
-      config.EmbyConfig.Sources.some((s) => s.enabled && s.ServerURL)
-    );
-  }
 
   // 将运行时配置注入到全局 window 对象，供客户端在运行时读取
   const runtimeConfig = {
@@ -126,7 +72,7 @@ export default async function RootLayout({
     DOUBAN_IMAGE_PROXY_TYPE: doubanImageProxyType,
     DOUBAN_IMAGE_PROXY: doubanImageProxy,
     DISABLE_YELLOW_FILTER: disableYellowFilter,
-    CUSTOM_CATEGORIES: customCategories,
+    CUSTOM_CATEGORIES: [],
     FLUID_SEARCH: fluidSearch,
     ENABLE_WEB_LIVE: enableWebLive,
     CUSTOM_AD_FILTER_VERSION: customAdFilterVersion,

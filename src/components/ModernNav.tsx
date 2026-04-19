@@ -186,7 +186,7 @@ export default function ModernNav({
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
-              <div className='flex items-center gap-3 rounded-full border border-black/6 bg-white/58 px-3 py-2 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
+              <div className='flex items-center gap-3'>
                 <div className='flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-primary-400 via-primary-500 to-primary-700 text-sm font-black text-[#171717] shadow-[0_16px_30px_rgba(244,194,77,0.32)]'>
                   5
                 </div>

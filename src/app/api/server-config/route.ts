@@ -22,6 +22,9 @@ export async function GET(request: NextRequest) {
 
   const result: any = {
     SiteName: config.SiteConfig.SiteName,
+    AnnouncementTitle: config.SiteConfig.AnnouncementTitle || '站点公告',
+    Announcement: config.SiteConfig.Announcement || '',
+    AdSettings: config.SiteConfig.AdSettings,
     StorageType: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
     Version: CURRENT_VERSION,
     DownloadEnabled: config.DownloadConfig?.enabled ?? true,
@@ -68,5 +71,12 @@ export async function GET(request: NextRequest) {
     };
   }
 
-  return NextResponse.json(result);
+  const response = NextResponse.json(result);
+  response.headers.set(
+    'Cache-Control',
+    'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
+  );
+  response.headers.set('CDN-Cache-Control', 'public, s-maxage=60');
+  response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60');
+  return response;
 }

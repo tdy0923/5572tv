@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, ReactNode, useContext } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import type { AdSettings } from '@/lib/ad-settings';
 
@@ -33,11 +40,51 @@ export function SiteProvider({
   announcement?: string;
   adSettings?: AdSettings;
 }) {
-  return (
-    <SiteContext.Provider
-      value={{ siteName, announcementTitle, announcement, adSettings }}
-    >
-      {children}
-    </SiteContext.Provider>
-  );
+  const [siteState, setSiteState] = useState({
+    siteName,
+    announcementTitle,
+    announcement,
+    adSettings,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPublicSiteConfig = async () => {
+      try {
+        const response = await fetch('/api/server-config', {
+          next: { revalidate: 60 },
+        });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        if (cancelled) return;
+
+        setSiteState((current) => ({
+          siteName: data.SiteName || current.siteName,
+          announcementTitle:
+            data.AnnouncementTitle !== undefined
+              ? data.AnnouncementTitle
+              : current.announcementTitle,
+          announcement:
+            data.Announcement !== undefined
+              ? data.Announcement
+              : current.announcement,
+          adSettings: data.AdSettings ?? current.adSettings,
+        }));
+      } catch {
+        // Ignore config refresh failures and keep server-rendered defaults.
+      }
+    };
+
+    loadPublicSiteConfig();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const value = useMemo(() => siteState, [siteState]);
+
+  return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>;
 }
