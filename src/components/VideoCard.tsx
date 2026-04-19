@@ -561,7 +561,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         actualSource === 'bangumi'
       ) {
         // 豆瓣内容 或 聚合搜索 或 即将上映 或 Bangumi番剧 - 只用标题和年份搜索
-        const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
+        const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualSearchAlias ? `&stitle=${encodeURIComponent(actualSearchAlias)}` : ''}`;
         window.open(url, '_blank');
       } else if (actualSource && actualId) {
         const url = `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
@@ -569,7 +569,9 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         )}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${
           shouldPreferBestSource ? '&prefer=true' : ''
         }${
-          actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''
+          actualSearchAlias
+            ? `&stitle=${encodeURIComponent(actualSearchAlias)}`
+            : ''
         }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
         window.open(url, '_blank');
       }
@@ -582,6 +584,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
       actualYear,
       isAggregate,
       actualQuery,
+      actualSearchAlias,
       actualSearchType,
       actualDoubanId,
     ]);
