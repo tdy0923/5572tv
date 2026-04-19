@@ -4961,8 +4961,18 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: function (video: HTMLVideoElement, url: string) {
-              if (!Hls) {
-                console.error('HLS.js 未加载');
+              const canUseNativeHls =
+                typeof video.canPlayType === 'function' &&
+                video.canPlayType('application/vnd.apple.mpegurl') !== '';
+
+              if (canUseNativeHls) {
+                video.src = url;
+                ensureVideoSource(video, url);
+                return;
+              }
+
+              if (!Hls || !Hls.isSupported()) {
+                console.error('当前浏览器不支持 HLS 播放');
                 return;
               }
 
