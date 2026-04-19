@@ -287,7 +287,7 @@ export const UserMenu: React.FC = () => {
         unsubscribe();
       };
     }
-  }, [authInfo, storageType]);
+  }, [authInfo, storageType, dismissedReleases]);
 
   // 监听watching-updates事件，刷新播放记录
   useEffect(() => {
@@ -520,6 +520,56 @@ export const UserMenu: React.FC = () => {
     setPasswordError('');
   };
 
+  useEffect(() => {
+    const hasOpenDialog =
+      isOpen ||
+      isChangePasswordOpen ||
+      isWatchingUpdatesOpen ||
+      isContinueWatchingOpen ||
+      isFavoritesOpen ||
+      isVersionPanelOpen;
+
+    if (!hasOpenDialog) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+
+      if (isChangePasswordOpen) {
+        handleCloseChangePassword();
+        return;
+      }
+      if (isWatchingUpdatesOpen) {
+        handleCloseWatchingUpdates();
+        return;
+      }
+      if (isContinueWatchingOpen) {
+        handleCloseContinueWatching();
+        return;
+      }
+      if (isFavoritesOpen) {
+        handleCloseFavorites();
+        return;
+      }
+      if (isVersionPanelOpen) {
+        setIsVersionPanelOpen(false);
+        return;
+      }
+      if (isOpen) {
+        handleCloseMenu();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [
+    isOpen,
+    isChangePasswordOpen,
+    isWatchingUpdatesOpen,
+    isContinueWatchingOpen,
+    isFavoritesOpen,
+    isVersionPanelOpen,
+  ]);
+
   const handleSubmitChangePassword = async () => {
     setPasswordError('');
 
@@ -621,7 +671,12 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 菜单面板 */}
-      <div className='fixed top-16 right-4 w-60 ui-surface z-1001 overflow-hidden select-none'>
+      <div
+        className='fixed top-16 right-4 w-60 ui-surface z-1001 overflow-hidden select-none'
+        role='dialog'
+        aria-modal='true'
+        aria-label='用户菜单'
+      >
         {/* 用户信息区域 */}
         <div className='px-4 py-3 border-b border-black/6 dark:border-white/8 bg-linear-to-r from-white/55 via-white/35 to-white/10 dark:from-white/8 dark:via-white/4 dark:to-transparent'>
           <div className='space-y-1'>
@@ -859,7 +914,12 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 修改密码面板 */}
-      <div className='fixed top-1/2 left-1/2 z-1001 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'>
+      <div
+        className='fixed top-1/2 left-1/2 z-1001 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
+        role='dialog'
+        aria-modal='true'
+        aria-label='修改密码'
+      >
         {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='h-full p-6'
