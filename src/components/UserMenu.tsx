@@ -566,12 +566,8 @@ export const UserMenu: React.FC = () => {
     authInfo?.role !== 'owner' &&
     storageType !== 'localstorage';
 
-  // 普通用户显示个人统计；管理员统一从后台进入统计中心
-  const showPlayStats =
-    authInfo?.username &&
-    storageType !== 'localstorage' &&
-    authInfo?.role !== 'owner' &&
-    authInfo?.role !== 'admin';
+  // 所有登录用户都显示统计入口；管理员显示“统计中心”，普通用户显示“个人统计”
+  const showPlayStats = authInfo?.username && storageType !== 'localstorage';
 
   // 检查是否显示更新提醒按钮（登录用户且非localstorage存储就显示）
   const showWatchingUpdates =
