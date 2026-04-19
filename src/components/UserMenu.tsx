@@ -574,6 +574,8 @@ export const UserMenu: React.FC = () => {
   const showWatchingUpdates =
     authInfo?.username && storageType !== 'localstorage';
 
+  const showFavorites = authInfo?.username && storageType !== 'localstorage';
+
   // 检查是否有实际更新（用于显示红点）- 包括新剧集更新和新上映
   const hasActualUpdates =
     watchingUpdates &&
@@ -684,7 +686,7 @@ export const UserMenu: React.FC = () => {
           )}
 
           {/* 我的收藏按钮 */}
-          {showWatchingUpdates && (
+          {showFavorites && (
             <button
               onClick={handleFavorites}
               className='ui-menu-button relative'
