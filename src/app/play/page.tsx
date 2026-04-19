@@ -3921,6 +3921,8 @@ function PlayPageClient() {
         (source) => source.source === newSource && source.id === newId,
       );
       if (!newDetail) {
+        isSourceChangingRef.current = false;
+        setIsVideoLoading(false);
         setError('未找到匹配结果');
         return;
       }
@@ -4014,6 +4016,7 @@ function PlayPageClient() {
       // 🚀 换源完成后，优化弹幕加载流程
       setTimeout(async () => {
         isSourceChangingRef.current = false; // 重置换源标识
+        setIsVideoLoading(false);
 
         if (
           artPlayerRef.current?.plugins?.artplayerPluginDanmuku &&
