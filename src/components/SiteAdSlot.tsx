@@ -104,7 +104,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
           width: '100%',
         }}
       >
-        <div className='flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
+        <div className='flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400'>
           <Volume2 className='h-3.5 w-3.5' />
           <span>广告</span>
         </div>
@@ -118,7 +118,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
                 .map((v) => v.trim());
               const node = (
                 <div className='w-full rounded-2xl border border-black/6 bg-white/90 px-3 py-2 text-gray-800 shadow-sm dark:border-white/8 dark:bg-white/8 dark:text-gray-100'>
-                  <div className='text-sm font-semibold'>
+                  <div className='text-sm font-medium'>
                     {(label || line).slice(0, maxTextLength)}
                   </div>
                   {desc && (
@@ -177,13 +177,13 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
           </div>
         )}
         <div className='min-w-0 flex-1'>
-          <div className='flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
+          <div className='flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400'>
             <Volume2 className='h-3.5 w-3.5' />
             <span>广告</span>
           </div>
           {title && (
             <div
-              className={`mt-1 font-semibold text-gray-900 dark:text-gray-100 ${isHeroSlot ? 'text-lg sm:text-xl' : 'text-base'}`}
+              className={`mt-1 font-medium text-gray-900 dark:text-gray-100 ${isHeroSlot ? 'text-lg sm:text-xl' : 'text-base'}`}
             >
               {title}
             </div>
