@@ -55,6 +55,22 @@ export function SiteProvider({
 
     const loadPublicSiteConfig = async () => {
       try {
+        const runtimeConfig =
+          typeof window !== 'undefined'
+            ? ((window as any).RUNTIME_CONFIG as any | undefined)
+            : undefined;
+
+        if (runtimeConfig) {
+          setSiteState((current) => ({
+            siteName: runtimeConfig.SITE_NAME || current.siteName,
+            announcementTitle:
+              runtimeConfig.ANNOUNCEMENT_TITLE ?? current.announcementTitle,
+            announcement: runtimeConfig.ANNOUNCEMENT ?? current.announcement,
+            adSettings: runtimeConfig.AD_SETTINGS ?? current.adSettings,
+          }));
+          return;
+        }
+
         if (typeof window !== 'undefined') {
           const cached = sessionStorage.getItem(SITE_CONFIG_CACHE_KEY);
           if (cached) {
