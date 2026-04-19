@@ -567,11 +567,9 @@ export const UserMenu: React.FC = () => {
   // 所有登录用户都显示统计入口；管理员显示“统计中心”，普通用户显示“个人统计”
   const showPlayStats = !!authInfo?.username;
 
-  // 检查是否显示更新提醒按钮（登录用户且非localstorage存储就显示）
-  const showWatchingUpdates =
-    authInfo?.username && storageType !== 'localstorage';
+  const showWatchingUpdates = !!authInfo?.username;
 
-  const showFavorites = authInfo?.username && storageType !== 'localstorage';
+  const showFavorites = !!authInfo?.username;
   const showContinueWatching = !!authInfo?.username;
   // 检查是否有实际更新（用于显示红点）- 包括新剧集更新和新上映
   const hasActualUpdates =
