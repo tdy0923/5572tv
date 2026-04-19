@@ -5,7 +5,6 @@
 import {
   BarChart3,
   Bell,
-  Bookmark,
   Calendar,
   Download,
   Heart,
@@ -435,11 +434,6 @@ export const UserMenu: React.FC = () => {
     setIsFavoritesOpen(true);
   };
 
-  const handleReminders = () => {
-    setIsOpen(false);
-    router.push('/?tab=reminders');
-  };
-
   const handleCloseFavorites = () => {
     setIsFavoritesOpen(false);
   };
@@ -581,8 +575,6 @@ export const UserMenu: React.FC = () => {
     authInfo?.username && storageType !== 'localstorage';
 
   const showFavorites = authInfo?.username && storageType !== 'localstorage';
-  const showReminders = authInfo?.username && storageType !== 'localstorage';
-
   // 检查是否有实际更新（用于显示红点）- 包括新剧集更新和新上映
   const hasActualUpdates =
     watchingUpdates &&
@@ -705,16 +697,6 @@ export const UserMenu: React.FC = () => {
                   {favorites.length}
                 </span>
               )}
-            </button>
-          )}
-
-          {showReminders && (
-            <button
-              onClick={handleReminders}
-              className='ui-menu-button relative'
-            >
-              <Bookmark className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-              <span className='font-medium'>我想看</span>
             </button>
           )}
 
