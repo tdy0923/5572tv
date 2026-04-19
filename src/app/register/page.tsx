@@ -315,7 +315,12 @@ function RegisterPageClient() {
         <button
           type='submit'
           disabled={
-            !username || !password || !confirmPassword || loading || !!success
+            !username ||
+            !password ||
+            !confirmPassword ||
+            (requireInviteCode && !inviteCode.trim()) ||
+            loading ||
+            !!success
           }
           className='ui-primary-button group relative w-full overflow-hidden text-base'
         >

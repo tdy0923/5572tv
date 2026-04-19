@@ -1260,13 +1260,12 @@ function SearchPageClient() {
   // 返回顶部功能 - 同时滚动页面和重置虚拟列表
   const scrollToTop = () => {
     try {
-      // 1. 滚动页面到顶部
-      document.body.scrollTo({
+      window.scrollTo({
         top: 0,
         behavior: 'smooth',
       });
     } catch (error) {
-      // 如果平滑滚动完全失败，使用立即滚动
+      document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     }
   };
@@ -1385,6 +1384,7 @@ function SearchPageClient() {
                         setSearchQuery('');
                         setShowResults(false);
                         setShowSuggestions(true);
+                        router.replace('/search');
                         document.getElementById('searchInput')?.focus();
                       }}
                       className='absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200/80 text-gray-500 shadow-sm transition-all duration-300 hover:bg-red-500 hover:text-white dark:bg-gray-700/80 dark:text-gray-400 dark:hover:bg-red-600'
