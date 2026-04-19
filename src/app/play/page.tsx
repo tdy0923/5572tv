@@ -530,7 +530,9 @@ function PlayPageClient() {
   const [shortdramaId] = useState(searchParams.get('shortdrama_id') || '');
 
   // 搜索所需信息
-  const [searchTitle] = useState(searchParams.get('stitle') || '');
+  const [searchTitle, setSearchTitle] = useState(
+    searchParams.get('stitle') || '',
+  );
   const [searchType] = useState(searchParams.get('stype') || '');
 
   // 是否需要优选
@@ -3513,8 +3515,10 @@ function PlayPageClient() {
           if (strictMeta) {
             if (strictMeta.search_title) {
               videoTitleRef.current = strictMeta.search_title;
+              setSearchTitle(strictMeta.search_title);
             } else if (strictMeta.title) {
               videoTitleRef.current = strictMeta.title;
+              setSearchTitle(strictMeta.title);
             }
 
             if (strictMeta.title) {
@@ -3727,6 +3731,9 @@ function PlayPageClient() {
       setCurrentId(detailData.id);
       setVideoYear(detailData.year);
       setVideoTitle(detailData.title || videoTitleRef.current);
+      setSearchTitle(
+        searchTitle || videoTitleRef.current || detailData.title || '',
+      );
       setVideoCover(resolveCardPosterUrl(detailData.poster));
       // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
       setVideoDoubanId(videoDoubanIdRef.current || detailData.douban_id || 0);
@@ -3741,6 +3748,12 @@ function PlayPageClient() {
       newUrl.searchParams.set('id', detailData.id);
       newUrl.searchParams.set('year', detailData.year);
       newUrl.searchParams.set('title', detailData.title);
+      if (searchTitle || videoTitleRef.current || detailData.title) {
+        newUrl.searchParams.set(
+          'stitle',
+          searchTitle || videoTitleRef.current || detailData.title,
+        );
+      }
       newUrl.searchParams.delete('prefer');
       window.history.replaceState({}, '', newUrl.toString());
 
