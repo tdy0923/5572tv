@@ -3202,8 +3202,15 @@ function PlayPageClient() {
     const fetchSourcesData = async (query: string): Promise<SearchResult[]> => {
       // 使用智能搜索变体获取全部源信息
       try {
-        console.log('开始智能搜索，原始查询:', query);
-        const searchVariants = generateSearchVariants(query.trim());
+        const effectiveQuery = (
+          query ||
+          searchTitle ||
+          videoTitleRef.current ||
+          videoTitle
+        ).trim();
+
+        console.log('开始智能搜索，原始查询:', effectiveQuery);
+        const searchVariants = generateSearchVariants(effectiveQuery);
         console.log('生成的搜索变体:', searchVariants);
 
         const allResults: SearchResult[] = [];
@@ -3228,7 +3235,7 @@ function PlayPageClient() {
             // 移除早期退出策略，让downstream的相关性评分发挥作用
 
             // 处理搜索结果，使用分级匹配：精确匹配优先，避免短标题误匹配
-            const queryTitle = videoTitleRef.current
+            const queryTitle = (effectiveQuery || videoTitleRef.current)
               .replaceAll(' ', '')
               .toLowerCase();
 
@@ -3301,7 +3308,9 @@ function PlayPageClient() {
 
         // 如果没有精确匹配，根据语言类型进行不同策略的匹配
         if (bestResults.length === 0) {
-          const queryTitle = videoTitleRef.current.toLowerCase().trim();
+          const queryTitle = (effectiveQuery || videoTitleRef.current)
+            .toLowerCase()
+            .trim();
           const allCandidates = allResults;
 
           // 检测查询主要语言（英文 vs 中文）
@@ -3447,8 +3456,15 @@ function PlayPageClient() {
             ) as SearchResult[];
             console.log(`找到 ${finalResults.length} 个唯一匹配结果`);
           } else {
-            console.log('没有找到合理的匹配，返回空结果');
-            finalResults = [];
+            console.log('严格匹配无结果，回退使用搜索结果候选');
+            finalResults = Array.from(
+              new Map(
+                allCandidates.map((item) => [
+                  `${item.source}-${item.id}`,
+                  item,
+                ]),
+              ).values(),
+            ).slice(0, 12) as SearchResult[];
           }
         }
 
