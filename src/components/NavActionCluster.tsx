@@ -24,10 +24,10 @@ export function NavActionCluster({
 }: NavActionClusterProps) {
   const actionHeight = compact ? 'h-9' : 'h-10';
   const iconClass = compact ? 'h-4 w-4' : 'h-[18px] w-[18px]';
-  const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-black/[0.04] text-gray-700 transition-all duration-200 hover:bg-black/[0.08] active:scale-95 dark:bg-white/[0.05] dark:text-gray-100 dark:hover:bg-white/[0.1]`;
+  const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
 
   return (
-    <div className='flex items-center gap-1.5'>
+    <div className='flex items-center gap-1'>
       {showAIButton && onAIButtonClick && (
         <button
           onClick={onAIButtonClick}
