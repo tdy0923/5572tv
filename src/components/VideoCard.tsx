@@ -479,6 +479,10 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         actualDoubanId && actualDoubanId > 0
           ? `&douban_id=${actualDoubanId}`
           : '';
+      const shouldPreferBestSource =
+        from !== 'playrecord' &&
+        origin !== 'live' &&
+        actualSource !== 'shortdrama';
 
       if (origin === 'live' && actualSource && actualId) {
         // 直播内容跳转到直播页面
@@ -498,13 +502,13 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         // 豆瓣内容 或 聚合搜索 或 即将上映 或 Bangumi番剧 - 只用标题和年份搜索
         const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${
           actualYear ? `&year=${actualYear}` : ''
-        }${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${isAggregate ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
+        }${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
         router.push(url);
       } else if (actualSource && actualId) {
         const url = `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
           actualTitle,
         )}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${
-          isAggregate ? '&prefer=true' : ''
+          shouldPreferBestSource ? '&prefer=true' : ''
         }${
           actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''
         }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
@@ -532,6 +536,10 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         actualDoubanId && actualDoubanId > 0
           ? `&douban_id=${actualDoubanId}`
           : '';
+      const shouldPreferBestSource =
+        from !== 'playrecord' &&
+        origin !== 'live' &&
+        actualSource !== 'shortdrama';
 
       if (origin === 'live' && actualSource && actualId) {
         // 直播内容跳转到直播页面
@@ -549,13 +557,13 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
         actualSource === 'bangumi'
       ) {
         // 豆瓣内容 或 聚合搜索 或 即将上映 或 Bangumi番剧 - 只用标题和年份搜索
-        const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${isAggregate ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
+        const url = `/play?title=${encodeURIComponent(actualTitle.trim())}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${actualSearchType ? `&stype=${actualSearchType}` : ''}${shouldPreferBestSource ? '&prefer=true' : ''}${actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''}`;
         window.open(url, '_blank');
       } else if (actualSource && actualId) {
         const url = `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
           actualTitle,
         )}${actualYear ? `&year=${actualYear}` : ''}${doubanIdParam}${
-          isAggregate ? '&prefer=true' : ''
+          shouldPreferBestSource ? '&prefer=true' : ''
         }${
           actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''
         }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
