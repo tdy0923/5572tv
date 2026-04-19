@@ -63,14 +63,14 @@ const CapsuleSwitch: React.FC<CapsuleSwitchProps> = ({
     <div className='max-w-full overflow-x-auto scrollbar-hide'>
       <div
         ref={containerRef}
-        className={`relative inline-flex rounded-full border border-black/5 bg-white/55 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5 ${
+        className={`relative inline-flex rounded-full border border-black/5 bg-transparent p-1 ${
           className || ''
         }`}
       >
         {/* 滑动的渐变背景指示器 */}
         {indicatorStyle.width > 0 && (
           <div
-            className='absolute bottom-1 top-1 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] shadow-[0_8px_18px_rgba(244,194,77,0.22)] transition-all duration-300 ease-out dark:from-[#f4c24d] dark:via-[#f0b938] dark:to-[#d89c18]'
+            className='absolute bottom-1 top-1 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] transition-all duration-300 ease-out dark:from-[#f4c24d] dark:via-[#f0b938] dark:to-[#d89c18]'
             style={{
               left: `${indicatorStyle.left}px`,
               width: `${indicatorStyle.width}px`,
