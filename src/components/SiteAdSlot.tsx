@@ -1,5 +1,6 @@
 'use client';
 
+import { Volume2 } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -99,25 +100,33 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
       <div
         className={`${containerClass} ${isCompactTextRow ? 'p-3 sm:p-4' : isHeroSlot ? 'p-4 sm:p-5' : 'p-4'} ${className}`}
         style={{
-          maxWidth: isSidebarSlot ? '100%' : maxWidth,
-          width: isSidebarSlot ? '100%' : undefined,
+          maxWidth: '100%',
+          width: '100%',
         }}
       >
-        <div className='text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
-          广告
+        <div className='flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
+          <Volume2 className='h-3.5 w-3.5' />
+          <span>广告</span>
         </div>
         {textAds.length > 0 && (
           <div
             className={`mt-3 flex ${isCompactTextRow ? 'flex-wrap items-center gap-2 sm:gap-3' : 'flex-wrap gap-2.5'}`}
           >
             {textAds.map((line, index) => {
-              const [label, maybeUrl] = line.split('|').map((v) => v.trim());
+              const [label, maybeUrl, desc] = line
+                .split('|')
+                .map((v) => v.trim());
               const node = (
-                <span
-                  className={`inline-flex max-w-full items-center rounded-full border border-black/6 bg-white text-gray-800 dark:border-white/8 dark:bg-white/8 dark:text-gray-100 ${isCompactTextRow ? 'px-3 py-1 text-xs sm:text-sm' : isHeroSlot ? 'px-3.5 py-1.5 text-sm' : 'px-3 py-1.5 text-sm'} ${isSidebarSlot ? 'whitespace-normal break-all' : 'whitespace-nowrap'}`}
-                >
-                  {(label || line).slice(0, maxTextLength)}
-                </span>
+                <div className='w-full rounded-2xl border border-black/6 bg-white/90 px-3 py-2 text-gray-800 shadow-sm dark:border-white/8 dark:bg-white/8 dark:text-gray-100'>
+                  <div className='text-sm font-semibold'>
+                    {(label || line).slice(0, maxTextLength)}
+                  </div>
+                  {desc && (
+                    <div className='mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
+                      {desc.slice(0, maxTextLength)}
+                    </div>
+                  )}
+                </div>
               );
               if (maybeUrl) {
                 return (
@@ -164,8 +173,9 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
           </div>
         )}
         <div className='min-w-0 flex-1'>
-          <div className='text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
-            广告
+          <div className='flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400'>
+            <Volume2 className='h-3.5 w-3.5' />
+            <span>广告</span>
           </div>
           {title && (
             <div
