@@ -2037,13 +2037,13 @@ function SearchPageClient() {
                       ) : null}
                     </div>
 
-                    {hasSearchSidebarAd && (
+                    {hasSearchSidebarAd ? (
                       <aside className='hidden xl:block'>
                         <div className='sticky top-24'>
                           <SiteAdSlot position='search_sidebar' />
                         </div>
                       </aside>
-                    )}
+                    ) : null}
                   </div>
                 </>
               )}
