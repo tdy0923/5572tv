@@ -96,7 +96,13 @@ const PageLayout = ({
   return (
     <div className='w-full min-h-screen'>
       {/* 移动端头部 */}
-      <MobileHeader showBackButton={['/play', '/live'].includes(activePath)} />
+      <MobileHeader
+        showBackButton={['/play', '/live'].includes(activePath)}
+        showAIButton={aiEnabled ?? false}
+        onAIButtonClick={() => setShowAIRecommendModal(true)}
+        onAnnouncementClick={onAnnouncementClick}
+        hasUnreadAnnouncement={hasUnreadAnnouncement}
+      />
 
       {/* 主要布局容器 */}
       <div className='flex md:grid md:grid-cols-[auto_1fr] w-full min-h-screen md:min-h-auto'>

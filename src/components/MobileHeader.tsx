@@ -3,15 +3,24 @@
 import Link from 'next/link';
 
 import { BackButton } from './BackButton';
+import { NavActionCluster } from './NavActionCluster';
 import { useSite } from './SiteProvider';
-import { ThemeToggle } from './ThemeToggle';
-import { UserMenu } from './UserMenu';
 
 interface MobileHeaderProps {
   showBackButton?: boolean;
+  showAIButton?: boolean;
+  onAIButtonClick?: () => void;
+  onAnnouncementClick?: () => void;
+  hasUnreadAnnouncement?: boolean;
 }
 
-const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
+const MobileHeader = ({
+  showBackButton = false,
+  showAIButton = false,
+  onAIButtonClick,
+  onAnnouncementClick,
+  hasUnreadAnnouncement = false,
+}: MobileHeaderProps) => {
   const { siteName } = useSite();
   return (
     <header className='md:hidden fixed top-0 left-0 right-0 z-999 w-full border-b border-black/6 bg-white/80 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0b0d12]/76 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]'>
@@ -41,10 +50,13 @@ const MobileHeader = ({ showBackButton = false }: MobileHeaderProps) => {
         </div>
 
         {/* 右侧按钮 */}
-        <div className='flex items-center gap-2 rounded-full border border-black/6 bg-white/55 px-2 py-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
-          <ThemeToggle />
-          <UserMenu />
-        </div>
+        <NavActionCluster
+          showAIButton={showAIButton}
+          onAIButtonClick={onAIButtonClick}
+          onAnnouncementClick={onAnnouncementClick}
+          hasUnreadAnnouncement={hasUnreadAnnouncement}
+          compact
+        />
       </div>
 
       {/* 中间：Logo（绝对居中） */}
