@@ -1,6 +1,5 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
@@ -14,8 +13,6 @@ import { NavActionCluster } from './NavActionCluster';
 import Sidebar from './Sidebar';
 import { SiteAdSlot } from './SiteAdSlot';
 import { useSite } from './SiteProvider';
-import { ThemeToggle } from './ThemeToggle';
-import { UserMenu } from './UserMenu';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -120,19 +117,14 @@ const PageLayout = ({
             </div>
           )}
 
-          {/* ✨ 桌面端顶部按钮 - AI, Theme Toggle & User Menu */}
-          <div className='absolute top-2 right-4 z-20 hidden md:flex items-center gap-2'>
-            {aiEnabled && (
-              <button
-                onClick={() => setShowAIRecommendModal(true)}
-                className='relative p-2 rounded-lg bg-linear-to-br from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 active:scale-95 transition-all duration-200 shadow-lg shadow-blue-500/30 group'
-                aria-label='AI 推荐'
-              >
-                <Sparkles className='h-5 w-5 group-hover:scale-110 transition-transform duration-300' />
-              </button>
-            )}
-            <ThemeToggle />
-            <UserMenu />
+          {/* 桌面端顶部按钮 */}
+          <div className='absolute top-2 right-4 z-20 hidden md:flex items-center'>
+            <NavActionCluster
+              showAIButton={aiEnabled ?? false}
+              onAIButtonClick={() => setShowAIRecommendModal(true)}
+              onAnnouncementClick={onAnnouncementClick}
+              hasUnreadAnnouncement={hasUnreadAnnouncement}
+            />
           </div>
 
           {/* 主内容 */}

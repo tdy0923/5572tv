@@ -24,16 +24,14 @@ export function NavActionCluster({
 }: NavActionClusterProps) {
   const actionHeight = compact ? 'h-9' : 'h-10';
   const iconClass = compact ? 'h-4 w-4' : 'h-[18px] w-[18px]';
-  const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full border border-black/6 bg-white/80 text-gray-700 transition-all duration-200 hover:bg-[#f8f5ec] active:scale-95 dark:border-white/8 dark:bg-white/6 dark:text-gray-100 dark:hover:bg-white/10`;
+  const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-black/[0.04] text-gray-700 transition-all duration-200 hover:bg-black/[0.08] active:scale-95 dark:bg-white/[0.05] dark:text-gray-100 dark:hover:bg-white/[0.1]`;
 
   return (
-    <div
-      className={`flex items-center gap-1.5 rounded-full border border-black/6 bg-white/60 p-1.5 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5 ${compact ? '' : 'px-2'}`}
-    >
+    <div className='flex items-center gap-1.5'>
       {showAIButton && onAIButtonClick && (
         <button
           onClick={onAIButtonClick}
-          className={`relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] shadow-lg shadow-[#f4c24d]/20 transition-all duration-200 hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95`}
+          className={`relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] transition-all duration-200 hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95`}
           aria-label='AI 推荐'
         >
           <Sparkles

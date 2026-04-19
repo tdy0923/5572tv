@@ -200,7 +200,7 @@ export default function ModernNav({
 
             {/* Navigation Items */}
             <div className='flex flex-1 items-center justify-center overflow-x-auto px-2 scrollbar-hide lg:px-4'>
-              <div className='flex items-center gap-1.5 rounded-full border border-black/6 bg-white/52 p-1.5 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-white/5'>
+              <div className='flex items-center gap-1.5'>
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
