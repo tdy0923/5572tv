@@ -301,6 +301,19 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.setItem('downloadFormat', 'TS');
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const panel = (
@@ -315,7 +328,12 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
       />
 
       {/* 设置面板 */}
-      <div className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'>
+      <div
+        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        role='dialog'
+        aria-modal='true'
+        aria-label='本地设置'
+      >
         {/* 内容容器 */}
         <div
           className='flex-1 p-6 overflow-y-auto'

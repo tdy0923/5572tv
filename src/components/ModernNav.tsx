@@ -72,49 +72,61 @@ export default function ModernNav({
   const searchParams = useSearchParams();
   const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const runtimeConfig =
+    typeof window !== 'undefined' ? (window as any).RUNTIME_CONFIG : undefined;
+  const allowSourceBrowser =
+    runtimeConfig?.SOURCE_BROWSER_ENABLED !== false &&
+    runtimeConfig?.SOURCE_ACCESS_ENABLED !== false;
 
-  const baseMenuItems: NavItem[] = [
-    {
-      icon: Home,
-      label: '首页',
-      href: '/',
-    },
-    {
-      icon: Search,
-      label: '搜索',
-      href: '/search',
-    },
-    {
-      icon: Globe,
-      label: '源浏览器',
-      href: '/source-browser',
-    },
-    {
-      icon: Film,
-      label: '电影',
-      href: '/douban?type=movie',
-    },
-    {
-      icon: Tv,
-      label: '剧集',
-      href: '/douban?type=tv',
-    },
-    {
-      icon: PlaySquare,
-      label: '短剧',
-      href: '/shortdrama',
-    },
-    {
-      icon: Cat,
-      label: '动漫',
-      href: '/douban?type=anime',
-    },
-    {
-      icon: Clover,
-      label: '综艺',
-      href: '/douban?type=show',
-    },
-  ];
+  const baseMenuItems = useMemo<NavItem[]>(
+    () => [
+      {
+        icon: Home,
+        label: '首页',
+        href: '/',
+      },
+      {
+        icon: Search,
+        label: '搜索',
+        href: '/search',
+      },
+      ...(allowSourceBrowser
+        ? [
+            {
+              icon: Globe,
+              label: '源浏览器',
+              href: '/source-browser',
+            },
+          ]
+        : []),
+      {
+        icon: Film,
+        label: '电影',
+        href: '/douban?type=movie',
+      },
+      {
+        icon: Tv,
+        label: '剧集',
+        href: '/douban?type=tv',
+      },
+      {
+        icon: PlaySquare,
+        label: '短剧',
+        href: '/shortdrama',
+      },
+      {
+        icon: Cat,
+        label: '动漫',
+        href: '/douban?type=anime',
+      },
+      {
+        icon: Clover,
+        label: '综艺',
+        href: '/douban?type=show',
+      },
+    ],
+    [],
+  );
 
   // 检查用户是否配置了 Emby
   const { data: userEmbyConfig } = useQuery(userEmbyConfigOptions());
