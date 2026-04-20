@@ -1039,7 +1039,12 @@ export const UserMenu: React.FC = () => {
       />
 
       {/* 更新弹窗 */}
-      <div className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'>
+      <div
+        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        role='dialog'
+        aria-modal='true'
+        aria-label='更新提醒'
+      >
         {/* 内容容器 - 独立的滚动区域 */}
         <div
           className='flex-1 p-6 overflow-y-auto'
@@ -1261,6 +1266,9 @@ export const UserMenu: React.FC = () => {
       <div
         className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
+        role='dialog'
+        aria-modal='true'
+        aria-label='继续观看'
       >
         <div className='p-6'>
           <div className='mb-4 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>
@@ -1359,6 +1367,9 @@ export const UserMenu: React.FC = () => {
       <div
         className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
+        role='dialog'
+        aria-modal='true'
+        aria-label='我的收藏'
       >
         <div className='p-6'>
           <div className='mb-4 flex items-center justify-between border-b border-black/6 pb-4 dark:border-white/8'>

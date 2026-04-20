@@ -2051,7 +2051,7 @@ function SearchPageClient() {
                             e.preventDefault();
                             deleteSearchHistory(item); // 事件监听会自动更新界面
                           }}
-                          className='absolute -top-1 -right-1 w-4 h-4 opacity-0 group-hover:opacity-100 bg-gray-400 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] transition-colors'
+                          className='absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-400 text-[10px] text-white transition-colors hover:bg-red-500 sm:h-4 sm:w-4 sm:opacity-0 sm:group-hover:opacity-100'
                         >
                           <X className='w-3 h-3' />
                         </button>

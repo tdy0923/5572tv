@@ -177,6 +177,7 @@ const playRecordsOptions = (
       enableFilter,
       minProgress,
       maxProgress,
+      limit,
     ],
     queryFn: async () => {
       const records = await getAllPlayRecords();
