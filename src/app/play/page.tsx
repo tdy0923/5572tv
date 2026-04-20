@@ -111,6 +111,20 @@ function parseStorageKey(key: string) {
   };
 }
 
+function replacePlaybackUrlParams(updates: Record<string, string | null>) {
+  const newUrl = new URL(window.location.href);
+
+  Object.entries(updates).forEach(([key, value]) => {
+    if (!value) {
+      newUrl.searchParams.delete(key);
+    } else {
+      newUrl.searchParams.set(key, value);
+    }
+  });
+
+  window.history.replaceState({}, '', newUrl.toString());
+}
+
 // 音轨辅助函数
 function normalizeAudioLang(rawLang?: string): string {
   if (!rawLang) return '';
