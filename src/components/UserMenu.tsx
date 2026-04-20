@@ -506,6 +506,21 @@ export const UserMenu: React.FC = () => {
     return matchedSeries ? matchedSeries.newEpisodes || 0 : 0;
   };
 
+  const getLatestTotalEpisodes = (
+    record: PlayRecord & { key: string },
+  ): number => {
+    if (!watchingUpdates || !watchingUpdates.updatedSeries) {
+      return record.total_episodes;
+    }
+
+    const { source, id } = parseKey(record.key);
+    const matchedSeries = watchingUpdates.updatedSeries.find(
+      (series) => series.sourceKey === source && series.videoId === id,
+    );
+
+    return matchedSeries?.totalEpisodes || record.total_episodes;
+  };
+
   const handleChangePassword = () => {
     setIsOpen(false);
     setIsChangePasswordOpen(true);
