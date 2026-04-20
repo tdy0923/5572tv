@@ -4005,17 +4005,6 @@ function PlayPageClient() {
         }
       }
 
-      // 🔥 由于组件会重新挂载，不再需要设置 resumeTimeRef（进度已保存到 sessionStorage）
-      // 组件重新挂载后会自动从 sessionStorage 恢复进度
-
-      // 更新URL参数（不刷新页面）
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set('source', newSource);
-      newUrl.searchParams.set('id', newId);
-      newUrl.searchParams.set('year', detailToUse.year);
-      newUrl.searchParams.set('index', targetIndex.toString()); // 🔥 同步URL的index参数
-      window.history.replaceState({}, '', newUrl.toString());
-
       setVideoTitle(detailToUse.title || newTitle);
       setVideoYear(detailToUse.year);
       setVideoCover(resolveCardPosterUrl(detailToUse.poster));
@@ -4043,6 +4032,15 @@ function PlayPageClient() {
       if (targetIndex !== currentEpisodeIndex) {
         setCurrentEpisodeIndex(targetIndex);
       }
+
+      // 更新URL参数（不刷新页面）
+      replacePlaybackUrlParams({
+        source: newSource,
+        id: newId,
+        year: detailToUse.year,
+        index: targetIndex.toString(),
+        title: detailToUse.title || newTitle,
+      });
 
       // 🚀 换源完成后，优化弹幕加载流程
       setTimeout(async () => {
