@@ -3828,7 +3828,6 @@ function PlayPageClient() {
 
   // 播放记录处理
   useEffect(() => {
-    // 仅在初次挂载时检查播放记录
     const initFromHistory = async () => {
       if (!currentSource || !currentId) return;
 
@@ -3855,7 +3854,11 @@ function PlayPageClient() {
         const record = allRecords[key];
 
         if (record) {
-          const targetIndex = record.index - 1;
+          const maxIndex = Math.max(
+            (detailRef.current?.episodes?.length || 1) - 1,
+            0,
+          );
+          const targetIndex = Math.min(Math.max(record.index - 1, 0), maxIndex);
           const targetTime = record.play_time;
 
           // 更新当前选集索引
@@ -3872,7 +3875,7 @@ function PlayPageClient() {
     };
 
     initFromHistory();
-  }, []);
+  }, [currentSource, currentId, currentEpisodeIndex]);
 
   // 🚀 优化的换源处理（防连续点击）
   const handleSourceChange = async (
