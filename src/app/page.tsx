@@ -746,13 +746,7 @@ function HomeClient() {
                   {username}
                 </span>
               )}
-              <span className='inline-block origin-bottom-right animate-wave'>
-                👋
-              </span>
             </h2>
-            <p className='text-sm text-gray-500 dark:text-gray-400'>
-              发现更多精彩影视内容。
-            </p>
           </div>
 
           {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
