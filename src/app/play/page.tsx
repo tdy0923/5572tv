@@ -4184,11 +4184,8 @@ function PlayPageClient() {
         resumeTimeRef.current = 0;
       }
 
-      // 🔥 优化：同步更新URL参数，保持URL与实际播放状态一致
       try {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set('index', episodeNumber.toString());
-        window.history.replaceState({}, '', newUrl.toString());
+        replacePlaybackUrlParams({ index: episodeNumber.toString() });
       } catch (err) {
         console.warn('更新URL参数失败:', err);
       }
@@ -4204,6 +4201,7 @@ function PlayPageClient() {
       if (artPlayerRef.current && !artPlayerRef.current.paused) {
         saveCurrentPlayProgress();
       }
+      replacePlaybackUrlParams({ index: String(idx - 1) });
       setCurrentEpisodeIndex(idx - 1);
     }
   };
@@ -4221,6 +4219,7 @@ function PlayPageClient() {
 
       // 🔑 标记通过 SkipController 触发了下一集
       isSkipControllerTriggeredRef.current = true;
+      replacePlaybackUrlParams({ index: String(idx + 1) });
       setCurrentEpisodeIndex(idx + 1);
     }
   };
@@ -6640,6 +6639,7 @@ function PlayPageClient() {
           if (d && d.episodes && idx < d.episodes.length - 1) {
             videoEndedHandledRef.current = true;
             setTimeout(() => {
+              replacePlaybackUrlParams({ index: String(idx + 1) });
               setCurrentEpisodeIndex(idx + 1);
             }, 1000);
           }
