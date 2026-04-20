@@ -195,7 +195,10 @@ const playRecordsOptions = (
         // Play time must exceed 2 minutes
         if (record.play_time < 120) return false;
 
-        // If filter is disabled, show all records with > 2 min playtime
+        // Always exclude items that have not started or are effectively completed
+        if (progress <= 0 || progress >= 100) return false;
+
+        // If filter is disabled, show all real continue-watching records
         if (!enableFilter) return true;
 
         // Filter by user's custom progress range
