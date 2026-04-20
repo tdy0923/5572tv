@@ -3685,9 +3685,15 @@ function PlayPageClient() {
             needPreferRef.current = true;
             setNeedPrefer(true);
           } else {
-            setError('当前线路已失效，且未找到其他严格匹配的可用线路');
-            setLoading(false);
-            return;
+            if (sourcesInfo.length > 0) {
+              console.warn('[Play] 当前 source/id 未命中，直接进入优选回退');
+              needPreferRef.current = true;
+              setNeedPrefer(true);
+            } else {
+              setError('当前线路已失效，且未找到其他严格匹配的可用线路');
+              setLoading(false);
+              return;
+            }
           }
         }
       }
@@ -3722,13 +3728,17 @@ function PlayPageClient() {
       }
 
       if (!detailData) {
-        setError(
-          currentSource && currentId
-            ? '当前线路已失效，且未找到其他严格匹配的可用线路'
-            : '未找到严格匹配结果',
-        );
-        setLoading(false);
-        return;
+        if (sourcesInfo.length > 0) {
+          detailData = sourcesInfo[0];
+        } else {
+          setError(
+            currentSource && currentId
+              ? '当前线路已失效，且未找到其他严格匹配的可用线路'
+              : '未找到严格匹配结果',
+          );
+          setLoading(false);
+          return;
+        }
       }
 
       console.log(detailData.source, detailData.id);
