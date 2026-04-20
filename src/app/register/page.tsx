@@ -217,6 +217,9 @@ function RegisterPageClient() {
               id='username'
               type='text'
               autoComplete='username'
+              autoCapitalize='none'
+              autoCorrect='off'
+              spellCheck={false}
               className='ui-input pl-12 pr-4 sm:text-base'
               placeholder='3-20位字母数字下划线'
               value={username}

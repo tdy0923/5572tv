@@ -147,11 +147,12 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
     const handleResize = () => {
       if (activeCategory) calculateDropdownPosition(activeCategory);
     };
-    // 监听 body 滚动事件，因为该项目的滚动容器是 document.body
     document.body.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
     return () => {
       document.body.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
   }, [activeCategory]);

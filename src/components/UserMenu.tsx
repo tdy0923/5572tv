@@ -638,14 +638,18 @@ export const UserMenu: React.FC = () => {
           !dismissedReleases.has(`${series.sourceKey}+${series.videoId}`),
       ) || []
     : [];
+  const uniqueVisibleWatchingUpdates = new Set(
+    visibleWatchingUpdates.map(
+      (series) => `${series.sourceKey}+${series.videoId}`,
+    ),
+  );
   const hasActualUpdates =
     watchingUpdates &&
     ((watchingUpdates.updatedCount || 0) > 0 ||
-      visibleWatchingUpdates.length > 0);
+      uniqueVisibleWatchingUpdates.size > 0);
 
   // 计算更新数量（新剧集更新 + 新上映）
-  const totalUpdates =
-    (watchingUpdates?.updatedCount || 0) + visibleWatchingUpdates.length;
+  const totalUpdates = uniqueVisibleWatchingUpdates.size;
 
   // 角色中文映射
   const getRoleText = (role?: string) => {
