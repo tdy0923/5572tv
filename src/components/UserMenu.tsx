@@ -24,6 +24,7 @@ import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import type { PlayRecord } from '@/lib/db.client';
+import { resolveCardPosterUrl } from '@/lib/utils';
 import { CURRENT_VERSION } from '@/lib/version';
 import { UpdateStatus } from '@/lib/version_check';
 import {
@@ -1286,7 +1287,7 @@ export const UserMenu: React.FC = () => {
                     <VideoCard
                       id={id}
                       title={record.title}
-                      poster={record.cover}
+                      poster={resolveCardPosterUrl(record.cover)}
                       year={record.year}
                       source={source}
                       source_name={record.source_name}

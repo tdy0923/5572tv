@@ -92,7 +92,10 @@ export default function SearchSuggestions({
   // 处理键盘事件，特别是回车键
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && isVisible) {
+      const activeElement = document.activeElement as HTMLElement | null;
+      const isSearchInput = activeElement?.id === 'searchInput';
+
+      if (e.key === 'Enter' && isVisible && isSearchInput && !e.isComposing) {
         // 阻止默认行为，避免浏览器自动选择建议
         e.preventDefault();
         e.stopPropagation();
