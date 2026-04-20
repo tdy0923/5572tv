@@ -634,7 +634,7 @@ export const UserMenu: React.FC = () => {
   const visibleWatchingUpdates = showWatchingUpdates
     ? watchingUpdates?.updatedSeries?.filter(
         (series) =>
-          series.hasNewRelease &&
+          (series.hasNewEpisode || series.hasNewRelease) &&
           !dismissedReleases.has(`${series.sourceKey}+${series.videoId}`),
       ) || []
     : [];
