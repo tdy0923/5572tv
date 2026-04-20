@@ -1289,6 +1289,9 @@ export const UserMenu: React.FC = () => {
             {playRecords.map((record) => {
               const { source, id } = parseKey(record.key);
               const newEpisodesCount = getNewEpisodesCount(record);
+              const latestTotalEpisodes = getLatestTotalEpisodes(record);
+              const cardType =
+                record.type || (latestTotalEpisodes > 1 ? 'tv' : '');
               return (
                 <div key={record.key} className='relative group/card'>
                   <div className='relative group-hover/card:z-5 transition-all duration-300'>
@@ -1300,11 +1303,11 @@ export const UserMenu: React.FC = () => {
                       source={source}
                       source_name={record.source_name}
                       progress={getProgress(record)}
-                      episodes={record.total_episodes}
+                      episodes={latestTotalEpisodes}
                       currentEpisode={record.index}
                       query={record.search_title}
                       from='playrecord'
-                      type={record.total_episodes > 1 ? 'tv' : ''}
+                      type={cardType}
                       remarks={record.remarks}
                     />
                   </div>

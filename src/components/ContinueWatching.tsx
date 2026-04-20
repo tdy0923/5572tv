@@ -154,9 +154,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
   };
 
   return (
-    <section
-      className={`mb-10 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5 ${className || ''}`}
-    >
+    <section className={`mb-10 ${className || ''}`}>
       <div className='mb-4 flex items-center justify-between'>
         <SectionTitle
           title='继续观看'
