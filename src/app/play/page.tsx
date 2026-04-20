@@ -4014,19 +4014,6 @@ function PlayPageClient() {
       setCurrentId(newId);
       setDetail(detailToUse);
 
-      // 新源确认可用后，再清除前一个历史记录
-      if (currentSourceRef.current && currentIdRef.current) {
-        try {
-          await deletePlayRecord(
-            currentSourceRef.current,
-            currentIdRef.current,
-          );
-          console.log('已清除前一个播放记录');
-        } catch (err) {
-          console.error('清除播放记录失败:', err);
-        }
-      }
-
       // 🔥 只有当集数确实改变时才调用 setCurrentEpisodeIndex
       // 这样可以避免触发不必要的 useEffect 和集数切换逻辑
       if (targetIndex !== currentEpisodeIndex) {
@@ -4048,6 +4035,19 @@ function PlayPageClient() {
       setTimeout(async () => {
         isSourceChangingRef.current = false; // 重置换源标识
         setIsVideoLoading(false);
+
+        // 新源确认可用后，再清除前一个历史记录
+        if (currentSourceRef.current && currentIdRef.current) {
+          try {
+            await deletePlayRecord(
+              currentSourceRef.current,
+              currentIdRef.current,
+            );
+            console.log('已清除前一个播放记录');
+          } catch (err) {
+            console.error('清除播放记录失败:', err);
+          }
+        }
 
         if (
           artPlayerRef.current?.plugins?.artplayerPluginDanmuku &&
