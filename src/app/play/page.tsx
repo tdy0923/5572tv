@@ -4040,6 +4040,8 @@ function PlayPageClient() {
         year: detailToUse.year,
         index: targetIndex.toString(),
         title: detailToUse.title || newTitle,
+        stitle:
+          searchTitle || videoTitleRef.current || detailToUse.title || newTitle,
       });
 
       // 🚀 换源完成后，优化弹幕加载流程
