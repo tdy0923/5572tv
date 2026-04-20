@@ -556,13 +556,15 @@ function PlayPageClient() {
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(() => {
     // 从 URL 读取初始集数
     const indexParam = searchParams.get('index');
-    return indexParam ? parseInt(indexParam, 10) : 0;
+    const parsed = indexParam ? parseInt(indexParam, 10) : 0;
+    return Number.isNaN(parsed) ? 0 : parsed;
   });
 
   // 监听 URL index 参数变化（观影室切集同步）
   useEffect(() => {
     const indexParam = searchParams.get('index');
-    const newIndex = indexParam ? parseInt(indexParam, 10) : 0;
+    const parsedIndex = indexParam ? parseInt(indexParam, 10) : 0;
+    const newIndex = Number.isNaN(parsedIndex) ? 0 : parsedIndex;
     if (newIndex !== currentEpisodeIndex) {
       console.log('[PlayPage] URL index changed, updating episode:', newIndex);
       setCurrentEpisodeIndex(newIndex);
@@ -577,8 +579,10 @@ function PlayPageClient() {
   useEffect(() => {
     const newSource = searchParams.get('source') || '';
     const newId = searchParams.get('id') || '';
-    const newIndex = parseInt(searchParams.get('index') || '0');
-    const newTime = parseInt(searchParams.get('t') || '0');
+    const parsedIndex = parseInt(searchParams.get('index') || '0');
+    const parsedTime = parseInt(searchParams.get('t') || '0');
+    const newIndex = Number.isNaN(parsedIndex) ? 0 : parsedIndex;
+    const newTime = Number.isNaN(parsedTime) ? 0 : parsedTime;
     const reloadFlag = searchParams.get('_reload');
 
     // 如果 source 或 id 变化，且有 _reload 标记，且不是已经处理过的reload
