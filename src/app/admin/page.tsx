@@ -2196,6 +2196,7 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                       config?.SourceConfig || []
                     ).filter((source) => {
                       if (!selectedUser) return false;
+                      if (selectedUser.role === 'owner') return true;
                       if (allowedApiKeys.length === 0) return true;
                       return allowedApiKeys.includes(source.key);
                     });
@@ -2205,11 +2206,12 @@ const UserConfig = ({ config, role, refreshConfig }: UserConfigProps) => {
                         <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300 mb-4'>
                           选择可用的采集源：
                         </h4>
-                        {allowedApiKeys.length > 0 && (
-                          <div className='mb-3 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2'>
-                            当前用户已分配用户组，个人采集源权限只能在用户组开放范围内进一步收窄。
-                          </div>
-                        )}
+                        {allowedApiKeys.length > 0 &&
+                          selectedUser.role !== 'owner' && (
+                            <div className='mb-3 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2'>
+                              当前用户已分配用户组，个人采集源权限只能在用户组开放范围内进一步收窄。
+                            </div>
+                          )}
                         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                           {availableSources.map((source) => (
                             <label

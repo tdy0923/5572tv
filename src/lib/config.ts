@@ -731,9 +731,14 @@ function applyVideoProxy(sites: ApiSite[], config: AdminConfig): ApiSite[] {
 
 export async function getAvailableApiSites(user?: string): Promise<ApiSite[]> {
   const config = await getConfig();
+  const ownerUser = process.env.USERNAME;
 
   // 确定成人内容显示权限，优先级：用户 > 用户组 > 全局
   let showAdultContent = config.SiteConfig.ShowAdultContent;
+
+  if (user && user === ownerUser) {
+    showAdultContent = true;
+  }
 
   if (user) {
     const userConfig = config.UserConfig.Users.find((u) => u.username === user);
@@ -782,6 +787,11 @@ export async function getAvailableApiSites(user?: string): Promise<ApiSite[]> {
   });
 
   if (!user) {
+    return applyVideoProxy(allApiSites, config);
+  }
+
+  // 站长永远拥有全部采集源可见性，不受 enabledApis/tags 限制
+  if (user === ownerUser) {
     return applyVideoProxy(allApiSites, config);
   }
 
