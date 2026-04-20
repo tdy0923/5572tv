@@ -171,9 +171,11 @@ const AlertModal = ({
   useEffect(() => {
     if (isOpen) {
       if (timer) {
-        setTimeout(() => {
+        const timeoutId = window.setTimeout(() => {
           onClose();
         }, timer);
+
+        return () => window.clearTimeout(timeoutId);
       }
     }
   }, [isOpen, timer, onClose]);

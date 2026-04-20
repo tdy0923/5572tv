@@ -4169,7 +4169,7 @@ function PlayPageClient() {
   const handleEpisodeChange = async (episodeNumber: number) => {
     if (episodeNumber >= 0 && episodeNumber < totalEpisodes) {
       // 在更换集数前保存当前播放进度
-      if (artPlayerRef.current && artPlayerRef.current.paused) {
+      if (artPlayerRef.current) {
         saveCurrentPlayProgress();
       }
 

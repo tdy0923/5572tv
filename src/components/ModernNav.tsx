@@ -72,12 +72,6 @@ export default function ModernNav({
   const searchParams = useSearchParams();
   const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const runtimeConfig =
-    typeof window !== 'undefined' ? (window as any).RUNTIME_CONFIG : undefined;
-  const allowSourceBrowser =
-    runtimeConfig?.SOURCE_BROWSER_ENABLED !== false &&
-    runtimeConfig?.SOURCE_ACCESS_ENABLED !== false;
-
   const baseMenuItems = useMemo<NavItem[]>(
     () => [
       {
@@ -90,15 +84,11 @@ export default function ModernNav({
         label: '搜索',
         href: '/search',
       },
-      ...(allowSourceBrowser
-        ? [
-            {
-              icon: Globe,
-              label: '源浏览器',
-              href: '/source-browser',
-            },
-          ]
-        : []),
+      {
+        icon: Globe,
+        label: '源浏览器',
+        href: '/source-browser',
+      },
       {
         icon: Film,
         label: '电影',
