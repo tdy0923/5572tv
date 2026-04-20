@@ -8848,8 +8848,28 @@ function AdminPageClient() {
   }
 
   if (error) {
-    // 错误已通过弹窗展示，此处直接返回空
-    return null;
+    return (
+      <PageLayout activePath='/admin'>
+        <div className='-mt-6 md:mt-0'>
+          <div className='mx-auto max-w-[95%] pb-40 md:pb-safe-bottom'>
+            <div className='ui-surface p-8 text-center'>
+              <div className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+                管理后台加载失败
+              </div>
+              <p className='mt-3 text-sm text-gray-500 dark:text-gray-400'>
+                {error}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className='mt-6 inline-flex items-center rounded-full border border-black/6 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:bg-white/10'
+              >
+                重新加载
+              </button>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    );
   }
 
   const isSectionActive = (sectionId: string) =>
