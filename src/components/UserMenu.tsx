@@ -672,7 +672,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 菜单面板 */}
       <div
-        className='fixed top-16 right-4 w-60 ui-surface z-1001 overflow-hidden select-none'
+        className='fixed top-16 right-4 w-60 max-h-[calc(100vh-5rem)] overflow-y-auto ui-surface z-1001 select-none'
         role='dialog'
         aria-modal='true'
         aria-label='用户菜单'

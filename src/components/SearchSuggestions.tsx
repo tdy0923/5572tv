@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 
 interface SearchSuggestionsProps {
   query: string;
@@ -28,7 +28,9 @@ export default function SearchSuggestions({
 
   // 防抖：延迟300ms后更新debouncedQuery
   const [debouncedQuery, setDebouncedQuery] = useState(query);
-  const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (debounceTimer.current) {
@@ -52,16 +54,14 @@ export default function SearchSuggestions({
     queryKey: ['searchSuggestions', debouncedQuery],
     queryFn: async () => {
       const response = await fetch(
-        `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery.trim())}`
+        `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery.trim())}`,
       );
       if (response.ok) {
         const data = await response.json();
-        return data.suggestions.map(
-          (item: { text: string }) => ({
-            text: item.text,
-            type: 'related' as const,
-          })
-        );
+        return data.suggestions.map((item: { text: string }) => ({
+          text: item.text,
+          type: 'related' as const,
+        }));
       }
       return [];
     },
@@ -72,7 +72,7 @@ export default function SearchSuggestions({
 
   // 点击外部关闭
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: PointerEvent) => {
       if (
         containerRef.current &&
         !containerRef.current.contains(e.target as Node)
@@ -82,10 +82,11 @@ export default function SearchSuggestions({
     };
 
     if (isVisible) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () =>
+      document.removeEventListener('pointerdown', handleClickOutside);
   }, [isVisible, onClose]);
 
   // 处理键盘事件，特别是回车键
@@ -121,7 +122,7 @@ export default function SearchSuggestions({
         <button
           key={`related-${suggestion.text}`}
           onClick={() => onSelect(suggestion.text)}
-          className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-3"
+          className='w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-3'
         >
           <span className='flex-1 text-sm text-gray-700 dark:text-gray-300 truncate'>
             {suggestion.text}
