@@ -3831,6 +3831,11 @@ function PlayPageClient() {
     const initFromHistory = async () => {
       if (!currentSource || !currentId) return;
 
+      const explicitIndex = searchParams.get('index');
+      const explicitTime = searchParams.get('t') || searchParams.get('time');
+      const hasExplicitPlaybackState =
+        explicitIndex !== null || explicitTime !== null;
+
       // 🔥 关键修复：优先检查 sessionStorage 中的临时进度（换源时保存的）
       const tempProgressKey = `temp_progress_${currentSource}_${currentId}_${currentEpisodeIndex}`;
       const tempProgress = sessionStorage.getItem(tempProgressKey);
@@ -3854,6 +3859,10 @@ function PlayPageClient() {
         const record = allRecords[key];
 
         if (record) {
+          if (hasExplicitPlaybackState) {
+            return;
+          }
+
           const maxIndex = Math.max(
             (detailRef.current?.episodes?.length || 1) - 1,
             0,
@@ -3875,7 +3884,7 @@ function PlayPageClient() {
     };
 
     initFromHistory();
-  }, [currentSource, currentId, currentEpisodeIndex]);
+  }, [currentSource, currentId, currentEpisodeIndex, searchParams]);
 
   // 🚀 优化的换源处理（防连续点击）
   const handleSourceChange = async (
@@ -7802,14 +7811,7 @@ export default function PlayPage() {
 
 function PlayPageClientWrapper() {
   const searchParams = useSearchParams();
-  const key = [
-    searchParams.get('source') || '',
-    searchParams.get('id') || '',
-    searchParams.get('title') || '',
-    searchParams.get('stitle') || '',
-    searchParams.get('prefer') || '',
-    searchParams.get('_reload') || '',
-  ].join('-');
+  const key = searchParams.toString();
 
   return <PlayPageClient key={key} />;
 }
