@@ -204,7 +204,10 @@ export async function GET(request: NextRequest) {
     // 读取当前配置
     const config = await getConfig();
     const securityConfig = config.TVBoxSecurityConfig;
-    const proxyConfig = config.TVBoxProxyConfig; // 🔑 读取代理配置
+    // 🔑 读取代理配置：优先使用 TVBoxProxyConfig，若未配置则回退到 VideoProxyConfig
+    const proxyConfig = config.TVBoxProxyConfig?.enabled
+      ? config.TVBoxProxyConfig
+      : config.VideoProxyConfig;
 
     // 🔑 新增：基于用户 Token 的身份识别
     let currentUser: {
