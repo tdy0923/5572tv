@@ -535,17 +535,7 @@ export async function DELETE(request: NextRequest) {
       await db.deleteFavorite(username, source, id);
     } else {
       // 清空全部
-      const all = await db.getAllFavorites(username);
-      const count = Object.keys(all).length;
-
-      console.log(`[收藏性能-删除] 用户: ${username} | 待删除收藏数: ${count}`);
-
-      await Promise.all(
-        Object.keys(all).map(async (k) => {
-          const { source: s, id: i } = parseStorageKey(k);
-          if (s && i) await db.deleteFavorite(username, s, i);
-        }),
-      );
+      await db.deleteAllFavorites(username);
     }
 
     const successResponse = { success: true };

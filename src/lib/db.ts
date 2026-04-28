@@ -118,6 +118,11 @@ export class DbManager {
     await this.storage.deletePlayRecord(userName, key);
   }
 
+  async deleteAllPlayRecords(userName: string): Promise<void> {
+    incrementDbQuery();
+    await this.storage.deleteAllPlayRecords(userName);
+  }
+
   // 🚀 批量保存播放记录（Upstash 优化，使用 mset 只算1条命令）
   async savePlayRecordsBatch(
     userName: string,
@@ -181,6 +186,11 @@ export class DbManager {
     await this.storage.deleteFavorite(userName, key);
   }
 
+  async deleteAllFavorites(userName: string): Promise<void> {
+    incrementDbQuery();
+    await this.storage.deleteAllFavorites(userName);
+  }
+
   // ==================== 提醒相关方法 ====================
 
   async getReminder(
@@ -219,6 +229,11 @@ export class DbManager {
     incrementDbQuery();
     const key = generateStorageKey(source, id);
     await this.storage.deleteReminder(userName, key);
+  }
+
+  async deleteAllReminders(userName: string): Promise<void> {
+    incrementDbQuery();
+    await this.storage.deleteAllReminders(userName);
   }
 
   // 🚀 批量保存收藏（Upstash 优化，使用 mset 只算1条命令）
@@ -419,6 +434,13 @@ export class DbManager {
     incrementDbQuery();
     if (typeof (this.storage as any).deleteSkipConfig === 'function') {
       await (this.storage as any).deleteSkipConfig(userName, source, id);
+    }
+  }
+
+  async deleteAllSkipConfigs(userName: string): Promise<void> {
+    incrementDbQuery();
+    if (typeof (this.storage as any).deleteAllSkipConfigs === 'function') {
+      await (this.storage as any).deleteAllSkipConfigs(userName);
     }
   }
 

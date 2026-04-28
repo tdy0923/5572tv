@@ -793,6 +793,10 @@ export abstract class BaseRedisStorage implements IStorage {
     return configs;
   }
 
+  async deleteAllSkipConfigs(userName: string): Promise<void> {
+    await this.withRetry(() => this.client.del(this.skipHashKey(userName)));
+  }
+
   // ---------- 剧集跳过配置（新版，多片段支持）----------
   private episodeSkipHashKey(user: string) {
     return `u:${user}:episodeskip`; // 一个用户的所有剧集跳过配置存在一个 Hash 中

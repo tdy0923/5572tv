@@ -491,14 +491,7 @@ export async function DELETE(request: NextRequest) {
       await db.deletePlayRecord(username, source, id);
     } else {
       // 未提供 key，则清空全部播放记录
-      // 目前 DbManager 没有对应方法，这里直接遍历删除
-      const all = await db.getAllPlayRecords(username);
-      await Promise.all(
-        Object.keys(all).map(async (k) => {
-          const { source: s, id: i } = parseStorageKey(k);
-          if (s && i) await db.deletePlayRecord(username, s, i);
-        }),
-      );
+      await db.deleteAllPlayRecords(username);
     }
 
     const successResponse = { success: true };

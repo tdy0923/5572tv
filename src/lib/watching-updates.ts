@@ -7,6 +7,7 @@ import {
   getAllReminders,
   PlayRecord,
 } from './db.client';
+import { parseStorageKey } from './key-parser';
 import { resolveCardPosterUrl } from './utils';
 
 // 缓存键
@@ -164,7 +165,9 @@ export async function checkWatchingUpdates(
       const updatePromises = candidateRecords.map(async (record) => {
         try {
           // 从存储key中解析出videoId
-          const [sourceName, videoId] = record.id.split('+');
+          const { source: sourceName, id: videoId } = parseStorageKey(
+            record.id,
+          );
           const updateInfo = await checkSingleRecordUpdate(
             record,
             videoId,
@@ -206,7 +209,9 @@ export async function checkWatchingUpdates(
           return seriesInfo;
         } catch (error) {
           // 返回默认状态
-          const [sourceName, videoId] = record.id.split('+');
+          const { source: sourceName, id: videoId } = parseStorageKey(
+            record.id,
+          );
           const seriesInfo = {
             title: record.title,
             source_name: record.source_name,
@@ -262,7 +267,7 @@ export async function checkWatchingUpdates(
             return !isInPlayRecords;
           })
           .map(([key, reminder]) => {
-            const [sourceName, videoId] = key.split('+');
+            const { source: sourceName, id: videoId } = parseStorageKey(key);
 
             // 重新计算 remarks，显示已上映多少天
             let remarksText = '已上映';

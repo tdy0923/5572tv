@@ -116,6 +116,7 @@ export interface IStorage {
   ): Promise<void>;
   getAllPlayRecords(userName: string): Promise<{ [key: string]: PlayRecord }>;
   deletePlayRecord(userName: string, key: string): Promise<void>;
+  deleteAllPlayRecords(userName: string): Promise<void>;
   // 🚀 批量写入播放记录（Upstash 优化，使用 mset 只算1条命令）
   setPlayRecordsBatch?(
     userName: string,
@@ -127,6 +128,7 @@ export interface IStorage {
   setFavorite(userName: string, key: string, favorite: Favorite): Promise<void>;
   getAllFavorites(userName: string): Promise<{ [key: string]: Favorite }>;
   deleteFavorite(userName: string, key: string): Promise<void>;
+  deleteAllFavorites(userName: string): Promise<void>;
   // 🚀 批量写入收藏（Upstash 优化，使用 mset 只算1条命令）
   setFavoritesBatch?(
     userName: string,
@@ -138,6 +140,7 @@ export interface IStorage {
   setReminder(userName: string, key: string, reminder: Reminder): Promise<void>;
   getAllReminders(userName: string): Promise<{ [key: string]: Reminder }>;
   deleteReminder(userName: string, key: string): Promise<void>;
+  deleteAllReminders(userName: string): Promise<void>;
 
   // 用户相关
   registerUser(userName: string, password: string): Promise<void>;
@@ -174,6 +177,7 @@ export interface IStorage {
     config: EpisodeSkipConfig,
   ): Promise<void>;
   deleteSkipConfig(userName: string, source: string, id: string): Promise<void>;
+  deleteAllSkipConfigs(userName: string): Promise<void>;
   getAllSkipConfigs(
     userName: string,
   ): Promise<{ [key: string]: EpisodeSkipConfig }>;

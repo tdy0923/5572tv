@@ -530,12 +530,7 @@ export async function DELETE(request: NextRequest) {
 
       console.log(`[提醒性能-删除] 用户: ${username} | 待删除提醒数: ${count}`);
 
-      await Promise.all(
-        Object.keys(all).map(async (k) => {
-          const { source: s, id: i } = parseStorageKey(k);
-          if (s && i) await db.deleteReminder(username, s, i);
-        }),
-      );
+      await db.deleteAllReminders(username);
     }
 
     const successResponse = { success: true };
