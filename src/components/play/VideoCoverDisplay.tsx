@@ -32,7 +32,7 @@ export default function VideoCoverDisplay({
   return (
     <div className='hidden md:block md:col-span-1 md:order-first'>
       <div className='py-4 pr-6'>
-        <div className='group relative flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[22px] border border-black/6 bg-linear-to-br from-gray-100 to-gray-200 shadow-[0_18px_44px_rgba(15,23,42,0.08)] dark:border-white/8 dark:from-gray-800 dark:to-gray-700'>
+        <div className='group relative flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[12px] border border-black/6 bg-linear-to-br from-gray-100 to-gray-200 shadow-[0_18px_44px_rgba(15,23,42,0.08)] dark:border-white/8 dark:from-gray-800 dark:to-gray-700'>
           {coverSrc ? (
             <>
               <img

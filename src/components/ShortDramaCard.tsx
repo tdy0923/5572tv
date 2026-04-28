@@ -321,7 +321,7 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[22px] border border-black/6 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-black/6 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6'>
           <img
             src={processImageUrl(posterUrl)}
             alt={drama.name}

@@ -2,7 +2,7 @@ export default function SkeletonCard() {
   return (
     <div className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'>
       {/* 海报骨架 */}
-      <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[22px] border border-black/6 bg-white/60 shadow-[0_18px_40px_rgba(15,23,42,0.08)] dark:border-white/8 dark:bg-white/6'>
+      <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-black/6 bg-white/60 shadow-[0_18px_40px_rgba(15,23,42,0.08)] dark:border-white/8 dark:bg-white/6'>
         {/* Shimmer 效果 */}
         <div
           className='absolute inset-0 -translate-x-full animate-shimmer bg-linear-to-r from-transparent via-white/20 to-transparent'
