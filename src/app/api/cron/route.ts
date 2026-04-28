@@ -6,6 +6,7 @@ import { uploadSpiderJarToBlob } from '@/lib/blobStorage';
 import { getConfig, refineConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import { fetchVideoDetail } from '@/lib/fetchVideoDetail';
+import { parseStorageKey } from '@/lib/key-parser';
 import { refreshLiveChannels } from '@/lib/live';
 import {
   getDbQueryCount,
@@ -702,7 +703,7 @@ async function refreshRecordAndFavorites() {
           await processBatch(
             recordsToProcess,
             async ([key, record]) => {
-              const [source, id] = key.split('+');
+              const { source, id } = parseStorageKey(key);
               if (!source || !id) {
                 console.warn(`跳过无效的播放记录键: ${key}`);
                 return null;
@@ -835,7 +836,7 @@ async function refreshRecordAndFavorites() {
         const { results: favResults, errors: favErrors } = await processBatch(
           favoritesToProcess,
           async ([key, fav]) => {
-            const [source, id] = key.split('+');
+            const { source, id } = parseStorageKey(key);
             if (!source || !id) {
               console.warn(`跳过无效的收藏键: ${key}`);
               return null;

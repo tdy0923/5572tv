@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
+import { parseStorageKey } from '@/lib/key-parser';
 import {
   getDbQueryCount,
   recordRequest,
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     // 查询单条收藏
     if (key) {
-      const [source, id] = key.split('+');
+      const { source, id } = parseStorageKey(key);
       if (!source || !id) {
         const errorResponse = { error: 'Invalid key format' };
         const errorSize = Buffer.byteLength(
@@ -508,7 +509,7 @@ export async function DELETE(request: NextRequest) {
 
     if (key) {
       // 删除单条
-      const [source, id] = key.split('+');
+      const { source, id } = parseStorageKey(key);
       if (!source || !id) {
         const errorResponse = { error: 'Invalid key format' };
         const errorSize = Buffer.byteLength(
@@ -541,7 +542,7 @@ export async function DELETE(request: NextRequest) {
 
       await Promise.all(
         Object.keys(all).map(async (k) => {
-          const [s, i] = k.split('+');
+          const { source: s, id: i } = parseStorageKey(k);
           if (s && i) await db.deleteFavorite(username, s, i);
         }),
       );

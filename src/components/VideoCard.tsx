@@ -959,6 +959,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
       actualId,
       optimisticFavorited,
       optimisticSearchFavorited,
+      optimisticReminded,
       actualDoubanId,
       isBangumi,
       isAggregate,

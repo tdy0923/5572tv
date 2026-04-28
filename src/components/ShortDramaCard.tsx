@@ -375,7 +375,7 @@ function ShortDramaCard({
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleToggleFavorite}
-            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70'
+            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm sm:opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70'
             aria-label={favorited ? '取消收藏' : '添加收藏'}
           >
             <Heart
@@ -536,6 +536,7 @@ function ShortDramaCard({
                 }
               } catch (err) {
                 console.error('切换收藏状态失败:', err);
+                setFavorited(favorited);
               }
             },
             color: favorited ? ('danger' as const) : ('default' as const),

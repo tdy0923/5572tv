@@ -25,10 +25,12 @@ const continueWatchingOptions = () =>
       const validPlayRecords = recordsArray.filter((record) => {
         const progress =
           record.total_time === 0
-            ? 0
+            ? -1
             : (record.play_time / record.total_time) * 100;
 
         if (record.play_time < 120) return false;
+
+        if (record.total_time === 0) return true;
 
         return progress > 0 && progress < 100;
       });

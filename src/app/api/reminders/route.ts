@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
-import { recordRequest, getDbQueryCount, resetDbQueryCount } from '@/lib/performance-monitor';
+import { parseStorageKey } from '@/lib/key-parser';
+import {
+  getDbQueryCount,
+  recordRequest,
+  resetDbQueryCount,
+} from '@/lib/performance-monitor';
 import { Reminder } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -27,7 +32,10 @@ export async function GET(request: NextRequest) {
     const authInfo = getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -35,7 +43,8 @@ export async function GET(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 401,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize: errorSize,
@@ -48,11 +57,14 @@ export async function GET(request: NextRequest) {
     if (authInfo.username !== process.env.USERNAME) {
       // 非站长，检查用户存在或被封禁
       const user = config.UserConfig.Users.find(
-        (u) => u.username === authInfo.username
+        (u) => u.username === authInfo.username,
       );
       if (!user) {
         const errorResponse = { error: '用户不存在' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -60,7 +72,8 @@ export async function GET(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -70,7 +83,10 @@ export async function GET(request: NextRequest) {
       }
       if (user.banned) {
         const errorResponse = { error: '用户已被封禁' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -78,7 +94,8 @@ export async function GET(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -93,10 +110,13 @@ export async function GET(request: NextRequest) {
 
     // 查询单条提醒
     if (key) {
-      const [source, id] = key.split('+');
+      const { source, id } = parseStorageKey(key);
       if (!source || !id) {
         const errorResponse = { error: 'Invalid key format' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -104,7 +124,8 @@ export async function GET(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 400,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -121,7 +142,8 @@ export async function GET(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 200,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -137,7 +159,7 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
 
     console.log(
-      `[提醒性能] 用户: ${authInfo.username} | 提醒数: ${count} | 耗时: ${(duration / 1000).toFixed(2)}s`
+      `[提醒性能] 用户: ${authInfo.username} | 提醒数: ${count} | 耗时: ${(duration / 1000).toFixed(2)}s`,
     );
 
     recordRequest({
@@ -187,7 +209,10 @@ export async function POST(request: NextRequest) {
     const authInfo = getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -195,7 +220,8 @@ export async function POST(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 401,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize: errorSize,
@@ -207,11 +233,14 @@ export async function POST(request: NextRequest) {
     const config = await getConfig();
     if (authInfo.username !== process.env.USERNAME) {
       const user = config.UserConfig.Users.find(
-        (u) => u.username === authInfo.username
+        (u) => u.username === authInfo.username,
       );
       if (!user) {
         const errorResponse = { error: '用户不存在' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -219,7 +248,8 @@ export async function POST(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -229,7 +259,10 @@ export async function POST(request: NextRequest) {
       }
       if (user.banned) {
         const errorResponse = { error: '用户已被封禁' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -237,7 +270,8 @@ export async function POST(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -253,7 +287,10 @@ export async function POST(request: NextRequest) {
 
     if (!key || !reminder) {
       const errorResponse = { error: 'Missing key or reminder' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -261,7 +298,8 @@ export async function POST(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize,
         responseSize: errorSize,
@@ -272,8 +310,14 @@ export async function POST(request: NextRequest) {
 
     // 验证必要字段（提醒必须有 releaseDate）
     if (!reminder.title || !reminder.source_name || !reminder.releaseDate) {
-      const errorResponse = { error: 'Invalid reminder data: missing title, source_name, or releaseDate' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorResponse = {
+        error:
+          'Invalid reminder data: missing title, source_name, or releaseDate',
+      };
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -281,7 +325,8 @@ export async function POST(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize,
         responseSize: errorSize,
@@ -293,7 +338,10 @@ export async function POST(request: NextRequest) {
     const [source, id] = key.split('+');
     if (!source || !id) {
       const errorResponse = { error: 'Invalid key format' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -301,7 +349,8 @@ export async function POST(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize,
         responseSize: errorSize,
@@ -318,7 +367,10 @@ export async function POST(request: NextRequest) {
     await db.saveReminder(authInfo.username, source, id, finalReminder);
 
     const successResponse = { success: true };
-    const responseSize = Buffer.byteLength(JSON.stringify(successResponse), 'utf8');
+    const responseSize = Buffer.byteLength(
+      JSON.stringify(successResponse),
+      'utf8',
+    );
 
     recordRequest({
       timestamp: startTime,
@@ -369,7 +421,10 @@ export async function DELETE(request: NextRequest) {
     const authInfo = getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
-      const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const errorSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -377,7 +432,8 @@ export async function DELETE(request: NextRequest) {
         path: '/api/reminders',
         statusCode: 401,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize: errorSize,
@@ -389,11 +445,14 @@ export async function DELETE(request: NextRequest) {
     const config = await getConfig();
     if (authInfo.username !== process.env.USERNAME) {
       const user = config.UserConfig.Users.find(
-        (u) => u.username === authInfo.username
+        (u) => u.username === authInfo.username,
       );
       if (!user) {
         const errorResponse = { error: '用户不存在' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -401,7 +460,8 @@ export async function DELETE(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -411,7 +471,10 @@ export async function DELETE(request: NextRequest) {
       }
       if (user.banned) {
         const errorResponse = { error: '用户已被封禁' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -419,7 +482,8 @@ export async function DELETE(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 401,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -435,10 +499,13 @@ export async function DELETE(request: NextRequest) {
 
     if (key) {
       // 删除单条
-      const [source, id] = key.split('+');
+      const { source, id } = parseStorageKey(key);
       if (!source || !id) {
         const errorResponse = { error: 'Invalid key format' };
-        const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+        const errorSize = Buffer.byteLength(
+          JSON.stringify(errorResponse),
+          'utf8',
+        );
 
         recordRequest({
           timestamp: startTime,
@@ -446,7 +513,8 @@ export async function DELETE(request: NextRequest) {
           path: '/api/reminders',
           statusCode: 400,
           duration: Date.now() - startTime,
-          memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+          memoryUsed:
+            (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
           dbQueries: getDbQueryCount(),
           requestSize: 0,
           responseSize: errorSize,
@@ -460,20 +528,21 @@ export async function DELETE(request: NextRequest) {
       const all = await db.getAllReminders(username);
       const count = Object.keys(all).length;
 
-      console.log(
-        `[提醒性能-删除] 用户: ${username} | 待删除提醒数: ${count}`
-      );
+      console.log(`[提醒性能-删除] 用户: ${username} | 待删除提醒数: ${count}`);
 
       await Promise.all(
         Object.keys(all).map(async (k) => {
-          const [s, i] = k.split('+');
+          const { source: s, id: i } = parseStorageKey(k);
           if (s && i) await db.deleteReminder(username, s, i);
-        })
+        }),
       );
     }
 
     const successResponse = { success: true };
-    const responseSize = Buffer.byteLength(JSON.stringify(successResponse), 'utf8');
+    const responseSize = Buffer.byteLength(
+      JSON.stringify(successResponse),
+      'utf8',
+    );
 
     recordRequest({
       timestamp: startTime,
@@ -508,4 +577,3 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 500 });
   }
 }
-
