@@ -3241,6 +3241,11 @@ function PlayPageClient() {
           videoTitle
         ).trim();
 
+        if (!effectiveQuery) {
+          console.warn('智能搜索跳过：无有效查询');
+          return [];
+        }
+
         console.log('开始智能搜索，原始查询:', effectiveQuery);
         const searchVariants = generateSearchVariants(effectiveQuery);
         console.log('生成的搜索变体:', searchVariants);
@@ -3592,6 +3597,16 @@ function PlayPageClient() {
             detailData = currentSourceDetail[0];
             sourcesInfo = currentSourceDetail;
             console.log('[Play] 设置 detailData 和 sourcesInfo 成功');
+
+            if (!searchTitle && !videoTitle && detailData.title) {
+              setVideoTitle(detailData.title);
+              videoTitleRef.current = detailData.title;
+              setSearchTitle(detailData.title);
+            }
+            if (!videoYearRef.current && detailData.year) {
+              setVideoYear(detailData.year);
+              videoYearRef.current = detailData.year;
+            }
           } else {
             console.warn('[Play] fetchSourceDetail 返回空数组');
           }
@@ -3601,7 +3616,9 @@ function PlayPageClient() {
 
         // 获取其他源信息；当前源已可播放时放到后台，不阻塞首屏播放
         setBackgroundSourcesLoading(true);
-        const otherSourcesPromise = fetchSourcesData(searchTitle || videoTitle)
+        const otherSourcesQuery =
+          searchTitle || videoTitle || detailData?.title || '';
+        const otherSourcesPromise = fetchSourcesData(otherSourcesQuery)
           .then((sources) => {
             const allSources = [...sourcesInfo];
             sources.forEach((source) => {
