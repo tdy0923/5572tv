@@ -1152,13 +1152,25 @@ export const UserMenu: React.FC = () => {
                               title={series.title}
                               poster={series.cover}
                               year={series.year}
-                              source={series.sourceKey}
+                              source={
+                                series.sourceKey === 'upcoming_release' ||
+                                series.sourceKey === 'douban' ||
+                                series.sourceKey === 'unknown'
+                                  ? undefined
+                                  : series.sourceKey
+                              }
                               source_name={series.source_name}
                               episodes={series.totalEpisodes}
-                              id={series.videoId}
+                              id={
+                                series.sourceKey === 'upcoming_release' ||
+                                series.sourceKey === 'douban' ||
+                                series.sourceKey === 'unknown'
+                                  ? undefined
+                                  : series.videoId
+                              }
                               onDelete={undefined}
                               type={series.totalEpisodes > 1 ? 'tv' : 'movie'}
-                              from='favorite'
+                              from='douban'
                               remarks={series.remarks}
                               releaseDate={series.releaseDate}
                             />
