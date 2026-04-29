@@ -33,6 +33,7 @@ import {
   isReminded,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
+import { requestNotificationPermission } from '@/lib/reminder-notification';
 import {
   isSeriesCompleted,
   processImageUrl,
@@ -330,6 +331,10 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
 
           // 🎯 立即更新 UI（乐观更新）
           setOptimisticReminded(newRemindedState);
+
+          if (newRemindedState) {
+            requestNotificationPermission();
+          }
 
           // 🔄 使用 reminder mutation
           toggleReminderMutation.mutate(

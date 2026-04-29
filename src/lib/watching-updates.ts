@@ -8,6 +8,7 @@ import {
   PlayRecord,
 } from './db.client';
 import { parseStorageKey } from './key-parser';
+import { sendNewReleaseNotifications } from './reminder-notification';
 import { resolveCardPosterUrl } from './utils';
 
 // 缓存键
@@ -321,6 +322,17 @@ export async function checkWatchingUpdates(
           updatedSeries.push(...newReleases);
           newReleasesCount = newReleases.length;
           hasAnyUpdates = true;
+
+          sendNewReleaseNotifications(
+            newReleases.map((r) => ({
+              title: r.title,
+              sourceKey: r.sourceKey,
+              videoId: r.videoId,
+              cover: r.cover,
+              remarks: r.remarks,
+              releaseDate: r.releaseDate,
+            })),
+          );
         }
       } catch (error) {
         console.warn('检查新上映内容失败:', error);

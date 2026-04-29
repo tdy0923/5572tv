@@ -4,6 +4,8 @@
 
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import {
+  Bell,
+  BellOff,
   Calendar,
   ChevronRight,
   Film,
@@ -33,6 +35,10 @@ import {
   getAllReminders,
 } from '@/lib/db.client';
 import { getDoubanDetails } from '@/lib/douban.client';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from '@/lib/reminder-notification';
 import {
   cleanExpiredCache,
   clearRecommendsCache,
@@ -439,6 +445,13 @@ function HomeClient() {
     useState(false);
   const [showClearRemindersDialog, setShowClearRemindersDialog] =
     useState(false);
+  const [notifPermission, setNotifPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >('unsupported');
+
+  useEffect(() => {
+    setNotifPermission(getNotificationPermission());
+  }, []);
 
   // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
@@ -778,9 +791,37 @@ function HomeClient() {
             // 想看视图
             <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
-                <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                  我想看
-                </h2>
+                <div className='flex items-center gap-2'>
+                  <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+                    我想看
+                  </h2>
+                  {notifPermission !== 'unsupported' && (
+                    <button
+                      className={`rounded-full p-1.5 transition-colors ${
+                        notifPermission === 'granted'
+                          ? 'text-green-500'
+                          : 'text-gray-400 hover:text-amber-500'
+                      }`}
+                      onClick={async () => {
+                        const result = await requestNotificationPermission();
+                        setNotifPermission(result);
+                      }}
+                      title={
+                        notifPermission === 'granted'
+                          ? '浏览器通知已开启'
+                          : notifPermission === 'denied'
+                            ? '浏览器通知已关闭，请在浏览器设置中开启'
+                            : '点击开启浏览器通知'
+                      }
+                    >
+                      {notifPermission === 'granted' ? (
+                        <Bell className='h-4 w-4' />
+                      ) : (
+                        <BellOff className='h-4 w-4' />
+                      )}
+                    </button>
+                  )}
+                </div>
                 {reminderItems.length > 0 && (
                   <button
                     className='ui-control flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'

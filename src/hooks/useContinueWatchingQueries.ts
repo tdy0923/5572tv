@@ -75,24 +75,20 @@ const watchingUpdatesOptions = () =>
  * Fetch watching updates (new episodes detection)
  * Based on TanStack Query useQuery with enabled option
  */
-export function useWatchingUpdatesQuery(hasPlayRecords: boolean) {
+export function useWatchingUpdatesQuery() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     ...watchingUpdatesOptions(),
-    enabled: hasPlayRecords, // Only fetch when play records exist
   });
 
-  // Subscribe to watching updates events
   useEffect(() => {
-    if (!hasPlayRecords) return;
-
     const unsubscribe = subscribeToWatchingUpdatesEvent(() => {
       queryClient.invalidateQueries({ queryKey: ['watchingUpdates'] });
     });
 
     return unsubscribe;
-  }, [hasPlayRecords, queryClient]);
+  }, [queryClient]);
 
   return query;
 }

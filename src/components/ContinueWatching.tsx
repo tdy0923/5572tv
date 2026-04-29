@@ -54,9 +54,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
     useContinueWatchingQuery();
 
   // 🚀 TanStack Query - 观看更新（仅当有播放记录时才查询）
-  const { data: watchingUpdates = null } = useWatchingUpdatesQuery(
-    !loading && playRecords.length > 0,
-  );
+  const { data: watchingUpdates = null } = useWatchingUpdatesQuery();
 
   // 🚀 TanStack Query - 使用 useMutation 管理清空播放记录操作
   const clearPlayRecordsMutation = useClearPlayRecordsMutation();
