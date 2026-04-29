@@ -19,7 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
@@ -162,7 +162,6 @@ export const UserMenu: React.FC = () => {
   // 修改密码相关状态
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
 
   // 🚀 TanStack Query - 版本检查
@@ -288,7 +287,22 @@ export const UserMenu: React.FC = () => {
         unsubscribe();
       };
     }
-  }, [authInfo, storageType, dismissedReleases]);
+  }, [authInfo, storageType]);
+
+  // 根据 watchingUpdates 和 dismissedReleases 计算未读状态
+  const computedHasUnread = useMemo(() => {
+    if (!watchingUpdates) return false;
+    const activeReleases = watchingUpdates.updatedSeries.filter(
+      (series) =>
+        series.hasNewRelease &&
+        !dismissedReleases.has(`${series.sourceKey}+${series.videoId}`),
+    ).length;
+    return (watchingUpdates.updatedCount || 0) > 0 || activeReleases > 0;
+  }, [watchingUpdates, dismissedReleases]);
+
+  useEffect(() => {
+    setHasUnreadUpdates(computedHasUnread);
+  }, [computedHasUnread]);
 
   // 监听watching-updates事件，刷新播放记录
   useEffect(() => {
@@ -310,25 +324,10 @@ export const UserMenu: React.FC = () => {
     const willOpen = !isOpen;
     setIsOpen(willOpen);
 
-    // 如果是打开菜单，立即检查更新（不受缓存限制）
     if (willOpen && authInfo?.username && storageType !== 'localstorage') {
       try {
-        // 暂时清除缓存时间，强制检查一次
-        const lastCheckTime =
-          localStorage.getItem('5572tv_last_update_check') ||
-          localStorage.getItem('moontv_last_update_check');
-        localStorage.removeItem('5572tv_last_update_check');
-        localStorage.removeItem('moontv_last_update_check');
+        await checkWatchingUpdates(true);
 
-        // 执行检查
-        await checkWatchingUpdates();
-
-        // 恢复缓存时间（如果之前有的话）
-        if (lastCheckTime) {
-          localStorage.setItem('5572tv_last_update_check', lastCheckTime);
-        }
-
-        // 更新UI状态
         const updates = getDetailedWatchingUpdates();
         setWatchingUpdates(updates);
 
@@ -337,15 +336,12 @@ export const UserMenu: React.FC = () => {
           return;
         }
 
-        // 重新计算未读状态
-        // 过滤掉已忽略的新上映
         const activeReleases = updates.updatedSeries.filter(
           (series) =>
             series.hasNewRelease &&
             !dismissedReleases.has(`${series.sourceKey}+${series.videoId}`),
         ).length;
 
-        // 只要有更新或未忽略的今日上映，就显示红点
         if (
           updates &&
           ((updates.updatedCount || 0) > 0 || activeReleases > 0)
@@ -445,11 +441,13 @@ export const UserMenu: React.FC = () => {
     newDismissed.add(key);
     setDismissedReleases(newDismissed);
 
-    // 保存到localStorage
+    // 保存到localStorage（限制最大数量防止溢出）
     try {
+      const arr = [...newDismissed];
+      const trimmed = arr.length > 100 ? arr.slice(-100) : arr;
       localStorage.setItem(
         '5572tv_dismissed_releases',
-        JSON.stringify([...newDismissed]),
+        JSON.stringify(trimmed),
       );
     } catch (error) {
       console.error('保存已忽略列表失败:', error);
@@ -600,19 +598,13 @@ export const UserMenu: React.FC = () => {
       return;
     }
 
-    setPasswordLoading(true);
-
     changePasswordMutation.mutate(newPassword, {
       onSuccess: async () => {
-        // 修改成功，关闭弹窗并登出
         setIsChangePasswordOpen(false);
         await handleLogout();
       },
       onError: (error) => {
         setPasswordError(error.message || '网络错误，请稍后重试');
-      },
-      onSettled: () => {
-        setPasswordLoading(false);
       },
     });
   };
@@ -979,7 +971,7 @@ export const UserMenu: React.FC = () => {
                 placeholder='请输入新密码'
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                disabled={passwordLoading}
+                disabled={changePasswordMutation.isPending}
               />
             </div>
 
@@ -994,7 +986,7 @@ export const UserMenu: React.FC = () => {
                 placeholder='请再次输入新密码'
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={passwordLoading}
+                disabled={changePasswordMutation.isPending}
               />
             </div>
 
@@ -1011,16 +1003,20 @@ export const UserMenu: React.FC = () => {
             <button
               onClick={handleCloseChangePassword}
               className='ui-secondary-button flex-1 justify-center text-sm'
-              disabled={passwordLoading}
+              disabled={changePasswordMutation.isPending}
             >
               取消
             </button>
             <button
               onClick={handleSubmitChangePassword}
               className='ui-primary-button flex-1 justify-center text-sm'
-              disabled={passwordLoading || !newPassword || !confirmPassword}
+              disabled={
+                changePasswordMutation.isPending ||
+                !newPassword ||
+                !confirmPassword
+              }
             >
-              {passwordLoading ? '修改中...' : '确认修改'}
+              {changePasswordMutation.isPending ? '修改中...' : '确认修改'}
             </button>
           </div>
 
