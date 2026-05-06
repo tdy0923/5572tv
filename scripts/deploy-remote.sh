@@ -19,7 +19,7 @@ docker run -d \
   -e SITE_BASE='https://www.5572.net' \
   -e NEXT_PUBLIC_SITE_NAME='5572影视' \
   -e NEXT_PUBLIC_STORAGE_TYPE='kvrocks' \
-  -e KVROCKS_URL='redis://kvrocks:6666' \
+  -e KVROCKS_URL='redis://:Danny0923@kvrocks:6666' \
   --restart unless-stopped \
   "$IMAGE"
 

@@ -697,9 +697,8 @@ export abstract class BaseRedisStorage implements IStorage {
       this.client.zRange(this.userListKey(), 0, -1),
     );
     const v2Users = ensureStringArray(v2Members as any[]);
-    if (v2Users.length > 0) return v2Users;
 
-    // V1 兼容：SCAN 扫描（降级兜底）
+    // V1 兼容：SCAN 扫描获取仅存在于 V1 存储中的用户
     const v1Keys = await this.scanKeys('u:*:pwd');
     const v1Users = v1Keys
       .map((k) => {
@@ -707,14 +706,9 @@ export abstract class BaseRedisStorage implements IStorage {
         return m ? ensureString(m[1]) : undefined;
       })
       .filter((u): u is string => typeof u === 'string');
-    const v2Keys = await this.scanKeys('u:*:info');
-    const v2KeyUsers = v2Keys
-      .map((k) => {
-        const m = k.match(/^u:(.+?):info$/);
-        return m ? ensureString(m[1]) : undefined;
-      })
-      .filter((u): u is string => typeof u === 'string');
-    return Array.from(new Set([...v2KeyUsers, ...v1Users]));
+
+    // 合并 V1 和 V2 用户，去重
+    return Array.from(new Set([...v2Users, ...v1Users]));
   }
 
   // ---------- 管理员配置 ----------
