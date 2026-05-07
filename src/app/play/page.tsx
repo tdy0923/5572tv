@@ -5246,7 +5246,16 @@ function PlayPageClient() {
                       hls.recoverMediaError();
                       break;
                     default:
-                      console.log('无法恢复的错误');
+                      console.log('无法恢复的错误，标记源无效');
+                      // 标记当前源为无效，触发 ArtPlayer error 事件进行换源
+                      const hlsFailSource = currentSourceRef.current;
+                      const hlsFailId = currentIdRef.current;
+                      if (hlsFailSource && hlsFailId) {
+                        invalidSourceKeysRef.current.set(
+                          getSourceIdentityKey(hlsFailSource, hlsFailId),
+                          Date.now(),
+                        );
+                      }
                       hls.destroy();
                       break;
                   }
@@ -6803,11 +6812,53 @@ function PlayPageClient() {
           }
         });
 
-        // 监听播放器错误
+        // 监听播放器错误 - 自动切换到备用源
+        let sourceErrorCountRef = { current: 0 };
+        const MAX_SOURCE_ERRORS = 2;
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
-          if (artPlayerRef.current.currentTime > 0) {
+
+          // 仅在视频未开始播放时（currentTime < 1）触发换源
+          if (artPlayerRef.current.currentTime > 1) {
             return;
+          }
+
+          sourceErrorCountRef.current++;
+          if (sourceErrorCountRef.current > MAX_SOURCE_ERRORS) {
+            console.log('⚠️ 同一源连续错误超过限制，放弃自动切换');
+            return;
+          }
+
+          // 标记当前源为无效
+          const failSource = currentSourceRef.current;
+          const failId = currentIdRef.current;
+          if (failSource && failId) {
+            const failKey = getSourceIdentityKey(failSource, failId);
+            invalidSourceKeysRef.current.set(failKey, Date.now());
+            console.log(`🚫 已标记源为无效: ${failKey}`);
+          }
+
+          // 找到下一个可用源
+          const allSources = filterInvalidSources(availableSourcesRef.current);
+          const nextSource = allSources.find(
+            (s) => s.source !== failSource || s.id !== failId,
+          );
+
+          if (nextSource) {
+            console.log(
+              `🔄 自动切换到备用源: ${nextSource.source} - ${nextSource.title}`,
+            );
+            // 重置错误计数
+            sourceErrorCountRef.current = 0;
+            // 通过 URL 参数切换源
+            const params = new URLSearchParams(window.location.search);
+            params.set('source', nextSource.source);
+            params.set('id', nextSource.id);
+            if (nextSource.title) params.set('title', nextSource.title);
+            window.location.search = params.toString();
+          } else {
+            console.log('❌ 没有更多可用源');
+            setError('当前线路播放失败，且没有其他可用线路');
           }
         });
 
