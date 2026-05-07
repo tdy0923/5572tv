@@ -62,11 +62,11 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
 
   return (
     <div className='md:col-span-3'>
-      <div className='p-6 flex flex-col min-h-0'>
+      <div className='px-4 py-5 sm:p-6 flex flex-col min-h-0'>
         {/* 标题 */}
         <div className='mb-4 shrink-0'>
           <div className='flex flex-col md:flex-row md:items-center gap-3'>
-            <h1 className='text-2xl md:text-3xl font-bold tracking-wide text-center md:text-left bg-linear-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-gray-100 dark:via-gray-200 dark:to-gray-100 bg-clip-text text-transparent'>
+            <h1 className='text-xl sm:text-2xl md:text-3xl font-bold tracking-wide text-center md:text-left bg-linear-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-gray-100 dark:via-gray-200 dark:to-gray-100 bg-clip-text text-transparent'>
               {videoTitle || '影片标题'}
             </h1>
 

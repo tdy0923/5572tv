@@ -266,7 +266,7 @@ function LoginPageClient() {
         </div>
 
         {error && (
-          <div className='flex items-center gap-2 p-2.5 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
+          <div className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
             <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
             <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>
               {error}
@@ -421,7 +421,7 @@ function LoginPageClient() {
                     onClick={() =>
                       (window.location.href = `/api/auth/oidc/login?provider=${provider.id}`)
                     }
-                    className={`w-full inline-flex justify-center items-center rounded-lg py-2.5 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
+                    className={`w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
                   >
                     <OIDCProviderLogo provider={detectedProvider} />
                     <span className='ml-2'>{buttonText}</span>
@@ -446,7 +446,7 @@ function LoginPageClient() {
                   onClick={() =>
                     (window.location.href = '/api/auth/oidc/login')
                   }
-                  className={`mt-3 sm:mt-4 w-full inline-flex justify-center items-center rounded-lg py-2.5 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
+                  className={`mt-3 sm:mt-4 w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
                 >
                   <OIDCProviderLogo provider={provider} />
                   <span className='ml-2'>{buttonText}</span>

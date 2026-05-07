@@ -230,7 +230,7 @@ function RegisterPageClient() {
               autoCapitalize='none'
               autoCorrect='off'
               spellCheck={false}
-              className='ui-input pl-12 pr-4 sm:text-base'
+              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
               placeholder='3-20位字母数字下划线'
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -253,7 +253,7 @@ function RegisterPageClient() {
               id='password'
               type='password'
               autoComplete='new-password'
-              className='ui-input pl-12 pr-4 sm:text-base'
+              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
               placeholder='至少6位字符'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -276,7 +276,7 @@ function RegisterPageClient() {
               id='confirmPassword'
               type='password'
               autoComplete='new-password'
-              className='ui-input pl-12 pr-4 sm:text-base'
+              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
               placeholder='再次输入密码'
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -300,7 +300,7 @@ function RegisterPageClient() {
                 id='inviteCode'
                 type='text'
                 autoComplete='off'
-                className='ui-input pl-12 pr-4 sm:text-base uppercase'
+                className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base uppercase'
                 placeholder='请输入邀请码'
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value.toUpperCase())}

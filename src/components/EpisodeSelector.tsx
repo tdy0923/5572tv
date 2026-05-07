@@ -461,7 +461,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                 <button
                   key={episodeNumber}
                   onClick={() => handleEpisodeClick(episodeNumber - 1)}
-                  className={`group min-h-[40px] sm:min-h-[44px] min-w-[40px] sm:min-w-[44px] px-2 sm:px-3 py-2 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap font-mono relative overflow-hidden active:scale-95
+                  className={`group min-h-[44px] min-w-[44px] px-2 sm:px-3 py-2 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap font-mono relative overflow-hidden active:scale-95
                     ${
                       isActive
                         ? 'bg-linear-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg shadow-green-500/30 dark:from-green-600 dark:via-emerald-600 dark:to-teal-600 dark:shadow-green-500/20 scale-105'
@@ -661,11 +661,11 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
 
                           {/* 源名称和集数信息 - 垂直居中 */}
                           <div className='flex items-center justify-between gap-2'>
-                            <span className='text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 border border-gray-500/60 rounded text-gray-700 dark:text-gray-300'>
+                            <span className='text-xs sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 border border-gray-500/60 rounded text-gray-700 dark:text-gray-300'>
                               {source.source_name}
                             </span>
                             {source.episodes.length > 1 && (
-                              <span className='text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium'>
+                              <span className='text-xs sm:text-xs text-gray-500 dark:text-gray-400 font-medium'>
                                 {source.episodes.length} 集
                               </span>
                             )}
@@ -680,17 +680,17 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                                 if (!videoInfo.hasError) {
                                   return (
                                     <div className='flex items-end gap-2 sm:gap-3'>
-                                      <div className='text-green-600 dark:text-green-400 font-medium text-[10px] sm:text-xs'>
+                                      <div className='text-green-600 dark:text-green-400 font-medium text-xs sm:text-xs'>
                                         {videoInfo.loadSpeed}
                                       </div>
-                                      <div className='text-orange-600 dark:text-orange-400 font-medium text-[10px] sm:text-xs'>
+                                      <div className='text-orange-600 dark:text-orange-400 font-medium text-xs sm:text-xs'>
                                         {videoInfo.pingTime}ms
                                       </div>
                                     </div>
                                   );
                                 } else {
                                   return (
-                                    <div className='text-red-500/90 dark:text-red-400 font-medium text-[10px] sm:text-xs'>
+                                    <div className='text-red-500/90 dark:text-red-400 font-medium text-xs sm:text-xs'>
                                       无测速数据
                                     </div>
                                   ); // 占位div

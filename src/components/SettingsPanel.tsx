@@ -86,7 +86,7 @@ const Toggle = memo(
     checked: boolean;
     onChange: (v: boolean) => void;
   }) => (
-    <label className='flex items-center cursor-pointer'>
+    <label className='flex items-center min-h-[48px] cursor-pointer'>
       <div className='relative'>
         <input
           type='checkbox'
@@ -329,14 +329,14 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
 
       {/* 设置面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90dvh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='本地设置'
       >
         {/* 内容容器 */}
         <div
-          className='flex-1 p-6 overflow-y-auto'
+          className='flex-1 p-4 sm:p-6 overflow-y-auto'
           data-panel-content
           style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
         >
@@ -348,7 +348,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
               </h3>
               <button
                 onClick={handleResetSettings}
-                className='rounded-2xl border border-red-200/80 px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:border-red-800/70 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
+                className='rounded-2xl border border-red-200/80 px-3 py-2.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50 hover:text-red-700 dark:border-red-800/70 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300'
                 title='重置为默认设置'
               >
                 恢复默认
@@ -356,7 +356,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
             </div>
             <button
               onClick={onClose}
-              className='ui-control ui-control-icon h-10 w-10 text-gray-500'
+              className='ui-control ui-control-icon h-11 w-11 text-gray-500'
               aria-label='Close'
             >
               <X className='h-5 w-5' />
@@ -417,7 +417,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                           handleDoubanDataSourceChange(option.value);
                           setIsDoubanDropdownOpen(false);
                         }}
-                        className={`flex w-full items-center justify-between px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-black/4 dark:hover:bg-white/8 ${doubanDataSource === option.value ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
+                        className={`flex w-full items-center justify-between px-3 py-3 text-left text-sm transition-colors duration-150 hover:bg-black/4 dark:hover:bg-white/8 ${doubanDataSource === option.value ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
                       >
                         <span className='truncate'>{option.label}</span>
                         {doubanDataSource === option.value && (
@@ -489,7 +489,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                       !isDoubanImageProxyDropdownOpen,
                     )
                   }
-                  className='w-full px-3 py-2.5 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
+                  className='w-full px-3 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
                 >
                   {
                     doubanImageProxyTypeOptions.find(
@@ -512,7 +512,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                           handleDoubanImageProxyTypeChange(option.value);
                           setIsDoubanImageProxyDropdownOpen(false);
                         }}
-                        className={`w-full px-3 py-2.5 text-left text-sm transition-colors duration-150 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 ${doubanImageProxyType === option.value ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
+                        className={`w-full px-3 py-3 text-left text-sm transition-colors duration-150 flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-700 ${doubanImageProxyType === option.value ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
                       >
                         <span className='truncate'>{option.label}</span>
                         {doubanImageProxyType === option.value && (
@@ -556,7 +556,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </div>
                 <input
                   type='text'
-                  className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
+                  className='w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
                   placeholder='例如: https://proxy.example.com/fetch?url='
                   value={doubanImageProxyUrl}
                   onChange={(e) =>

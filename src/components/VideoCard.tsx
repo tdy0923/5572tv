@@ -1288,7 +1288,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
             {/* 收藏页面专用：固定显示的爱心/铃铛按钮 */}
             {from === 'favorite' && config.showHeart && (
               <div
-                className='absolute bottom-2 right-2 z-30'
+                className='absolute bottom-2 right-2 z-30 min-h-[44px] min-w-[44px] flex items-center justify-center'
                 onClick={handleToggleFavorite}
                 style={
                   {
@@ -1313,12 +1313,12 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
 
                   return shouldShowBell ? (
                     <BellRing
-                      size={16}
+                      size={18}
                       className='fill-orange-500 stroke-orange-500 transition-all duration-300 hover:scale-110 hover:fill-orange-600 hover:stroke-orange-600'
                     />
                   ) : (
                     <Heart
-                      size={16}
+                      size={18}
                       className='fill-red-500 stroke-red-500 transition-all duration-300 hover:scale-110 hover:fill-red-600 hover:stroke-red-600'
                     />
                   );
@@ -1350,17 +1350,17 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                   {currentEpisode ? (
                     <>
                       {/* 左侧：当前集 - 品牌色背景（红色） */}
-                      <span className='flex items-center bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white'>
+                      <span className='flex items-center bg-red-600 px-1.5 py-0.5 text-[11px] font-bold text-white'>
                         EP {String(currentEpisode).padStart(2, '0')}
                       </span>
                       {/* 右侧：总集数 - 半透明黑背景 */}
-                      <span className='flex items-center bg-black/70 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-medium text-white/60'>
+                      <span className='flex items-center bg-black/70 backdrop-blur-sm px-1.5 py-0.5 text-[11px] font-medium text-white/60'>
                         / {actualEpisodes}
                       </span>
                     </>
                   ) : (
                     /* 仅显示总集数 */
-                    <span className='flex items-center bg-black/70 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white/80'>
+                    <span className='flex items-center bg-black/70 backdrop-blur-sm px-2 py-0.5 text-[11px] font-medium text-white/80'>
                       {actualEpisodes} 集
                     </span>
                   )}
@@ -1793,7 +1793,7 @@ const VideoCard = forwardRef<VideoCardHandle, VideoCardProps>(
                     }}
                   >
                     <span
-                      className={`relative inline-flex items-center gap-1.5 rounded-full border border-gray-300/50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-300 ease-out group-hover:scale-[1.02] dark:border-gray-600/50 dark:text-gray-400 ${colorClasses}`}
+                      className={`relative inline-flex items-center gap-1.5 rounded-full border border-gray-300/50 px-3 py-1 text-xs font-medium text-gray-600 transition-all duration-300 ease-out group-hover:scale-[1.02] dark:border-gray-600/50 dark:text-gray-400 max-w-full truncate ${colorClasses}`}
                       style={
                         {
                           WebkitUserSelect: 'none',

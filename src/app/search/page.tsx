@@ -322,7 +322,7 @@ function SearchPageClient() {
         className='group w-full rounded-2xl border border-gray-200/80 bg-white/90 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700'
       >
         <div className='flex items-start gap-4'>
-          <div className='relative h-32 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
+          <div className='relative h-28 w-20 sm:h-32 sm:w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={item.poster}
@@ -1761,7 +1761,7 @@ function SearchPageClient() {
                             {viewMode === 'agg' ? (
                               <VirtualGrid
                                 items={filteredAggResults}
-                                className='grid-cols-3 gap-x-2 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
+                                className='grid-cols-3 gap-x-2 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
                                 rowGapClass='pb-14 sm:pb-20'
                                 estimateRowHeight={320}
                                 renderItem={([mapKey, group]) => {
@@ -1807,7 +1807,7 @@ function SearchPageClient() {
                             ) : (
                               <VirtualGrid
                                 items={filteredAllResults}
-                                className='grid-cols-3 gap-x-2 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
+                                className='grid-cols-3 gap-x-2 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
                                 rowGapClass='pb-14 sm:pb-20'
                                 estimateRowHeight={320}
                                 renderItem={(item) => (
@@ -1847,7 +1847,7 @@ function SearchPageClient() {
                             className={
                               resultDisplayMode === 'list'
                                 ? 'space-y-4'
-                                : 'justify-start grid grid-cols-3 gap-x-2 gap-y-14 sm:gap-y-20 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
+                                : 'justify-start grid grid-cols-3 gap-x-2 gap-y-14 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'
                             }
                           >
                             {viewMode === 'agg'
@@ -2051,9 +2051,11 @@ function SearchPageClient() {
                             e.preventDefault();
                             deleteSearchHistory(item); // 事件监听会自动更新界面
                           }}
-                          className='absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gray-400 text-[10px] text-white transition-colors hover:bg-red-500 sm:h-4 sm:w-4 sm:opacity-0 sm:group-hover:opacity-100'
+                          className='absolute -top-1 -right-1 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-[10px] text-white transition-colors sm:h-4 sm:w-4 sm:min-h-0 sm:min-w-0 sm:opacity-0 sm:group-hover:opacity-100'
                         >
-                          <X className='w-3 h-3' />
+                          <div className='flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 transition-colors group-hover:bg-red-500 sm:bg-gray-400'>
+                            <X className='w-3 h-3' />
+                          </div>
                         </button>
                       </div>
                     ))}

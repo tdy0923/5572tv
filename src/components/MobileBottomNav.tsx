@@ -253,7 +253,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
                 'rounded-2xl py-2 px-1',
                 'transition-all duration-200',
                 'active:scale-95',
-                active && 'bg-white/6',
+                active && 'bg-white/10',
               )}
             >
               <Icon

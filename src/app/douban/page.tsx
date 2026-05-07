@@ -984,12 +984,12 @@ function DoubanPageClient() {
           {useVirtualization ? (
             <>
               {loading || !selectorsReady
-                ? <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-12 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
+                ? <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
                   {skeletonData.map((index) => <DoubanCardSkeleton key={index} />)}
                 </div>
                 : <VirtualGrid
                   items={doubanData}
-                  className='grid-cols-3 gap-x-2 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8'
+                  className='grid-cols-3 gap-x-2 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8'
                   rowGapClass='pb-12 sm:pb-20'
                   estimateRowHeight={320}
                   endReached={() => {
@@ -1108,7 +1108,7 @@ function DoubanPageClient() {
           ) : (
             <>
               {/* 传统网格渲染 */}
-              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-12 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
+              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
                 {loading || !selectorsReady
                   ? // 显示骨架屏
                   skeletonData.map((index) => <DoubanCardSkeleton key={index} />)
@@ -1259,7 +1259,7 @@ function DoubanPageClient() {
       {/* 返回顶部悬浮按钮 */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-20 md:bottom-6 right-6 z-500 w-12 h-12 bg-green-500/90 hover:bg-green-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${showBackToTop
+        className={`fixed bottom-24 md:bottom-6 right-6 z-500 w-12 h-12 bg-green-500/90 hover:bg-green-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${showBackToTop
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'
           }`}

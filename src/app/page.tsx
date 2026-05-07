@@ -851,7 +851,7 @@ function HomeClient() {
                     <button
                       key={key}
                       onClick={() => setReminderFilter(key)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                         reminderFilter === key
                           ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
                           : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
@@ -863,7 +863,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-3 gap-x-1.5 gap-y-14 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {(() => {
                   // 筛选
                   let filtered = reminderItems;
@@ -1091,7 +1091,7 @@ function HomeClient() {
                     <button
                       key={key}
                       onClick={() => setFavoriteFilter(key)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                         favoriteFilter === key
                           ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
                           : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
@@ -1130,7 +1130,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-3 gap-x-1.5 gap-y-14 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {(() => {
                   // 筛选
                   let filtered = favoriteItems;
@@ -1329,7 +1329,7 @@ function HomeClient() {
                   hotTvShows.length > 0 ||
                   hotVarietyShows.length > 0 ||
                   hotShortDramas.length > 0) && (
-                  <section className='mb-10'>
+                  <section className='mb-8 md:mb-10'>
                     <HeroBanner
                       items={[
                         // 豆瓣电影
@@ -1396,14 +1396,14 @@ function HomeClient() {
                 )}
 
               {/* 继续观看 */}
-              <div className='relative mb-10'>
+              <div className='relative mb-6 sm:mb-10'>
                 <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
                 <ContinueWatching className='mb-0' />
               </div>
 
               {/* 即将上映 */}
               {!loading && upcomingReleases.length > 0 && (
-                <section className='mb-10'>
+                <section className='mb-8 md:mb-10'>
                   <div className='mb-4 flex items-center justify-between'>
                     <SectionTitle
                       title='即将上映'
@@ -1446,7 +1446,7 @@ function HomeClient() {
                         onClick={() =>
                           setUpcomingFilter(key as 'all' | 'movie' | 'tv')
                         }
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                        className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                           upcomingFilter === key
                             ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
                             : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
@@ -1527,7 +1527,7 @@ function HomeClient() {
                         return (
                           <div
                             key={`${release.id}-${index}`}
-                            className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                            className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <VideoCard
                               source='upcoming_release'
@@ -1557,7 +1557,7 @@ function HomeClient() {
               )}
 
               {/* 热门电影 */}
-              <section className='mb-10'>
+              <section className='mb-8 md:mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门电影'
@@ -1575,14 +1575,14 @@ function HomeClient() {
                 <ScrollableRow enableVirtualization={true}>
                   {loading
                     ? // 加载状态显示灰色占位数据
-                      Array.from({ length: 8 }).map((_, index) => (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
                     : // 显示真实数据
                       hotMovies.map((movie, index) => (
                         <div
                           key={index}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         >
                           <VideoCard
                             from='douban'
@@ -1602,7 +1602,7 @@ function HomeClient() {
               </section>
 
               {/* 热门剧集 */}
-              <section className='mb-10'>
+              <section className='mb-8 md:mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门剧集'
@@ -1620,14 +1620,14 @@ function HomeClient() {
                 <ScrollableRow enableVirtualization={true}>
                   {loading
                     ? // 加载状态显示灰色占位数据
-                      Array.from({ length: 8 }).map((_, index) => (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
                     : // 显示真实数据
                       hotTvShows.map((show, index) => (
                         <div
                           key={index}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         >
                           <VideoCard
                             from='douban'
@@ -1647,7 +1647,7 @@ function HomeClient() {
               </section>
 
               {/* 每日新番放送 */}
-              <section className='mb-10'>
+              <section className='mb-8 md:mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='新番放送'
@@ -1665,14 +1665,14 @@ function HomeClient() {
                 <ScrollableRow enableVirtualization={true}>
                   {loading
                     ? // 加载状态显示灰色占位数据
-                      Array.from({ length: 8 }).map((_, index) => (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
                     : // 展示当前日期的番剧
                       todayAnimes.map((anime, index) => (
                         <div
                           key={`${anime.id}-${index}`}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         >
                           <VideoCard
                             from='douban'
@@ -1698,7 +1698,7 @@ function HomeClient() {
               </section>
 
               {/* 热门综艺 */}
-              <section className='mb-10'>
+              <section className='mb-8 md:mb-10'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门综艺'
@@ -1716,14 +1716,14 @@ function HomeClient() {
                 <ScrollableRow enableVirtualization={true}>
                   {loading
                     ? // 加载状态显示灰色占位数据
-                      Array.from({ length: 8 }).map((_, index) => (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
                     : // 显示真实数据
                       hotVarietyShows.map((show, index) => (
                         <div
                           key={index}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         >
                           <VideoCard
                             from='douban'
@@ -1761,7 +1761,7 @@ function HomeClient() {
                 <ScrollableRow enableVirtualization={true}>
                   {loading
                     ? // 加载状态显示灰色占位数据
-                      Array.from({ length: 8 }).map((_, index) => (
+                      Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
                     : // 显示真实数据
@@ -1769,7 +1769,7 @@ function HomeClient() {
                         <ShortDramaCard
                           key={index}
                           drama={drama}
-                          className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         />
                       ))}
                 </ScrollableRow>

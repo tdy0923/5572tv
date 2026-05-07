@@ -192,7 +192,7 @@ function ScrollableRow({
     >
       <div
         ref={containerRef}
-        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-10 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
+        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
         onScroll={checkScroll}
         style={{
           WebkitOverflowScrolling: 'touch', // iOS 惯性滚动
