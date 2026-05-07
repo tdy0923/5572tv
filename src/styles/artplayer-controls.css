@@ -69,3 +69,26 @@
     max-width: calc(100vw - 40px) !important;
   }
 }
+
+/* ===== Touch-Friendly Progress Bar ===== */
+.art-progress {
+  min-height: 20px !important;
+  padding: 8px 0 !important;
+}
+
+.art-progress .art-control-progress-inner {
+  min-height: 6px !important;
+}
+
+/* Make the scrub indicator bigger on touch devices */
+@media (hover: none) {
+  .art-progress .art-control-progress-indicator {
+    width: 14px !important;
+    height: 14px !important;
+    margin-top: -4px !important;
+  }
+  
+  .art-progress:hover .art-control-progress-indicator {
+    transform: scale(1) !important;
+  }
+}

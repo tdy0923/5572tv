@@ -22,7 +22,7 @@
   /* 减小控制按钮的间距和尺寸，确保完整显示 */
   .art-controls button,
   .art-control {
-    min-width: 28px !important;
+    min-width: 32px !important;
     padding: 0 4px !important;
     font-size: 13px !important;
   }
@@ -46,6 +46,22 @@
 
   /* 减小进度条高度以节省空间 */
   .art-progress {
-    height: 3px !important;
+    height: 4px !important;
+    min-height: 4px !important;
+  }
+}
+
+/* ===== Tablet & Large Phone Landscape ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Slightly smaller controls for tablet to maximize video area */
+  .art-controls button,
+  .art-control {
+    min-width: 32px !important;
+    padding: 0 6px !important;
+  }
+
+  /* Progress bar slightly thinner on tablet */
+  .art-progress {
+    height: 4px !important;
   }
 }
