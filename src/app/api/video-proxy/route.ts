@@ -79,10 +79,17 @@ export async function GET(request: Request) {
     const videoUrlObj = new URL(videoUrl);
     const sourceOrigin = `${videoUrlObj.protocol}//${videoUrlObj.host}`;
 
+    // 豆瓣视频需要特定的 Referer，使用 movie.douban.com 而非 CDN 域名
+    const isDouban =
+      videoUrlObj.hostname.includes('douban') ||
+      videoUrlObj.hostname.includes('doubanio');
+    const referer = isDouban ? 'https://movie.douban.com/' : sourceOrigin + '/';
+    const origin = isDouban ? 'https://movie.douban.com' : sourceOrigin;
+
     // 构建请求头
     const fetchHeaders: HeadersInit = {
-      Referer: sourceOrigin + '/',
-      Origin: sourceOrigin,
+      Referer: referer,
+      Origin: origin,
       'User-Agent': DEFAULT_USER_AGENT,
       Accept:
         'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
@@ -286,11 +293,18 @@ export async function HEAD(request: Request) {
     const videoUrlObj = new URL(videoUrl);
     const sourceOrigin = `${videoUrlObj.protocol}//${videoUrlObj.host}`;
 
+    // 豆瓣视频需要特定的 Referer，使用 movie.douban.com 而非 CDN 域名
+    const isDouban =
+      videoUrlObj.hostname.includes('douban') ||
+      videoUrlObj.hostname.includes('doubanio');
+    const referer = isDouban ? 'https://movie.douban.com/' : sourceOrigin + '/';
+    const origin = isDouban ? 'https://movie.douban.com' : sourceOrigin;
+
     const videoResponse = await fetch(videoUrl, {
       method: 'HEAD',
       headers: {
-        Referer: sourceOrigin + '/',
-        Origin: sourceOrigin,
+        Referer: referer,
+        Origin: origin,
         'User-Agent': DEFAULT_USER_AGENT,
         Accept:
           'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',

@@ -397,7 +397,7 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const isSyncingRef = useRef(false); // 🔥 防止循环更新的标志
+  const isSyncingRef = useRef(false); // 🔥 防止跨 tab storage 事件触发的同步引起保存循环
 
   // ✨ React 19: useTransition for non-urgent updates (流式聊天不需要useOptimistic)
   const [isPending, startTransition] = useTransition();
@@ -445,14 +445,6 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
               timestamp: existingTimestamp
             };
             localStorage.setItem('ai-recommend-messages', JSON.stringify(cache));
-
-            // 🔥 手动派发 storage 事件，同步同一页面内的其他组件实例
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: 'ai-recommend-messages',
-              newValue: JSON.stringify(cache),
-              url: window.location.href,
-              storageArea: localStorage,
-            }));
           } catch (error) {
             console.error("Failed to save messages to cache", error);
           }
@@ -478,14 +470,6 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
               timestamp: existingTimestamp
             };
             localStorage.setItem('ai-recommend-messages', JSON.stringify(cache));
-
-            // 🔥 手动派发 storage 事件，同步同一页面内的其他组件实例
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: 'ai-recommend-messages',
-              newValue: JSON.stringify(cache),
-              url: window.location.href,
-              storageArea: localStorage,
-            }));
           } catch (error) {
             console.error("Failed to save messages to cache", error);
           }
@@ -578,9 +562,9 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
 
           // 检查缓存是否有效（30分钟内）
           if (now - timestamp < 30 * 60 * 1000) {
-            console.log('🔄 检测到其他组件实例更新，同步聊天记录');
+            console.log('🔄 检测到其他 tab 更新，同步聊天记录');
 
-            // 🔥 设置同步标志，防止触发保存
+            // 🔥 设置同步标志，防止触发保存（仅跳过本次 setMessages 引起的保存）
             isSyncingRef.current = true;
 
             setMessages(updatedMessages.map((msg: ExtendedAIMessage) => ({
@@ -588,10 +572,11 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
               timestamp: msg.timestamp || new Date().toISOString()
             })));
 
-            // 🔥 延迟重置标志，确保保存逻辑不会立即触发
+            // 🔥 立即重置标志：useEffect 在当前 render 同步执行，
+            // setTimeout 回调在 render 后执行，确保仅跳过同步触发的保存
             setTimeout(() => {
               isSyncingRef.current = false;
-            }, 500);
+            }, 0);
           }
         } catch (error) {
           console.error('同步聊天记录失败:', error);
@@ -608,9 +593,8 @@ export default function AIRecommendModal({ isOpen, onClose, context, welcomeMess
   useEffect(() => {
     scrollToBottom();
 
-    // 🚫 如果正在同步，跳过保存（避免循环）
+    // 🚫 如果正在同步，跳过本次保存（仅由跨 tab storage 事件触发的同步引起）
     if (isSyncingRef.current) {
-      console.log('⏭️ 跳过保存（正在同步中）');
       return;
     }
 

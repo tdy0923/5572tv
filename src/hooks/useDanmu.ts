@@ -218,6 +218,8 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
   const danmuPluginStateRef = useRef<any>(null);
   // 自动重试追踪
   const autoRetryDanmuScopeRef = useRef<string>('');
+  // 共享加载Promise：避免并发请求竞态，后到的请求等待先到的请求完成
+  const loadingPromiseRef = useRef<Promise<{ count: number; data: any[] }> | null>(null);
 
   // 同步 ref
   useEffect(() => {
@@ -263,7 +265,15 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
 
       // 防止重复请求（除非强制刷新）
       if (!force && loadingState?.loading && isSameRequest && !isStuckLoad) {
-        console.log('⏳ 弹幕正在加载中，跳过重复请求');
+        console.log('⏳ 弹幕正在加载中，等待共享结果');
+        // 等待正在进行的加载完成，而不是返回可能为空的 danmuList
+        if (loadingPromiseRef.current) {
+          try {
+            return await loadingPromiseRef.current;
+          } catch {
+            return { count: danmuList.length, data: danmuList };
+          }
+        }
         return { count: danmuList.length, data: danmuList };
       }
 
@@ -285,103 +295,107 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
       setLoading(true);
       setError(null); // 清除之前的错误
 
-      try {
-        // 构建请求参数
-        const params = new URLSearchParams();
+      // 创建共享的加载Promise，供并发调用者等待结果
+      const loadPromise = (async (): Promise<{ count: number; data: any[] }> => {
+        try {
+          // 构建请求参数
+          const params = new URLSearchParams();
 
-        if (videoDoubanId && videoDoubanId > 0) {
-          params.append('douban_id', videoDoubanId.toString());
-        }
-        if (videoTitle) {
-          params.append('title', videoTitle);
-        }
-        if (videoYear) {
-          params.append('year', videoYear);
-        }
-        if (currentEpisodeIndex !== null && currentEpisodeIndex >= 0) {
-          params.append('episode', currentEpisodeNum.toString());
-        }
-
-        // 手动匹配参数
-        if (activeManualOverride?.episodeId) {
-          params.append('episode_id', String(activeManualOverride.episodeId));
-        }
-
-        if (!params.toString()) {
-          console.log('没有可用的参数获取弹幕');
-          danmuLoadingRef.current = false;
-          setLoading(false);
-          setLoadMeta({ source: 'empty', loadedAt: Date.now(), count: 0 });
-          return emptyResult;
-        }
-
-        // 生成缓存键（手动匹配使用独立缓存键）
-        const baseCacheKey = `${videoTitle}_${videoYear}_${videoDoubanId}_${currentEpisodeNum}`;
-        const cacheKey = activeManualOverride
-          ? `${baseCacheKey}__manual_${activeManualOverride.animeId}_${activeManualOverride.episodeId}`
-          : baseCacheKey;
-
-        // 检查缓存（除非强制刷新）
-        if (!force) {
-          console.log('🔍 检查弹幕缓存:', cacheKey);
-          const cached = await getDanmuCacheItem(cacheKey);
-          if (cached && now - cached.timestamp < DANMU_CACHE_DURATION * 1000) {
-            console.log('✅ 使用弹幕缓存数据，缓存键:', cacheKey);
-            console.log('📊 缓存弹幕数量:', cached.data.length);
-            danmuLoadingRef.current = false;
-            setLoading(false);
-            setDanmuList(cached.data);
-            setLoadMeta({
-              source: 'cache',
-              loadedAt: cached.timestamp,
-              count: cached.data.length,
-            });
-            return { count: cached.data.length, data: cached.data };
+          if (videoDoubanId && videoDoubanId > 0) {
+            params.append('douban_id', videoDoubanId.toString());
           }
-        }
+          if (videoTitle) {
+            params.append('title', videoTitle);
+          }
+          if (videoYear) {
+            params.append('year', videoYear);
+          }
+          if (currentEpisodeIndex !== null && currentEpisodeIndex >= 0) {
+            params.append('episode', currentEpisodeNum.toString());
+          }
 
-        // 请求 API
-        console.log('开始获取外部弹幕，参数:', params.toString());
-        const response = await fetch(`/api/danmu-external?${params}`);
-        console.log('弹幕API响应状态:', response.status, response.statusText);
+          // 手动匹配参数
+          if (activeManualOverride?.episodeId) {
+            params.append('episode_id', String(activeManualOverride.episodeId));
+          }
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('弹幕API请求失败:', response.status, errorText);
-          const apiError = new Error(`弹幕加载失败: ${response.status}`);
-          setError(apiError);
-          danmuLoadingRef.current = false;
-          setLoading(false);
+          if (!params.toString()) {
+            console.log('没有可用的参数获取弹幕');
+            return emptyResult;
+          }
+
+          // 生成缓存键（手动匹配使用独立缓存键）
+          const baseCacheKey = `${videoTitle}_${videoYear}_${videoDoubanId}_${currentEpisodeNum}`;
+          const cacheKey = activeManualOverride
+            ? `${baseCacheKey}__manual_${activeManualOverride.animeId}_${activeManualOverride.episodeId}`
+            : baseCacheKey;
+
+          // 检查缓存（除非强制刷新）
+          if (!force) {
+            console.log('🔍 检查弹幕缓存:', cacheKey);
+            const cached = await getDanmuCacheItem(cacheKey);
+            if (cached && now - cached.timestamp < DANMU_CACHE_DURATION * 1000) {
+              console.log('✅ 使用弹幕缓存数据，缓存键:', cacheKey);
+              console.log('📊 缓存弹幕数量:', cached.data.length);
+              setDanmuList(cached.data);
+              setLoadMeta({
+                source: 'cache',
+                loadedAt: cached.timestamp,
+                count: cached.data.length,
+              });
+              return { count: cached.data.length, data: cached.data };
+            }
+          }
+
+          // 请求 API
+          console.log('开始获取外部弹幕，参数:', params.toString());
+          const response = await fetch(`/api/danmu-external?${params}`);
+          console.log('弹幕API响应状态:', response.status, response.statusText);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('弹幕API请求失败:', response.status, errorText);
+            const apiError = new Error(`弹幕加载失败: ${response.status}`);
+            setError(apiError);
+            setLoadMeta({ source: 'error', loadedAt: Date.now(), count: 0 });
+            return emptyResult;
+          }
+
+          const data = await response.json();
+          console.log('外部弹幕API返回数据:', data);
+          console.log('外部弹幕加载成功:', data.total || 0, '条');
+
+          const finalDanmu = data.danmu || [];
+          console.log('最终弹幕数据:', finalDanmu.length, '条');
+
+          // 保存到缓存
+          console.log('💾 保存弹幕到缓存:', cacheKey);
+          await setDanmuCacheItem(cacheKey, finalDanmu);
+
+          setDanmuList(finalDanmu);
+          setLoadMeta({
+            source: force ? 'network-retry' : 'network',
+            loadedAt: Date.now(),
+            count: finalDanmu.length,
+          });
+          return { count: finalDanmu.length, data: finalDanmu };
+        } catch (error) {
+          console.error('加载外部弹幕失败:', error);
+          const loadError =
+            error instanceof Error ? error : new Error('弹幕加载失败');
+          setError(loadError);
           setLoadMeta({ source: 'error', loadedAt: Date.now(), count: 0 });
           return emptyResult;
         }
+      })();
 
-        const data = await response.json();
-        console.log('外部弹幕API返回数据:', data);
-        console.log('外部弹幕加载成功:', data.total || 0, '条');
+      // 存储共享Promise，供并发调用者等待结果
+      loadingPromiseRef.current = loadPromise;
 
-        const finalDanmu = data.danmu || [];
-        console.log('最终弹幕数据:', finalDanmu.length, '条');
-
-        // 保存到缓存
-        console.log('💾 保存弹幕到缓存:', cacheKey);
-        await setDanmuCacheItem(cacheKey, finalDanmu);
-
-        setDanmuList(finalDanmu);
-        setLoadMeta({
-          source: force ? 'network-retry' : 'network',
-          loadedAt: Date.now(),
-          count: finalDanmu.length,
-        });
-        return { count: finalDanmu.length, data: finalDanmu };
-      } catch (error) {
-        console.error('加载外部弹幕失败:', error);
-        const loadError =
-          error instanceof Error ? error : new Error('弹幕加载失败');
-        setError(loadError);
-        setLoadMeta({ source: 'error', loadedAt: Date.now(), count: 0 });
-        return emptyResult;
+      try {
+        return await loadPromise;
       } finally {
+        loadingPromiseRef.current = null;
         danmuLoadingRef.current = false;
         setLoading(false);
       }
