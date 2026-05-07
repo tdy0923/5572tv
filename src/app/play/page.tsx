@@ -6603,9 +6603,9 @@ function PlayPageClient() {
             setIsAudioTrackSwitching(false);
           }
 
-          // iOS设备自动播放回退机制：如果自动播放失败，尝试用户交互触发播放
-          if ((isIOS || isSafari) && artPlayerRef.current.paused) {
-            console.log('iOS设备检测到视频未自动播放，准备交互触发机制');
+          // 移动端自动播放回退机制：如果自动播放失败，尝试用户交互触发播放
+          if (isMobile && artPlayerRef.current.paused) {
+            console.log('移动端检测到视频未自动播放，准备交互触发机制');
 
             const tryAutoPlay = async () => {
               try {
@@ -6615,11 +6615,11 @@ function PlayPageClient() {
 
                 const attemptPlay = async (): Promise<boolean> => {
                   playAttempts++;
-                  console.log(`iOS自动播放尝试 ${playAttempts}/${maxAttempts}`);
+                  console.log(`自动播放尝试 ${playAttempts}/${maxAttempts}`);
 
                   try {
                     await artPlayerRef.current.play();
-                    console.log('iOS设备自动播放成功');
+                    console.log('设备自动播放成功');
                     return true;
                   } catch (playError: any) {
                     console.log(
@@ -6657,7 +6657,7 @@ function PlayPageClient() {
 
                 if (!success) {
                   console.log(
-                    'iOS设备需要用户交互才能播放，这是正常的浏览器行为',
+                    '设备需要用户交互才能播放，这是正常的浏览器行为',
                   );
                   // 显示友好的播放提示
                   if (artPlayerRef.current) {
