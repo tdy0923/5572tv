@@ -52,7 +52,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
     const el = document.createElement('div');
     el.setAttribute('data-mobile-action-sheet-root', '');
     // 使用极高 z-index 保证覆盖任意层级
-    el.style.zIndex = '2147483647';
+    el.style.zIndex = '9999';
     el.style.position = 'relative';
     document.body.appendChild(el);
     setPortalEl(el);

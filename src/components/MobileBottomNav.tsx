@@ -28,8 +28,6 @@ interface NavItem {
   activeGradient: string;
   // 选中状态的文字/图标颜色
   activeTextColor: string;
-  // 悬浮状态的背景色
-  hoverBg: string;
 }
 
 interface MobileBottomNavProps {
@@ -60,7 +58,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Globe,
@@ -68,7 +65,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/source-browser',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Film,
@@ -76,7 +72,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/douban?type=movie',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Tv,
@@ -84,7 +79,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/douban?type=tv',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: PlaySquare,
@@ -92,7 +86,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/shortdrama',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Cat,
@@ -100,7 +93,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/douban?type=anime',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Clover,
@@ -108,7 +100,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/douban?type=show',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
       {
         icon: Radio,
@@ -116,7 +107,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         href: '/live',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
-        hoverBg: 'hover:bg-[#f4c24d]/12',
       },
     ],
     [],
@@ -141,7 +131,6 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
           href: '/douban?type=custom',
           activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
           activeTextColor: 'text-white',
-          hoverBg: 'hover:bg-[#f4c24d]/12',
         },
       ];
     }
@@ -213,6 +202,8 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
 
   return (
     <nav
+      role='navigation'
+      aria-label='主导航'
       className={cn(
         'md:hidden fixed left-0 right-0 z-600',
         'bg-[#171717]/92 dark:bg-[#0b0b0b]/96',
@@ -258,7 +249,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
               }}
               className={cn(
                 'flex flex-col items-center justify-center',
-                'min-w-[60px] flex-1',
+                'min-w-[48px] flex-1',
                 'rounded-2xl py-2 px-1',
                 'transition-all duration-200',
                 'active:scale-95',
@@ -274,7 +265,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
               />
               <span
                 className={cn(
-                  'text-[10px] font-medium',
+                  'text-xs font-medium',
                   'transition-colors duration-200',
                   active ? 'text-[#fff6de]' : 'text-white/60',
                 )}

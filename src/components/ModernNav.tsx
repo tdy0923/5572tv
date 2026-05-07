@@ -261,7 +261,7 @@ export default function ModernNav({
       {showMoreMenu && (
         <div
           className='md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm'
-          style={{ zIndex: 2147483647 }}
+          style={{ zIndex: 9999 }}
           onClick={() => setShowMoreMenu(false)}
         >
           <div
@@ -356,7 +356,7 @@ export default function ModernNav({
                   }`}
                 />
                 <span
-                  className={`text-[10px] font-medium transition-colors duration-200 ${
+                  className={`text-xs font-medium transition-colors duration-200 ${
                     active
                       ? 'text-[#fff4d0]'
                       : 'text-gray-600 dark:text-gray-400'
