@@ -5400,46 +5400,57 @@ function PlayPageClient() {
             },
             // 🚀 简单弹幕发送按钮（移动端和Web端均显示）
             [
-                  {
-                    position: 'right',
-                    html: '<span class="hint--top" aria-label="发送弹幕">弹</span>',
-                    tooltip: '发送弹幕',
-                    click: async function () {
-                      if (
-                        artPlayerRef.current?.plugins?.artplayerPluginDanmuku
-                      ) {
-                        const text = await new Promise<string | null>((resolve) => {
-                          const input = document.createElement('input');
-                          input.type = 'text';
-                          input.placeholder = '发送弹幕...';
-                          input.maxLength = 100;
-                          input.className = 'danmaku-mobile-input';
-                          input.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100vw - 40px);max-width:400px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.8);color:white;font-size:16px;z-index:99999;outline:none;backdrop-filter:blur(10px);';
-                          document.body.appendChild(input);
-                          input.focus();
+              {
+                position: 'right',
+                html: '<span class="hint--top" aria-label="发送弹幕">弹</span>',
+                tooltip: '发送弹幕',
+                click: async function () {
+                  if (artPlayerRef.current?.plugins?.artplayerPluginDanmuku) {
+                    const text = await new Promise<string | null>((resolve) => {
+                      const input = document.createElement('input');
+                      input.type = 'text';
+                      input.placeholder = '发送弹幕...';
+                      input.maxLength = 100;
+                      input.className = 'danmaku-mobile-input';
+                      input.style.cssText =
+                        'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100vw - 40px);max-width:400px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.8);color:white;font-size:16px;z-index:99999;outline:none;backdrop-filter:blur(10px);';
+                      document.body.appendChild(input);
+                      input.focus();
 
-                          const cleanup = () => { if (input.parentNode) input.parentNode.removeChild(input); };
+                      const cleanup = () => {
+                        if (input.parentNode)
+                          input.parentNode.removeChild(input);
+                      };
 
-                          input.addEventListener('keydown', (e) => {
-                            if (e.key === 'Enter') { resolve(input.value.trim()); cleanup(); }
-                            if (e.key === 'Escape') { resolve(null); cleanup(); }
-                          });
-                          input.addEventListener('blur', () => { setTimeout(() => { resolve(input.value.trim()); cleanup(); }, 200); });
-                        });
-                        if (text && text.trim()) {
-                          artPlayerRef.current.plugins.artplayerPluginDanmuku.emit(
-                            {
-                              text: text.trim(),
-                              time: artPlayerRef.current.currentTime,
-                              color: '#FFFFFF',
-                              mode: 0,
-                            },
-                          );
+                      input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                          resolve(input.value.trim());
+                          cleanup();
                         }
-                      }
-                    },
-                  },
-                ],
+                        if (e.key === 'Escape') {
+                          resolve(null);
+                          cleanup();
+                        }
+                      });
+                      input.addEventListener('blur', () => {
+                        setTimeout(() => {
+                          resolve(input.value.trim());
+                          cleanup();
+                        }, 200);
+                      });
+                    });
+                    if (text && text.trim()) {
+                      artPlayerRef.current.plugins.artplayerPluginDanmuku.emit({
+                        text: text.trim(),
+                        time: artPlayerRef.current.currentTime,
+                        color: '#FFFFFF',
+                        mode: 0,
+                      });
+                    }
+                  }
+                },
+              },
+            ],
             // 音轨切换按钮
             buildAudioTrackControl(),
           ],
@@ -5708,64 +5719,115 @@ function PlayPageClient() {
             return gestureIndicator;
           };
 
-          artPlayerRef.current?.container?.addEventListener('touchstart', (e: TouchEvent) => {
-            if (artPlayerRef.current?.lock) return;
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            touchStartTime = Date.now();
-            isSwiping = false;
-          }, { passive: true });
+          artPlayerRef.current?.container?.addEventListener(
+            'touchstart',
+            (e: TouchEvent) => {
+              if (artPlayerRef.current?.lock) return;
+              touchStartX = e.touches[0].clientX;
+              touchStartY = e.touches[0].clientY;
+              touchStartTime = Date.now();
+              isSwiping = false;
+            },
+            { passive: true },
+          );
 
-          artPlayerRef.current?.container?.addEventListener('touchmove', (e: TouchEvent) => {
-            if (artPlayerRef.current?.lock) return;
-            const deltaX = e.touches[0].clientX - touchStartX;
-            const deltaY = e.touches[0].clientY - touchStartY;
-            const containerRect = artPlayerRef.current?.container?.getBoundingClientRect();
-            if (!containerRect) return;
+          artPlayerRef.current?.container?.addEventListener(
+            'touchmove',
+            (e: TouchEvent) => {
+              if (artPlayerRef.current?.lock) return;
+              const deltaX = e.touches[0].clientX - touchStartX;
+              const deltaY = e.touches[0].clientY - touchStartY;
+              const containerRect =
+                artPlayerRef.current?.container?.getBoundingClientRect();
+              if (!containerRect) return;
 
-            // Horizontal swipe - seek
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30) {
-              isSwiping = true;
-              const seekDelta = (deltaX / containerRect.width) * 60; // max 60s
-              const currentTime = artPlayerRef.current?.currentTime || 0;
-              const duration = (artPlayerRef.current as any)?.duration || 0;
-              const newTime = Math.max(0, Math.min(duration, currentTime + seekDelta));
-              const indicator = createIndicator(`${seekDelta > 0 ? '+' : ''}${Math.round(seekDelta)}s`);
-              if (indicator) indicator.style.opacity = '1';
-            }
-
-            // Vertical swipe - volume (right side) or brightness hint (left side)
-            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 30) {
-              isSwiping = true;
-              const isRightSide = touchStartX > containerRect.left + containerRect.width / 2;
-              if (isRightSide) {
-                // Right side: volume
-                const volumeDelta = -(deltaY / containerRect.height) * 2;
-                const newVol = Math.max(0, Math.min(1, (artPlayerRef.current?.volume || 0.7) + volumeDelta));
-                artPlayerRef.current!.volume = newVol;
-                const indicator = createIndicator(`🔊 ${Math.round(newVol * 100)}%`);
-                if (indicator) indicator.style.opacity = '1';
-              } else {
-                // Left side: brightness (via CSS filter as fallback)
-                const brightDelta = -(deltaY / containerRect.height) * 2;
-                const currentBrightness = parseFloat(
-                  (artPlayerRef.current?.container as any)?.style?.filter?.match(/brightness\(([^)]+)\)/)?.[1] || '1'
+              // Horizontal swipe - seek
+              if (
+                Math.abs(deltaX) > Math.abs(deltaY) &&
+                Math.abs(deltaX) > 30
+              ) {
+                isSwiping = true;
+                const seekDelta = (deltaX / containerRect.width) * 60; // max 60s
+                const currentTime = artPlayerRef.current?.currentTime || 0;
+                const duration = (artPlayerRef.current as any)?.duration || 0;
+                const newTime = Math.max(
+                  0,
+                  Math.min(duration, currentTime + seekDelta),
                 );
-                const newBright = Math.max(0.3, Math.min(3, currentBrightness + brightDelta));
-                if (artPlayerRef.current?.video) (artPlayerRef.current.video as HTMLVideoElement).style.filter = `brightness(${newBright})`;
-                const indicator = createIndicator(`☀️ ${Math.round(newBright * 100)}%`);
+                const indicator = createIndicator(
+                  `${seekDelta > 0 ? '+' : ''}${Math.round(seekDelta)}s`,
+                );
                 if (indicator) indicator.style.opacity = '1';
               }
-            }
-          }, { passive: true });
 
-          artPlayerRef.current?.container?.addEventListener('touchend', () => {
-            if (isSwiping && gestureIndicator) {
-              setTimeout(() => { if (gestureIndicator) gestureIndicator.style.opacity = '0'; }, 200);
-              setTimeout(() => { if (gestureIndicator) { gestureIndicator.remove(); gestureIndicator = null; } }, 500);
-            }
-            isSwiping = false;
-          }, { passive: true });
+              // Vertical swipe - volume (right side) or brightness hint (left side)
+              if (
+                Math.abs(deltaY) > Math.abs(deltaX) &&
+                Math.abs(deltaY) > 30
+              ) {
+                isSwiping = true;
+                const isRightSide =
+                  touchStartX > containerRect.left + containerRect.width / 2;
+                if (isRightSide) {
+                  // Right side: volume
+                  const volumeDelta = -(deltaY / containerRect.height) * 2;
+                  const newVol = Math.max(
+                    0,
+                    Math.min(
+                      1,
+                      (artPlayerRef.current?.volume || 0.7) + volumeDelta,
+                    ),
+                  );
+                  artPlayerRef.current!.volume = newVol;
+                  const indicator = createIndicator(
+                    `🔊 ${Math.round(newVol * 100)}%`,
+                  );
+                  if (indicator) indicator.style.opacity = '1';
+                } else {
+                  // Left side: brightness (via CSS filter as fallback)
+                  const brightDelta = -(deltaY / containerRect.height) * 2;
+                  const currentBrightness = parseFloat(
+                    (
+                      artPlayerRef.current?.container as any
+                    )?.style?.filter?.match(/brightness\(([^)]+)\)/)?.[1] ||
+                      '1',
+                  );
+                  const newBright = Math.max(
+                    0.3,
+                    Math.min(3, currentBrightness + brightDelta),
+                  );
+                  if (artPlayerRef.current?.video)
+                    (
+                      artPlayerRef.current.video as HTMLVideoElement
+                    ).style.filter = `brightness(${newBright})`;
+                  const indicator = createIndicator(
+                    `☀️ ${Math.round(newBright * 100)}%`,
+                  );
+                  if (indicator) indicator.style.opacity = '1';
+                }
+              }
+            },
+            { passive: true },
+          );
+
+          artPlayerRef.current?.container?.addEventListener(
+            'touchend',
+            () => {
+              if (isSwiping && gestureIndicator) {
+                setTimeout(() => {
+                  if (gestureIndicator) gestureIndicator.style.opacity = '0';
+                }, 200);
+                setTimeout(() => {
+                  if (gestureIndicator) {
+                    gestureIndicator.remove();
+                    gestureIndicator = null;
+                  }
+                }, 500);
+              }
+              isSwiping = false;
+            },
+            { passive: true },
+          );
         }
 
         // 监听播放器事件
@@ -6656,9 +6718,7 @@ function PlayPageClient() {
                 const success = await attemptPlay();
 
                 if (!success) {
-                  console.log(
-                    '设备需要用户交互才能播放，这是正常的浏览器行为',
-                  );
+                  console.log('设备需要用户交互才能播放，这是正常的浏览器行为');
                   // 显示友好的播放提示
                   if (artPlayerRef.current) {
                     artPlayerRef.current.notice.show = '轻触播放按钮开始观看';
@@ -6778,8 +6838,9 @@ function PlayPageClient() {
 
             // Show notification
             const notice = document.createElement('div');
-            notice.textContent = `${nextEp?.name || `第 ${nextIndex + 1} 集`} - 3秒后自动播放`;
-            notice.style.cssText = 'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;background:rgba(0,0,0,0.8);color:white;font-size:14px;z-index:999;backdrop-filter:blur(10px);white-space:nowrap;';
+            notice.textContent = `${nextEp || `第 ${nextIndex + 1} 集`} - 3秒后自动播放`;
+            notice.style.cssText =
+              'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;background:rgba(0,0,0,0.8);color:white;font-size:14px;z-index:999;backdrop-filter:blur(10px);white-space:nowrap;';
             artPlayerRef.current?.container?.appendChild(notice);
 
             // Auto-navigate after 3 seconds
@@ -6845,33 +6906,48 @@ function PlayPageClient() {
           let isLongPress = false;
           let originalSpeed = 1;
 
-          artPlayerRef.current.container?.addEventListener('touchstart', () => {
-            isLongPress = false;
-            originalSpeed = artPlayerRef.current.playbackRate || 1;
-            longPressTimer = setTimeout(() => {
-              isLongPress = true;
-              artPlayerRef.current.playbackRate = 2;
-              const indicator = document.createElement('div');
-              indicator.textContent = '⚡ 2x';
-              indicator.style.cssText = 'position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:6px;background:rgba(244,194,77,0.9);color:#111;font-size:12px;font-weight:bold;z-index:999;pointer-events:none;';
-              indicator.className = 'long-press-speed-indicator';
-              artPlayerRef.current.container?.appendChild(indicator);
-            }, 500);
-          }, { passive: true });
+          artPlayerRef.current.container?.addEventListener(
+            'touchstart',
+            () => {
+              isLongPress = false;
+              originalSpeed = artPlayerRef.current.playbackRate || 1;
+              longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                artPlayerRef.current.playbackRate = 2;
+                const indicator = document.createElement('div');
+                indicator.textContent = '⚡ 2x';
+                indicator.style.cssText =
+                  'position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:6px;background:rgba(244,194,77,0.9);color:#111;font-size:12px;font-weight:bold;z-index:999;pointer-events:none;';
+                indicator.className = 'long-press-speed-indicator';
+                artPlayerRef.current.container?.appendChild(indicator);
+              }, 500);
+            },
+            { passive: true },
+          );
 
-          artPlayerRef.current.container?.addEventListener('touchend', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-            if (isLongPress) {
-              artPlayerRef.current.playbackRate = originalSpeed;
-              const indicator = artPlayerRef.current.container?.querySelector('.long-press-speed-indicator');
-              if (indicator) indicator.remove();
-            }
-            isLongPress = false;
-          }, { passive: true });
+          artPlayerRef.current.container?.addEventListener(
+            'touchend',
+            () => {
+              if (longPressTimer) clearTimeout(longPressTimer);
+              if (isLongPress) {
+                artPlayerRef.current.playbackRate = originalSpeed;
+                const indicator = artPlayerRef.current.container?.querySelector(
+                  '.long-press-speed-indicator',
+                );
+                if (indicator) indicator.remove();
+              }
+              isLongPress = false;
+            },
+            { passive: true },
+          );
 
-          artPlayerRef.current.container?.addEventListener('touchmove', () => {
-            if (longPressTimer) clearTimeout(longPressTimer);
-          }, { passive: true });
+          artPlayerRef.current.container?.addEventListener(
+            'touchmove',
+            () => {
+              if (longPressTimer) clearTimeout(longPressTimer);
+            },
+            { passive: true },
+          );
         }
 
         if (artPlayerRef.current?.video) {
