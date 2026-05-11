@@ -67,7 +67,7 @@ import VideoCard from '@/components/VideoCard';
 
 // 🎯 优化：合并状态管理 - 使用 useReducer 减少重渲染
 interface HomeState {
-  activeTab: 'home' | 'favorites' | 'reminders';
+  activeTab: 'home' | 'favorites' | 'reminders' | 'history';
   hotMovies: DoubanItem[];
   hotTvShows: DoubanItem[];
   hotVarietyShows: DoubanItem[];
@@ -81,7 +81,10 @@ interface HomeState {
 }
 
 type HomeAction =
-  | { type: 'SET_ACTIVE_TAB'; payload: 'home' | 'favorites' | 'reminders' }
+  | {
+      type: 'SET_ACTIVE_TAB';
+      payload: 'home' | 'favorites' | 'reminders' | 'history';
+    }
   | { type: 'SET_HOT_MOVIES'; payload: DoubanItem[] }
   | { type: 'SET_HOT_TV_SHOWS'; payload: DoubanItem[] }
   | { type: 'SET_HOT_VARIETY_SHOWS'; payload: DoubanItem[] }
@@ -452,10 +455,23 @@ function HomeClient() {
   >('unsupported');
   const [favoriteGroups, setFavoriteGroups] = useState<string[]>(['默认']);
   const [favoriteGroupFilter, setFavoriteGroupFilter] = useState<string>('全部');
+  const [updateCount, setUpdateCount] = useState(0);
+  const [historyTimeline, setHistoryTimeline] = useState<
+    Record<string, any[]>
+  >({});
 
   useEffect(() => {
     setNotifPermission(getNotificationPermission());
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetch('/api/play-history/timeline')
+        .then((r) => r.json())
+        .then((data) => setHistoryTimeline(data.timeline || {}))
+        .catch(() => {});
+    }
+  }, [activeTab]);
 
   // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
@@ -525,6 +541,14 @@ function HomeClient() {
       } catch {}
     };
     loadGroups();
+  }, []);
+
+  // 加载收藏更新数
+  useEffect(() => {
+    fetch('/api/favorites/updates')
+      .then((r) => r.json())
+      .then((data) => setUpdateCount(data.count || 0))
+      .catch(() => {});
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
@@ -786,15 +810,23 @@ function HomeClient() {
               className='bg-white/62 dark:bg-white/6'
               options={[
                 { label: '首页', value: 'home' },
-                { label: '收藏夹', value: 'favorites' },
+                {
+                  label: `收藏夹${updateCount > 0 ? ` (${updateCount})` : ''}`,
+                  value: 'favorites',
+                },
                 { label: '想看', value: 'reminders' },
+                { label: '历史', value: 'history' },
               ]}
               active={activeTab}
               onChange={(value) =>
                 startTransition(() =>
                   dispatch({
                     type: 'SET_ACTIVE_TAB',
-                    payload: value as 'home' | 'favorites' | 'reminders',
+                    payload: value as
+                      | 'home'
+                      | 'favorites'
+                      | 'reminders'
+                      | 'history',
                   }),
                 )
               }
@@ -1372,6 +1404,59 @@ function HomeClient() {
                 }}
                 onCancel={() => setShowClearFavoritesDialog(false)}
               />
+            </section>
+          ) : activeTab === 'history' ? (
+            // 播放历史时间线
+            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+              <div className='mb-6 flex items-center justify-between'>
+                <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+                  观看历史
+                </h2>
+              </div>
+              <div className='space-y-6'>
+                {Object.entries(historyTimeline).length === 0 ? (
+                  <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
+                    暂无播放记录
+                  </div>
+                ) : (
+                  Object.entries(historyTimeline).map(([date, items]) => (
+                    <div key={date}>
+                      <div className='flex items-center gap-2 mb-3'>
+                        <div className='w-2 h-2 rounded-full bg-[#f4c24d]' />
+                        <h3 className='text-sm font-medium text-gray-500 dark:text-gray-400'>
+                          {date}
+                        </h3>
+                      </div>
+                      <div className='grid grid-cols-3 gap-x-2 gap-y-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'>
+                        {items.map((item) => (
+                          <a
+                            key={item.key}
+                            href={`/play?source=${encodeURIComponent(item.source || item.key.split('+')[0])}&id=${encodeURIComponent(item.id || item.key.split('+').slice(1).join('+'))}`}
+                            className='group'
+                          >
+                            <div className='aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800'>
+                              {item.cover ? (
+                                <img
+                                  src={item.cover}
+                                  alt={item.title}
+                                  className='w-full h-full object-cover group-hover:scale-105 transition-transform'
+                                />
+                              ) : (
+                                <div className='w-full h-full flex items-center justify-center text-gray-400 text-2xl'>
+                                  🎬
+                                </div>
+                              )}
+                            </div>
+                            <p className='mt-1 text-xs text-gray-700 dark:text-gray-300 line-clamp-1'>
+                              {item.title}
+                            </p>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </section>
           ) : (
             // 首页视图
