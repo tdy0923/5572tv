@@ -193,6 +193,9 @@ export async function POST(request: NextRequest) {
             { status: 400 },
           );
         }
+        if (targetPassword.length < 6) {
+          return NextResponse.json({ error: '密码长度至少6位' }, { status: 400 });
+        }
 
         // 使用 V1 注册用户
         await db.registerUser(targetUsername!, targetPassword);

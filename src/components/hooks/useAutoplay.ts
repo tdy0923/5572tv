@@ -25,7 +25,7 @@ export function useAutoplay({
   onNext,
 }: UseAutoplayOptions) {
   useEffect(() => {
-    if (!autoPlayInterval || isHovered || itemsLength <= 1) return;
+    if (!autoPlayInterval || isHovered || itemsLength <= 1 || document.hidden) return;
 
     const interval = setInterval(() => {
       onNext();

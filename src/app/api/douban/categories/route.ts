@@ -166,9 +166,6 @@ export async function GET(request: Request) {
 
     const errorResponse = {
       error: '获取豆瓣数据失败',
-      details: (error as Error).message,
-      url: target,
-      params: { kind, category, type, pageLimit, pageStart }
     };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
 

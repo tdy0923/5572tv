@@ -43,6 +43,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
   }
 
+  // SSRF protection: block internal/private IPs
+  try {
+    const parsedUrl = new URL(videoUrl);
+    const hostname = parsedUrl.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.') ||
+      hostname.startsWith('192.168.') ||
+      hostname === '169.254.169.254' ||
+      hostname.endsWith('.internal')
+    ) {
+      return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+    }
+  } catch {
+    return NextResponse.json({ error: '无效的URL' }, { status: 400 });
+  }
+
   // 🎯 优先检查缓存（Kvrocks + 文件系统）
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE;
   if (storageType === 'kvrocks') {

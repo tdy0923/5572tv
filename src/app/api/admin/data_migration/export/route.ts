@@ -82,16 +82,13 @@ export async function POST(req: NextRequest) {
         userInfoV2: await db.getUserInfoV2(username),
         // 登录统计（loginCount, firstLoginTime, lastLoginTime）
         loginStats: await getUserLoginStats(username),
-        // 用户密码（V1兼容，通过验证空密码来检查用户是否存在，然后获取密码）
-        password: await getUserPassword(username),
+        // 用户密码已从导出中移除（安全加固）
       };
 
       exportData.data.userData[username] = userData;
     }
 
-    // 覆盖站长密码
-    exportData.data.userData[process.env.USERNAME].password =
-      process.env.PASSWORD;
+    // 站长密码已从导出中移除（安全加固）
 
     // 将数据转换为JSON字符串
     const jsonData = JSON.stringify(exportData);

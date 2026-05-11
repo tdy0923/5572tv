@@ -3610,6 +3610,7 @@ const VideoSourceConfig = ({
   };
 
   const handleDelete = (key: string) => {
+    if (!window.confirm('确定要删除这个采集源吗？')) return;
     withLoading(`deleteSource_${key}`, () =>
       callSourceApi({ action: 'delete', key }),
     ).catch(() => {
@@ -5605,6 +5606,7 @@ const CategoryConfig = ({
   };
 
   const handleDelete = (query: string, type: 'movie' | 'tv') => {
+    if (!window.confirm('确定要删除这个分类吗？')) return;
     withLoading(`deleteCategory_${query}_${type}`, () =>
       callCategoryApi({ action: 'delete', query, type }),
     ).catch(() => {
@@ -7576,6 +7578,7 @@ const LiveSourceConfig = ({
   };
 
   const handleDelete = (key: string) => {
+    if (!window.confirm('确定要删除这个直播源吗？')) return;
     withLoading(`deleteLiveSource_${key}`, () =>
       callLiveSourceApi({ action: 'delete', key }),
     ).catch(() => {
@@ -7820,16 +7823,8 @@ const LiveSourceConfig = ({
       });
 
       if (!config) {
-        return (
-          <div className='flex justify-center items-center py-8'>
-            <div className='flex items-center gap-3 px-6 py-3 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50 shadow-md'>
-              <div className='animate-spin rounded-full h-5 w-5 border-2 border-blue-300 border-t-blue-600 dark:border-blue-700 dark:border-t-blue-400'></div>
-              <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                加载配置中...
-              </span>
-            </div>
-          </div>
-        );
+        showAlert({ type: 'error', title: '配置错误', message: '配置信息未加载，请刷新页面重试' });
+        return;
       }
 
       console.log('🧹 已清除所有CORS统计和缓存数据');

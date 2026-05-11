@@ -70,6 +70,27 @@ async function generateAuthCookie(
 
 export async function POST(req: NextRequest) {
   try {
+    // Basic rate limiting using in-memory store
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const rateLimitKey = `login:${ip}`;
+    const now = Date.now();
+    const WINDOW = 60000; // 1 minute
+    const MAX_ATTEMPTS = 10;
+
+    // Simple in-memory rate limiter (works for single instance)
+    if (!(globalThis as any).__rateLimit) (globalThis as any).__rateLimit = new Map();
+    const rl = (globalThis as any).__rateLimit;
+    const attempts = rl.get(rateLimitKey) || { count: 0, resetTime: now + WINDOW };
+    if (now > attempts.resetTime) {
+      attempts.count = 0;
+      attempts.resetTime = now + WINDOW;
+    }
+    attempts.count++;
+    rl.set(rateLimitKey, attempts);
+    if (attempts.count > MAX_ATTEMPTS) {
+      return NextResponse.json({ error: '登录尝试过于频繁，请稍后再试' }, { status: 429 });
+    }
+
     // 本地 / localStorage 模式——仅校验固定密码
     if (STORAGE_TYPE === 'localstorage') {
       const envPassword = process.env.PASSWORD;

@@ -133,6 +133,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '密码长度至少6位' }, { status: 400 });
     }
 
+    if (!/[A-Z]/.test(password) && !/[0-9]/.test(password)) {
+      return NextResponse.json({ error: '密码需包含至少一个大写字母或数字' }, { status: 400 });
+    }
+
     // 检查是否与管理员用户名冲突
     if (username === process.env.USERNAME) {
       return NextResponse.json({ error: '该用户名已被使用' }, { status: 400 });

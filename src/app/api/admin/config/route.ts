@@ -92,6 +92,17 @@ export async function POST(request: NextRequest) {
   try {
     const newConfig: AdminConfig = await request.json();
 
+    // Basic schema validation
+    if (!newConfig || typeof newConfig !== 'object') {
+      return NextResponse.json({ error: '配置格式错误' }, { status: 400 });
+    }
+    if (!newConfig.SiteConfig || typeof newConfig.SiteConfig !== 'object') {
+      return NextResponse.json({ error: '缺少 SiteConfig' }, { status: 400 });
+    }
+    if (!newConfig.UserConfig || typeof newConfig.UserConfig !== 'object') {
+      return NextResponse.json({ error: '缺少 UserConfig' }, { status: 400 });
+    }
+
     // 保存新配置
     await db.saveAdminConfig(newConfig);
 
@@ -118,7 +129,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: '保存配置失败',
-        details: (error as Error).message,
       },
       { status: 500 }
     );

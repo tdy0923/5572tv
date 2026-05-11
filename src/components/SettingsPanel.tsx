@@ -260,6 +260,8 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   };
 
   const handleResetSettings = () => {
+    if (!window.confirm('确定要恢复默认设置吗？这将清除所有自定义配置。')) return;
+
     const RC = (window as any).RUNTIME_CONFIG || {};
     const defaultDoubanProxyType = RC.DOUBAN_PROXY_TYPE || 'direct';
     const defaultDoubanProxy = RC.DOUBAN_PROXY || '';
@@ -299,6 +301,8 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.setItem('requireClearConfirmation', JSON.stringify(false));
     localStorage.setItem('playerBufferMode', 'standard');
     localStorage.setItem('downloadFormat', 'TS');
+    localStorage.removeItem('fluidSearch');
+    localStorage.removeItem('exactSearch');
   };
 
   useEffect(() => {

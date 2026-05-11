@@ -106,6 +106,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
   }
 
+  // SSRF protection: block internal/private IPs
+  try {
+    const parsedUrl = new URL(imageUrl);
+    const hostname = parsedUrl.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.') ||
+      hostname.startsWith('192.168.') ||
+      hostname === '169.254.169.254' ||
+      hostname.endsWith('.internal')
+    ) {
+      return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+    }
+  } catch {
+    return NextResponse.json({ error: '无效的URL' }, { status: 400 });
+  }
+
   // 创建 AbortController 用于超时控制
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
