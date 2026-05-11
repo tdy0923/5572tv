@@ -32,7 +32,7 @@
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-1.0.0-orange)
+![Version](https://img.shields.io/badge/Version-1.2.0-orange)
 
 </div>
 
@@ -44,8 +44,8 @@ This repository is maintained for the live operation of `www.5572.net` and its o
 
 ### Current Release Status
 
-- Current independent version: `v1.0.0`
-- Release position: the first formal standalone release of `5572tv / 5572TV`
+- Current independent version: `v1.2.0`
+- Release position: mobile/tablet comprehensive upgrade version of `5572tv / 5572TV`
 - Highlights of this release: standalone repository transition, non-commercial usage notice, deployment pipeline migration, full auth-flow verification, invalid play-source handling, and cache / Cloudflare acceleration improvements
 
 ### Repository Positioning

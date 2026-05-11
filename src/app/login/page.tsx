@@ -456,6 +456,42 @@ function LoginPageClient() {
           )}
         </div>
       )}
+      {/* 客户端下载提示 */}
+      <div className='mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-gray-200/60 dark:border-gray-700/40'>
+        <p className='text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 sm:mb-4'>
+          📱 更多客户端
+        </p>
+        <div className='grid grid-cols-2 gap-2 sm:gap-3'>
+          <a
+            href='https://github.com/MoonTechLab/Selene/releases'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors group'
+          >
+            <span className='text-xl sm:text-2xl'>📱</span>
+            <span className='text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#f4c24d] transition-colors'>
+              Selene
+            </span>
+            <span className='text-[10px] sm:text-xs text-gray-400 dark:text-gray-500'>
+              Android / iOS
+            </span>
+          </a>
+          <a
+            href='https://github.com/zimplexing/OrionTV'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors group'
+          >
+            <span className='text-xl sm:text-2xl'>📺</span>
+            <span className='text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#f4c24d] transition-colors'>
+              OrionTV
+            </span>
+            <span className='text-[10px] sm:text-xs text-gray-400 dark:text-gray-500'>
+              Android TV / 平板
+            </span>
+          </a>
+        </div>
+      </div>
     </AuthShell>
   );
 }

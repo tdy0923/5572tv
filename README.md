@@ -32,7 +32,7 @@
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-1.0.0-orange)
+![Version](https://img.shields.io/badge/Version-1.2.0-orange)
 
 </div>
 
@@ -44,8 +44,8 @@
 
 ### 当前发布状态
 
-- 当前独立版本：`v1.0.0`
-- 版本定位：`5572tv / 5572影视` 独立项目首个正式版本
+- 当前独立版本：`v1.2.0`
+- 版本定位：`5572tv / 5572影视` 移动端/平板全面升级版本
 - 本次发布重点：独立仓库切换、非商用许可声明、部署链路迁移、认证链路闭环验证、播放页失效线路治理、缓存与 Cloudflare 加速优化
 
 ### 当前仓库定位
@@ -136,6 +136,22 @@ pnpm dev
 ```
 
 **详细部署指南**：[查看完整部署文档](docs/deployment/DEPLOYMENT.md)
+
+## 📱 客户端下载
+
+本项目支持多种客户端，可在手机、平板、电视上使用：
+
+### Selene - 手机端
+- **平台**：Android 5.0+ / iOS 12.0+
+- **下载**：[GitHub Releases](https://github.com/MoonTechLab/Selene/releases)
+- **特性**：Material Design 3、深色主题、多源搜索、高性能播放器
+
+### OrionTV - 电视/平板端
+- **平台**：Android TV / Android 平板
+- **下载**：[GitHub](https://github.com/zimplexing/OrionTV)
+- **特性**：大屏优化、遥控器支持、观影室同步
+
+所有客户端与网页端共享播放记录和收藏数据。
 
 ## 📚 文档导航
 
