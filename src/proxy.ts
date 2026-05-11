@@ -13,6 +13,38 @@ let trustedNetworkVersion = ''; // 跟踪配置版本，用于立即失效缓存
 
 const CACHE_TTL = 86400000; // 24 小时缓存（配置变化时通过 cookie 版本号立即刷新）
 
+// Simple in-memory rate limiter
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const API_RATE_LIMIT = 30;
+const PAGE_RATE_LIMIT = 60;
+
+function checkRateLimit(ip: string, isApi: boolean): boolean {
+  const now = Date.now();
+  const key = `${ip}:${isApi ? 'api' : 'page'}`;
+  const limit = isApi ? API_RATE_LIMIT : PAGE_RATE_LIMIT;
+
+  const entry = rateLimitStore.get(key);
+  if (!entry || now > entry.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  entry.count++;
+  if (entry.count > limit) {
+    return false;
+  }
+  return true;
+}
+
+// Clean up old entries periodically
+if (rateLimitStore.size > 10000) {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (now > entry.resetTime) rateLimitStore.delete(key);
+  }
+}
+
 // 从环境变量获取信任网络配置（优先）
 function getTrustedNetworkFromEnv(): {
   enabled: boolean;
@@ -234,6 +266,20 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Rate limiting
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    || request.headers.get('x-real-ip')
+    || 'unknown';
+  const isApi = pathname.startsWith('/api');
+  const isStatic = pathname.startsWith('/_next') || pathname.includes('.');
+
+  if (!isStatic && !checkRateLimit(ip, isApi)) {
+    return new NextResponse('Too Many Requests', {
+      status: 429,
+      headers: { 'Retry-After': '60' }
+    });
+  }
 
   // 处理 /adult/ 路径前缀，重写为实际 API 路径
   if (pathname.startsWith('/adult/')) {

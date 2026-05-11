@@ -942,8 +942,8 @@ function LivePageClient() {
               url: url.substring(0, 100),
             }),
           );
-        } catch {
-          // 忽略错误
+        } catch (e) {
+          console.debug('Live error:', e);
         }
       }
 

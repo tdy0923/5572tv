@@ -60,9 +60,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
     return () => {
       try {
         document.body.removeChild(el);
-      } catch {
-        /* noop - 容器可能已被移除 */
-      }
+      } catch (e) { /* noop - container may have been removed */ }
     };
   }, []);
 
