@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { useEmbyConfigQuery } from '@/hooks/useUserMenuQueries';
 
+import { getLocale, setLocale } from '@/lib/i18n';
 import { UserEmbyConfig } from './UserEmbyConfig';
 
 interface SettingsPanelProps {
@@ -649,6 +650,24 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
             </div>
 
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
+
+            {/* 语言切换 */}
+            <div className='flex items-center justify-between py-3'>
+              <div>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-200'>语言 / Language</p>
+              </div>
+              <select
+                value={getLocale()}
+                onChange={(e) => {
+                  setLocale(e.target.value as 'zh' | 'en');
+                  window.location.reload();
+                }}
+                className='px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+              >
+                <option value='zh'>中文</option>
+                <option value='en'>English</option>
+              </select>
+            </div>
 
             {/* 播放缓冲优化 */}
             <div className='space-y-3'>

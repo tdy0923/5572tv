@@ -1,5 +1,5 @@
 'use client';
-import React, { memo } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 
 import { resolvePosterUrl } from '@/lib/utils';
 
@@ -59,6 +59,25 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
 
   const celebrityFallbackAvatar =
     'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"%3E%3Crect width="96" height="96" rx="48" fill="%23e5e7eb"/%3E%3Ccircle cx="48" cy="36" r="16" fill="%239ca3af"/%3E%3Cpath d="M22 78c4-13 14-20 26-20s22 7 26 20" fill="%239ca3af"/%3E%3C/svg%3E';
+
+  const [aiSummary, setAiSummary] = useState('');
+
+  const fetchAiSummary = useCallback(async () => {
+    if (!movieDetails?.title) return;
+    try {
+      const res = await fetch('/api/ai/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: movieDetails.title,
+          episode: detail?.episodes_titles?.[0] || '第1集',
+          plot: movieDetails.plot_summary,
+        }),
+      });
+      const data = await res.json();
+      if (data.summary) setAiSummary(data.summary);
+    } catch {}
+  }, [movieDetails?.title, movieDetails?.plot_summary, detail?.episodes_titles]);
 
   return (
     <div className='md:col-span-3'>
@@ -419,6 +438,29 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
               shortdramaDetails?.desc ||
               bangumiDetails?.summary ||
               detail?.desc}
+          </div>
+        )}
+
+        {/* AI 剧情摘要 */}
+        {movieDetails?.plot_summary && (
+          <div className='mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-800/30'>
+            <div className='flex items-center gap-2 mb-2'>
+              <span className='text-sm'>🤖</span>
+              <span className='text-xs font-medium text-blue-600 dark:text-blue-400'>
+                AI 摘要
+              </span>
+            </div>
+            <p className='text-sm text-gray-700 dark:text-gray-300 leading-relaxed'>
+              {aiSummary || '正在生成摘要...'}
+            </p>
+            {!aiSummary && (
+              <button
+                onClick={fetchAiSummary}
+                className='mt-2 text-xs text-blue-500 hover:text-blue-600'
+              >
+                点击生成
+              </button>
+            )}
           </div>
         )}
 
