@@ -270,6 +270,29 @@ export class DbManager {
     return favorite !== null;
   }
 
+  // 收藏分组相关方法
+  async getFavoriteGroups(userName: string): Promise<string[]> {
+    incrementDbQuery();
+    if (typeof this.storage.getFavoriteGroups === 'function') {
+      return this.storage.getFavoriteGroups(userName);
+    }
+    return ['默认'];
+  }
+
+  async addFavoriteGroup(userName: string, group: string): Promise<void> {
+    incrementDbQuery();
+    if (typeof this.storage.addFavoriteGroup === 'function') {
+      await this.storage.addFavoriteGroup(userName, group);
+    }
+  }
+
+  async deleteFavoriteGroup(userName: string, group: string): Promise<void> {
+    incrementDbQuery();
+    if (typeof this.storage.deleteFavoriteGroup === 'function') {
+      await this.storage.deleteFavoriteGroup(userName, group);
+    }
+  }
+
   // ---------- 用户相关 ----------
   async registerUser(userName: string, password: string): Promise<void> {
     incrementDbQuery();

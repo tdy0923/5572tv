@@ -49,6 +49,7 @@ export interface Favorite {
   type?: string; // 内容类型（movie/tv/variety/shortdrama等）
   releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
   remarks?: string; // 备注信息（如"X天后上映"、"已上映"等）
+  group?: string; // 收藏分组
 }
 
 // ---- 提醒类型 ----

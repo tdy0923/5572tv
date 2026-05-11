@@ -432,6 +432,7 @@ function SearchPageClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [useFluidSearch, setUseFluidSearch] = useState(true);
   // 虚拟化开关状态
   const [useVirtualization, setUseVirtualization] = useState(() => {
@@ -1033,6 +1034,14 @@ function SearchPageClient() {
     };
   }, [searchPrefsLoaded]);
 
+  // 加载热门搜索词
+  useEffect(() => {
+    fetch('/api/search/trending')
+      .then((r) => r.json())
+      .then((data) => setTrendingSearches(data.trending || []))
+      .catch(() => {});
+  }, []);
+
   // 监听搜索类型变化，如果切换到网盘/TMDB演员搜索且有搜索词，立即搜索
   useEffect(() => {
     if (
@@ -1412,6 +1421,32 @@ function SearchPageClient() {
                   />
                 </div>
               </form>
+
+              {/* 热门搜索建议 */}
+              {!searchQuery && trendingSearches.length > 0 && (
+                <div className='mt-3 sm:mt-4'>
+                  <p className='text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
+                    🔥 热门搜索
+                  </p>
+                  <div className='flex flex-wrap gap-2'>
+                    {trendingSearches.map((term) => (
+                      <button
+                        key={term}
+                        onClick={() => {
+                          setSearchQuery(term);
+                          // Trigger search
+                          setShowResults(true);
+                          setShowSuggestions(false);
+                          router.push(`/search?q=${encodeURIComponent(term)}`);
+                        }}
+                        className='px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

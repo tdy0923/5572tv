@@ -159,6 +159,31 @@ export class UpstashRedisStorage implements IStorage {
     await withRetry(() => this.client.del(this.favHashKey(userName)));
   }
 
+  // ---------- 收藏分组 ----------
+  private favGroupsKey(user: string) {
+    return `u:${user}:fav:groups`;
+  }
+
+  async getFavoriteGroups(userName: string): Promise<string[]> {
+    const groups = await withRetry(() =>
+      this.client.smembers(this.favGroupsKey(userName)),
+    );
+    const result = (groups || []).map((g) => String(g));
+    return result.length > 0 ? result : ['默认'];
+  }
+
+  async addFavoriteGroup(userName: string, group: string): Promise<void> {
+    await withRetry(() =>
+      this.client.sadd(this.favGroupsKey(userName), group),
+    );
+  }
+
+  async deleteFavoriteGroup(userName: string, group: string): Promise<void> {
+    await withRetry(() =>
+      this.client.srem(this.favGroupsKey(userName), group),
+    );
+  }
+
   // ---------- 提醒 ----------
   private reminderHashKey(user: string) {
     return `u:${user}:reminder`; // 一个用户的所有提醒存在一个 Hash 中

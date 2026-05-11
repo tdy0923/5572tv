@@ -295,6 +295,30 @@ export abstract class BaseRedisStorage implements IStorage {
     await this.withRetry(() => this.client.del(this.favHashKey(userName)));
   }
 
+  // ---------- 收藏分组 ----------
+  private favGroupsKey(user: string) {
+    return `u:${user}:fav:groups`;
+  }
+
+  async getFavoriteGroups(userName: string): Promise<string[]> {
+    const groups = await this.withRetry(() =>
+      this.client.sMembers(this.favGroupsKey(userName)),
+    );
+    return groups.length > 0 ? groups : ['默认'];
+  }
+
+  async addFavoriteGroup(userName: string, group: string): Promise<void> {
+    await this.withRetry(() =>
+      this.client.sAdd(this.favGroupsKey(userName), group),
+    );
+  }
+
+  async deleteFavoriteGroup(userName: string, group: string): Promise<void> {
+    await this.withRetry(() =>
+      this.client.sRem(this.favGroupsKey(userName), group),
+    );
+  }
+
   // ---------- 提醒相关 ----------
   private reminderHashKey(user: string) {
     return `u:${user}:reminders`;

@@ -31,6 +31,7 @@ export interface Favorite {
   type?: string; // 内容类型（movie/tv/variety/shortdrama等）
   releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
   remarks?: string; // 备注信息（如"X天后上映"、"已上映"等）
+  group?: string; // 收藏分组
 }
 
 // 提醒数据结构（与收藏类似，但 releaseDate 是必需的）
@@ -134,6 +135,11 @@ export interface IStorage {
     userName: string,
     favorites: { [key: string]: Favorite },
   ): Promise<void>;
+
+  // 收藏分组相关
+  getFavoriteGroups(userName: string): Promise<string[]>;
+  addFavoriteGroup(userName: string, group: string): Promise<void>;
+  deleteFavoriteGroup(userName: string, group: string): Promise<void>;
 
   // 提醒相关
   getReminder(userName: string, key: string): Promise<Reminder | null>;

@@ -5460,6 +5460,55 @@ function PlayPageClient() {
                 },
               },
             ],
+            // 截图按钮（仅移动端）
+            ...(isMobile
+              ? [
+                  {
+                    name: 'screenshot',
+                    index: 6,
+                    position: 'right' as const,
+                    html: '<div style="padding:0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="截图"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg></div>',
+                    click: function () {
+                      if (!artPlayerRef.current) return;
+                      const video = artPlayerRef.current.video;
+                      const canvas = document.createElement('canvas');
+                      canvas.width = video.videoWidth;
+                      canvas.height = video.videoHeight;
+                      const ctx = canvas.getContext('2d');
+                      if (!ctx) return;
+                      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                      canvas.toBlob(
+                        (blob) => {
+                          if (!blob) return;
+                          const url = URL.createObjectURL(blob);
+                          // Try native share API
+                          if (navigator.share && navigator.canShare) {
+                            const file = new File([blob], 'screenshot.png', {
+                              type: 'image/png',
+                            });
+                            if (navigator.canShare({ files: [file] })) {
+                              navigator.share({
+                                files: [file],
+                                title: artPlayerRef.current?.title || '截图',
+                              });
+                              URL.revokeObjectURL(url);
+                              return;
+                            }
+                          }
+                          // Fallback: download
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `screenshot_${Date.now()}.png`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          if (artPlayerRef.current) artPlayerRef.current.notice.show = '📸 截图已保存';
+                        },
+                        'image/png',
+                      );
+                    },
+                  },
+                ]
+              : []),
             // 音轨切换按钮
             buildAudioTrackControl(),
           ],

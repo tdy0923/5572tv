@@ -368,6 +368,7 @@ function HomeClient() {
     type?: string;
     releaseDate?: string;
     remarks?: string;
+    group?: string;
   };
 
   // 🚀 TanStack Query - 使用 useMemo 计算收藏列表（自动响应数据变化）
@@ -398,6 +399,7 @@ function HomeClient() {
           type: fav?.type,
           releaseDate: fav?.releaseDate,
           remarks: fav?.remarks,
+          group: fav?.group,
         } as FavoriteItem;
       });
   }, [allFavorites, allPlayRecords]);
@@ -448,6 +450,8 @@ function HomeClient() {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | 'unsupported'
   >('unsupported');
+  const [favoriteGroups, setFavoriteGroups] = useState<string[]>(['默认']);
+  const [favoriteGroupFilter, setFavoriteGroupFilter] = useState<string>('全部');
 
   useEffect(() => {
     setNotifPermission(getNotificationPermission());
@@ -507,6 +511,20 @@ function HomeClient() {
         workerRef.current = null;
       }
     };
+  }, []);
+
+  // 加载收藏分组
+  useEffect(() => {
+    const loadGroups = async () => {
+      try {
+        const res = await fetch('/api/favorites/groups');
+        if (res.ok) {
+          const data = await res.json();
+          setFavoriteGroups(data.groups || ['默认']);
+        }
+      } catch {}
+    };
+    loadGroups();
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
@@ -1076,6 +1094,35 @@ function HomeClient() {
                 </div>
               )}
 
+              {/* 分组筛选 */}
+              {favoriteItems.length > 0 && (
+                <div className='mb-4 flex flex-wrap gap-2'>
+                  <button
+                    onClick={() => setFavoriteGroupFilter('全部')}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                      favoriteGroupFilter === '全部'
+                        ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_10px_24px_rgba(139,92,246,0.28)]'
+                        : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    全部
+                  </button>
+                  {favoriteGroups.map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setFavoriteGroupFilter(g)}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                        favoriteGroupFilter === g
+                          ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_10px_24px_rgba(139,92,246,0.28)]'
+                          : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* 筛选标签 */}
               {favoriteItems.length > 0 && (
                 <div className='mb-4 flex flex-wrap gap-2'>
@@ -1134,6 +1181,12 @@ function HomeClient() {
                 {(() => {
                   // 筛选
                   let filtered = favoriteItems;
+                  // 分组筛选
+                  if (favoriteGroupFilter !== '全部') {
+                    filtered = filtered.filter(
+                      (item) => (item.group || '默认') === favoriteGroupFilter,
+                    );
+                  }
                   if (favoriteFilter === 'movie') {
                     filtered = favoriteItems.filter((item) => {
                       // 优先用 type 字段判断
