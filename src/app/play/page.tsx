@@ -7486,37 +7486,7 @@ function PlayPageClient() {
             />
           </div>
 
-          {/* 相似推荐 */}
-          {movieDetails?.recommendations && movieDetails.recommendations.length > 0 && (
-            <div className='mt-6 sm:mt-8'>
-              <h3 className='text-lg font-bold text-gray-900 dark:text-white mb-4'>相似推荐</h3>
-              <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4'>
-                {movieDetails.recommendations.slice(0, 10).map((rec: any) => (
-                  <a
-                    key={rec.id}
-                    href={`/search?q=${encodeURIComponent(rec.title)}`}
-                    className='group'
-                  >
-                    <div className='aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 border border-black/6 dark:border-white/6'>
-                      {rec.poster ? (
-                        <img
-                          src={processImageUrl(rec.poster)}
-                          alt={rec.title}
-                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
-                          loading='lazy'
-                        />
-                      ) : (
-                        <div className='w-full h-full flex items-center justify-center text-2xl'>🎬</div>
-                      )}
-                    </div>
-                    <p className='mt-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-2'>
-                      {rec.title}
-                    </p>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
 
         {/* 返回顶部悬浮按钮 - 使用独立组件优化性能 */}
