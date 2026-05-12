@@ -267,18 +267,12 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Rate limiting
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')
-    || 'unknown';
-  const isApi = pathname.startsWith('/api');
+  // Rate limiting - skip for static assets and all API endpoints
+  // (disabled globally - login endpoint has its own rate limiter,
+  //  and page loads trigger 50+ parallel API calls that would be blocked)
   const isStatic = pathname.startsWith('/_next') || pathname.includes('.');
-
-  if (!isStatic && !checkRateLimit(ip, isApi)) {
-    return new NextResponse('Too Many Requests', {
-      status: 429,
-      headers: { 'Retry-After': '60' }
-    });
+  if (isStatic) {
+    // skip auth check for static assets
   }
 
   // 处理 /adult/ 路径前缀，重写为实际 API 路径
