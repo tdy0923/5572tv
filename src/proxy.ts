@@ -476,6 +476,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/search/trending', // 热门搜索（公共数据，无需认证）
     '/api/shortdrama', // 短剧 API（公共数据，无需认证）
     '/api/release-calendar', // 即将上映（公共数据，无需认证）
+    '/api/ai/', // AI 功能端点（公共数据，无需认证）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
