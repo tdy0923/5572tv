@@ -20,6 +20,8 @@ docker run -d \
   -e NEXT_PUBLIC_SITE_NAME='5572影视' \
   -e NEXT_PUBLIC_STORAGE_TYPE='kvrocks' \
   -e KVROCKS_URL='redis://:Danny0923@kvrocks:6666' \
+  -e GROQ_API_KEY="${GROQ_API_KEY:-}" \
+  -e NVIDIA_API_KEY="${NVIDIA_API_KEY:-}" \
   --restart unless-stopped \
   "$IMAGE"
 
