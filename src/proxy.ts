@@ -471,6 +471,11 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/telegram/', // Telegram API 端点
     '/api/cache', // 缓存 API 端点（内部使用，无需认证）
     '/api/douban', // 豆瓣 API 端点（公共数据，无需认证）
+    '/api/image-proxy', // 图片代理（公共数据，无需认证）
+    '/api/video-proxy', // 视频代理（公共数据，无需认证）
+    '/api/search/trending', // 热门搜索（公共数据，无需认证）
+    '/api/shortdrama', // 短剧 API（公共数据，无需认证）
+    '/api/release-calendar', // 即将上映（公共数据，无需认证）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
@@ -479,6 +484,6 @@ function shouldSkipAuth(pathname: string): boolean {
 // 配置middleware匹配规则
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|login|register|oidc-register|warning|api/login|api/register|api/logout|api/cron|api/server-config|api/tvbox|api/live/merged|api/parse|api/bing-wallpaper|api/proxy/|api/telegram/|api/auth/oidc/|api/watch-room/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|login|register|oidc-register|warning|api/login|api/register|api/logout|api/cron|api/server-config|api/tvbox|api/live/merged|api/parse|api/bing-wallpaper|api/proxy/|api/telegram/|api/auth/oidc/|api/watch-room/|api/douban|api/cache|api/image-proxy|api/video-proxy|api/search/trending|api/shortdrama|api/release-calendar).*)',
   ],
 };
