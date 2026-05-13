@@ -469,7 +469,7 @@ function HomeClient() {
       fetch('/api/play-history/timeline')
         .then((r) => r.json())
         .then((data) => setHistoryTimeline(data.timeline || {}))
-        .catch(() => {});
+        .catch((e) => console.debug('[Homepage] History timeline fetch error:', e));
     }
   }, [activeTab]);
 
@@ -548,7 +548,7 @@ function HomeClient() {
     fetch('/api/favorites/updates')
       .then((r) => r.json())
       .then((data) => setUpdateCount(data.count || 0))
-      .catch(() => {});
+      .catch((e) => console.debug('[Homepage] Favorites updates fetch error:', e));
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
@@ -560,12 +560,18 @@ function HomeClient() {
   }, [homeData, homeLoading, refetchHomeData]);
 
   // 🚀 当 GlobalCache 数据加载完成后，延迟加载详情数据
+  const detailTimeoutRefs = useRef<NodeJS.Timeout[]>([]);
+
   useEffect(() => {
     if (!homeData) return;
 
+    // 清理上一次的 timeout
+    detailTimeoutRefs.current.forEach((t) => clearTimeout(t));
+    detailTimeoutRefs.current = [];
+
     // 延迟加载电影详情
     if (homeData.hotMovies.length > 0) {
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         Promise.all(
           homeData.hotMovies.slice(0, 2).map(async (movie) => {
             try {
@@ -596,11 +602,12 @@ function HomeClient() {
           });
         }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
       }, 2000);
+      detailTimeoutRefs.current.push(t1);
     }
 
     // 延迟加载剧集详情
     if (homeData.hotTvShows.length > 0) {
-      setTimeout(() => {
+      const t2 = setTimeout(() => {
         Promise.all(
           homeData.hotTvShows.slice(0, 2).map(async (show) => {
             try {
@@ -631,11 +638,12 @@ function HomeClient() {
           });
         }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
       }, 2000);
+      detailTimeoutRefs.current.push(t2);
     }
 
     // 延迟加载动漫详情
     if (homeData.hotAnime.length > 0) {
-      setTimeout(() => {
+      const t3 = setTimeout(() => {
         const anime = homeData.hotAnime[0];
         getDoubanDetails(anime.id)
           .then((detailsRes) => {
@@ -655,11 +663,12 @@ function HomeClient() {
             console.warn(`获取动漫 ${anime.id} 详情失败:`, error);
           });
       }, 3000);
+      detailTimeoutRefs.current.push(t3);
     }
 
     // 延迟加载综艺详情
     if (homeData.hotVarietyShows.length > 0) {
-      setTimeout(() => {
+      const t4 = setTimeout(() => {
         const show = homeData.hotVarietyShows[0];
         getDoubanDetails(show.id)
           .then((detailsRes) => {
@@ -680,6 +689,7 @@ function HomeClient() {
             console.warn(`获取综艺 ${show.id} 详情失败:`, error);
           });
       }, 3000);
+      detailTimeoutRefs.current.push(t4);
     }
 
     // 🔄 异步加载即将上映数据
@@ -759,6 +769,10 @@ function HomeClient() {
         console.warn('获取即将上映数据失败:', error);
         dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
       });
+
+    return () => {
+      detailTimeoutRefs.current.forEach((t) => clearTimeout(t));
+    };
   }, [homeData]);
 
   // 🚀 TanStack Query - 使用 useMutation 管理清空收藏操作

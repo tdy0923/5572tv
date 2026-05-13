@@ -28,6 +28,7 @@ export default function ShortDramaPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   // 返回顶部按钮显示状态
   const [showBackToTop, setShowBackToTop] = useState(false);
   // 用于防止分类切换时的闪烁
@@ -42,6 +43,7 @@ export default function ShortDramaPage() {
   });
 
   const observer = useRef<IntersectionObserver | undefined>(undefined);
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastDramaElementRef = useCallback(
     (node: HTMLDivElement) => {
       // 虚拟化模式使用 endReached 回调，不需要 IntersectionObserver
@@ -72,6 +74,14 @@ export default function ShortDramaPage() {
       }
     };
     fetchCategories();
+  }, []);
+
+  // 加载搜索历史
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('shortdrama-search-history');
+      if (saved) setSearchHistory(JSON.parse(saved));
+    } catch {}
   }, []);
 
   // 监听滚动位置，控制返回顶部按钮显示
@@ -157,6 +167,13 @@ export default function ShortDramaPage() {
     }
   }, [page, loadDramas]);
 
+  // 保存搜索历史
+  const saveSearchHistory = (query: string) => {
+    const updated = [query, ...searchHistory.filter(h => h !== query)].slice(0, 10);
+    setSearchHistory(updated);
+    localStorage.setItem('shortdrama-search-history', JSON.stringify(updated));
+  };
+
   // 处理搜索
   const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
@@ -165,13 +182,14 @@ export default function ShortDramaPage() {
     setHasMore(true);
 
     if (query) {
+      saveSearchHistory(query);
       const result = await searchShortDramas(query, 1, 20);
       setDramas(result.list);
       setHasMore(result.hasMore);
     }
     // 如果清空搜索，不需要手动调用 loadDramas
     // useEffect 会自动监听 isSearchMode 的变化并重新加载
-  }, []);
+  }, [searchHistory]);
 
   // 返回顶部功能
   const scrollToTop = () => {
@@ -222,9 +240,51 @@ export default function ShortDramaPage() {
                 placeholder='搜索短剧名称...'
                 className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
                 value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchQuery(value);
+                  if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                  searchTimerRef.current = setTimeout(() => {
+                    if (value.trim()) {
+                      handleSearch(value.trim());
+                    } else {
+                      setIsSearchMode(false);
+                    }
+                  }, 300);
+                }}
               />
             </div>
+            {/* 搜索历史 */}
+            {isSearchMode && !searchQuery && searchHistory.length > 0 && (
+              <div className='mt-3'>
+                <div className='flex items-center justify-between mb-2'>
+                  <span className='text-xs text-gray-500 dark:text-gray-400'>搜索历史</span>
+                  <button
+                    onClick={() => {
+                      setSearchHistory([]);
+                      localStorage.removeItem('shortdrama-search-history');
+                    }}
+                    className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  >
+                    清除
+                  </button>
+                </div>
+                <div className='flex flex-wrap gap-2'>
+                  {searchHistory.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSearchQuery(item);
+                        handleSearch(item);
+                      }}
+                      className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 分类筛选 */}

@@ -1039,7 +1039,7 @@ function SearchPageClient() {
     fetch('/api/search/trending')
       .then((r) => r.json())
       .then((data) => setTrendingSearches(data.trending || []))
-      .catch(() => {});
+      .catch((e) => console.debug('[Search] Trending fetch error:', e));
   }, []);
 
   // 监听搜索类型变化，如果切换到网盘/TMDB演员搜索且有搜索词，立即搜索

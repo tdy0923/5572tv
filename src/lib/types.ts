@@ -68,6 +68,7 @@ export interface ShortDramaItem {
   backdrop?: string; // 高清背景图
   vote_average?: number; // 用户评分 (0-10)
   tmdb_id?: number; // TMDB ID
+  source?: string; // 数据来源
 }
 
 // 短剧解析结果数据结构

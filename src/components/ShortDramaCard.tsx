@@ -110,6 +110,20 @@ function ShortDramaCard({
   // 获取真实集数（优先使用备用API）
   useEffect(() => {
     const fetchEpisodeCount = async () => {
+      // Check cache first
+      const sessionStorageKey = `sd:ep:${drama.id}`;
+      const cachedEp = sessionStorage.getItem(sessionStorageKey);
+      if (cachedEp) {
+        const count = parseInt(cachedEp, 10);
+        if (count > 1) {
+          setRealEpisodeCount(count);
+          setShowEpisodeCount(true);
+        } else {
+          setShowEpisodeCount(false);
+        }
+        return;
+      }
+
       const cacheKey = getCacheKey('episodes', { id: drama.id });
 
       // 检查统一缓存
@@ -170,6 +184,7 @@ function ShortDramaCard({
         if (result && result.totalEpisodes > 1) {
           setRealEpisodeCount(result.totalEpisodes);
           setShowEpisodeCount(true);
+          sessionStorage.setItem(sessionStorageKey, String(result.totalEpisodes));
           // 使用统一缓存系统缓存结果
           await setCache(
             cacheKey,
@@ -179,12 +194,14 @@ function ShortDramaCard({
         } else {
           // 如果解析失败或集数<=1，不显示集数标签，缓存0避免重复请求
           setShowEpisodeCount(false);
+          sessionStorage.setItem(sessionStorageKey, '0');
           await setCache(cacheKey, 0, SHORTDRAMA_CACHE_EXPIRE.episodes / 24); // 1小时后重试
         }
       } catch (error) {
         console.error('获取集数失败:', error);
         // 网络错误时不显示集数标签
         setShowEpisodeCount(false);
+        sessionStorage.setItem(sessionStorageKey, '0');
         await setCache(cacheKey, 0, SHORTDRAMA_CACHE_EXPIRE.episodes / 24); // 1小时后重试
       }
     };
@@ -286,7 +303,8 @@ function ShortDramaCard({
     try {
       const date = new Date(updateTime);
       return date.toLocaleDateString('zh-CN');
-    } catch {
+    } catch (e) {
+      console.debug('[ShortDrama]', e);
       return updateTime;
     }
   };
@@ -371,6 +389,13 @@ function ShortDramaCard({
               </div>
             )}
           </div>
+
+          {/* 来源标识 - 右上角 */}
+          {drama.source && (
+            <span className='absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded bg-black/50 text-white/80 z-10'>
+              {drama.source}
+            </span>
+          )}
 
           {/* 收藏按钮 - 右下角 */}
           <button
