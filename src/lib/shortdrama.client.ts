@@ -445,7 +445,10 @@ export async function parseShortDramaEpisode(
     }
 
     const timestamp = Date.now();
-    const apiUrl = `/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
+    // 服务器端调用时需要完整URL，客户端用相对路径
+    const isServer = typeof window === 'undefined';
+    const baseUrl = isServer ? (process.env.SITE_BASE || 'http://localhost:3000') : '';
+    const apiUrl = `${baseUrl}/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
 
     const fetchOptions: RequestInit = {
       cache: 'no-store',
@@ -532,7 +535,10 @@ export async function parseShortDramaBatch(
     }
 
     const timestamp = Date.now();
-    const apiUrl = `/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
+    // 服务器端调用时需要完整URL，客户端用相对路径
+    const isServer = typeof window === 'undefined';
+    const baseUrl = isServer ? (process.env.SITE_BASE || 'http://localhost:3000') : '';
+    const apiUrl = `${baseUrl}/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
 
     const fetchOptions: RequestInit = {
       cache: 'no-store',
@@ -572,7 +578,10 @@ export async function parseShortDramaAll(
     }
 
     const timestamp = Date.now();
-    const apiUrl = `/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
+    // 服务器端调用时需要完整URL，客户端用相对路径
+    const isServer = typeof window === 'undefined';
+    const baseUrl = isServer ? (process.env.SITE_BASE || 'http://localhost:3000') : '';
+    const apiUrl = `${baseUrl}/api/shortdrama/parse?${params.toString()}&_t=${timestamp}`;
 
     const fetchOptions: RequestInit = {
       cache: 'no-store',
