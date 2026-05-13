@@ -73,14 +73,58 @@ export async function GET(request: NextRequest) {
       alternativeApiUrl = undefined;
     }
 
-    // 解析视频，默认使用代理，如果提供了剧名且配置了备用API则自动fallback
-    const result = await parseShortDramaEpisode(
-      videoId,
-      episodeNum,
-      true,
-      name || undefined,
-      alternativeApiUrl
-    );
+    // 直接调用外部API，避免循环调用
+    const config = await getConfig();
+    const defaultApi = 'https://wwzy.tv/api.php/provide/vod';
+    
+    const params = new URLSearchParams({
+      ac: 'detail',
+      ids: videoId.toString(),
+    });
+
+    const response = await fetch(`${defaultApi}?${params.toString()}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Accept: 'application/json',
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.list || data.list.length === 0) {
+      return NextResponse.json({ error: '未找到短剧数据' }, { status: 404 });
+    }
+
+    const drama = data.list[0];
+    const playUrl = drama.vod_play_url || '';
+    // 解析播放地址：格式为 "01$url1#02$url2"
+    const episodes = playUrl.split('#').map((ep: string) => {
+      const parts = ep.split('$');
+      return { name: parts[0], url: parts[1] || '' };
+    });
+
+    const episodeIndex = Math.max(0, episodeNum - 1);
+    const currentEpisode = episodes[episodeIndex] || episodes[0] || { url: '' };
+
+    const result = {
+      code: 0,
+      data: {
+        videoId: videoId,
+        videoName: drama.vod_name || '',
+        currentEpisode: episodeNum,
+        totalEpisodes: episodes.length || 1,
+        parsedUrl: currentEpisode.url || '',
+        proxyUrl: '',
+        cover: drama.vod_pic || '',
+        description: drama.vod_content || drama.vod_blurb || '',
+        episode: { index: episodeNum, url: currentEpisode.url },
+      },
+    };
 
     if (result.code !== 0) {
       const errorResponse = { error: result.msg || '解析失败' };
