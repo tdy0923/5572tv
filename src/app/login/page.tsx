@@ -2,6 +2,8 @@
 
 import {
   AlertCircle,
+  Eye,
+  EyeOff,
   Lock,
   Send,
   Sparkles,
@@ -29,6 +31,7 @@ function LoginPageClient() {
   const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const shouldAskUsername =
@@ -216,7 +219,7 @@ function LoginPageClient() {
       subtitle='欢迎回来，继续访问您的内容与播放记录'
       icon={<Sparkles className='h-6 w-6 text-white' />}
     >
-      <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6'>
+      <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6' aria-label="登录表单">
         {shouldAskUsername && (
           <div className='group'>
             <label
@@ -255,18 +258,29 @@ function LoginPageClient() {
             </div>
             <input
               id='password'
-              type='password'
+              type={showPassword ? 'text' : 'password'}
               autoComplete='current-password'
-              className='ui-input pl-10 sm:pl-12 pr-3 sm:pr-4'
+              className='ui-input pl-10 sm:pl-12 pr-10 sm:pr-12'
               placeholder='请输入访问密码'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+            >
+              {showPassword ? (
+                <EyeOff className='h-4 w-4 sm:h-5 sm:w-5' />
+              ) : (
+                <Eye className='h-4 w-4 sm:h-5 sm:w-5' />
+              )}
+            </button>
           </div>
         </div>
 
         {error && (
-          <div className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
+          <div role="alert" aria-live="polite" className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
             <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
             <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>
               {error}

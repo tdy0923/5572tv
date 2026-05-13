@@ -349,7 +349,7 @@ function HomeClient() {
   }, [announcement]);
 
   // 🚀 TanStack Query - 使用 useQuery 获取收藏数据（自动缓存，跨页面持久化）
-  const { data: allFavorites = {} } = useQuery(allFavoritesOptions());
+  const { data: allFavorites = {}, isLoading: favoritesLoading } = useQuery(allFavoritesOptions());
 
   // 🚀 TanStack Query - 使用 useQuery 获取播放记录（自动缓存，跨页面持久化）
   const { data: allPlayRecords = {} } = useQuery(allPlayRecordsOptions());
@@ -1210,6 +1210,12 @@ function HomeClient() {
               )}
 
               <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+                {favoritesLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
+                ) : (
+                  <>
                 {(() => {
                   // 筛选
                   let filtered = favoriteItems;
@@ -1385,6 +1391,8 @@ function HomeClient() {
                       快去发现喜欢的影视作品，点击 ❤️ 添加到收藏吧！
                     </p>
                   </div>
+                )}
+                  </>
                 )}
               </div>
 

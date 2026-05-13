@@ -6,6 +6,7 @@
 
 import Hls from 'hls.js';
 import { X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -31,27 +32,44 @@ import type { DanmuManualOverride } from '@/hooks/useDanmu';
 import { useDanmu } from '@/hooks/useDanmu';
 
 import AcgSearch from '@/components/AcgSearch';
-import DanmuManualMatchModal, {
-  type DanmuManualSelection,
-} from '@/components/DanmuManualMatchModal';
+import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
+const DanmuManualMatchModal = dynamic(
+  () => import('@/components/DanmuManualMatchModal'),
+  { ssr: false },
+);
 import DownloadEpisodeSelector from '@/components/download/DownloadEpisodeSelector';
 import EpisodeSelector from '@/components/EpisodeSelector';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
-import DanmuSettingsPanel from '@/components/play/DanmuSettingsPanel';
+const DanmuSettingsPanel = dynamic(
+  () => import('@/components/play/DanmuSettingsPanel'),
+  { ssr: false },
+);
 import DownloadButtons from '@/components/play/DownloadButtons';
 import LoadingScreen from '@/components/play/LoadingScreen';
 import NetDiskButton from '@/components/play/NetDiskButton';
-import OwnerChangeDialog from '@/components/play/OwnerChangeDialog';
+const OwnerChangeDialog = dynamic(
+  () => import('@/components/play/OwnerChangeDialog'),
+  { ssr: false },
+);
 import PlayErrorDisplay from '@/components/play/PlayErrorDisplay';
-import SourceSwitchDialog from '@/components/play/SourceSwitchDialog';
+const SourceSwitchDialog = dynamic(
+  () => import('@/components/play/SourceSwitchDialog'),
+  { ssr: false },
+);
 import VideoCoverDisplay from '@/components/play/VideoCoverDisplay';
 import VideoInfoSection from '@/components/play/VideoInfoSection';
-import VideoLoadingOverlay from '@/components/play/VideoLoadingOverlay';
+const VideoLoadingOverlay = dynamic(
+  () => import('@/components/play/VideoLoadingOverlay'),
+  { ssr: false },
+);
 import WatchRoomSyncBanner from '@/components/play/WatchRoomSyncBanner';
-import WebSRSettingsPanel from '@/components/play/WebSRSettingsPanel';
+const WebSRSettingsPanel = dynamic(
+  () => import('@/components/play/WebSRSettingsPanel'),
+  { ssr: false },
+);
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
@@ -979,6 +997,8 @@ function PlayPageClient() {
   const resumeTimeRef = useRef<number | null>(null);
   // 上次使用的音量，默认 0.7
   const lastVolumeRef = useRef<number>(0.7);
+  // 用于清理 autoplay 首次交互的 document click 监听器
+  const firstInteractionHandlerRef = useRef<(() => void) | null>(null);
   // 上次使用的播放速率，从 localStorage 恢复
   const lastPlaybackRateRef = useRef<number>(loadPlaybackRate());
 
@@ -6836,7 +6856,12 @@ function PlayPageClient() {
                         'click',
                         handleFirstUserInteraction,
                       );
+                      firstInteractionHandlerRef.current = null;
                     };
+
+                    // 保存引用以便 unmount 时清理
+                    firstInteractionHandlerRef.current =
+                      handleFirstUserInteraction;
 
                     // 监听播放事件和点击事件
                     artPlayerRef.current.on(
@@ -6859,6 +6884,7 @@ function PlayPageClient() {
           }
 
           setTimeout(() => {
+            if (!artPlayerRef.current) return;
             if (
               Math.abs(artPlayerRef.current.volume - lastVolumeRef.current) >
               0.01
@@ -6886,6 +6912,8 @@ function PlayPageClient() {
         });
 
         // 监听播放器错误 - 自动切换到备用源
+        // NOTE: This is intentionally a plain object (closure-scoped), not a React ref.
+        // It lives inside the initPlayer closure and resets when the player is re-created.
         let sourceErrorCountRef = { current: 0 };
         const MAX_SOURCE_ERRORS = 2;
         artPlayerRef.current.on('error', (err: any) => {
@@ -6928,7 +6956,10 @@ function PlayPageClient() {
             params.set('source', nextSource.source);
             params.set('id', nextSource.id);
             if (nextSource.title) params.set('title', nextSource.title);
-            window.location.search = params.toString();
+            // Use replaceState + trigger re-render instead of full reload
+            window.history.replaceState(null, '', `/play?${params.toString()}`);
+            // Force re-render by updating a trigger state
+            setReloadTrigger((prev) => prev + 1);
           } else {
             console.log('❌ 没有更多可用源');
             setError('当前线路播放失败，且没有其他可用线路');
@@ -7140,6 +7171,15 @@ function PlayPageClient() {
         clearTimeout(resizeResetTimeoutRef.current);
       }
 
+      // 清理 autoplay 首次交互的 document click 监听器
+      if (firstInteractionHandlerRef.current) {
+        document.removeEventListener(
+          'click',
+          firstInteractionHandlerRef.current,
+        );
+        firstInteractionHandlerRef.current = null;
+      }
+
       // 释放 Wake Lock
       releaseWakeLock();
 
@@ -7164,7 +7204,7 @@ function PlayPageClient() {
         cleanupPlayer();
       }
     };
-  }, [searchParams.get('source'), searchParams.get('id')]);
+  }, [searchParams.get('source'), searchParams.get('id'), reloadTrigger]);
 
   // 返回顶部功能相关
   useEffect(() => {

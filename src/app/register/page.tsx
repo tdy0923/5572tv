@@ -35,6 +35,21 @@ function RegisterPageClient() {
   const [disabledReason, setDisabledReason] = useState('');
   const [requireInviteCode, setRequireInviteCode] = useState(false);
 
+  const getPasswordStrength = (pwd: string): { level: number; label: string; color: string } => {
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    if (score <= 2) return { level: 1, label: '弱', color: 'bg-red-500' };
+    if (score <= 3) return { level: 2, label: '中', color: 'bg-yellow-500' };
+    return { level: 3, label: '强', color: 'bg-green-500' };
+  };
+
+  const strength = getPasswordStrength(password);
+
   // 获取 Bing 每日壁纸（通过代理 API）
   useEffect(() => {
     const fetchBingWallpaper = async () => {
@@ -259,6 +274,16 @@ function RegisterPageClient() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          {password && (
+            <div className='mt-2'>
+              <div className='flex gap-1 mb-1'>
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`} />
+                ))}
+              </div>
+              <p className='text-xs text-gray-500'>密码强度: {strength.label}</p>
+            </div>
+          )}
         </div>
 
         <div className='group'>
