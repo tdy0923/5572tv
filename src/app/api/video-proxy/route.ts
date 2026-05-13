@@ -162,6 +162,12 @@ export async function GET(request: Request) {
     }
 
     if (!videoResponse.ok) {
+      // 🎯 豆瓣视频 CDN 有浏览器级防盗链，服务器端无法绕过
+      // 返回 204 避免触发前端错误处理，让 HeroBanner 正常降级
+      if (isDouban && (videoResponse.status === 403 || videoResponse.status === 404)) {
+        return new Response(null, { status: 204 });
+      }
+
       // 🎯 如果是 403/404 等错误，删除可能过期的缓存
       if (
         storageType === 'kvrocks' &&
