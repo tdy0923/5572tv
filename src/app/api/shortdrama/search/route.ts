@@ -79,6 +79,11 @@ async function searchFromSource(
     author: item.vod_actor || '',
     backdrop: item.vod_pic_slide || item.vod_pic || '',
     vote_average: parseFloat(item.vod_score) || 0,
+    vod_area: item.vod_area || '',
+    vod_year: item.vod_year || '',
+    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
+    vod_hits: parseInt(item.vod_hits || '0'),
+    vod_name: item.vod_name || '',
   }));
 
   return {

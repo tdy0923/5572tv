@@ -69,6 +69,11 @@ export interface ShortDramaItem {
   vote_average?: number; // 用户评分 (0-10)
   tmdb_id?: number; // TMDB ID
   source?: string; // 数据来源
+  vod_area?: string; // 地区
+  vod_year?: string; // 年份
+  vod_time?: number; // 更新时间戳
+  vod_hits?: number; // 热度/点击量
+  vod_name?: string; // 剧名（冗余字段，用于排序比较）
 }
 
 // 短剧解析结果数据结构

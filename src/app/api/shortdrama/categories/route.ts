@@ -46,17 +46,11 @@ async function getCategoriesFromSource(
     '资源',
   ];
 
-  const includeKeywords = ['短剧', '短篇', '短集', '合集', '番外', '剧情'];
-
   const safeCategories = categories
     .filter((cat: any) => cat.type_name)
     .filter((cat: any) => {
       const name = String(cat.type_name || '');
-      const excluded = excludeKeywords.some((keyword) =>
-        name.includes(keyword),
-      );
-      if (excluded) return false;
-      return includeKeywords.some((keyword) => name.includes(keyword));
+      return !excludeKeywords.some((keyword) => name.includes(keyword));
     })
     .map((cat: any) => ({
       type_id: cat.type_id,
@@ -71,6 +65,43 @@ async function getCategoriesFromSource(
       bShort - aShort || String(a.type_id).localeCompare(String(b.type_id))
     );
   });
+}
+
+// 从采集源中查找短剧分类
+async function getShortDramaCategoriesFromSources(
+  config: any,
+): Promise<{ type_id: number; type_name: string }[]> {
+  const sources = (config.SourceConfig || [])
+    .filter((s: any) => s.api && !s.disabled)
+    .slice(0, 10);
+
+  const results = await Promise.allSettled(
+    sources.map(async (source: any) => {
+      try {
+        const response = await fetch(`${source.api}?ac=list`, {
+          headers: { 'User-Agent': DEFAULT_USER_AGENT, Accept: 'application/json' },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!response.ok) return [];
+        const data = await response.json();
+        const classes = data.class || [];
+        return classes
+          .filter((c: any) => {
+            const name = String(c.type_name || '');
+            return name.includes('短剧') || name.includes('短篇') || name.includes('短集');
+          })
+          .map((c: any) => ({ type_id: c.type_id, type_name: c.type_name }));
+      } catch {
+        return [];
+      }
+    }),
+  );
+
+  const categories: { type_id: number; type_name: string }[] = [];
+  results.forEach((r) => {
+    if (r.status === 'fulfilled') categories.push(...r.value);
+  });
+  return categories;
 }
 
 // 从配置的短剧源获取分类
@@ -121,7 +152,19 @@ async function getShortDramaCategoriesInternal() {
       return uniqueCategories;
     }
 
-    console.log('⚠️ 所有配置的短剧源都未返回分类，回退到默认源');
+    // 从采集源中查找短剧分类
+  console.log('📋 [CATEGORIES] 从采集源中查找短剧分类...');
+  const sourceCategories = await getShortDramaCategoriesFromSources(config);
+  if (sourceCategories.length > 0) {
+    console.log(`  ✅ 从采集源找到 ${sourceCategories.length} 个短剧分类`);
+    // 按 type_id 去重并转换格式
+    const uniqueSourceCategories = Array.from(
+      new Map(sourceCategories.map((c) => [`${c.type_id}_${c.type_name}`, { type_id: c.type_id, type_name: c.type_name }])).values(),
+    );
+    return uniqueSourceCategories;
+  }
+
+  console.log('⚠️ 所有配置的短剧源都未返回分类，回退到默认源');
   }
 
   // 没有配置短剧源或全部失败，使用默认源

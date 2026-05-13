@@ -41,6 +41,10 @@ export default function ShortDramaPage() {
     }
     return true;
   });
+  const [virtualCategories, setVirtualCategories] = useState<{type_id: number; type_name: string}[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'name'>('latest');
 
   const observer = useRef<IntersectionObserver | undefined>(undefined);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -124,15 +128,22 @@ export default function ShortDramaPage() {
   // 加载短剧列表
   const loadDramas = useCallback(
     async (pageNum: number, reset = false) => {
-      if (!selectedCategory && !isSearchMode) return; // 没有选中分类且不是搜索模式时不加载
+      // 虚拟分类模式：从已加载数据中筛选，不需要API调用
+      if ((selectedRegion || selectedYear) && dramas.length > 0 && !isSearchMode) {
+        return;
+      }
+      if (!selectedCategory && !isSearchMode && !selectedRegion && !selectedYear) return;
 
       setLoading(true);
       try {
         let result: { list: ShortDramaItem[]; hasMore: boolean };
         if (isSearchMode && searchQuery) {
           result = await searchShortDramas(searchQuery, pageNum, 20);
+        } else if (selectedCategory) {
+          result = await getShortDramaList(selectedCategory, pageNum, 20);
         } else {
-          result = await getShortDramaList(selectedCategory!, pageNum, 20);
+          setLoading(false);
+          return;
         }
 
         if (reset) {
@@ -142,23 +153,43 @@ export default function ShortDramaPage() {
           setDramas((prev) => [...prev, ...result.list]);
         }
         setHasMore(result.hasMore);
+
+        if (result.list.length > 0 && virtualCategories.length === 0) {
+          const regionMap = new Map<string, number>();
+          const yearMap = new Map<string, number>();
+          result.list.forEach(item => {
+            if (item.vod_area) regionMap.set(item.vod_area, (regionMap.get(item.vod_area) || 0) + 1);
+            if (item.vod_year) yearMap.set(item.vod_year, (yearMap.get(item.vod_year) || 0) + 1);
+          });
+          const virtuals: {type_id: number; type_name: string}[] = [];
+          let tid = 9000;
+          regionMap.forEach((count, name) => {
+            if (count >= 2 && !['其他', '未知'].includes(name)) {
+              virtuals.push({ type_id: tid++, type_name: `📍 ${name}` });
+            }
+          });
+          yearMap.forEach((count, year) => {
+            if (count >= 2) virtuals.push({ type_id: tid++, type_name: `📅 ${year}` });
+          });
+          setVirtualCategories(virtuals);
+        }
       } catch (error) {
         console.error('加载短剧失败:', error);
       } finally {
         setLoading(false);
       }
     },
-    [selectedCategory, searchQuery, isSearchMode],
+    [selectedCategory, searchQuery, isSearchMode, selectedRegion, selectedYear, dramas.length, virtualCategories.length],
   );
 
   // 当分类变化时重新加载
   useEffect(() => {
-    if (selectedCategory && !isSearchMode) {
+    if (selectedCategory && !isSearchMode && !selectedRegion && !selectedYear) {
       setPage(1);
       setHasMore(true);
       loadDramas(1, true);
     }
-  }, [selectedCategory, isSearchMode, loadDramas]);
+  }, [selectedCategory, isSearchMode, selectedRegion, selectedYear, loadDramas]);
 
   // 当页码变化时加载更多
   useEffect(() => {
@@ -190,6 +221,33 @@ export default function ShortDramaPage() {
     // 如果清空搜索，不需要手动调用 loadDramas
     // useEffect 会自动监听 isSearchMode 的变化并重新加载
   }, [searchHistory]);
+
+  const allCategories = [...categories, ...virtualCategories];
+
+  const filteredDramas = dramas.filter(d => {
+    if (selectedRegion) return d.vod_area === selectedRegion.replace('📍 ', '');
+    if (selectedYear) return d.vod_year === selectedYear.replace('📅 ', '');
+    return true;
+  });
+
+  const sortedDramas = [...filteredDramas].sort((a, b) => {
+    if (sortBy === 'latest') return (b.vod_time || 0) - (a.vod_time || 0);
+    if (sortBy === 'popular') return (b.vod_hits || 0) - (a.vod_hits || 0);
+    if (sortBy === 'name') return a.vod_name.localeCompare(b.vod_name);
+    return 0;
+  });
+
+  const handleVirtualCategoryClick = (cat: {type_id: number; type_name: string}) => {
+    if (cat.type_name.startsWith('📍 ')) {
+      setSelectedRegion(prev => prev === cat.type_name ? null : cat.type_name);
+      setSelectedYear(null);
+      setSelectedCategory(null);
+    } else if (cat.type_name.startsWith('📅 ')) {
+      setSelectedYear(prev => prev === cat.type_name ? null : cat.type_name);
+      setSelectedRegion(null);
+      setSelectedCategory(null);
+    }
+  };
 
   // 返回顶部功能
   const scrollToTop = () => {
@@ -288,7 +346,7 @@ export default function ShortDramaPage() {
           </div>
 
           {/* 分类筛选 */}
-          {!isSearchMode && categories.length > 0 && (
+          {!isSearchMode && allCategories.length > 0 && (
             <div className='mb-6'>
               <div className='mb-4 flex items-center justify-between gap-4'>
                 <div className='flex items-center gap-2'>
@@ -298,15 +356,29 @@ export default function ShortDramaPage() {
                   </span>
                 </div>
                 <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 font-medium'>
-                  {categories.length}
+                  {allCategories.length}
                 </span>
               </div>
               <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
-                {categories.map((category, index) => (
+                {allCategories.map((category, index) => (
                   <PillButton
                     key={category.type_id}
-                    onClick={() => setSelectedCategory(category.type_id)}
-                    active={selectedCategory === category.type_id}
+                    onClick={() => {
+                      if (category.type_name.startsWith('📍 ') || category.type_name.startsWith('📅 ')) {
+                        handleVirtualCategoryClick(category);
+                      } else {
+                        setSelectedCategory(category.type_id);
+                        setSelectedRegion(null);
+                        setSelectedYear(null);
+                      }
+                    }}
+                    active={
+                      category.type_name.startsWith('📍 ')
+                        ? selectedRegion === category.type_name
+                        : category.type_name.startsWith('📅 ')
+                          ? selectedYear === category.type_name
+                          : selectedCategory === category.type_id
+                    }
                     className='px-4 py-2 duration-300'
                     style={{
                       animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
@@ -316,6 +388,16 @@ export default function ShortDramaPage() {
                   </PillButton>
                 ))}
               </PillGroup>
+            </div>
+          )}
+
+          {/* 排序选项 */}
+          {!isSearchMode && (
+            <div className='flex items-center gap-2 mb-4'>
+              <span className='text-xs text-gray-500 dark:text-gray-400'>排序:</span>
+              <PillButton active={sortBy === 'latest'} onClick={() => setSortBy('latest')} className='px-3 py-1 text-xs'>最新</PillButton>
+              <PillButton active={sortBy === 'popular'} onClick={() => setSortBy('popular')} className='px-3 py-1 text-xs'>最热</PillButton>
+              <PillButton active={sortBy === 'name'} onClick={() => setSortBy('name')} className='px-3 py-1 text-xs'>名称</PillButton>
             </div>
           )}
 
@@ -345,12 +427,12 @@ export default function ShortDramaPage() {
           {/* 短剧网格 */}
           {useVirtualization ? (
             <VirtualGrid
-              items={dramas}
+              items={sortedDramas}
               className='grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
               rowGapClass='pb-4'
               estimateRowHeight={280}
               endReached={() => {
-                if (hasMore && !loading) {
+                if (hasMore && !loading && !selectedRegion && !selectedYear) {
                   setPage((prevPage) => prevPage + 1);
                 }
               }}
@@ -361,10 +443,10 @@ export default function ShortDramaPage() {
             />
           ) : (
             <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-              {dramas.map((drama, index) => (
+              {sortedDramas.map((drama, index) => (
                 <div
                   key={`${drama.id}-${index}`}
-                  ref={index === dramas.length - 1 ? lastDramaElementRef : null}
+                  ref={index === sortedDramas.length - 1 && !selectedRegion && !selectedYear ? lastDramaElementRef : null}
                 >
                   <ShortDramaCard drama={drama} />
                 </div>
@@ -402,7 +484,7 @@ export default function ShortDramaPage() {
           )}
 
           {/* 无更多数据提示 */}
-          {!loading && !hasMore && dramas.length > 0 && (
+          {!loading && !hasMore && sortedDramas.length > 0 && (selectedRegion || selectedYear || !hasMore) && (
             <div className='flex justify-center mt-12 py-8'>
               <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-white/6 border border-black/6 dark:border-white/8 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-hidden'>
                 <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
@@ -436,7 +518,7 @@ export default function ShortDramaPage() {
                       已经到底了～
                     </p>
                     <p className='text-xs text-gray-600 dark:text-gray-400'>
-                      共 {dramas.length} 部短剧
+                      共 {sortedDramas.length} 部短剧
                     </p>
                   </div>
                 </div>
@@ -445,7 +527,7 @@ export default function ShortDramaPage() {
           )}
 
           {/* 无搜索结果 */}
-          {!loading && dramas.length === 0 && isSearchMode && (
+          {!loading && sortedDramas.length === 0 && (isSearchMode || selectedRegion || selectedYear) && (
             <div className='flex justify-center py-16'>
               <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
                 {/* 装饰性元素 */}
@@ -488,7 +570,11 @@ export default function ShortDramaPage() {
 
                   {/* 按钮 */}
                   <button
-                    onClick={() => handleSearch('')}
+                    onClick={() => {
+                      handleSearch('');
+                      setSelectedRegion(null);
+                      setSelectedYear(null);
+                    }}
                     className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
                   >
                     清除搜索条件
