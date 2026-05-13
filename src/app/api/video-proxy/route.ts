@@ -39,7 +39,8 @@ export async function GET(request: Request) {
   // URL 格式验证
   try {
     new URL(videoUrl);
-  } catch {
+  } catch (e) {
+    console.debug('[VideoProxy] URL parse error:', e);
     return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
   }
 
@@ -59,7 +60,8 @@ export async function GET(request: Request) {
     ) {
       return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
     }
-  } catch {
+  } catch (e) {
+    console.debug('[VideoProxy] SSRF validation error:', e);
     return NextResponse.json({ error: '无效的URL' }, { status: 400 });
   }
 

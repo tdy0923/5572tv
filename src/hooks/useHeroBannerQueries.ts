@@ -10,7 +10,8 @@ function getFailedTrailerRefreshes(): Record<string, number> {
   try {
     const stored = localStorage.getItem(FAILED_TRAILER_REFRESHES_KEY);
     return stored ? JSON.parse(stored) : {};
-  } catch {
+  } catch (e) {
+    console.debug('[HeroBanner] Query error:', e);
     return {};
   }
 }
@@ -20,8 +21,8 @@ function saveFailedTrailerRefreshes(data: Record<string, number>) {
 
   try {
     localStorage.setItem(FAILED_TRAILER_REFRESHES_KEY, JSON.stringify(data));
-  } catch {
-    // ignore localStorage errors
+  } catch (e) {
+    console.debug('[HeroBanner] Query error:', e);
   }
 }
 
@@ -31,7 +32,8 @@ function getNoTrailerIds(): Record<string, boolean> {
   try {
     const stored = localStorage.getItem(NO_TRAILER_IDS_KEY);
     return stored ? JSON.parse(stored) : {};
-  } catch {
+  } catch (e) {
+    console.debug('[HeroBanner] Query error:', e);
     return {};
   }
 }
@@ -41,8 +43,8 @@ function markNoTrailer(doubanId: number | string) {
   ids[String(doubanId)] = true;
   try {
     localStorage.setItem(NO_TRAILER_IDS_KEY, JSON.stringify(ids));
-  } catch {
-    // ignore localStorage errors
+  } catch (e) {
+    console.debug('[HeroBanner] Query error:', e);
   }
 }
 
@@ -52,8 +54,8 @@ function clearNoTrailer(doubanId: number | string) {
     delete ids[String(doubanId)];
     try {
       localStorage.setItem(NO_TRAILER_IDS_KEY, JSON.stringify(ids));
-    } catch {
-      // ignore localStorage errors
+    } catch (e) {
+      console.debug('[HeroBanner] Query error:', e);
     }
   }
 }
@@ -100,7 +102,8 @@ export function useRefreshedTrailerUrlsQuery() {
         try {
           const stored = localStorage.getItem('refreshed-trailer-urls');
           return stored ? JSON.parse(stored) : {};
-        } catch {
+        } catch (e) {
+          console.debug('[HeroBanner] Query error:', e);
           return {};
         }
       }
@@ -112,7 +115,8 @@ export function useRefreshedTrailerUrlsQuery() {
         try {
           const stored = localStorage.getItem('refreshed-trailer-urls');
           return stored ? JSON.parse(stored) : {};
-        } catch {
+        } catch (e) {
+          console.debug('[HeroBanner] Query error:', e);
           return {};
         }
       }
@@ -176,8 +180,8 @@ export function useRefreshTrailerUrlMutation() {
                 'refreshed-trailer-urls',
                 JSON.stringify(updated),
               );
-            } catch {
-              // localStorage 不可用时忽略缓存写入失败
+            } catch (e) {
+              console.debug('[HeroBanner] Query error:', e);
             }
 
             return updated;
@@ -215,8 +219,8 @@ export function useClearTrailerUrlMutation() {
               'refreshed-trailer-urls',
               JSON.stringify(updated),
             );
-          } catch {
-            // localStorage 不可用时忽略缓存写入失败
+          } catch (e) {
+            console.debug('[HeroBanner] Query error:', e);
           }
 
           return updated;

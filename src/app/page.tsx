@@ -594,7 +594,7 @@ function HomeClient() {
               });
             },
           });
-        });
+        }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
       }, 2000);
     }
 
@@ -629,7 +629,7 @@ function HomeClient() {
               });
             },
           });
-        });
+        }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
       }, 2000);
     }
 

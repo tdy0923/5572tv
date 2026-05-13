@@ -1060,6 +1060,7 @@ function PlayPageClient() {
 
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const danmakuConfigCleanupRef = useRef<(() => void) | null>(null);
 
   // 观影室同步
   const {
@@ -2593,6 +2594,12 @@ function PlayPageClient() {
 
   // 清理播放器资源的统一函数
   const cleanupPlayer = async () => {
+    // 清理弹幕配置面板的事件监听器
+    if (danmakuConfigCleanupRef.current) {
+      danmakuConfigCleanupRef.current();
+      danmakuConfigCleanupRef.current = null;
+    }
+
     // 先清理WebSR，避免GPU纹理错误
     await destroyWebSR();
 
@@ -6480,7 +6487,7 @@ function PlayPageClient() {
                 };
 
                 // 点击其他地方自动隐藏
-                document.addEventListener('click', (e) => {
+                const handleConfigPanelClickOutside = (e: MouseEvent) => {
                   if (
                     isConfigVisible &&
                     !configButton.contains(e.target as Node) &&
@@ -6490,7 +6497,16 @@ function PlayPageClient() {
                     (configPanel as HTMLElement).style.display = 'none';
                     console.log('点击外部区域，隐藏弹幕配置面板');
                   }
-                });
+                };
+                document.addEventListener('click', handleConfigPanelClickOutside);
+
+                // 存储清理函数以便播放器销毁时调用
+                const prevCleanup = danmakuConfigCleanupRef.current;
+                danmakuConfigCleanupRef.current = () => {
+                  if (prevCleanup) prevCleanup();
+                  _cleanup();
+                  document.removeEventListener('click', handleConfigPanelClickOutside);
+                };
 
                 console.log('移动端弹幕配置切换功能已激活');
               }
