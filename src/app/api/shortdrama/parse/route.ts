@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (result.code !== 0) {
-      const errorResponse = { error: result.msg || '解析失败' };
+      const errorResponse = { error: '解析失败' };
       const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
 
       recordRequest({
@@ -147,10 +147,10 @@ export async function GET(request: NextRequest) {
 
     // 返回视频URL，优先使用代理URL避免CORS问题
     const episodeData = result.data?.episode;
-    const parsedUrl = episodeData?.parsedUrl || result.data!.parsedUrl || '';
+    const parsedUrl = episodeData?.url || result.data!.parsedUrl || '';
     const proxyUrl = result.data!.proxyUrl || '';
 
-    const response = {
+    const apiResponse = {
       url: proxyUrl || parsedUrl, // 优先使用代理URL
       originalUrl: parsedUrl,
       proxyUrl: proxyUrl,
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
 
     // 设置与豆瓣一致的缓存策略
     const cacheTime = await getCacheTime();
-    const finalResponse = NextResponse.json(response);
+    const finalResponse = NextResponse.json(apiResponse);
     finalResponse.headers.set('Cache-Control', `public, max-age=${cacheTime}, s-maxage=${cacheTime}`);
     finalResponse.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
     finalResponse.headers.set('Vercel-CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
