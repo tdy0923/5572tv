@@ -85,13 +85,15 @@ const TVBoxSecurityConfig = ({
     }
   }, [config]);
 
-  // 生成随机Token
+  // 生成随机Token（使用 crypto.getRandomValues 保证安全性）
   function generateToken() {
     const chars =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
     let result = '';
     for (let i = 0; i < 32; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += chars[array[i] % chars.length];
     }
     return result;
   }

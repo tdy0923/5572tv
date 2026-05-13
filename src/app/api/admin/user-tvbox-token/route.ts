@@ -32,13 +32,14 @@ function getAllowedTVBoxSourceKeys(
   return [];
 }
 
-// 生成随机 Token
+// 生成随机 Token（使用 crypto.randomBytes 保证安全性）
 function generateToken(length = 32): string {
   const chars =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = require('crypto').randomBytes(length);
   let result = '';
   for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars[bytes[i] % chars.length];
   }
   return result;
 }
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成或保留 Token
-    if (regenerateToken || !targetUser.tvboxToken) {
+    if (regenerateToken === true || !targetUser.tvboxToken) {
       targetUser.tvboxToken = generateToken();
     }
 

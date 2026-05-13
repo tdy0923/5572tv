@@ -79,12 +79,6 @@ function isLikelyDomesticEnvironment(): boolean {
       return true;
     }
 
-    // 检查语言设置
-    const lang = typeof navigator !== 'undefined' ? navigator.language : 'en';
-    if (lang.startsWith('zh-CN')) {
-      return true;
-    }
-
     return false;
   } catch {
     return false; // 默认国际环境

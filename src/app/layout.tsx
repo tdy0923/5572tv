@@ -16,7 +16,7 @@ import { WatchRoomProvider } from '../components/WatchRoomProvider';
 import { DownloadProvider } from '../contexts/DownloadContext';
 import { GlobalCacheProvider } from '../contexts/GlobalCacheContext';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
@@ -89,13 +89,25 @@ export default async function RootLayout({
       <head>
         <meta name='color-scheme' content='light dark' />
         <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin='anonymous'
+        />
+        <link rel='dns-prefetch' href='//img3.doubanio.com' />
+        <link rel='dns-prefetch' href='//img2.doubanio.com' />
+        <link rel='dns-prefetch' href='//img1.doubanio.com' />
+        <link rel='dns-prefetch' href='//www.5572.net' />
         {/* 将配置序列化后直接写入脚本，浏览器端可通过 window.RUNTIME_CONFIG 获取 */}
         <script
+          async
           dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
         <script
+          async
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
@@ -146,7 +158,12 @@ export default async function RootLayout({
               </DownloadProvider>
             </GlobalCacheProvider>
           </QueryProvider>
-          <Toaster position='top-center' richColors closeButton toastOptions={{ style: { marginTop: 'env(safe-area-inset-top)' } }} />
+          <Toaster
+            position='top-center'
+            richColors
+            closeButton
+            toastOptions={{ style: { marginTop: 'env(safe-area-inset-top)' } }}
+          />
         </ThemeProvider>
       </body>
     </html>

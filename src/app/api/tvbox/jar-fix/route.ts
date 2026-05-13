@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
     console.log(`[JAR-FIX] 开始测试JAR源，检测到用户区域：${userRegion}`);
 
     // 根据用户区域排序测试源
-    const sortedSources = VERIFIED_JAR_SOURCES.sort((a, b) => {
+    const sortedSources = [...VERIFIED_JAR_SOURCES].sort((a, b) => {
       if (userRegion === 'domestic') {
         if (a.region === 'domestic' && b.region !== 'domestic') return -1;
         if (a.region !== 'domestic' && b.region === 'domestic') return 1;
