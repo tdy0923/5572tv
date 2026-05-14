@@ -34,8 +34,8 @@ const nextConfig = {
 
   // 图片优化配置
   images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // 代理图片不兼容 Next.js 优化管道，保持原图输出
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
