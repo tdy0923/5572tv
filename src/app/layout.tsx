@@ -95,19 +95,13 @@ export default async function RootLayout({
           href='https://fonts.gstatic.com'
           crossOrigin='anonymous'
         />
-        <link rel='dns-prefetch' href='//img3.doubanio.com' />
-        <link rel='dns-prefetch' href='//img2.doubanio.com' />
-        <link rel='dns-prefetch' href='//img1.doubanio.com' />
-        <link rel='dns-prefetch' href='//www.5572.net' />
         {/* 将配置序列化后直接写入脚本，浏览器端可通过 window.RUNTIME_CONFIG 获取 */}
         <script
-          async
           dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
         <script
-          async
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
