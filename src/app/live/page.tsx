@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-const LiveContent = dynamic(() => import('./_content'), { ssr: false });
+const LiveContent = dynamic(() => import('./_content'));
 
 export default function LivePage() {
   return (
