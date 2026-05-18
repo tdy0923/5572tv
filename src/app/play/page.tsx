@@ -3199,6 +3199,9 @@ function PlayPageClient() {
 
   // 进入页面时直接获取全部源信息
   useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
     const fetchSourceDetail = async (
       source: string,
       id: string,
@@ -3218,6 +3221,7 @@ function PlayPageClient() {
             : '';
           detailResponse = await fetch(
             `/api/shortdrama/detail?id=${id}&episode=1${titleParam}`,
+            { signal },
           );
         } else {
           // 所有其他源（包括 Emby）统一使用 /api/detail
@@ -3225,6 +3229,7 @@ function PlayPageClient() {
           const titleParam = title ? `&title=${encodeURIComponent(title)}` : '';
           detailResponse = await fetch(
             `/api/detail?source=${source}&id=${id}${titleParam}`,
+            { signal },
           );
         }
 
@@ -3239,6 +3244,20 @@ function PlayPageClient() {
         }
 
         const detailData = (await detailResponse.json()) as SearchResult;
+
+        // 验证返回的数据与请求的 source/id 匹配，防止导航错乱
+        if (detailData.source && detailData.source !== source) {
+          console.warn(
+            `[Play] 详情 source 不匹配: 请求 ${source}, 得到 ${detailData.source}`,
+          );
+          throw new Error('视频详情源不匹配');
+        }
+        if (detailData.id && detailData.id !== id) {
+          console.warn(
+            `[Play] 详情 id 不匹配: 请求 ${id}, 得到 ${detailData.id}`,
+          );
+          throw new Error('视频详情 ID 不匹配');
+        }
 
         // 对于短剧源，检查 title 和 poster 是否有效
         if (source === 'shortdrama') {
@@ -3280,12 +3299,24 @@ function PlayPageClient() {
         const allResults: SearchResult[] = [];
         let bestResults: SearchResult[] = [];
 
+        const matchYearAndType = (result: SearchResult) => {
+          const yearMatch = videoYearRef.current
+            ? result.year.toLowerCase() === videoYearRef.current.toLowerCase()
+            : true;
+          const typeMatch = searchType
+            ? (searchType === 'tv' && result.episodes.length > 1) ||
+              (searchType === 'movie' && result.episodes.length === 1)
+            : true;
+          return yearMatch && typeMatch;
+        };
+
         // 依次尝试每个搜索变体，采用早期退出策略
         for (const variant of searchVariants) {
           console.log('尝试搜索变体:', variant);
 
           const response = await fetch(
             `/api/search?q=${encodeURIComponent(variant)}`,
+            { signal },
           );
           if (!response.ok) {
             console.warn(`搜索变体 "${variant}" 失败:`, response.statusText);
@@ -3302,18 +3333,6 @@ function PlayPageClient() {
             const queryTitle = (effectiveQuery || videoTitleRef.current)
               .replaceAll(' ', '')
               .toLowerCase();
-
-            const matchYearAndType = (result: SearchResult) => {
-              const yearMatch = videoYearRef.current
-                ? result.year.toLowerCase() ===
-                  videoYearRef.current.toLowerCase()
-                : true;
-              const typeMatch = searchType
-                ? (searchType === 'tv' && result.episodes.length > 1) ||
-                  (searchType === 'movie' && result.episodes.length === 1)
-                : true;
-              return yearMatch && typeMatch;
-            };
 
             // 第一优先级：精确匹配（标题完全相等，或去除数字/标点后相等）
             const exactResults = data.results.filter((result: SearchResult) => {
@@ -3441,7 +3460,7 @@ function PlayPageClient() {
               );
 
               const wordMatchRatio = matchedWords.length / queryWords.length;
-              if (wordMatchRatio >= 0.5) {
+              if (wordMatchRatio >= 0.75) {
                 console.log(
                   `英文词汇匹配 (${matchedWords.length}/${queryWords.length}): "${result.title}" - 匹配词: [${matchedWords.join(', ')}]`,
                 );
@@ -3493,7 +3512,7 @@ function PlayPageClient() {
                   normalizedTitle.includes(char),
                 ).length;
                 const similarity = commonChars / normalizedQuery.length;
-                if (similarity >= 0.5) {
+                if (similarity >= 0.8 && matchYearAndType(result)) {
                   console.log(
                     `中文相似匹配 (${(similarity * 100).toFixed(1)}%): "${result.title}"`,
                   );
@@ -3528,7 +3547,9 @@ function PlayPageClient() {
                   item,
                 ]),
               ).values(),
-            ).slice(0, 12) as SearchResult[];
+            )
+              .filter((r: SearchResult) => matchYearAndType(r))
+              .slice(0, 12) as SearchResult[];
           }
         }
 
@@ -3868,6 +3889,10 @@ function PlayPageClient() {
     };
 
     initAll();
+
+    return () => {
+      abortController.abort();
+    };
   }, [reloadTrigger]); // 添加 reloadTrigger 作为依赖，当它变化时重新执行 initAll
 
   // 播放记录处理
@@ -5504,34 +5529,32 @@ function PlayPageClient() {
                       const ctx = canvas.getContext('2d');
                       if (!ctx) return;
                       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                      canvas.toBlob(
-                        (blob) => {
-                          if (!blob) return;
-                          const url = URL.createObjectURL(blob);
-                          // Try native share API
-                          if (navigator.share && navigator.canShare) {
-                            const file = new File([blob], 'screenshot.png', {
-                              type: 'image/png',
+                      canvas.toBlob((blob) => {
+                        if (!blob) return;
+                        const url = URL.createObjectURL(blob);
+                        // Try native share API
+                        if (navigator.share && navigator.canShare) {
+                          const file = new File([blob], 'screenshot.png', {
+                            type: 'image/png',
+                          });
+                          if (navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                              files: [file],
+                              title: artPlayerRef.current?.title || '截图',
                             });
-                            if (navigator.canShare({ files: [file] })) {
-                              navigator.share({
-                                files: [file],
-                                title: artPlayerRef.current?.title || '截图',
-                              });
-                              URL.revokeObjectURL(url);
-                              return;
-                            }
+                            URL.revokeObjectURL(url);
+                            return;
                           }
-                          // Fallback: download
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `screenshot_${Date.now()}.png`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                          if (artPlayerRef.current) artPlayerRef.current.notice.show = '📸 截图已保存';
-                        },
-                        'image/png',
-                      );
+                        }
+                        // Fallback: download
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `screenshot_${Date.now()}.png`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        if (artPlayerRef.current)
+                          artPlayerRef.current.notice.show = '📸 截图已保存';
+                      }, 'image/png');
                     },
                   },
                 ]
@@ -5824,10 +5847,8 @@ function PlayPageClient() {
               // Three-finger swipe down = PiP
               if (e.touches.length === 3) {
                 const avgY =
-                  Array.from(e.touches).reduce(
-                    (sum, t) => sum + t.clientY,
-                    0,
-                  ) / e.touches.length;
+                  Array.from(e.touches).reduce((sum, t) => sum + t.clientY, 0) /
+                  e.touches.length;
                 const threeFingerDeltaY = avgY - touchStartY;
                 if (threeFingerDeltaY > 50) {
                   const video = artPlayerRef.current?.video;
@@ -6498,14 +6519,20 @@ function PlayPageClient() {
                     console.log('点击外部区域，隐藏弹幕配置面板');
                   }
                 };
-                document.addEventListener('click', handleConfigPanelClickOutside);
+                document.addEventListener(
+                  'click',
+                  handleConfigPanelClickOutside,
+                );
 
                 // 存储清理函数以便播放器销毁时调用
                 const prevCleanup = danmakuConfigCleanupRef.current;
                 danmakuConfigCleanupRef.current = () => {
                   if (prevCleanup) prevCleanup();
                   _cleanup();
-                  document.removeEventListener('click', handleConfigPanelClickOutside);
+                  document.removeEventListener(
+                    'click',
+                    handleConfigPanelClickOutside,
+                  );
                 };
 
                 console.log('移动端弹幕配置切换功能已激活');
@@ -7541,8 +7568,6 @@ function PlayPageClient() {
               videoDoubanId={videoDoubanId}
             />
           </div>
-
-
         </div>
 
         {/* 返回顶部悬浮按钮 - 使用独立组件优化性能 */}
