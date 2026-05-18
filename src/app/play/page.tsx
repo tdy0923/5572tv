@@ -3246,17 +3246,23 @@ function PlayPageClient() {
         const detailData = (await detailResponse.json()) as SearchResult;
 
         // 验证返回的数据与请求的 source/id 匹配，防止导航错乱
-        if (detailData.source && detailData.source !== source) {
+        if (
+          detailData.source &&
+          String(detailData.source).trim() !== String(source).trim()
+        ) {
           console.warn(
-            `[Play] 详情 source 不匹配: 请求 ${source}, 得到 ${detailData.source}`,
+            `[Play] 详情 source 不匹配: 请求 ${source}, 得到 ${detailData.source}，跳过当前源`,
           );
-          throw new Error('视频详情源不匹配');
+          return [];
         }
-        if (detailData.id && detailData.id !== id) {
+        if (
+          detailData.id &&
+          String(detailData.id).trim() !== String(id).trim()
+        ) {
           console.warn(
-            `[Play] 详情 id 不匹配: 请求 ${id}, 得到 ${detailData.id}`,
+            `[Play] 详情 id 不匹配: 请求 ${id}, 得到 ${detailData.id}，跳过当前源`,
           );
-          throw new Error('视频详情 ID 不匹配');
+          return [];
         }
 
         // 对于短剧源，检查 title 和 poster 是否有效
