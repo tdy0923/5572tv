@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
 import { fetchDoubanData } from '@/lib/douban';
-import { DoubanItem, DoubanResult } from '@/lib/types';
+import { getDoubanCookie } from '@/lib/douban-anti-crawler';
 import { recordRequest } from '@/lib/performance-monitor';
+import { DoubanItem, DoubanResult } from '@/lib/types';
 
 interface DoubanCategoryApiResponse {
   total: number;
@@ -113,15 +114,83 @@ export async function GET(request: Request) {
     return NextResponse.json(errorResponse, { status: 400 });
   }
 
-  const target = `https://m.douban.com/rexxar/api/v2/subject/recent_hot/${kind}?start=${pageStart}&limit=${pageLimit}&category=${category}&type=${type}`;
-
   try {
-    console.log(`[豆瓣分类] 请求URL: ${target}`);
-    
-    // 调用豆瓣 API
-    const doubanData = await fetchDoubanData<DoubanCategoryApiResponse>(target);
-    
-    console.log(`[豆瓣分类] 成功获取数据，项目数: ${doubanData.items?.length || 0}`);
+    // 多个备用API端点
+    const targets = [
+      // 主用: 移动端API
+      `https://m.douban.com/rexxar/api/v2/subject/recent_hot/${kind}?start=${pageStart}&limit=${pageLimit}&category=${category}&type=${type}`,
+      // 备用1: 桌面端搜索API
+      `https://movie.douban.com/j/search_subjects?type=${kind === 'movie' ? 'movie' : 'tv'}&tag=${category === 'hot' ? '热门' : category === 'new' ? '最新' : category}&page_limit=${pageLimit}&page_start=${pageStart}`,
+    ];
+
+    // 获取反爬 cookie
+    let doubanCookie = '';
+    try {
+      doubanCookie = await getDoubanCookie('https://movie.douban.com/');
+    } catch {
+      console.warn('[豆瓣分类] 获取反爬cookie失败');
+    }
+
+    let doubanData: DoubanCategoryApiResponse | null = null;
+    let lastError: Error | null = null;
+
+    // 依次尝试每个API端点
+    for (const targetUrl of targets) {
+      try {
+        console.log(`[豆瓣分类] 尝试请求: ${targetUrl}`);
+        const result = await fetchDoubanData<any>(targetUrl, doubanCookie);
+
+        // 桌面端API返回格式不同，需要适配
+        if (targetUrl.includes('j/search_subjects')) {
+          if (
+            result.subjects &&
+            Array.isArray(result.subjects) &&
+            result.subjects.length > 0
+          ) {
+            doubanData = {
+              total: result.total || result.subjects.length,
+              items: result.subjects.map((s: any) => ({
+                id: String(s.id),
+                title: s.title,
+                card_subtitle: s.year
+                  ? `${s.year} / ${s.genres?.join(' / ') || ''}`
+                  : '',
+                pic: {
+                  large: s.cover || '',
+                  normal: s.cover || '',
+                },
+                rating: {
+                  value: parseFloat(s.rate) || 0,
+                },
+              })),
+            };
+            console.log(
+              `[豆瓣分类] 备用API成功，获取 ${doubanData.items.length} 条数据`,
+            );
+            break;
+          }
+        } else {
+          if (result.items && Array.isArray(result.items)) {
+            doubanData = result as DoubanCategoryApiResponse;
+            console.log(
+              `[豆瓣分类] 主API成功，获取 ${doubanData.items.length} 条数据`,
+            );
+            break;
+          }
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        console.warn(`[豆瓣分类] 端点失败: ${targetUrl}`, lastError.message);
+      }
+    }
+
+    if (!doubanData) {
+      throw lastError || new Error('所有豆瓣API端点均失败');
+    }
+
+    console.log(
+      `[豆瓣分类] 成功获取数据，项目数: ${doubanData.items?.length || 0}`,
+    );
 
     // 转换数据格式
     const list: DoubanItem[] = doubanData.items.map((item) => ({
@@ -162,7 +231,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error(`[豆瓣分类] 请求失败: ${target}`, (error as Error).message);
+    console.error(`[豆瓣分类] 所有API端点失败`, (error as Error).message);
 
     const errorResponse = {
       error: '获取豆瓣数据失败',

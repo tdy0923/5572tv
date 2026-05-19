@@ -3554,8 +3554,41 @@ function PlayPageClient() {
                 ]),
               ).values(),
             )
-              .filter((r: SearchResult) => matchYearAndType(r))
+              .filter((r: SearchResult) => {
+                // 🛡️ 如果有豆瓣ID，优先校验豆瓣ID一致性，防止跳转到18+等不相关内容
+                if (
+                  videoDoubanIdRef.current &&
+                  videoDoubanIdRef.current > 0 &&
+                  r.douban_id &&
+                  r.douban_id > 0
+                ) {
+                  return (
+                    r.douban_id === videoDoubanIdRef.current &&
+                    matchYearAndType(r)
+                  );
+                }
+                return matchYearAndType(r);
+              })
               .slice(0, 12) as SearchResult[];
+          }
+        }
+
+        // 🛡️ 安全校验：来自豆瓣/即将上映的内容（无source/id），搜索结果必须匹配豆瓣ID
+        if (
+          videoDoubanIdRef.current &&
+          videoDoubanIdRef.current > 0 &&
+          finalResults.length > 0 &&
+          !currentSource &&
+          !currentId
+        ) {
+          const hasDoubanMatch = finalResults.some(
+            (r: SearchResult) => r.douban_id === videoDoubanIdRef.current,
+          );
+          if (!hasDoubanMatch) {
+            console.warn(
+              `[Play] 搜索"${effectiveQuery}"的结果与豆瓣ID(${videoDoubanIdRef.current})不匹配，拒绝展示不相关内容`,
+            );
+            finalResults = [];
           }
         }
 
@@ -3721,7 +3754,9 @@ function PlayPageClient() {
         setError(
           currentSource && currentId
             ? '当前线路已失效，且未找到其他严格匹配的可用线路'
-            : '未找到严格匹配结果',
+            : videoDoubanIdRef.current && videoDoubanIdRef.current > 0
+              ? '该影片尚未上映或暂无播放源'
+              : '未找到严格匹配结果',
         );
         setLoading(false);
         return;
