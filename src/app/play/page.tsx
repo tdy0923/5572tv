@@ -2468,6 +2468,23 @@ function PlayPageClient() {
         console.log('🎵 换集时应用音轨参数:', currentAudioTrackRef.current);
       }
 
+      // 🛡️ 自动代理外部 CDN 的 m3u8 链接，解决 CORS/403 问题
+      if (
+        newUrl &&
+        newUrl.includes('.m3u8') &&
+        !newUrl.includes(window.location.host) &&
+        !isEmbySource
+      ) {
+        const proxiedUrl = new URL('/api/proxy/m3u8', window.location.origin);
+        proxiedUrl.searchParams.set('url', newUrl);
+        proxiedUrl.searchParams.set('allowCORS', 'true');
+        if (detailData.source) {
+          proxiedUrl.searchParams.set('5572tv-source', detailData.source);
+        }
+        newUrl = proxiedUrl.toString();
+        console.log(`🔄 通过代理播放 m3u8: ${newUrl}`);
+      }
+
       if (newUrl !== videoUrl) {
         setVideoUrl(newUrl);
       }
