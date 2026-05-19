@@ -77,7 +77,7 @@ async function generateUniqueCode(): Promise<string> {
 export async function createInviteCode(
   createdBy: string,
   maxUses = 10,
-  expiresIn = 604800 // 7天
+  expiresIn = 604800, // 7天
 ): Promise<string> {
   const code = await generateUniqueCode();
   const now = Date.now();
@@ -103,7 +103,9 @@ export async function createInviteCode(
   // 添加到创建者的邀请码列表
   await client.sAdd(`admin:${createdBy}:invites`, code);
 
-  console.log(`[InviteCode] 创建邀请码: ${code}, 创建者: ${createdBy}, 最大使用次数: ${maxUses}`);
+  console.log(
+    `[InviteCode] 创建邀请码: ${code}, 创建者: ${createdBy}, 最大使用次数: ${maxUses}`,
+  );
 
   return code;
 }
@@ -114,7 +116,7 @@ export async function createInviteCode(
  * @returns 是否有效及剩余使用次数
  */
 export async function validateInviteCode(
-  code: string
+  code: string,
 ): Promise<{ valid: boolean; remainingUses?: number; error?: string }> {
   const client = getRedisClient();
 
@@ -125,7 +127,9 @@ export async function validateInviteCode(
   }
 
   // 获取邀请码详情
-  const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+  const inviteData = (await client.hGetAll(
+    `invite:${code}`,
+  )) as unknown as InviteCodeData;
   if (!inviteData || !inviteData.code) {
     return { valid: false, error: '邀请码数据异常' };
   }
@@ -157,7 +161,10 @@ export async function validateInviteCode(
  * @param code 邀请码
  * @param username 使用者用户名
  */
-export async function useInviteCode(code: string, username: string): Promise<boolean> {
+export async function consumeInviteCode(
+  code: string,
+  username: string,
+): Promise<boolean> {
   const client = getRedisClient();
 
   // 先验证邀请码
@@ -167,7 +174,9 @@ export async function useInviteCode(code: string, username: string): Promise<boo
   }
 
   // 获取邀请码详情
-  const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+  const inviteData = (await client.hGetAll(
+    `invite:${code}`,
+  )) as unknown as InviteCodeData;
 
   // 增加使用次数
   await client.hIncrBy(`invite:${code}`, 'currentUses', 1);
@@ -178,7 +187,9 @@ export async function useInviteCode(code: string, username: string): Promise<boo
   const currentUses = Number(inviteData.currentUses);
   const maxUses = Number(inviteData.maxUses);
 
-  console.log(`[InviteCode] 使用邀请码: ${code}, 用户: ${username}, 当前使用次数: ${currentUses + 1}/${maxUses}`);
+  console.log(
+    `[InviteCode] 使用邀请码: ${code}, 用户: ${username}, 当前使用次数: ${currentUses + 1}/${maxUses}`,
+  );
 
   // 如果达到最大使用次数，从活跃集合中移除
   if (currentUses + 1 >= maxUses) {
@@ -193,10 +204,14 @@ export async function useInviteCode(code: string, username: string): Promise<boo
  * 获取邀请码统计信息
  * @param code 邀请码
  */
-export async function getInviteCodeStats(code: string): Promise<InviteCodeStats | null> {
+export async function getInviteCodeStats(
+  code: string,
+): Promise<InviteCodeStats | null> {
   const client = getRedisClient();
 
-  const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+  const inviteData = (await client.hGetAll(
+    `invite:${code}`,
+  )) as unknown as InviteCodeData;
   if (!inviteData || !inviteData.code) {
     return null;
   }
@@ -210,7 +225,9 @@ export async function getInviteCodeStats(code: string): Promise<InviteCodeStats 
   const currentUses = Number(inviteData.currentUses);
   const maxUses = Number(inviteData.maxUses);
   const createdAt = Number(inviteData.createdAt);
-  const disabled = (inviteData.disabled as any) === 'true' || (inviteData.disabled as any) === true;
+  const disabled =
+    (inviteData.disabled as any) === 'true' ||
+    (inviteData.disabled as any) === true;
 
   // 计算状态
   let status: 'active' | 'used_up' | 'expired' | 'disabled';
@@ -265,7 +282,9 @@ export async function getAllInviteCodes(): Promise<InviteCodeStats[]> {
     }
   }
 
-  return stats.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return stats.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 /**
@@ -273,10 +292,15 @@ export async function getAllInviteCodes(): Promise<InviteCodeStats[]> {
  * @param code 邀请码
  * @param disabled 是否禁用
  */
-export async function toggleInviteCode(code: string, disabled: boolean): Promise<boolean> {
+export async function toggleInviteCode(
+  code: string,
+  disabled: boolean,
+): Promise<boolean> {
   const client = getRedisClient();
 
-  const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+  const inviteData = (await client.hGetAll(
+    `invite:${code}`,
+  )) as unknown as InviteCodeData;
   if (!inviteData || !inviteData.code) {
     return false;
   }
@@ -310,7 +334,9 @@ export async function toggleInviteCode(code: string, disabled: boolean): Promise
 export async function removeInviteCode(code: string): Promise<boolean> {
   const client = getRedisClient();
 
-  const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+  const inviteData = (await client.hGetAll(
+    `invite:${code}`,
+  )) as unknown as InviteCodeData;
   if (!inviteData || !inviteData.code) {
     return false;
   }
@@ -338,7 +364,9 @@ export async function removeInviteCode(code: string): Promise<boolean> {
  * 获取管理员创建的邀请码列表
  * @param adminUsername 管理员用户名
  */
-export async function getAdminInviteCodes(adminUsername: string): Promise<InviteCodeStats[]> {
+export async function getAdminInviteCodes(
+  adminUsername: string,
+): Promise<InviteCodeStats[]> {
   const client = getRedisClient();
   const codes = await client.sMembers(`admin:${adminUsername}:invites`);
   const stats: InviteCodeStats[] = [];
@@ -350,7 +378,9 @@ export async function getAdminInviteCodes(adminUsername: string): Promise<Invite
     }
   }
 
-  return stats.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  return stats.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 /**
@@ -374,7 +404,9 @@ export async function cleanupOldInviteCodes(): Promise<number> {
   let deletedCount = 0;
 
   for (const code of codes) {
-    const inviteData = (await client.hGetAll(`invite:${code}`)) as unknown as InviteCodeData;
+    const inviteData = (await client.hGetAll(
+      `invite:${code}`,
+    )) as unknown as InviteCodeData;
     if (!inviteData || !inviteData.code) {
       continue;
     }
@@ -386,7 +418,10 @@ export async function cleanupOldInviteCodes(): Promise<number> {
     const now = Date.now();
 
     // 只删除超过30天且已用完或已过期的邀请码
-    if (createdAt < thirtyDaysAgo && (currentUses >= maxUses || now > expiresAt)) {
+    if (
+      createdAt < thirtyDaysAgo &&
+      (currentUses >= maxUses || now > expiresAt)
+    ) {
       await removeInviteCode(code);
       deletedCount++;
     }

@@ -1,7 +1,8 @@
 // React Hook for Voice Chat in Watch Room
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
 import type { Member } from '@/types/watch-room.types';
 
 interface UseVoiceChatOptions {
@@ -25,7 +26,9 @@ export function useVoiceChat({
   // WebRTC 相关
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
   const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteAudioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const remoteAudioElementsRef = useRef<Map<string, HTMLAudioElement>>(
+    new Map(),
+  );
 
   // ICE服务器配置
   const iceServers = [
@@ -96,10 +99,21 @@ export function useVoiceChat({
 
       // 连接状态变化
       pc.oniceconnectionstatechange = () => {
-        console.log('[VoiceChat] ICE state with', peerId, ':', pc.iceConnectionState);
-        if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        console.log(
+          '[VoiceChat] ICE state with',
+          peerId,
+          ':',
+          pc.iceConnectionState,
+        );
+        if (
+          pc.iceConnectionState === 'connected' ||
+          pc.iceConnectionState === 'completed'
+        ) {
           setIsConnected(true);
-        } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        } else if (
+          pc.iceConnectionState === 'failed' ||
+          pc.iceConnectionState === 'disconnected'
+        ) {
           console.warn('[VoiceChat] Connection issue with', peerId);
         }
       };
@@ -107,7 +121,7 @@ export function useVoiceChat({
       peerConnectionsRef.current.set(peerId, pc);
       return pc;
     },
-    [socket, isSpeakerEnabled]
+    [socket, isSpeakerEnabled],
   );
 
   // 发起呼叫（创建offer）
@@ -133,7 +147,7 @@ export function useVoiceChat({
         offer: pc.localDescription,
       });
     },
-    [socket, createPeerConnection]
+    [socket, createPeerConnection],
   );
 
   // 清理特定peer连接
@@ -171,7 +185,10 @@ export function useVoiceChat({
     if (!socket || !roomId) return;
 
     // 接收offer
-    const handleOffer = async (data: { userId: string; offer: RTCSessionDescriptionInit }) => {
+    const handleOffer = async (data: {
+      userId: string;
+      offer: RTCSessionDescriptionInit;
+    }) => {
       if (!localStreamRef.current) return;
 
       console.log('[VoiceChat] Received offer from', data.userId);
@@ -197,7 +214,10 @@ export function useVoiceChat({
     };
 
     // 接收answer
-    const handleAnswer = async (data: { userId: string; answer: RTCSessionDescriptionInit }) => {
+    const handleAnswer = async (data: {
+      userId: string;
+      answer: RTCSessionDescriptionInit;
+    }) => {
       console.log('[VoiceChat] Received answer from', data.userId);
       const pc = peerConnectionsRef.current.get(data.userId);
       if (pc) {
@@ -206,7 +226,10 @@ export function useVoiceChat({
     };
 
     // 接收ICE候选
-    const handleIce = async (data: { userId: string; candidate: RTCIceCandidateInit }) => {
+    const handleIce = async (data: {
+      userId: string;
+      candidate: RTCIceCandidateInit;
+    }) => {
       console.log('[VoiceChat] Received ICE from', data.userId);
       const pc = peerConnectionsRef.current.get(data.userId);
       if (pc) {
@@ -229,25 +252,31 @@ export function useVoiceChat({
   useEffect(() => {
     if (!roomId) return;
 
-    if (isMicEnabled) {
-      // 打开麦克风
-      getLocalStream()
-        .then((stream) => {
-          // 向所有房间成员发起呼叫
-          members.forEach((member) => {
-            if (member.id !== socket?.id) {
-              callPeer(member.id);
-            }
-          });
-        })
-        .catch((err) => {
-          console.error('[VoiceChat] Failed to start:', err);
+    // 使用内联 async 函数，在 effect 内部处理异步 setState
+    const openMic = async () => {
+      if (!isMicEnabled) return;
+      try {
+        const stream = await getLocalStream();
+        // 向所有房间成员发起呼叫
+        members.forEach((member) => {
+          if (member.id !== socket?.id) {
+            callPeer(member.id);
+          }
         });
+      } catch (err) {
+        console.error('[VoiceChat] Failed to start:', err);
+        setError('无法访问麦克风，请检查权限设置');
+      }
+    };
+
+    if (isMicEnabled) {
+      void openMic();
     } else {
       // 关闭麦克风
       stopLocalStream();
       closeAllConnections();
-      setIsConnected(false);
+      // 使用 requestAnimationFrame 延迟 setState 以避免 effect 内同步更新
+      requestAnimationFrame(() => setIsConnected(false));
     }
 
     return () => {
@@ -256,7 +285,16 @@ export function useVoiceChat({
         closeAllConnections();
       }
     };
-  }, [isMicEnabled, roomId]);
+  }, [
+    isMicEnabled,
+    roomId,
+    socket,
+    members,
+    getLocalStream,
+    callPeer,
+    stopLocalStream,
+    closeAllConnections,
+  ]);
 
   // 扬声器开关控制
   useEffect(() => {

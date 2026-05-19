@@ -57,27 +57,32 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
     processImageUrl,
   } = props;
 
+  // Stable extraction for useCallback deps
+  const movieTitle = movieDetails?.title ?? '';
+  const moviePlot = movieDetails?.plot_summary ?? '';
+  const episodeTitles = detail?.episodes_titles ?? [];
+
   const celebrityFallbackAvatar =
     'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"%3E%3Crect width="96" height="96" rx="48" fill="%23e5e7eb"/%3E%3Ccircle cx="48" cy="36" r="16" fill="%239ca3af"/%3E%3Cpath d="M22 78c4-13 14-20 26-20s22 7 26 20" fill="%239ca3af"/%3E%3C/svg%3E';
 
   const [aiSummary, setAiSummary] = useState('');
 
   const fetchAiSummary = useCallback(async () => {
-    if (!movieDetails?.title) return;
+    if (!movieTitle) return;
     try {
       const res = await fetch('/api/ai/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: movieDetails.title,
-          episode: detail?.episodes_titles?.[0] || '第1集',
-          plot: movieDetails.plot_summary,
+          title: movieTitle,
+          episode: episodeTitles[0] || '第1集',
+          plot: moviePlot,
         }),
       });
       const data = await res.json();
       if (data.summary) setAiSummary(data.summary);
     } catch {}
-  }, [movieDetails?.title, movieDetails?.plot_summary, detail?.episodes_titles]);
+  }, [movieTitle, moviePlot, episodeTitles]);
 
   return (
     <div className='md:col-span-3'>

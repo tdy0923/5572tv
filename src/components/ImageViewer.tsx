@@ -20,25 +20,21 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [mounted] = useState(() => typeof window !== 'undefined');
 
   useEffect(() => {
     let animationId: number;
     let timer: ReturnType<typeof setTimeout>;
 
     if (isOpen) {
-      setIsVisible(true);
+      requestAnimationFrame(() => setIsVisible(true));
       animationId = requestAnimationFrame(() => {
         animationId = requestAnimationFrame(() => {
           setIsAnimating(true);
         });
       });
     } else {
-      setIsAnimating(false);
+      requestAnimationFrame(() => setIsAnimating(false));
       timer = setTimeout(() => {
         setIsVisible(false);
       }, 200);
@@ -120,7 +116,9 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         style={{
           willChange: 'transform, opacity',
           backfaceVisibility: 'hidden',
-          transform: isAnimating ? 'scale(1) translateZ(0)' : 'scale(0.95) translateZ(0)',
+          transform: isAnimating
+            ? 'scale(1) translateZ(0)'
+            : 'scale(0.95) translateZ(0)',
           opacity: isAnimating ? 1 : 0,
         }}
         onClick={(e) => e.stopPropagation()}
@@ -137,7 +135,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
         />
       </div>
     </div>,
-    document.body
+    document.body,
   );
 };
 

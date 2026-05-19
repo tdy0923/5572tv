@@ -26,12 +26,14 @@ export function TelegramWelcomeModal() {
     if (cookieData) {
       try {
         const parsed = JSON.parse(decodeURIComponent(cookieData));
-        setCredentials({
-          username: parsed.username,
-          password: parsed.password,
-          message: '您已通过 Telegram 成功登录！系统已为您创建账户。'
+        requestAnimationFrame(() => {
+          setCredentials({
+            username: parsed.username,
+            password: parsed.password,
+            message: '您已通过 Telegram 成功登录！系统已为您创建账户。',
+          });
+          setShow(true);
         });
-        setShow(true);
 
         // 清除 cookie（立即过期）
         document.cookie = 'telegram_new_user=; path=/; max-age=0';
