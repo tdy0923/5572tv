@@ -3715,8 +3715,10 @@ function PlayPageClient() {
                 allSources.push(source);
               }
             });
-            setAvailableSources(allSources);
-            return allSources;
+            // 🛡️ 过滤掉已标记无效的源，防止死循环
+            const filteredAllSources = filterInvalidSources(allSources);
+            setAvailableSources(filteredAllSources);
+            return filteredAllSources;
           })
           .catch((err) => {
             console.error('异步获取其他源失败:', err);
@@ -7017,17 +7019,32 @@ function PlayPageClient() {
           // 标记当前源为无效
           const failSource = currentSourceRef.current;
           const failId = currentIdRef.current;
+          const failUrl =
+            detailRef.current?.episodes?.[currentEpisodeIndexRef.current] || '';
           if (failSource && failId) {
             const failKey = getSourceIdentityKey(failSource, failId);
             invalidSourceKeysRef.current.set(failKey, Date.now());
             console.log(`🚫 已标记源为无效: ${failKey}`);
           }
 
-          // 找到下一个可用源
+          // 找到下一个可用源（跳过与失败源相同播放URL的源，防止死循环）
           const allSources = filterInvalidSources(availableSourcesRef.current);
-          const nextSource = allSources.find(
-            (s) => s.source !== failSource || s.id !== failId,
-          );
+          const nextSource = allSources.find((s) => {
+            if (s.source === failSource && s.id === failId) return false;
+            // 跳过与失败源使用相同播放URL的源
+            if (failUrl && s.episodes?.length) {
+              const sUrl =
+                s.episodes[currentEpisodeIndexRef.current] || s.episodes[0];
+              if (sUrl === failUrl) {
+                // 也标记这些同URL源为无效
+                const sameUrlKey = getSourceIdentityKey(s.source, s.id);
+                invalidSourceKeysRef.current.set(sameUrlKey, Date.now());
+                console.log(`🚫 跳过同URL源并标记无效: ${sameUrlKey}`);
+                return false;
+              }
+            }
+            return true;
+          });
 
           if (nextSource) {
             console.log(
@@ -7035,15 +7052,12 @@ function PlayPageClient() {
             );
             // 重置错误计数
             sourceErrorCountRef.current = 0;
-            // 通过 URL 参数切换源
-            const params = new URLSearchParams(window.location.search);
-            params.set('source', nextSource.source);
-            params.set('id', nextSource.id);
-            if (nextSource.title) params.set('title', nextSource.title);
-            // Use replaceState + trigger re-render instead of full reload
-            window.history.replaceState(null, '', `/play?${params.toString()}`);
-            // Force re-render by updating a trigger state
-            setReloadTrigger((prev) => prev + 1);
+            // 使用 handleSourceChange 直接换源，避免触发全量重载
+            handleSourceChange(
+              nextSource.source,
+              nextSource.id,
+              nextSource.title || '',
+            );
           } else {
             console.log('❌ 没有更多可用源');
             setError('当前线路播放失败，且没有其他可用线路');
