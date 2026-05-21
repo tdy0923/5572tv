@@ -88,11 +88,7 @@ export async function GET(request: Request) {
 
   const config = await getConfig();
   const liveSource = config.LiveConfig?.find((s: any) => s.key === source);
-  if (!liveSource) {
-    keyStats.errors++;
-    return NextResponse.json({ error: 'Source not found' }, { status: 404 });
-  }
-  const ua = liveSource.ua || 'AptvPlayer/1.4.10';
+  const ua = liveSource?.ua || 'AptvPlayer/1.4.10';
 
   const decodedUrl = decodeURIComponent(url);
   const cacheKey = `${source}-${decodedUrl}`;
