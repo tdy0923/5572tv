@@ -2477,7 +2477,7 @@ function PlayPageClient() {
       ) {
         const proxiedUrl = new URL('/api/proxy/m3u8', window.location.origin);
         proxiedUrl.searchParams.set('url', newUrl);
-        proxiedUrl.searchParams.set('allowCORS', 'true');
+        proxiedUrl.searchParams.set('allowCORS', 'false');
         if (detailData.source) {
           proxiedUrl.searchParams.set('5572tv-source', detailData.source);
         }
