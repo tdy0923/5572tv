@@ -3,7 +3,7 @@ const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-512x512.png',
 ];
 
 // StreamSaver.js functionality
@@ -26,23 +26,29 @@ function createStream(port) {
     cancel(reason) {
       console.log('user aborted', reason);
       port.postMessage({ abort: true });
-    }
+    },
   });
 }
 
 // PWA lifecycle
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
+      ),
   );
   self.clients.claim();
 });
@@ -56,7 +62,12 @@ self.addEventListener('message', (event) => {
     return;
   }
 
-  const downloadUrl = data.url || self.registration.scope + Math.random() + '/' + (typeof data === 'string' ? data : data.filename);
+  const downloadUrl =
+    data.url ||
+    self.registration.scope +
+      Math.random() +
+      '/' +
+      (typeof data === 'string' ? data : data.filename);
   const metadata = new Array(3);
 
   metadata[1] = data;
@@ -91,7 +102,7 @@ self.addEventListener('fetch', (event) => {
       'Content-Security-Policy': "default-src 'none'",
       'X-Content-Security-Policy': "default-src 'none'",
       'X-WebKit-CSP': "default-src 'none'",
-      'X-XSS-Protection': '1; mode=block'
+      'X-XSS-Protection': '1; mode=block',
     });
 
     if (data.headers) {
@@ -105,16 +116,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip streaming media - let them go directly to network
+  if (/\.(m3u8|ts|key|m4s)$/i.test(event.request.url)) {
+    return;
+  }
+
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
   // Network first for API calls, cache first for static assets
   if (event.request.url.includes('/api/')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request).catch(() => caches.match(event.request)),
     );
   } else {
     event.respondWith(
-      caches.match(event.request).then((response) =>
-        response || fetch(event.request)
-      )
+      caches
+        .match(event.request)
+        .then((response) => response || fetch(event.request))
+        .catch(() => new Response('Offline', { status: 503 })),
     );
   }
 });
