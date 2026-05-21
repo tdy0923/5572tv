@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
+import { getSourceUserAgent } from '@/lib/proxy';
 
 export const runtime = 'nodejs';
 
@@ -47,9 +47,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing url' }, { status: 400 });
   }
 
-  const config = await getConfig();
-  const liveSource = config.LiveConfig?.find((s: any) => s.key === source);
-  const ua = liveSource?.ua || 'AptvPlayer/1.4.10';
+  const ua = await getSourceUserAgent(source);
   const decodedUrl = decodeURIComponent(url);
 
   try {
