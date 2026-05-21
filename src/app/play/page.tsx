@@ -679,9 +679,14 @@ function PlayPageClient() {
   const [isAudioTrackSwitching, setIsAudioTrackSwitching] = useState(false);
   const audioTracksRef = useRef(audioTracks);
   const currentAudioTrackRef = useRef(currentAudioTrack);
-  const invalidSourceKeysRef = useRef<Map<string, number>>(new Map());
-
-  const INVALID_SOURCE_TTL_MS = 10 * 60 * 1000;
+  // 🎯 自适应源重试状态：指数退避 [30s, 2min, 5min, 10min]
+  const RETRY_BACKOFFS = [30_000, 120_000, 300_000, 600_000];
+  const MAX_RETRIES = RETRY_BACKOFFS.length;
+  const sourceRetryStateRef = useRef<
+    Map<string, { failCount: number; lastFailTime: number }>
+  >(new Map());
+  const totalSessionFailuresRef = useRef(0);
+  const MAX_SESSION_FAILURES = 50;
 
   // 🚀 使用 useDanmu Hook 管理弹幕
   const danmuScopeKey = `${videoTitle}_${videoYear}_${videoDoubanId}_${currentEpisodeIndex + 1}`;
@@ -1642,22 +1647,74 @@ function PlayPageClient() {
   const getSourceIdentityKey = (source: string, id: string) =>
     `${source}::${id}`;
 
-  const filterInvalidSources = (sources: SearchResult[]): SearchResult[] => {
+  const isSourceAvailable = useCallback((sourceKey: string): boolean => {
+    const state = sourceRetryStateRef.current.get(sourceKey);
+    if (!state) return true;
+
     const now = Date.now();
+    const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
+    const nextRetryTime = state.lastFailTime + RETRY_BACKOFFS[backoffIndex];
 
-    return sources.filter((source) => {
-      const key = getSourceIdentityKey(source.source, source.id);
-      const failedAt = invalidSourceKeysRef.current.get(key);
-      if (!failedAt) return true;
+    if (now >= nextRetryTime) {
+      sourceRetryStateRef.current.delete(sourceKey);
+      return true;
+    }
+    return false;
+  }, []);
 
-      if (now - failedAt > INVALID_SOURCE_TTL_MS) {
-        invalidSourceKeysRef.current.delete(key);
-        return true;
-      }
-
-      return false;
+  const markSourceFailed = useCallback((sourceKey: string) => {
+    const prev = sourceRetryStateRef.current.get(sourceKey);
+    const failCount = Math.min((prev?.failCount || 0) + 1, MAX_RETRIES);
+    sourceRetryStateRef.current.set(sourceKey, {
+      failCount,
+      lastFailTime: Date.now(),
     });
-  };
+    totalSessionFailuresRef.current++;
+  }, []);
+
+  const resetSourceRetries = useCallback(() => {
+    sourceRetryStateRef.current.clear();
+    totalSessionFailuresRef.current = 0;
+  }, []);
+
+  const filterInvalidSources = useCallback(
+    (sources: SearchResult[]): SearchResult[] => {
+      const now = Date.now();
+      return sources.filter((source) => {
+        const key = getSourceIdentityKey(source.source, source.id);
+        const state = sourceRetryStateRef.current.get(key);
+        if (!state) return true;
+
+        const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
+        if (now - state.lastFailTime > RETRY_BACKOFFS[backoffIndex]) {
+          sourceRetryStateRef.current.delete(key);
+          return true;
+        }
+        return false;
+      });
+    },
+    [],
+  );
+
+  // 🎯 HEAD 预检：播放前快速探测源是否可通
+  const quickProbe = useCallback(
+    async (url: string, timeout = 2000): Promise<boolean> => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeout);
+        await fetch(url, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [],
+  );
 
   // 设置可用源列表（先按权重排序）
   const setAvailableSourcesWithWeight = async (
@@ -3252,10 +3309,7 @@ function PlayPageClient() {
 
         if (!detailResponse.ok) {
           if (detailResponse.status === 404 && source && id) {
-            invalidSourceKeysRef.current.set(
-              getSourceIdentityKey(source, id),
-              Date.now(),
-            );
+            markSourceFailed(getSourceIdentityKey(source, id));
           }
           throw new Error(`获取视频详情失败 (${detailResponse.status})`);
         }
@@ -5382,9 +5436,8 @@ function PlayPageClient() {
                       const hlsFailSource = currentSourceRef.current;
                       const hlsFailId = currentIdRef.current;
                       if (hlsFailSource && hlsFailId) {
-                        invalidSourceKeysRef.current.set(
+                        markSourceFailed(
                           getSourceIdentityKey(hlsFailSource, hlsFailId),
-                          Date.now(),
                         );
                       }
                       hls.destroy();
@@ -7059,45 +7112,89 @@ function PlayPageClient() {
             detailRef.current?.episodes?.[currentEpisodeIndexRef.current] || '';
           if (failSource && failId) {
             const failKey = getSourceIdentityKey(failSource, failId);
-            invalidSourceKeysRef.current.set(failKey, Date.now());
+            markSourceFailed(failKey);
             console.log(`🚫 已标记源为无效: ${failKey}`);
           }
 
-          // 找到下一个可用源（跳过与失败源相同播放URL的源，防止死循环）
-          const allSources = filterInvalidSources(availableSourcesRef.current);
-          const nextSource = allSources.find((s) => {
-            if (s.source === failSource && s.id === failId) return false;
-            // 跳过与失败源使用相同播放URL的源
-            if (failUrl && s.episodes?.length) {
-              const sUrl =
-                s.episodes[currentEpisodeIndexRef.current] || s.episodes[0];
-              if (sUrl === failUrl) {
-                // 也标记这些同URL源为无效
-                const sameUrlKey = getSourceIdentityKey(s.source, s.id);
-                invalidSourceKeysRef.current.set(sameUrlKey, Date.now());
-                console.log(`🚫 跳过同URL源并标记无效: ${sameUrlKey}`);
-                return false;
+          // 找到下一个可用源，并用 HEAD 预检确认可通
+          const findWorkingSource = async (): Promise<SearchResult | null> => {
+            const candidates = filterInvalidSources(
+              availableSourcesRef.current,
+            );
+            for (const candidate of candidates) {
+              const cKey = getSourceIdentityKey(candidate.source, candidate.id);
+              if (candidate.source === failSource && candidate.id === failId)
+                continue;
+
+              const cUrl =
+                candidate.episodes?.[currentEpisodeIndexRef.current] ||
+                candidate.episodes?.[0];
+              if (failUrl && cUrl === failUrl) {
+                markSourceFailed(cKey);
+                continue;
+              }
+
+              // HEAD 预检：2 秒超时
+              if (cUrl) {
+                const ok = await quickProbe(cUrl, 2000);
+                if (!ok) {
+                  markSourceFailed(cKey);
+                  console.log(
+                    `⏭️ HEAD 预检不通，跳过: ${candidate.source_name}`,
+                  );
+                  continue;
+                }
+              }
+              return candidate;
+            }
+            return null;
+          };
+
+          findWorkingSource().then((nextSource) => {
+            if (nextSource) {
+              console.log(
+                `🔄 自动切换到备用源: ${nextSource.source} - ${nextSource.title}`,
+              );
+              sourceErrorCountRef.current = 0;
+              handleSourceChange(
+                nextSource.source,
+                nextSource.id,
+                nextSource.title || '',
+              );
+            } else {
+              // 🎯 托底方案：所有源都不可用
+              console.log('❌ 没有更多可用源');
+              if (totalSessionFailuresRef.current >= MAX_SESSION_FAILURES) {
+                setError('当前线路播放失败，且没有其他可用线路');
+              } else {
+                const topKeys = [...sourceRetryStateRef.current.keys()].slice(
+                  0,
+                  3,
+                );
+                topKeys.forEach((k) => sourceRetryStateRef.current.delete(k));
+                const retrySource =
+                  availableSourcesRef.current.find((s) => {
+                    const k = getSourceIdentityKey(s.source, s.id);
+                    return topKeys.includes(k);
+                  }) || availableSourcesRef.current[0];
+                if (retrySource) {
+                  console.log(
+                    '🔄 2秒后自动重试前 3 个源:',
+                    retrySource.source_name,
+                  );
+                  setTimeout(() => {
+                    handleSourceChange(
+                      retrySource.source,
+                      retrySource.id,
+                      retrySource.title || '',
+                    );
+                  }, 2000);
+                } else {
+                  setError('当前线路播放失败，且没有其他可用线路');
+                }
               }
             }
-            return true;
           });
-
-          if (nextSource) {
-            console.log(
-              `🔄 自动切换到备用源: ${nextSource.source} - ${nextSource.title}`,
-            );
-            // 重置错误计数
-            sourceErrorCountRef.current = 0;
-            // 使用 handleSourceChange 直接换源，避免触发全量重载
-            handleSourceChange(
-              nextSource.source,
-              nextSource.id,
-              nextSource.title || '',
-            );
-          } else {
-            console.log('❌ 没有更多可用源');
-            setError('当前线路播放失败，且没有其他可用线路');
-          }
         });
 
         // 监听视频播放结束事件，自动播放下一集
