@@ -139,31 +139,32 @@ export async function GET(request: NextRequest) {
     ]).catch(() => []),
   );
 
-  // 🎯 兜底方案：5秒内任何源返回非空结果就提前响应，不等待全部
-  const FIRST_RESULT_TIMEOUT = 5_000;
+  // 🎯 兜底方案：3秒内收集已有结果提前返回，不等待全部
+  const EARLY_RETURN_WAIT = 3_000;
 
   try {
-    const firstResult = await Promise.race([
-      // 1) 快速返回第一个非空结果
-      ...searchPromises.map(
-        (p) =>
-          new Promise<any[]>((resolve) => {
-            p.then((r) => {
-              if (r.length > 0) resolve(r);
-            });
-          }),
-      ),
-      // 2) 5 秒超时，没有一个源返回结果就继续等全部
-      new Promise<any[]>((resolve) =>
-        setTimeout(() => resolve(null as any), FIRST_RESULT_TIMEOUT),
-      ),
+    // 等待 3 秒，收集所有在这段时间内返回的结果
+    const [aggregated] = await Promise.all([
+      new Promise<any[]>((resolve) => {
+        const collected: any[] = [];
+        let done = false;
+        for (const p of searchPromises) {
+          p.then((r) => {
+            if (done) return;
+            if (r.length > 0) collected.push(...r);
+          });
+        }
+        setTimeout(() => {
+          done = true;
+          resolve(collected);
+        }, EARLY_RETURN_WAIT);
+      }),
     ]);
 
-    if (firstResult) {
-      // 有结果了！立即返回给客户端，不阻塞
-      let earlyResults = firstResult;
+    if (aggregated.length > 0) {
+      let earlyResults = aggregated;
       if (!config.SiteConfig.DisableYellowFilter) {
-        earlyResults = firstResult.filter((r: any) => {
+        earlyResults = aggregated.filter((r: any) => {
           const typeName = r.type_name || '';
           return !yellowWords.some((word: string) => typeName.includes(word));
         });
@@ -185,6 +186,7 @@ export async function GET(request: NextRequest) {
         {
           headers: {
             'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+            'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
           },
         },
       );
