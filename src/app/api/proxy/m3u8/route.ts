@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 
 import { getBaseUrl, resolveUrl } from '@/lib/live';
-import { getSourceUserAgent } from '@/lib/proxy';
+import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
 
 export const runtime = 'nodejs';
 
@@ -76,16 +76,20 @@ export async function GET(request: Request) {
       Connection: 'keep-alive',
     };
 
-    response = await fetch(decodedUrl, {
-      cache: 'no-cache',
-      redirect: 'follow',
-      credentials: 'same-origin',
-      signal: controller.signal,
-      headers: new Headers(headers),
+    response = await fetchWithRetry(
+      decodedUrl,
+      {
+        cache: 'no-cache',
+        redirect: 'follow',
+        credentials: 'same-origin',
+        signal: controller.signal,
+        headers,
 
-      // @ts-ignore - Node.js specific option
-      agent: typeof window === 'undefined' ? agent : undefined,
-    });
+        // @ts-ignore - Node.js specific option
+        agent: typeof window === 'undefined' ? agent : undefined,
+      },
+      ua,
+    );
 
     clearTimeout(timeoutId);
 

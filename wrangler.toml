@@ -1,0 +1,11 @@
+name = "5572tv-proxy"
+main = "proxy.worker.js"
+compatibility_date = "2026-01-01"
+
+[site]
+bucket = "./public"
+
+[env.production]
+routes = [
+  { pattern = "www.5572.net/api/proxy/*", zone_name = "5572.net" }
+]

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getSourceUserAgent } from '@/lib/proxy';
+import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
 
 export const runtime = 'nodejs';
 
@@ -52,25 +52,26 @@ export async function GET(request: Request) {
 
   try {
     const targetUrl = new URL(decodedUrl);
-    const requestHeaders = new Headers();
-    requestHeaders.set('User-Agent', ua);
-    requestHeaders.set('Accept', '*/*');
-    requestHeaders.set(
-      'Referer',
-      `${targetUrl.protocol}//${targetUrl.host}${targetUrl.pathname}`,
-    );
-    requestHeaders.set('Origin', `${targetUrl.protocol}//${targetUrl.host}`);
+    const requestHeaders: Record<string, string> = {
+      Accept: '*/*',
+      Referer: `${targetUrl.protocol}//${targetUrl.host}${targetUrl.pathname}`,
+      Origin: `${targetUrl.protocol}//${targetUrl.host}`,
+    };
 
     const range = request.headers.get('range');
     if (range) {
-      requestHeaders.set('Range', range);
+      requestHeaders.Range = range;
     }
 
-    const response = await fetch(decodedUrl, {
-      cache: 'no-cache',
-      redirect: 'follow',
-      headers: requestHeaders,
-    });
+    const response = await fetchWithRetry(
+      decodedUrl,
+      {
+        cache: 'no-cache',
+        redirect: 'follow',
+        headers: requestHeaders,
+      },
+      ua,
+    );
 
     if (!response.ok && response.status !== 206) {
       return NextResponse.json(

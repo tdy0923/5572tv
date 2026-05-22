@@ -6,7 +6,6 @@ const STATIC_ASSETS = [
   '/icons/icon-512x512.png',
 ];
 
-// StreamSaver.js functionality
 const urlDataMap = new Map();
 
 function createStream(port) {
@@ -30,7 +29,6 @@ function createStream(port) {
   });
 }
 
-// PWA lifecycle
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
@@ -53,29 +51,26 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Message handler (StreamSaver)
 self.addEventListener('message', (event) => {
   const data = event.data;
   const port = event.ports[0];
 
-  if (data === 'ping') {
-    return;
-  }
+  if (data === 'ping') return;
 
-  const downloadUrl =
-    data.url ||
-    self.registration.scope +
-      Math.random() +
-      '/' +
-      (typeof data === 'string' ? data : data.filename);
+  const filename = data.pathname
+    ? data.pathname.split('/').pop() || 'download'
+    : typeof data === 'string'
+      ? data
+      : 'download';
+
+  const token = Math.random().toString(36).slice(2);
+  const downloadUrl = '/download/' + token + '/' + filename;
+
   const metadata = new Array(3);
-
   metadata[1] = data;
   metadata[2] = port;
 
-  if (data.readableStream) {
-    metadata[0] = data.readableStream;
-  } else if (data.transferringReadable) {
+  if (data.transferringReadable) {
     port.onmessage = (evt) => {
       port.onmessage = null;
       metadata[0] = evt.data.readableStream;
@@ -84,29 +79,54 @@ self.addEventListener('message', (event) => {
     metadata[0] = createStream(port);
   }
 
-  urlDataMap.set(downloadUrl, metadata);
+  urlDataMap.set(token, metadata);
   port.postMessage({ download: downloadUrl });
 });
 
-// Fetch handler (PWA cache + StreamSaver)
 self.addEventListener('fetch', (event) => {
   var url = new URL(event.request.url);
 
-  // StreamSaver download handling
   if (url.pathname.startsWith('/download/')) {
     event.respondWith(
       (async () => {
-        var token = url.pathname.split('/')[2];
+        var parts = url.pathname.split('/');
+        var token = parts[2];
+        if (!token) {
+          return new Response('Download not found', { status: 404 });
+        }
         var payload = urlDataMap.get(token);
         if (!payload) {
           return new Response('Download not found', { status: 404 });
         }
         urlDataMap.delete(token);
 
-        var stream = createStream(payload.port);
+        var storedData = payload[1];
+        var storedPort = payload[2];
+
+        var filename = parts.slice(3).join('/') || 'download';
+        var contentType = 'application/octet-stream';
+
+        if (storedData && storedData.headers) {
+          if (storedData.headers['Content-Type']) {
+            contentType = storedData.headers['Content-Type'];
+          }
+          var disposition = storedData.headers['Content-Disposition'];
+          if (disposition) {
+            var match = disposition.match(/filename\*?=UTF-8''(.+)/);
+            if (match) {
+              filename = decodeURIComponent(match[1]);
+            }
+          }
+        }
+
+        var stream = payload[0];
+        if (typeof stream === 'undefined') {
+          stream = createStream(storedPort);
+        }
+
         var responseHeaders = new Headers({
-          'Content-Type': payload.contentType || 'application/octet-stream',
-          'Content-Disposition': `attachment; filename="${payload.filename || 'download'}"`,
+          'Content-Type': contentType,
+          'Content-Disposition': 'attachment; filename="' + filename + '"',
           'Content-Transfer-Encoding': 'binary',
         });
 
@@ -116,6 +136,5 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 非下载请求 → 不拦截，让浏览器直接处理
   return;
 });

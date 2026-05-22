@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
-import { getSourceUserAgent } from '@/lib/proxy';
+import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
 
 export const runtime = 'nodejs';
 
@@ -127,18 +127,21 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
-    const response = await fetch(decodedUrl, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': ua,
-        Accept: 'application/octet-stream, */*',
-        'Cache-Control': 'no-cache',
-        ...(cached?.etag && { 'If-None-Match': cached.etag }),
-      },
+    const response = await fetchWithRetry(
+      decodedUrl,
+      {
+        signal: controller.signal,
+        headers: {
+          Accept: 'application/octet-stream, */*',
+          'Cache-Control': 'no-cache',
+          ...(cached?.etag && { 'If-None-Match': cached.etag }),
+        },
 
-      // @ts-ignore - Node.js specific option
-      agent: typeof window === 'undefined' ? agent : undefined,
-    });
+        // @ts-ignore - Node.js specific option
+        agent: typeof window === 'undefined' ? agent : undefined,
+      },
+      ua,
+    );
 
     clearTimeout(timeoutId);
 
