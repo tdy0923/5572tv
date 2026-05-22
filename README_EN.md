@@ -26,13 +26,15 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.0-000?logo=nextdotjs)
 ![React](https://img.shields.io/badge/React-19.0.0-61dafb?logo=react)
+![Cloudflare Workers](https://img.shields.io/badge/Workers-Edge-f38020?logo=cloudflare)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178c6?logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.18-38bdf8?logo=tailwindcss)
 ![ArtPlayer](https://img.shields.io/badge/ArtPlayer-5.4.0-ff6b6b)
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-1.2.2-orange)
+![Version](https://img.shields.io/badge/Version-1.2.3-orange)
+![Sources](https://img.shields.io/badge/Sources-91-green)
 
 </div>
 

@@ -26,13 +26,15 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-16.1.0-000?logo=nextdotjs)
 ![React](https://img.shields.io/badge/React-19.0.0-61dafb?logo=react)
+![Cloudflare Workers](https://img.shields.io/badge/Workers-Edge-f38020?logo=cloudflare)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178c6?logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.18-38bdf8?logo=tailwindcss)
 ![ArtPlayer](https://img.shields.io/badge/ArtPlayer-5.4.0-ff6b6b)
 ![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-1.2.2-orange)
+![Version](https://img.shields.io/badge/Version-1.2.3-orange)
+![Sources](https://img.shields.io/badge/Sources-91-green)
 
 </div>
 
@@ -44,9 +46,9 @@
 
 ### 当前发布状态
 
-- 当前独立版本：`v1.2.2`
-- 版本定位：`5572tv / 5572影视` 移动端/平板全面升级版本
-- 本次发布重点：独立仓库切换、非商用许可声明、部署链路迁移、认证链路闭环验证、播放页失效线路治理、缓存与 Cloudflare 加速优化
+- 当前独立版本：`v1.2.3`
+- 版本定位：`5572tv / 5572影视` Cloudflare Workers 边缘代理 + 播放体验全面优化
+- 本次发布重点：Cloudflare Workers 视频代理、搜索 3s 聚合、HEAD 预检三态、死循环熔断、91 个播放源、观影室下线
 
 ### 当前仓库定位
 
@@ -195,8 +197,9 @@ pnpm dev
 - **样式方案**：TailwindCSS 4.1.18
 - **视频播放**：ArtPlayer 5.4.0 + HLS.js 1.6.15
 - **状态管理**：TanStack Query 5.91.0
+- **边缘代理**：Cloudflare Workers（视频流边缘转发）
 - **数据库**：Upstash Redis + Kvrocks
-- **部署方案**：Docker / Vercel / Render
+- **部署方案**：Docker / Render / Cloudflare
 
 ## 📜 更新日志
 

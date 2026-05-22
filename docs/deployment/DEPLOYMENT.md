@@ -548,3 +548,45 @@ your-space/
 - [Upstash 免费 Redis](https://upstash.com/)
 
 ---
+
+## ☁️ Cloudflare Workers 边缘代理
+
+5572TV 使用 Cloudflare Workers 在边缘节点处理视频代理请求，不经过 Node.js 源服务器。
+
+### 部署 Worker
+
+项目已预置 `proxy.worker.js`，部署方式：
+
+```bash
+# 1. 安装 Wrangler CLI
+npm install -g wrangler
+
+# 2. 登录 Cloudflare
+wrangler login
+
+# 3. 部署
+wrangler deploy proxy.worker.js --name 5572tv-proxy
+```
+
+### 配置路由
+
+在 Cloudflare Dashboard → Workers 路由中添加：
+
+```
+www.5572.net/api/proxy/* → 5572tv-proxy
+```
+
+### 架构示意
+
+```
+用户 → Cloudflare(300+节点)
+  ├─ /api/proxy/* → Worker(边缘转发，不经过服务器)
+  └─ /* → Render/自托管(Node.js)
+```
+
+### 注意事项
+
+- 免费版每天 10 万请求，超量 $0.30/百万
+- Worker 30s 超时自动回退到 Next.js 源站代理
+
+---

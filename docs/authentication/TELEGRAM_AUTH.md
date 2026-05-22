@@ -273,4 +273,5 @@ TTL cache:test_token
 
 - **v1.0.0** - 初始实现 Telegram Magic Link 登录
 - **v1.1.0** - 添加 webhook 自动更新功能
+- **v1.2.3** - 播放体验优化：HEAD预检三态、死循环熔断、搜索3秒聚合、91个播放源、CF Workers边缘代理
 - **v1.2.2** - 全面修复 ESLint 29 个错误及 React Compiler memoization 问题
