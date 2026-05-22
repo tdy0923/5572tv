@@ -1672,19 +1672,27 @@ function PlayPageClient() {
 
   // 🎯 HEAD 预检：播放前快速探测源是否可通
   const quickProbe = useCallback(
-    async (url: string, timeout = 2000): Promise<'ok' | 'slow' | 'fail'> => {
+    async (
+      url: string,
+      timeout = 2000,
+      source?: string,
+    ): Promise<'ok' | 'slow' | 'fail'> => {
       try {
+        const proxyUrl = new URL('/api/proxy/m3u8', window.location.origin);
+        proxyUrl.searchParams.set('url', url);
+        proxyUrl.searchParams.set('allowCORS', 'true');
+        if (source) proxyUrl.searchParams.set('5572tv-source', source);
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeout);
-        const resp = await fetch(url, {
+        const resp = await fetch(proxyUrl.toString(), {
           method: 'HEAD',
-          mode: 'no-cors',
+          mode: 'cors',
           signal: controller.signal,
         });
         clearTimeout(timer);
-        return 'ok';
+        if (resp.ok) return 'ok';
+        return 'fail';
       } catch (err: any) {
-        // 超时 = 网络慢，源本身可能可用
         if (err?.name === 'AbortError') return 'slow';
         return 'fail';
       }
@@ -7115,9 +7123,9 @@ function PlayPageClient() {
                 continue;
               }
 
-              // HEAD 预检：2 秒超时
+              // HEAD 预检：2 秒超时，通过代理检测避免 CORS 限制
               if (cUrl) {
-                const probe = await quickProbe(cUrl, 2000);
+                const probe = await quickProbe(cUrl, 2000, candidate.source);
                 if (probe === 'fail') {
                   markSourceFailed(cKey);
                   console.log(`⏭️ HEAD 不通，跳过: ${candidate.source_name}`);
