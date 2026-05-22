@@ -5,6 +5,8 @@ import React, { createContext, useContext } from 'react';
 
 const WatchRoomContext = createContext<any>(null);
 
+export type WatchRoomContextType = any;
+
 export const useWatchRoomContextSafe = () => useContext(WatchRoomContext);
 export const useWatchRoomContext = () => {
   const ctx = useContext(WatchRoomContext);
