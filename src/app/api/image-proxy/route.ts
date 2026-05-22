@@ -87,6 +87,7 @@ function getImageFailureCacheKey(imageUrl: string): string {
 }
 
 function getPlaceholderRedirectUrl(_request: Request): URL {
+  // fix: 使用固定域名而非 request.url 避免 0.0.0.0:3000
   return new URL('/placeholder-cover.jpg', 'https://www.5572.net');
 }
 
