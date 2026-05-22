@@ -86,8 +86,8 @@ function getImageFailureCacheKey(imageUrl: string): string {
   return `image-proxy:failure:${imageUrl}`;
 }
 
-function getPlaceholderRedirectUrl(request: Request): URL {
-  return new URL('/placeholder-cover.jpg', request.url);
+function getPlaceholderRedirectUrl(_request: Request): URL {
+  return new URL('/placeholder-cover.jpg', 'https://www.5572.net');
 }
 
 // 图片代理接口 - 解决防盗链和 Mixed Content 问题

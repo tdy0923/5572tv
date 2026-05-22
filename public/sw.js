@@ -90,51 +90,32 @@ self.addEventListener('message', (event) => {
 
 // Fetch handler (PWA cache + StreamSaver)
 self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-  const hijacked = urlDataMap.get(url);
+  var url = new URL(event.request.url);
 
-  if (hijacked) {
-    const [stream, data, port] = hijacked;
-    urlDataMap.delete(url);
+  // StreamSaver download handling
+  if (url.pathname.startsWith('/download/')) {
+    event.respondWith(
+      (async () => {
+        var token = url.pathname.split('/')[2];
+        var payload = urlDataMap.get(token);
+        if (!payload) {
+          return new Response('Download not found', { status: 404 });
+        }
+        urlDataMap.delete(token);
 
-    const responseHeaders = new Headers({
-      'Content-Type': 'application/octet-stream; charset=utf-8',
-      'Content-Security-Policy': "default-src 'none'",
-      'X-Content-Security-Policy': "default-src 'none'",
-      'X-WebKit-CSP': "default-src 'none'",
-      'X-XSS-Protection': '1; mode=block',
-    });
+        var stream = createStream(payload.port);
+        var responseHeaders = new Headers({
+          'Content-Type': payload.contentType || 'application/octet-stream',
+          'Content-Disposition': `attachment; filename="${payload.filename || 'download'}"`,
+          'Content-Transfer-Encoding': 'binary',
+        });
 
-    if (data.headers) {
-      for (const [key, value] of Object.entries(data.headers)) {
-        responseHeaders.set(key, value);
-      }
-    }
-
-    event.respondWith(new Response(stream, { headers: responseHeaders }));
-    port.postMessage({ debug: 'Download started' });
+        return new Response(stream, { headers: responseHeaders });
+      })(),
+    );
     return;
   }
 
-  // Skip streaming media - let them go directly to network
-  if (/\.(m3u8|ts|key|m4s)$/i.test(event.request.url)) {
-    return;
-  }
-
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
-
-  // Network first for API calls, cache first for static assets
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request)),
-    );
-  } else {
-    event.respondWith(
-      caches
-        .match(event.request)
-        .then((response) => response || fetch(event.request))
-        .catch(() => new Response('Offline', { status: 503 })),
-    );
-  }
+  // 非下载请求 → 不拦截，让浏览器直接处理
+  return;
 });
