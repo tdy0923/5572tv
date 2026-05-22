@@ -376,18 +376,28 @@ function rewriteM3U8Content(
 
     // 处理嵌套的 M3U8 文件 (EXT-X-STREAM-INF)
     if (line.startsWith('#EXT-X-STREAM-INF:')) {
-      rewrittenLines.push(line);
-      // 下一行通常是 M3U8 URL
-      if (i + 1 < lines.length) {
-        i++;
-        const nextLine = lines[i].trim();
-        if (nextLine && !nextLine.startsWith('#')) {
-          let resolvedUrl = resolveUrl(baseUrl, nextLine);
-          resolvedUrl = substituteVariables(resolvedUrl, variables);
-          const proxyUrl = `${proxyBase}/m3u8?url=${encodeURIComponent(resolvedUrl)}${sourceParam}`;
-          rewrittenLines.push(proxyUrl);
-        } else {
-          rewrittenLines.push(nextLine);
+      // 处理行内 URI="..." 属性
+      const uriMatch = line.match(/URI="([^"]+)"/);
+      if (uriMatch) {
+        let originalUri = uriMatch[1];
+        originalUri = substituteVariables(originalUri, variables);
+        const resolvedUrl = resolveUrl(baseUrl, originalUri);
+        const proxyUrl = `${proxyBase}/m3u8?url=${encodeURIComponent(resolvedUrl)}${sourceParam}`;
+        rewrittenLines.push(line.replace(uriMatch[0], `URI="${proxyUrl}"`));
+      } else {
+        rewrittenLines.push(line);
+        // 下一行通常是 M3U8 URL
+        if (i + 1 < lines.length) {
+          i++;
+          const nextLine = lines[i].trim();
+          if (nextLine && !nextLine.startsWith('#')) {
+            let resolvedUrl = resolveUrl(baseUrl, nextLine);
+            resolvedUrl = substituteVariables(resolvedUrl, variables);
+            const proxyUrl = `${proxyBase}/m3u8?url=${encodeURIComponent(resolvedUrl)}${sourceParam}`;
+            rewrittenLines.push(proxyUrl);
+          } else {
+            rewrittenLines.push(nextLine);
+          }
         }
       }
       continue;

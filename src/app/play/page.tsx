@@ -7155,11 +7155,12 @@ function PlayPageClient() {
                 nextSource.title || '',
               );
             } else {
-              // 🎯 托底方案：所有源都不可用，最多自动重试一次
+              // 🎯 托底方案：所有源都不可用，但所有源已被标记失败则不再重试
               console.log('❌ 没有更多可用源');
               if (
                 fallbackAutoRetriedRef.current ||
-                totalSessionFailuresRef.current >= MAX_SESSION_FAILURES
+                totalSessionFailuresRef.current >= MAX_SESSION_FAILURES ||
+                filterInvalidSources(availableSourcesRef.current).length === 0
               ) {
                 setError('当前线路播放失败，且没有其他可用线路');
               } else {
