@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
   const searchVariants = generateSearchVariants(query);
 
   // 添加超时控制和错误处理，避免慢接口拖累整体响应
-  const SEARCH_TIMEOUT = 20_000; // 单源最长等 20s
+  const SEARCH_TIMEOUT = 20_000;
 
   const searchPromises = apiSites.map((site) =>
     Promise.race([
@@ -136,13 +136,61 @@ export async function GET(request: NextRequest) {
           SEARCH_TIMEOUT,
         ),
       ),
-    ]).catch((err) => {
-      console.warn(`搜索失败 ${site.name}:`, err.message);
-      return [];
-    }),
+    ]).catch(() => []),
   );
 
+  // 🎯 兜底方案：5秒内任何源返回非空结果就提前响应，不等待全部
+  const FIRST_RESULT_TIMEOUT = 5_000;
+
   try {
+    const firstResult = await Promise.race([
+      // 1) 快速返回第一个非空结果
+      ...searchPromises.map(
+        (p) =>
+          new Promise<any[]>((resolve) => {
+            p.then((r) => {
+              if (r.length > 0) resolve(r);
+            });
+          }),
+      ),
+      // 2) 5 秒超时，没有一个源返回结果就继续等全部
+      new Promise<any[]>((resolve) =>
+        setTimeout(() => resolve(null as any), FIRST_RESULT_TIMEOUT),
+      ),
+    ]);
+
+    if (firstResult) {
+      // 有结果了！立即返回给客户端，不阻塞
+      let earlyResults = firstResult;
+      if (!config.SiteConfig.DisableYellowFilter) {
+        earlyResults = firstResult.filter((r: any) => {
+          const typeName = r.type_name || '';
+          return !yellowWords.some((word: string) => typeName.includes(word));
+        });
+      }
+      // 后台继续收集其余源并写入缓存
+      Promise.allSettled(searchPromises).then((all) => {
+        const allSuccess = all
+          .filter((r) => r.status === 'fulfilled')
+          .map((r) => (r as PromiseFulfilledResult<any>).value)
+          .flat();
+        if (allSuccess.length > 0) {
+          db.setCache(searchCacheKey, allSuccess, searchCacheTtl).catch(
+            () => {},
+          );
+        }
+      });
+      return NextResponse.json(
+        { results: earlyResults },
+        {
+          headers: {
+            'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+          },
+        },
+      );
+    }
+
+    // 5 秒内无结果，等全部返回
     const results = await Promise.allSettled(searchPromises);
     const successResults = results
       .filter((result) => result.status === 'fulfilled')
