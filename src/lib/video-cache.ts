@@ -27,7 +27,7 @@ function getKvrocksClient() {
   if (!kvrocksStorage) {
     kvrocksStorage = new KvrocksStorage();
   }
-  // @ts-ignore - 访问 protected client 属性
+  // @ts-expect-error - 访问 protected client 属性
   return kvrocksStorage.client;
 }
 

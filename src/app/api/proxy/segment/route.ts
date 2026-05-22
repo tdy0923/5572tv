@@ -74,7 +74,6 @@ export async function GET(request: Request) {
           Connection: 'keep-alive',
         },
 
-        // @ts-ignore - Node.js specific option
         agent: typeof window === 'undefined' ? agent : undefined,
       },
       ua,

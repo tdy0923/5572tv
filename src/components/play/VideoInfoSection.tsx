@@ -1,5 +1,5 @@
 'use client';
-import React, { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { resolvePosterUrl } from '@/lib/utils';
 

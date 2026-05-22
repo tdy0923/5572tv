@@ -2162,7 +2162,6 @@ function LivePageClient() {
         lazyLoadMaxDuration: 3 * 60,
         lazyLoadRecoverDuration: 30,
         deferLoadAfterSourceOpen: true,
-        // @ts-ignore - autoCleanupSourceBuffer 是有效配置但类型定义缺失
         autoCleanupSourceBuffer: true,
         autoCleanupMaxBackwardDuration: 3 * 60,
         autoCleanupMinBackwardDuration: 2 * 60,

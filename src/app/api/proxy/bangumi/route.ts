@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
     // 返回数据，并设置 CORS 头允许前端访问
     return NextResponse.json(data, {
       headers: {
+        'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     });

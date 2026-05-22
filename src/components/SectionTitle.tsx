@@ -1,5 +1,4 @@
 import { LucideIcon } from 'lucide-react';
-import React from 'react';
 
 interface SectionTitleProps {
   title: string;

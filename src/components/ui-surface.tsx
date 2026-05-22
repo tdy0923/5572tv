@@ -1,17 +1,14 @@
 'use client';
 
-import {
-  type ComponentPropsWithoutRef,
-  forwardRef,
-  type ReactNode,
-} from 'react';
+import { type ComponentPropsWithoutRef, type ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-export const GlassPanel = forwardRef<
-  HTMLDivElement,
-  ComponentPropsWithoutRef<'div'>
->(({ className, ...props }, ref) => {
+export function GlassPanel({
+  ref,
+  className,
+  ...props
+}: ComponentPropsWithoutRef<'div'> & { ref?: React.Ref<HTMLDivElement> }) {
   return (
     <div
       ref={ref}
@@ -22,9 +19,7 @@ export const GlassPanel = forwardRef<
       {...props}
     />
   );
-});
-
-GlassPanel.displayName = 'GlassPanel';
+}
 
 export function PillGroup({
   className,

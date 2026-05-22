@@ -168,7 +168,7 @@ export async function GET(request: Request) {
         ...(cached?.etag && { 'If-None-Match': cached.etag }),
       },
 
-      // @ts-ignore - Node.js specific option
+      // @ts-expect-error - Node.js specific option
       agent: typeof window === 'undefined' ? agent : undefined,
     });
 

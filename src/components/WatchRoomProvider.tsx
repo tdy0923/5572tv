@@ -1,7 +1,7 @@
 // 📺 观影室功能已下线，保留空 Provider 避免编译错误
 'use client';
 
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
 
 const WatchRoomContext = createContext<any>(null);
 
@@ -15,5 +15,5 @@ export const useWatchRoomContext = () => {
 };
 
 export function WatchRoomProvider({ children }: { children: React.ReactNode }) {
-  return React.createElement(React.Fragment, null, children);
+  return <>{children}</>;
 }
