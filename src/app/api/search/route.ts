@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
   const searchVariants = generateSearchVariants(query);
 
   // 添加超时控制和错误处理，避免慢接口拖累整体响应
-  const SEARCH_TIMEOUT = 8_000; // 单源最长等 8s（之前 20s）
+  const SEARCH_TIMEOUT = 20_000; // 单源最长等 20s
 
   const searchPromises = apiSites.map((site) =>
     Promise.race([
