@@ -17,7 +17,8 @@
 import { getAuthInfoFromBrowserCookie } from './auth';
 import type { PlayRecord } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
-import { forceClearWatchingUpdatesCache } from './watching-updates';
+// watching-updates 已移除，保留空函数以避免编译错误
+const forceClearWatchingUpdatesCache = () => {};
 
 // 重新导出类型以保持API兼容性
 export type { EpisodeSkipConfig, PlayRecord, SkipSegment } from './types';

@@ -65,7 +65,6 @@ const VideoLoadingOverlay = dynamic(
   () => import('@/components/play/VideoLoadingOverlay'),
   { ssr: false },
 );
-import WatchRoomSyncBanner from '@/components/play/WatchRoomSyncBanner';
 const WebSRSettingsPanel = dynamic(
   () => import('@/components/play/WebSRSettingsPanel'),
   { ssr: false },
@@ -74,7 +73,6 @@ import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
 } from '@/components/SkipController';
-import { useWatchRoomContextSafe } from '@/components/WatchRoomProvider';
 
 import { useDownload } from '@/contexts/DownloadContext';
 
@@ -84,14 +82,9 @@ import {
   useSavePlayRecordMutation,
 } from './hooks/usePlayPageMutations';
 import {
-  usePrefetchDoubanData,
-  usePrefetchNextEpisode,
-} from './hooks/usePlayPagePrefetch';
-import {
   useDoubanCommentsQuery,
   useDoubanDetailsQuery,
 } from './hooks/usePlayPageQueries';
-import { useWatchRoomSync } from './hooks/useWatchRoomSync';
 
 // 播放速率持久化
 const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
@@ -291,7 +284,6 @@ function PlayPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { createTask, setShowDownloadPanel } = useDownload();
-  const watchRoom = useWatchRoomContextSafe();
 
   // TanStack Query mutations
   const savePlayRecordMutation = useSavePlayRecordMutation();
@@ -686,6 +678,7 @@ function PlayPageClient() {
     Map<string, { failCount: number; lastFailTime: number }>
   >(new Map());
   const totalSessionFailuresRef = useRef(0);
+  const fallbackAutoRetriedRef = useRef(false);
   const MAX_SESSION_FAILURES = 50;
 
   // 🚀 使用 useDanmu Hook 管理弹幕
@@ -1082,40 +1075,21 @@ function PlayPageClient() {
     pendingOwnerState,
     handleConfirmSourceSwitch,
     handleCancelSourceSwitch,
-  } = useWatchRoomSync({
-    watchRoom,
-    artPlayerRef,
-    detail,
-    episodeIndex: currentEpisodeIndex,
-    playerReady,
-    videoId: currentId, // 传入URL参数的id
-    currentSource: currentSource, // 传入当前播放源
-    videoTitle: videoTitle, // 传入视频标题（来自 state，初始值来自 URL）
-    videoYear: videoYear, // 传入视频年份（来自 state，初始值来自 URL）
-    videoDoubanId: videoDoubanId, // 传入豆瓣ID
-    searchTitle: searchTitle, // 传入搜索标题
-    setCurrentEpisodeIndex, // 传入切换集数的函数
-  });
-
-  // 🚀 数据预取 - 下一集预取（当播放进度达到80%时）
-  usePrefetchNextEpisode({
-    detail,
-    currentEpisodeIndex,
-    currentTime: currentPlayTime,
-    duration: videoDuration,
-    source: currentSource,
-    id: currentId,
-  });
-
-  // 🚀 数据预取 - 豆瓣数据预取（当视频加载时）
-  usePrefetchDoubanData({
-    videoDoubanId: videoDoubanId ? String(videoDoubanId) : null,
-    enabled: !!videoDoubanId,
-  });
-
-  // -----------------------------------------------------------------------------
-  // 工具函数（Utils）
-  // -----------------------------------------------------------------------------
+  } = {
+    isInRoom: false,
+    isOwner: false,
+    syncPaused: false,
+    pauseSync: () => {},
+    resumeSync: () => {},
+    isSameVideoAsOwner: true,
+    pendingOwnerChange: null,
+    confirmFollowOwner: () => {},
+    rejectFollowOwner: () => {},
+    showSourceSwitchDialog: false,
+    pendingOwnerState: null,
+    handleConfirmSourceSwitch: () => {},
+    handleCancelSourceSwitch: () => {},
+  };
 
   // bangumi ID检测（3-6位数字）
   const isBangumiId = (id: number): boolean => {
@@ -3702,6 +3676,10 @@ function PlayPageClient() {
         setLoading(false);
         return;
       }
+      // 切换视频时重置源重试状态，避免上一部视频的失败标记影响当前播放
+      sourceRetryStateRef.current.clear();
+      totalSessionFailuresRef.current = 0;
+      fallbackAutoRetriedRef.current = false;
       setLoading(true);
       setLoadingStage(currentSource && currentId ? 'fetching' : 'searching');
       setLoadingMessage(
@@ -7150,6 +7128,7 @@ function PlayPageClient() {
             return null;
           };
 
+          // 🎯 托底方案：所有源都不可用，但最多只自动重试一次
           findWorkingSource().then((nextSource) => {
             if (nextSource) {
               console.log(
@@ -7162,11 +7141,15 @@ function PlayPageClient() {
                 nextSource.title || '',
               );
             } else {
-              // 🎯 托底方案：所有源都不可用
+              // 🎯 托底方案：所有源都不可用，最多自动重试一次
               console.log('❌ 没有更多可用源');
-              if (totalSessionFailuresRef.current >= MAX_SESSION_FAILURES) {
+              if (
+                fallbackAutoRetriedRef.current ||
+                totalSessionFailuresRef.current >= MAX_SESSION_FAILURES
+              ) {
                 setError('当前线路播放失败，且没有其他可用线路');
               } else {
+                fallbackAutoRetriedRef.current = true;
                 const topKeys = [...sourceRetryStateRef.current.keys()].slice(
                   0,
                   3,
@@ -7760,17 +7743,6 @@ function PlayPageClient() {
 
         {/* 返回顶部悬浮按钮 - 使用独立组件优化性能 */}
         <BackToTopButton show={showBackToTop} onClick={scrollToTop} />
-
-        {/* 观影室同步暂停提示条 */}
-        <WatchRoomSyncBanner
-          show={
-            isInWatchRoom &&
-            !isWatchRoomOwner &&
-            syncPaused &&
-            !pendingOwnerChange
-          }
-          onResumeSync={resumeSync}
-        />
 
         {/* 源切换确认对话框 */}
         <SourceSwitchDialog
