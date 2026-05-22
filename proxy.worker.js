@@ -11,16 +11,10 @@ async function handleRequest(request) {
 
     if (
       url.pathname === '/api/proxy/segment' ||
-      url.pathname === '/api/proxy/key'
+      url.pathname === '/api/proxy/key' ||
+      url.pathname === '/api/proxy/stream'
     ) {
-      return handleSegmentProxy(request, url);
-    }
-
-    if (
-      url.pathname === '/api/proxy/stream' ||
-      url.pathname === '/api/proxy/m3u8'
-    ) {
-      return handleStreamProxy(request, url);
+      return handleMediaProxy(request, url);
     }
 
     if (url.pathname === '/') {
@@ -35,7 +29,7 @@ async function handleRequest(request) {
   }
 }
 
-async function handleSegmentProxy(request, url) {
+async function handleMediaProxy(request, url) {
   var targetUrl = url.searchParams.get('url');
   if (!targetUrl) return jsonResponse({ error: 'Missing url' }, 400);
 
