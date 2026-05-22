@@ -1672,19 +1672,21 @@ function PlayPageClient() {
 
   // 🎯 HEAD 预检：播放前快速探测源是否可通
   const quickProbe = useCallback(
-    async (url: string, timeout = 2000): Promise<boolean> => {
+    async (url: string, timeout = 2000): Promise<'ok' | 'slow' | 'fail'> => {
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeout);
-        await fetch(url, {
+        const resp = await fetch(url, {
           method: 'HEAD',
           mode: 'no-cors',
           signal: controller.signal,
         });
         clearTimeout(timer);
-        return true;
-      } catch {
-        return false;
+        return 'ok';
+      } catch (err: any) {
+        // 超时 = 网络慢，源本身可能可用
+        if (err?.name === 'AbortError') return 'slow';
+        return 'fail';
       }
     },
     [],
@@ -7099,6 +7101,7 @@ function PlayPageClient() {
             const candidates = filterInvalidSources(
               availableSourcesRef.current,
             );
+            let fallbackSlowSource: SearchResult | null = null;
             for (const candidate of candidates) {
               const cKey = getSourceIdentityKey(candidate.source, candidate.id);
               if (candidate.source === failSource && candidate.id === failId)
@@ -7114,18 +7117,21 @@ function PlayPageClient() {
 
               // HEAD 预检：2 秒超时
               if (cUrl) {
-                const ok = await quickProbe(cUrl, 2000);
-                if (!ok) {
+                const probe = await quickProbe(cUrl, 2000);
+                if (probe === 'fail') {
                   markSourceFailed(cKey);
-                  console.log(
-                    `⏭️ HEAD 预检不通，跳过: ${candidate.source_name}`,
-                  );
+                  console.log(`⏭️ HEAD 不通，跳过: ${candidate.source_name}`);
                   continue;
                 }
+                if (probe === 'ok') return candidate;
+                // 'slow' = 超时但可能是网络慢，先记下，继续找更快的
+                fallbackSlowSource = fallbackSlowSource || candidate;
+                continue;
               }
               return candidate;
             }
-            return null;
+            // 🎯 连接慢时，用最慢但可能能播的源
+            return fallbackSlowSource;
           };
 
           // 🎯 托底方案：所有源都不可用，但最多只自动重试一次
