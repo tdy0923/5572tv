@@ -699,6 +699,7 @@ function PlayPageClient() {
     danmuLoadingRef,
     lastDanmuLoadKeyRef,
     danmuPluginStateRef,
+    danmuLoadedAtRef,
   } = useDanmu({
     videoTitle,
     videoYear,
@@ -6731,10 +6732,11 @@ function PlayPageClient() {
               if (artPlayerRef.current?.plugins?.artplayerPluginDanmuku) {
                 const danmuPlugin =
                   artPlayerRef.current.plugins.artplayerPluginDanmuku;
-                danmuPlugin.load(); // 清空已有弹幕
+                danmuPlugin.load();
                 if (result.count > 0) {
                   console.log('向播放器插件加载弹幕数据:', result.count, '条');
                   danmuPlugin.load(result.data);
+                  if (danmuLoadedAtRef) danmuLoadedAtRef.current = Date.now();
                   artPlayerRef.current.notice.show = `已加载 ${result.count} 条弹幕`;
                 } else {
                   console.log('没有弹幕数据可加载');

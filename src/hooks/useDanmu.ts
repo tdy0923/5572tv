@@ -67,6 +67,7 @@ export interface UseDanmuReturn {
   danmuLoadingRef: React.MutableRefObject<any>;
   lastDanmuLoadKeyRef: React.MutableRefObject<string>;
   danmuPluginStateRef: React.MutableRefObject<any>;
+  danmuLoadedAtRef: React.MutableRefObject<number>;
 }
 
 // ==================== 常量 ====================
@@ -216,10 +217,13 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
   const lastDanmuLoadKeyRef = useRef<string>('');
   const danmuOperationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const danmuPluginStateRef = useRef<any>(null);
-  // 自动重试追踪
   const autoRetryDanmuScopeRef = useRef<string>('');
+  const danmuLoadedAtRef = useRef<number>(0);
   // 共享加载Promise：避免并发请求竞态，后到的请求等待先到的请求完成
-  const loadingPromiseRef = useRef<Promise<{ count: number; data: any[] }> | null>(null);
+  const loadingPromiseRef = useRef<Promise<{
+    count: number;
+    data: any[];
+  }> | null>(null);
 
   // 同步 ref
   useEffect(() => {
@@ -296,7 +300,10 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
       setError(null); // 清除之前的错误
 
       // 创建共享的加载Promise，供并发调用者等待结果
-      const loadPromise = (async (): Promise<{ count: number; data: any[] }> => {
+      const loadPromise = (async (): Promise<{
+        count: number;
+        data: any[];
+      }> => {
         try {
           // 构建请求参数
           const params = new URLSearchParams();
@@ -334,7 +341,10 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
           if (!force) {
             console.log('🔍 检查弹幕缓存:', cacheKey);
             const cached = await getDanmuCacheItem(cacheKey);
-            if (cached && now - cached.timestamp < DANMU_CACHE_DURATION * 1000) {
+            if (
+              cached &&
+              now - cached.timestamp < DANMU_CACHE_DURATION * 1000
+            ) {
               console.log('✅ 使用弹幕缓存数据，缓存键:', cacheKey);
               console.log('📊 缓存弹幕数量:', cached.data.length);
               setDanmuList(cached.data);
@@ -427,6 +437,10 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
 
     const timer = setTimeout(async () => {
       if (danmuLoadingRef.current?.loading) return;
+      if (danmuLoadedAtRef.current > 0) {
+        console.log('弹幕已在别处加载，跳过自动重试');
+        return;
+      }
       console.log('🔄 弹幕首次为空，自动重试...');
       try {
         const result = await loadExternalDanmu({ force: true });
@@ -437,6 +451,7 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
           const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
           plugin.load(); // 清空已有弹幕
           plugin.load(result.data); // 加载新弹幕
+          danmuLoadedAtRef.current = Date.now();
           artPlayerRef.current.notice.show = `已自动重试并加载 ${result.count} 条弹幕`;
         }
       } catch {
@@ -537,5 +552,6 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
     danmuLoadingRef,
     lastDanmuLoadKeyRef,
     danmuPluginStateRef,
+    danmuLoadedAtRef,
   };
 }
