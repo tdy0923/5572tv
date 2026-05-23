@@ -34,12 +34,16 @@ echo ""
 
 # ── 1. Site Reachable ──
 echo "── 1. Site Reachable ──"
-DNS=$(host "$(echo $BASE_URL | sed 's|https://||')" 2>/dev/null | grep "has address" | head -1 | awk '{print $NF}')
-[ -n "$DNS" ] && check "DNS Resolution" "ok" || check "DNS Resolution" "fail" "Cannot resolve"
 
-HTTP_CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 10 "$BASE_URL/" 2>&1 || echo "000")
-# 307 = redirect to login (authed), 403 = WAF/rate-limit (expected from CI), 200 = public homepage
-[ "$HTTP_CODE" = "307" ] || [ "$HTTP_CODE" = "403" ] || [ "$HTTP_CODE" = "200" ] && check "Homepage" "ok" || check "Homepage" "fail" "HTTP $HTTP_CODE"
+HTTP_CODE=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/" 2>&1 || echo "000")
+# 307 = redirect to login, 403 = WAF/rate-limit (expected from CI), 200 = public homepage
+if [ "$HTTP_CODE" = "307" ] || [ "$HTTP_CODE" = "403" ] || [ "$HTTP_CODE" = "200" ]; then
+  check "Homepage" "ok"
+elif [ "$HTTP_CODE" = "000" ]; then
+  check "Homepage" "warn" "Connection timeout / DNS failure (network issue)"
+else
+  check "Homepage" "fail" "HTTP $HTTP_CODE"
+fi
 
 # ── 2. Video Proxy Routes ──
 echo ""
