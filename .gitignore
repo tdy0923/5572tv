@@ -57,3 +57,6 @@ package-lock.json
 .husky/
 .kilo/
 .vscode/
+commitlint.config.js
+jest.config.js
+jest.setup.js
