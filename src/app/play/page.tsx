@@ -3371,21 +3371,6 @@ function PlayPageClient() {
           return yearMatch && typeMatch;
         };
 
-        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称
-        const ADULT_KEYWORDS =
-          /^(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
-        const ADULT_SUBSTRINGS =
-          /伦理片|伦理电影|福利片|福利视频|里番动漫|门事件|日本无码|国产传媒|淫|色片|色图|情色片/i;
-        const isAdultContent = (result: SearchResult): boolean => {
-          const checkField = (val: string) =>
-            ADULT_KEYWORDS.test(val) || ADULT_SUBSTRINGS.test(val);
-          if (checkField(result.title)) return true;
-          if (result.class && checkField(result.class)) return true;
-          if (result.type_name && checkField(result.type_name)) return true;
-          if (result.source_name && checkField(result.source_name)) return true;
-          return false;
-        };
-
         // 依次尝试每个搜索变体，采用早期退出策略
         for (const variant of searchVariants) {
           console.log('尝试搜索变体:', variant);
@@ -3412,7 +3397,7 @@ function PlayPageClient() {
 
             // 第一优先级：精确匹配（标题完全相等，或去除数字/标点后相等）
             const exactResults = data.results.filter((result: SearchResult) => {
-              if (isAdultContent(result)) return false;
+              // 服务端已过滤
               if (
                 videoDoubanIdRef.current &&
                 videoDoubanIdRef.current > 0 &&
@@ -3434,7 +3419,7 @@ function PlayPageClient() {
             let filteredResults = exactResults;
             if (exactResults.length === 0) {
               filteredResults = data.results.filter((result: SearchResult) => {
-                if (isAdultContent(result)) return false;
+                // 服务端已过滤
                 if (
                   videoDoubanIdRef.current &&
                   videoDoubanIdRef.current > 0 &&
@@ -3518,7 +3503,7 @@ function PlayPageClient() {
             console.log('英文关键词:', queryWords);
 
             relevantMatches = allCandidates.filter((result) => {
-              if (isAdultContent(result)) return false;
+              // 服务端已过滤
               const title = result.title.toLowerCase();
               const titleWords = title
                 .replace(/[^\w\s]/g, ' ')
@@ -3557,7 +3542,7 @@ function PlayPageClient() {
 
             // 先尝试精确匹配
             const exactChinese = allCandidates.filter((result) => {
-              if (isAdultContent(result)) return false;
+              // 服务端已过滤
               const normalizedTitle = result.title
                 .toLowerCase()
                 .replace(/[^\w\u4e00-\u9fff]/g, '');
@@ -3574,7 +3559,7 @@ function PlayPageClient() {
             } else {
               // 精确无结果，降级到包含匹配
               relevantMatches = allCandidates.filter((result) => {
-                if (isAdultContent(result)) return false;
+                // 服务端已过滤
                 const title = result.title.toLowerCase();
                 const normalizedTitle = title.replace(
                   /[^\w\u4e00-\u9fff]/g,
@@ -3630,7 +3615,7 @@ function PlayPageClient() {
               ).values(),
             )
               .filter((r: SearchResult) => {
-                if (isAdultContent(r)) return false;
+                // 服务端已过滤
                 // 🛡️ 如果有豆瓣ID，优先校验豆瓣ID一致性，防止跳转到18+等不相关内容
                 if (
                   videoDoubanIdRef.current &&
