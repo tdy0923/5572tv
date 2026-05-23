@@ -21,6 +21,6 @@ jobs:
           node-version: 22
 
       - name: Deploy to Cloudflare Workers
-        run: npx --yes wrangler@3 deploy --env production
+        run: npx --yes wrangler@3 deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
