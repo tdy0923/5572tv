@@ -141,7 +141,10 @@ export default function CategoryConfig({
   );
 
   useEffect(() => {
-    if ((config as any)?.CustomCategories) {
+    if (
+      (config as any)?.CustomCategories &&
+      Array.isArray((config as any).CustomCategories)
+    ) {
       setCategories((config as any).CustomCategories);
     }
   }, [config]);

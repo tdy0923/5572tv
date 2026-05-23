@@ -39,7 +39,8 @@ export default function LiveSourceConfig({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (config?.LiveConfig) setLiveSources(config.LiveConfig);
+    if (config?.LiveConfig && Array.isArray(config.LiveConfig))
+      setLiveSources(config.LiveConfig);
   }, [config]);
 
   const handleSaveAll = async () => {

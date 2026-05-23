@@ -73,7 +73,8 @@ export default function VideoSourceConfig({
   );
 
   useEffect(() => {
-    if (config?.SourceConfig) setSources(config.SourceConfig as DataSource[]);
+    if (config?.SourceConfig && Array.isArray(config.SourceConfig))
+      setSources(config.SourceConfig as DataSource[]);
   }, [config]);
 
   const handleSaveAll = async () => {
