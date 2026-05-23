@@ -45,24 +45,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 401 });
   }
 
-  // 检查用户是否允许成人内容（VIP 用户不受限）
-  const userInfo = await db.getUserInfoV2(authInfo.username).catch(() => null);
-  const showAdultContent = userInfo?.showAdultContent === true;
-
-  const ADULT_PATTERNS =
-    /^(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
-  const ADULT_SUBSTRINGS =
-    /伦理片|伦理电影|福利片|福利视频|里番动漫|门事件|日本无码|国产传媒|淫|色片|色图|情色片/i;
-  const isAdultResult = (r: any) => {
-    if (showAdultContent) return false;
-    const fields = [r.title, r.class, r.type_name, r.source_name].filter(
-      Boolean,
-    );
-    return fields.some(
-      (f: string) => ADULT_PATTERNS.test(f) || ADULT_SUBSTRINGS.test(f),
-    );
-  };
-
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
 
@@ -182,13 +164,10 @@ export async function GET(request: NextRequest) {
     if (aggregated.length > 0) {
       let earlyResults = aggregated;
       if (!config.SiteConfig.DisableYellowFilter) {
-        earlyResults = aggregated.filter(
-          (r: any) =>
-            !isAdultResult(r) &&
-            !yellowWords.some((word: string) =>
-              (r.type_name || '').includes(word),
-            ),
-        );
+        earlyResults = aggregated.filter((r: any) => {
+          const typeName = r.type_name || '';
+          return !yellowWords.some((word: string) => typeName.includes(word));
+        });
       }
       // 后台继续收集其余源并写入缓存
       Promise.allSettled(searchPromises).then((all) => {
@@ -220,13 +199,10 @@ export async function GET(request: NextRequest) {
       .map((result) => (result as PromiseFulfilledResult<any>).value);
     let flattenedResults = successResults.flat();
     if (!config.SiteConfig.DisableYellowFilter) {
-      flattenedResults = flattenedResults.filter(
-        (result) =>
-          !isAdultResult(result) &&
-          !yellowWords.some((word: string) =>
-            (result.type_name || '').includes(word),
-          ),
-      );
+      flattenedResults = flattenedResults.filter((result) => {
+        const typeName = result.type_name || '';
+        return !yellowWords.some((word: string) => typeName.includes(word));
+      });
     }
     if (flattenedResults.length === 0) {
       // no cache if empty
