@@ -1,0 +1,25 @@
+name: Health Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Run Health Check
+        run: bash scripts/health-check.sh https://www.5572.net
+
+      - name: Notify on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.summary.addHeading('Health Check Failed', 2);
+            core.summary.addRaw('Some health checks failed. Check the run logs for details.');
+            core.summary.write();

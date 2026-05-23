@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
+const UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36';
+
+async function searchViaWeb(query: string) {
+  const url = `https://www.douban.com/search?q=${encodeURIComponent(query)}&cat=1002`;
+  const resp = await fetch(url, {
+    headers: { 'User-Agent': UA, Accept: 'text/html' },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!resp.ok) return [];
+  const html = await resp.text();
+
+  const results: {
+    id: number;
+    title: string;
+    year: string;
+    type: string;
+    cover: string;
+  }[] = [];
+  const subjectRegex =
+    /<a\s+href="https:\/\/movie\.douban\.com\/subject\/(\d+)\/[^"]*"\s*[^>]*>\s*(.*?)\s*<\/a>/gi;
+  const yearRegex = /(\d{4})/;
+
+  let match;
+  while ((match = subjectRegex.exec(html)) !== null && results.length < 3) {
+    const id = parseInt(match[1], 10);
+    const titleRaw = match[2].replace(/<[^>]+>/g, '').trim();
+    const title = titleRaw.replace(/\(.*?\)/g, '').trim();
+    const yearMatch = titleRaw.match(yearRegex);
+    results.push({
+      id,
+      title: title || titleRaw,
+      year: yearMatch ? yearMatch[1] : '',
+      type: 'movie',
+      cover: '',
+    });
+  }
+  return results;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
@@ -11,34 +51,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = `https://m.douban.com/rexxar/api/v2/search?q=${encodeURIComponent(query)}&start=0&count=5`;
-
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36',
-        Referer: 'https://m.douban.com/',
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Douban API error' }, { status: 502 });
-    }
-
-    const data = await response.json();
-    const items = (data?.items || []).slice(0, 3).map((item: any) => ({
-      id: item?.target?.id ? parseInt(item.target.id, 10) : 0,
-      title: item?.target?.title || '',
-      year: item?.target?.year || '',
-      type: item?.target?.type || item?.target?.subtype || '',
-      cover: item?.target?.cover_url || item?.target?.pic?.normal || '',
-    }));
-
-    // 过滤出有效结果
-    const valid = items.filter((i: any) => i.id > 0 && i.title);
-
-    return NextResponse.json({ results: valid });
+    const results = await searchViaWeb(query);
+    return NextResponse.json({ results });
   } catch (err) {
     console.error('豆瓣搜索失败:', err);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
