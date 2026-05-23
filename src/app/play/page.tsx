@@ -3371,16 +3371,18 @@ function PlayPageClient() {
           return yearMatch && typeMatch;
         };
 
-        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称（去除了^锚点，支持中间匹配）
+        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称
         const ADULT_KEYWORDS =
-          /(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
+          /^(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
+        const ADULT_SUBSTRINGS =
+          /伦理片|伦理电影|福利片|福利视频|里番动漫|门事件|日本无码|国产传媒|淫|色片|色图|情色片/i;
         const isAdultContent = (result: SearchResult): boolean => {
-          if (ADULT_KEYWORDS.test(result.title)) return true;
-          if (result.class && ADULT_KEYWORDS.test(result.class)) return true;
-          if (result.type_name && ADULT_KEYWORDS.test(result.type_name))
-            return true;
-          if (result.source_name && ADULT_KEYWORDS.test(result.source_name))
-            return true;
+          const checkField = (val: string) =>
+            ADULT_KEYWORDS.test(val) || ADULT_SUBSTRINGS.test(val);
+          if (checkField(result.title)) return true;
+          if (result.class && checkField(result.class)) return true;
+          if (result.type_name && checkField(result.type_name)) return true;
+          if (result.source_name && checkField(result.source_name)) return true;
           return false;
         };
 
