@@ -18,15 +18,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
-
-      - name: Install pnpm
-        run: npm install -g pnpm && pnpm --version
-
-      - name: Install wrangler
-        run: pnpm add -g wrangler@3
+          node-version: 22
 
       - name: Deploy to Cloudflare Workers
-        run: npx wrangler@3 deploy --env production
+        run: npx --yes wrangler@3 deploy --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
