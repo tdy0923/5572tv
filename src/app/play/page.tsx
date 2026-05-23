@@ -3667,6 +3667,41 @@ function PlayPageClient() {
         }
 
         console.log(`智能搜索完成，最终返回 ${finalResults.length} 个结果`);
+
+        // 🎬 无搜索结果但豆瓣ID存在时，尝试获取预告片作为兜底
+        if (finalResults.length === 0 && videoDoubanIdRef.current > 0) {
+          try {
+            const trailerResp = await fetch(
+              `/api/douban/refresh-trailer?id=${videoDoubanIdRef.current}`,
+              { signal: AbortSignal.timeout(10000) },
+            );
+            if (trailerResp.ok) {
+              const trailerData = await trailerResp.json();
+              const trailerUrl =
+                trailerData.url || trailerData.trailerUrl || '';
+              if (trailerUrl) {
+                const proxiedTrailer = `/api/video-proxy?url=${encodeURIComponent(trailerUrl)}`;
+                finalResults.push({
+                  source: 'douban_trailer' as any,
+                  id: String(videoDoubanIdRef.current),
+                  source_name: '豆瓣预告片',
+                  title: effectiveQuery,
+                  year: videoYearRef.current || '',
+                  episodes: [proxiedTrailer],
+                  type_name: searchType || 'movie',
+                  douban_id: videoDoubanIdRef.current,
+                  class: '',
+                  poster: '',
+                  episodes_titles: [],
+                } as SearchResult);
+                console.log('🎬 使用豆瓣预告片作为播放源:', proxiedTrailer);
+              }
+            }
+          } catch (trailerErr) {
+            console.warn('获取豆瓣预告片失败:', trailerErr);
+          }
+        }
+
         // 按权重排序后设置可用源列表
         const sortedResults = await setAvailableSourcesWithWeight(finalResults);
         return sortedResults;
