@@ -3037,13 +3037,18 @@ function PlayPageClient() {
 
         // 创建并执行自定义函数
 
+        // 创建安全沙箱执行自定义去广告代码（限制大小 50KB，超时 5s）
+        const MAX_CODE_SIZE = 51200;
+        if (jsCode.length > MAX_CODE_SIZE) {
+          console.warn('自定义去广告代码超过 50KB 限制，跳过');
+          return null;
+        }
         const customFunction = new Function(
           'type',
           'm3u8Content',
           jsCode + '\nreturn filterAdsFromM3U8(type, m3u8Content);',
         );
         const result = customFunction(currentSourceRef.current, m3u8Content);
-        console.debug('✅ 使用自定义去广告代码');
         return result;
       } catch (err) {
         console.error('执行自定义去广告代码失败,降级使用默认规则:', err);
@@ -3162,7 +3167,6 @@ function PlayPageClient() {
       // 🔑 立即重置 SkipController 触发标志，允许新集数自动跳过片头片尾
       isSkipControllerTriggeredRef.current = false;
       videoEndedHandledRef.current = false;
-      console.debug('🔄 开始切换集数，重置自动跳过标志');
     }
 
     updateVideoUrl(detail, currentEpisodeIndex);
@@ -3193,7 +3197,6 @@ function PlayPageClient() {
       const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
       plugin.reset(); // 立即回收所有正在显示的弹幕DOM
       plugin.load(); // 不传参数，完全清空弹幕队列
-      console.debug('🧹 已清空旧弹幕数据');
 
       // 保存当前弹幕插件状态
       danmuPluginStateRef.current = {
@@ -3212,7 +3215,6 @@ function PlayPageClient() {
           }
 
           const result = await loadExternalDanmu(); // 这里会检查开关状态，返回 { count, data }
-          console.debug('🔄 集数变化后外部弹幕加载结果:', result.count, '条');
 
           // 再次确认插件状态
           if (artPlayerRef.current?.plugins?.artplayerPluginDanmuku) {
@@ -4178,15 +4180,12 @@ function PlayPageClient() {
           if (typeof plugin.load === 'function') {
             // 关键：load()不传参数会触发清空逻辑（danmuku === undefined）
             plugin.load();
-            console.debug('✅ 已完全清空弹幕队列');
           }
 
           // 然后隐藏弹幕层
           if (typeof plugin.hide === 'function') {
             plugin.hide();
           }
-
-          console.debug('🧹 换源时已清空旧弹幕数据');
         } catch (error) {
           console.warn('清空弹幕时出错，但继续换源:', error);
         }
@@ -4311,8 +4310,6 @@ function PlayPageClient() {
           artPlayerRef.current?.plugins?.artplayerPluginDanmuku &&
           externalDanmuEnabledRef.current
         ) {
-          console.debug('🔄 换源完成，开始优化弹幕加载...');
-
           // 确保状态完全重置
           lastDanmuLoadKeyRef.current = '';
           danmuLoadingRef.current = false;
@@ -4331,7 +4328,6 @@ function PlayPageClient() {
               // 🚀 确保在加载新弹幕前完全清空旧弹幕
               plugin.reset(); // 立即回收所有正在显示的弹幕DOM
               plugin.load(); // 不传参数，完全清空队列
-              console.debug('🧹 换源后已清空旧弹幕，准备加载新弹幕');
 
               // 🚀 优化大量弹幕的加载：分批处理，减少阻塞
               if (result.count > 1000) {
@@ -4892,8 +4888,6 @@ function PlayPageClient() {
               type: contentType,
             },
           });
-
-          console.debug('✅ 收藏数据更新成功');
         }
       } catch (err) {
         console.error('自动更新收藏数据失败:', err);
@@ -5137,13 +5131,11 @@ function PlayPageClient() {
               if (switchPromiseRef.current === switchPromise) {
                 artPlayerRef.current.title = `${videoTitle} - 第${currentEpisodeIndex + 1}集`;
                 artPlayerRef.current.poster = videoCover;
-                console.debug('✅ 源切换完成');
 
                 // 🔥 重置集数切换标识
                 if (isEpisodeChange) {
                   // 🔑 关键修复：切换集数后显式重置播放时间为 0，确保片头自动跳过能触发
                   artPlayerRef.current.currentTime = 0;
-                  console.debug('🎯 集数切换完成，重置播放时间为 0');
                   isEpisodeChangingRef.current = false;
                 }
               }
@@ -6036,9 +6028,7 @@ function PlayPageClient() {
                       if (!document.pictureInPictureElement) {
                         video.requestPictureInPicture();
                       }
-                    } catch (err) {
-                      console.debug('PiP failed:', err);
-                    }
+                    } catch (err) {}
                   }
                   return;
                 }
@@ -6553,8 +6543,6 @@ function PlayPageClient() {
                       panel.style.visibility = '';
                     }
                   });
-
-                  console.debug('🔄 弹幕菜单hover状态已重置');
                 } catch (error) {
                   console.warn('弹幕状态重置失败:', error);
                 }
@@ -7130,7 +7118,6 @@ function PlayPageClient() {
           // 🔥 重置集数切换标识（播放器成功创建后）
           if (isEpisodeChangingRef.current) {
             isEpisodeChangingRef.current = false;
-            console.debug('🎯 播放器创建完成，重置集数切换标识');
           }
         });
 
