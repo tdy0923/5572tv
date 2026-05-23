@@ -1,6 +1,7 @@
 name = "5572tv-proxy"
 main = "proxy.worker.js"
 compatibility_date = "2026-01-01"
+account_id = "0934ef7fb31492896f3871b281726e9d"
 
 [site]
 bucket = "./public"
