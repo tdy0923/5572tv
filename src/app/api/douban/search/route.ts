@@ -21,19 +21,26 @@ async function searchViaWeb(query: string) {
     type: string;
     cover: string;
   }[] = [];
-  const subjectRegex =
-    /<a\s+href="https:\/\/movie\.douban\.com\/subject\/(\d+)\/[^"]*"\s*[^>]*>\s*(.*?)\s*<\/a>/gi;
-  const yearRegex = /(\d{4})/;
 
-  let match;
-  while ((match = subjectRegex.exec(html)) !== null && results.length < 3) {
-    const id = parseInt(match[1], 10);
-    const titleRaw = match[2].replace(/<[^>]+>/g, '').trim();
-    const title = titleRaw.replace(/\(.*?\)/g, '').trim();
+  const yearRegex = /(\d{4})/;
+  const blocks = html.split('<div class="result">');
+
+  for (const block of blocks) {
+    if (results.length >= 3) break;
+    const sidMatch = block.match(/sid:\s*(\d+)/);
+    if (!sidMatch) continue;
+    const id = parseInt(sidMatch[1], 10);
+    if (!id || isNaN(id)) continue;
+    const h3Match = block.match(/<h3>[\s\S]*?<a[^>]*>([\s\S]*?)<\/a>/);
+    const titleRaw = h3Match ? h3Match[1].replace(/<[^>]+>/g, '').trim() : '';
+    const title = titleRaw
+      .replace(/[（(].*?[）)]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
     const yearMatch = titleRaw.match(yearRegex);
     results.push({
       id,
-      title: title || titleRaw,
+      title: title || `douban-${id}`,
       year: yearMatch ? yearMatch[1] : '',
       type: 'movie',
       cover: '',
