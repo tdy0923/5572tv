@@ -3703,7 +3703,11 @@ function PlayPageClient() {
               if (trailerResp.ok) {
                 const trailerData = await trailerResp.json();
                 const trailerUrl =
-                  trailerData.url || trailerData.trailerUrl || '';
+                  trailerData?.data?.trailerUrl ||
+                  trailerData?.data?.url ||
+                  trailerData?.url ||
+                  trailerData?.trailerUrl ||
+                  '';
                 if (trailerUrl) {
                   const proxiedTrailer = `/api/video-proxy?url=${encodeURIComponent(trailerUrl)}`;
                   finalResults.push({
