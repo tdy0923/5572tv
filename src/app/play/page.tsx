@@ -3371,9 +3371,9 @@ function PlayPageClient() {
           return yearMatch && typeMatch;
         };
 
-        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称
+        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称（去除了^锚点，支持中间匹配）
         const ADULT_KEYWORDS =
-          /^(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
+          /(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
         const isAdultContent = (result: SearchResult): boolean => {
           if (ADULT_KEYWORDS.test(result.title)) return true;
           if (result.class && ADULT_KEYWORDS.test(result.class)) return true;
