@@ -11,13 +11,15 @@ export default function ConfigFileContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/config')
-      .then((r) => r.json())
-      .then((data) => {
-        setConfig(data.config || null);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    requestAnimationFrame(() => {
+      fetch('/api/admin/config')
+        .then((r) => r.json())
+        .then((data) => {
+          setConfig(data.config || null);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    });
   }, []);
 
   if (loading) return <div className='text-gray-500'>加载中...</div>;
