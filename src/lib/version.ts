@@ -1,4 +1,4 @@
-const CURRENT_VERSION = '1.2.3';
+const CURRENT_VERSION = '1.3.0';
 
 // 导出当前版本号供其他地方使用
 export { CURRENT_VERSION };
