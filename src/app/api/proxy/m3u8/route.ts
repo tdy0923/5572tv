@@ -283,9 +283,10 @@ function rewriteM3U8Content(
   allowCORS: boolean,
   sourceKey: string | null,
 ) {
-  // 从 referer 头提取协议信息
+  // 从 referer 头或 request URL 提取协议信息
   const referer = req.headers.get('referer');
-  let protocol = 'http';
+  const requestUrl = new URL(req.url);
+  let protocol = requestUrl.protocol.replace(':', '') || 'https';
   if (referer) {
     try {
       const refererUrl = new URL(referer);
