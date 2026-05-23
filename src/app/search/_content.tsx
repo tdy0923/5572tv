@@ -264,10 +264,11 @@ function SearchPageClient() {
       params.doubanId && params.doubanId > 0
         ? `&douban_id=${params.doubanId}`
         : '';
+    const reload = `&_reload=${Date.now()}`;
     if (params.isAggregate || !params.source || !params.id) {
-      return `/play?title=${encodeURIComponent(params.title.trim())}${yearParam}${typeParam}${preferParam}${queryParam}${doubanParam}`;
+      return `/play?title=${encodeURIComponent(params.title.trim())}${yearParam}${typeParam}${preferParam}${queryParam}${doubanParam}${reload}`;
     }
-    return `/play?source=${params.source}&id=${params.id}&title=${encodeURIComponent(params.title.trim())}${yearParam}${preferParam}${queryParam}${typeParam}${doubanParam}`;
+    return `/play?source=${params.source}&id=${params.id}&title=${encodeURIComponent(params.title.trim())}${yearParam}${preferParam}${queryParam}${typeParam}${doubanParam}${reload}`;
   };
 
   const renderTag = (label: string, className: string) => (

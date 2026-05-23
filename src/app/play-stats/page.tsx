@@ -340,7 +340,9 @@ const PlayStatsPage: React.FC = () => {
       stype: record.total_episodes > 1 ? 'tv' : 'movie',
     });
 
-    router.push(`/play?${params.toString()}`);
+    requestAnimationFrame(() => {
+      router.push(`/play?${params.toString()}&_reload=${Date.now()}`);
+    });
   };
 
   // 检查是否支持播放统计
