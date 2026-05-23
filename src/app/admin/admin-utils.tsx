@@ -165,7 +165,7 @@ export const buttonStyles = {
 interface AlertModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: 'success' | 'error' | 'warning';
+  type: 'success' | 'error' | 'warning' | 'info';
   title: string;
   message?: string;
   timer?: number;

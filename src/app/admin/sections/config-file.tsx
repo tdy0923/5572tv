@@ -13,9 +13,13 @@ import {
 
 interface ConfigFileProps {
   config: AdminConfig | null;
+  refreshConfig?: () => Promise<void>;
 }
 
-export default function ConfigFileComponent({ config }: ConfigFileProps) {
+export default function ConfigFileComponent({
+  config,
+  refreshConfig: _refreshConfig,
+}: ConfigFileProps) {
   const { showAlert, hideAlert } = useAlertModal();
   const { withLoading } = useLoadingState();
   const [showImportModal, setShowImportModal] = useState(false);
