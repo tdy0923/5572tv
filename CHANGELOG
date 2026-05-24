@@ -11,7 +11,7 @@
 ### Fixed
 
 - 🐛 海报点击跳转播放页永远播放同一影片：`_reload` 时间戳强制刷新
-- 🐛 M3U8 `#EXT-X-STREAM-INF` 行内 `URI="..."` 属性未重写导致 404
+- 🐛 M3U8 EXT-X-STREAM-INF 行内 URI 属性未重写导致 404
 - 🐛 源循环重试死锁：全部源被标记失败后不再重试
 - 🐛 quickProbe `mode: 'no-cors'` 误判 403 为可用
 - 🐛 SW 下载功能 key/路径/data 不匹配
