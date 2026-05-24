@@ -24,16 +24,16 @@
 
 <div align="center">
 
-![Next.js](https://img.shields.io/badge/Next.js-16.1.0-000?logo=nextdotjs)
-![React](https://img.shields.io/badge/React-19.0.0-61dafb?logo=react)
+![Next.js](https://img.shields.io/badge/Next.js-16.2-000?logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19.2-61dafb?logo=react)
 ![Cloudflare Workers](https://img.shields.io/badge/Workers-Edge-f38020?logo=cloudflare)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178c6?logo=typescript)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.18-38bdf8?logo=tailwindcss)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.3-38bdf8?logo=tailwindcss)
 ![ArtPlayer](https://img.shields.io/badge/ArtPlayer-5.4.0-ff6b6b)
-![HLS.js](https://img.shields.io/badge/HLS.js-1.6.15-ec407a)
+![HLS.js](https://img.shields.io/badge/HLS.js-1.6.16-ec407a)
 ![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange)
 ![Docker Ready](https://img.shields.io/badge/Docker-ready-blue?logo=docker)
-![Version](https://img.shields.io/badge/Version-1.2.3-orange)
+![Version](https://img.shields.io/badge/Version-1.3.0-orange)
 ![Sources](https://img.shields.io/badge/Sources-91-green)
 
 </div>
@@ -46,9 +46,8 @@ This repository is maintained for the live operation of `www.5572.net` and its o
 
 ### Current Release Status
 
-- Current independent version: `v1.2.2`
-- Release position: mobile/tablet comprehensive upgrade version of `5572tv / 5572TV`
-- Highlights of this release: standalone repository transition, non-commercial usage notice, deployment pipeline migration, full auth-flow verification, invalid play-source handling, and cache / Cloudflare acceleration improvements
+- Current version: `v1.3.0`
+- Release highlights: admin panel componentization, Cloudflare Worker edge proxy, poster playback fix, douban trailer fallback, M3U8 rewrite fix, health check CI, 40+ dependency upgrades
 
 ### Repository Positioning
 
@@ -174,9 +173,9 @@ pnpm dev
 
 ## 🔧 Tech Stack
 
-- **Frontend**: Next.js 16.1.0 + React 19.0.0
-- **Language**: TypeScript 5.8.3
-- **Styling**: TailwindCSS 4.1.18
+- **Frontend**: Next.js 16.2 + React 19.2
+- **Language**: TypeScript 5.9
+- **Styling**: TailwindCSS 4.3
 - **Video Player**: ArtPlayer 5.4.0 + HLS.js 1.6.15
 - **State Management**: TanStack Query 5.91.0
 - **Database**: Upstash Redis + Kvrocks

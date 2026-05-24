@@ -17,7 +17,6 @@ export const changelog: ChangelogEntry[] = [
       '✨ 即将上映影片搜索结果为空时自动搜索豆瓣并播放预告片',
       '✨ 新增 `/api/douban/search` 豆瓣搜索接口（网页抓取）',
       '✨ 健康检查脚本 `scripts/health-check.sh` + CI 自动巡检',
-      '✨ `.kilo/` 命令体系：`/health-check` `/diagnose-playback`',
       '✨ CF Worker 部署 workflow + wrangler.toml',
     ],
     changed: [

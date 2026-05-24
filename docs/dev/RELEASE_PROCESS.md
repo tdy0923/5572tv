@@ -71,11 +71,20 @@ grep -E "^$NEW_VERSION$|$NEW_VERSION" VERSION.txt package.json src/lib/version.t
 - 分类标题：`### Added` / `### Fixed` / `### Changed`
 - 条目以 `- ` 开头
 - 保留 CHANGELOG 文件**不要** `.md` 后缀（程序内读取路径）
+- ⚠️ **避免在条目中使用反引号包裹含双引号的内容**（如 `` `URI="..."` ``），会生成非法 TypeScript
+
+**重要：** 更新 CHANGELOG 后必须重新生成 changelog.ts：
+
+```bash
+node scripts/convert-changelog.js
+```
+
+此脚本将 `CHANGELOG` 转换为 `src/lib/changelog.ts`（应用内版本日志显示的数据源）。
 
 ### 4. 提交
 
 ```bash
-git add VERSION.txt package.json src/lib/version.ts CHANGELOG
+git add VERSION.txt package.json src/lib/version.ts CHANGELOG src/lib/changelog.ts
 git commit -m "chore: bump v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 git push && git push --tags
