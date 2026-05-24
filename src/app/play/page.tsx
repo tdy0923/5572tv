@@ -3716,17 +3716,18 @@ function PlayPageClient() {
                   '';
                 const trailerType = trailerData?.data?.type || 'douban';
                 if (trailerUrl) {
-                  const isYouTube = trailerUrl.includes('youtube.com/embed');
-                  const proxiedTrailer = isYouTube
+                  const isEmbed =
+                    trailerUrl.includes('bilibili.com/player') ||
+                    trailerUrl.includes('youtube.com/embed');
+                  const proxiedTrailer = isEmbed
                     ? trailerUrl
                     : `/api/video-proxy?url=${encodeURIComponent(trailerUrl)}`;
+                  const trailerLabel =
+                    trailerType === 'bilibili' ? 'B站预告片' : '豆瓣预告片';
                   finalResults.push({
                     source: 'douban_trailer' as any,
                     id: String(videoDoubanIdRef.current),
-                    source_name:
-                      trailerType === 'youtube'
-                        ? 'YouTube 预告片'
-                        : '豆瓣预告片',
+                    source_name: trailerLabel,
                     title: effectiveQuery,
                     year: videoYearRef.current || '',
                     episodes: [proxiedTrailer],
@@ -3734,16 +3735,9 @@ function PlayPageClient() {
                     douban_id: videoDoubanIdRef.current,
                     class: '',
                     poster: '',
-                    episodes_titles: [
-                      trailerType === 'youtube'
-                        ? 'YouTube 预告片'
-                        : '豆瓣预告片',
-                    ],
+                    episodes_titles: [trailerLabel],
                   } as SearchResult);
-                  console.log(
-                    `🎬 使用${trailerType === 'youtube' ? 'YouTube' : '豆瓣'}预告片:`,
-                    proxiedTrailer,
-                  );
+                  console.log(`🎬 使用${trailerLabel}:`, proxiedTrailer);
                 } else {
                   console.log('⚠️ 豆瓣已找到影片但无预告片资源');
                 }
@@ -7073,6 +7067,23 @@ function PlayPageClient() {
                     const handleFirstUserInteraction = async () => {
                       if (hasHandledFirstInteraction) return;
                       hasHandledFirstInteraction = true;
+
+                      // 嵌入式预告片（Bilibili / YouTube）：iframe 播放
+                      if (
+                        videoUrl.includes('bilibili.com/player') ||
+                        videoUrl.includes('youtube.com/embed')
+                      ) {
+                        artRef.current.innerHTML = '';
+                        const iframe = document.createElement('iframe');
+                        iframe.src = videoUrl;
+                        iframe.allow =
+                          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+                        iframe.allowFullscreen = true;
+                        iframe.style.cssText =
+                          'width:100%;height:100%;border:none;border-radius:12px';
+                        artRef.current.appendChild(iframe);
+                        return;
+                      }
 
                       try {
                         await artPlayerRef.current.play();

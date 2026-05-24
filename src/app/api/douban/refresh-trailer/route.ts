@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 import { recordRequest } from '@/lib/performance-monitor';
-import { fetchTMDBTrailer } from '@/lib/tmdb.client';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 const TRAILER_FAILURE_CACHE_TTL = 10 * 60;
@@ -151,7 +150,6 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
-  const tmdbId = parseInt(searchParams.get('tmdb_id') || '0', 10);
   const title = searchParams.get('title') || '';
   const mediaType = (searchParams.get('type') || 'movie') as 'movie' | 'tv';
 
@@ -206,43 +204,35 @@ export async function GET(request: Request) {
 
     const trailerUrl = await fetchTrailerWithRetry(id);
 
-    // Douban 无预告片时，尝试 TMDB YouTube 预告片（国内可用）
-    if (!trailerUrl) {
-      let resolvedTmdbId = tmdbId;
-      if (!resolvedTmdbId && title) {
-        try {
-          const { searchTMDBMovie, searchTMDBTV } =
-            await import('@/lib/tmdb.client');
-          const searchFn = mediaType === 'tv' ? searchTMDBTV : searchTMDBMovie;
-          const searchResult = await searchFn(title);
-          if (searchResult?.id) resolvedTmdbId = searchResult.id;
-        } catch {
-          /* ignore */
-        }
-      }
-      if (resolvedTmdbId > 0) {
-        try {
-          const tmdbTrailer = await fetchTMDBTrailer(resolvedTmdbId, mediaType);
-          if (tmdbTrailer) {
+    // Douban 无预告片时，尝试 Bilibili 预告片（国内可用）
+    if (!trailerUrl && title) {
+      try {
+        const biliResp = await fetch(
+          `${new URL(request.url).origin}/api/bilibili/trailer?q=${encodeURIComponent(title)}&type=${mediaType}`,
+          { signal: AbortSignal.timeout(10000) },
+        );
+        if (biliResp.ok) {
+          const biliData = await biliResp.json();
+          if (biliData?.data?.embedUrl) {
             await clearTrailerRefreshFailure(id);
-            const tmdbResponse = {
+            const biliResponse = {
               code: 200,
               message: '获取成功',
               data: {
-                trailerUrl: tmdbTrailer.embedUrl,
-                type: tmdbTrailer.type,
-                title: tmdbTrailer.title,
-                source: 'tmdb',
+                trailerUrl: biliData.data.embedUrl,
+                type: 'bilibili',
+                title: biliData.data.title || title,
+                source: 'bilibili',
               },
             };
-            await cacheTrailerRefreshSuccess(id, tmdbResponse);
-            return NextResponse.json(tmdbResponse, {
+            await cacheTrailerRefreshSuccess(id, biliResponse);
+            return NextResponse.json(biliResponse, {
               headers: { 'Cache-Control': 'no-store' },
             });
           }
-        } catch {
-          /* ignore */
         }
+      } catch {
+        /* ignore */
       }
     }
 
