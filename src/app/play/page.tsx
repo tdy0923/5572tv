@@ -3703,8 +3703,8 @@ function PlayPageClient() {
           if (videoDoubanIdRef.current > 0) {
             try {
               const trailerResp = await fetch(
-                `/api/douban/refresh-trailer?id=${videoDoubanIdRef.current}`,
-                { signal: AbortSignal.timeout(10000) },
+                `/api/douban/refresh-trailer?id=${videoDoubanIdRef.current}&title=${encodeURIComponent(videoTitleRef.current || effectiveQuery)}&type=${searchType || 'movie'}`,
+                { signal: AbortSignal.timeout(15000) },
               );
               if (trailerResp.ok) {
                 const trailerData = await trailerResp.json();
@@ -3714,12 +3714,19 @@ function PlayPageClient() {
                   trailerData?.url ||
                   trailerData?.trailerUrl ||
                   '';
+                const trailerType = trailerData?.data?.type || 'douban';
                 if (trailerUrl) {
-                  const proxiedTrailer = `/api/video-proxy?url=${encodeURIComponent(trailerUrl)}`;
+                  const isYouTube = trailerUrl.includes('youtube.com/embed');
+                  const proxiedTrailer = isYouTube
+                    ? trailerUrl
+                    : `/api/video-proxy?url=${encodeURIComponent(trailerUrl)}`;
                   finalResults.push({
                     source: 'douban_trailer' as any,
                     id: String(videoDoubanIdRef.current),
-                    source_name: '豆瓣预告片',
+                    source_name:
+                      trailerType === 'youtube'
+                        ? 'YouTube 预告片'
+                        : '豆瓣预告片',
                     title: effectiveQuery,
                     year: videoYearRef.current || '',
                     episodes: [proxiedTrailer],
@@ -3727,9 +3734,16 @@ function PlayPageClient() {
                     douban_id: videoDoubanIdRef.current,
                     class: '',
                     poster: '',
-                    episodes_titles: [],
+                    episodes_titles: [
+                      trailerType === 'youtube'
+                        ? 'YouTube 预告片'
+                        : '豆瓣预告片',
+                    ],
                   } as SearchResult);
-                  console.log('🎬 使用豆瓣预告片作为播放源:', proxiedTrailer);
+                  console.log(
+                    `🎬 使用${trailerType === 'youtube' ? 'YouTube' : '豆瓣'}预告片:`,
+                    proxiedTrailer,
+                  );
                 } else {
                   console.log('⚠️ 豆瓣已找到影片但无预告片资源');
                 }

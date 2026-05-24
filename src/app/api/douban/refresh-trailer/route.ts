@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 import { recordRequest } from '@/lib/performance-monitor';
+import { fetchTMDBTrailer } from '@/lib/tmdb.client';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 const TRAILER_FAILURE_CACHE_TTL = 10 * 60;
@@ -150,6 +151,9 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+  const tmdbId = parseInt(searchParams.get('tmdb_id') || '0', 10);
+  const title = searchParams.get('title') || '';
+  const mediaType = (searchParams.get('type') || 'movie') as 'movie' | 'tv';
 
   if (!id) {
     const errorResponse = {
@@ -201,20 +205,57 @@ export async function GET(request: Request) {
     }
 
     const trailerUrl = await fetchTrailerWithRetry(id);
-    await clearTrailerRefreshFailure(id);
 
+    // Douban 无预告片时，尝试 TMDB YouTube 预告片（国内可用）
+    if (!trailerUrl) {
+      let resolvedTmdbId = tmdbId;
+      if (!resolvedTmdbId && title) {
+        try {
+          const { searchTMDBMovie, searchTMDBTV } =
+            await import('@/lib/tmdb.client');
+          const searchFn = mediaType === 'tv' ? searchTMDBTV : searchTMDBMovie;
+          const searchResult = await searchFn(title);
+          if (searchResult?.id) resolvedTmdbId = searchResult.id;
+        } catch {
+          /* ignore */
+        }
+      }
+      if (resolvedTmdbId > 0) {
+        try {
+          const tmdbTrailer = await fetchTMDBTrailer(resolvedTmdbId, mediaType);
+          if (tmdbTrailer) {
+            await clearTrailerRefreshFailure(id);
+            const tmdbResponse = {
+              code: 200,
+              message: '获取成功',
+              data: {
+                trailerUrl: tmdbTrailer.embedUrl,
+                type: tmdbTrailer.type,
+                title: tmdbTrailer.title,
+                source: 'tmdb',
+              },
+            };
+            await cacheTrailerRefreshSuccess(id, tmdbResponse);
+            return NextResponse.json(tmdbResponse, {
+              headers: { 'Cache-Control': 'no-store' },
+            });
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+
+    await clearTrailerRefreshFailure(id);
     const successResponse = {
       code: 200,
       message: '获取成功',
-      data: {
-        trailerUrl,
-      },
+      data: { trailerUrl, type: trailerUrl ? 'douban' : null },
     };
     const responseSize = Buffer.byteLength(
       JSON.stringify(successResponse),
       'utf8',
     );
-
     recordRequest({
       timestamp: startTime,
       method: 'GET',
@@ -226,16 +267,9 @@ export async function GET(request: Request) {
       requestSize: 0,
       responseSize,
     });
-
     await cacheTrailerRefreshSuccess(id, successResponse);
-
     return NextResponse.json(successResponse, {
-      headers: {
-        // 不缓存这个 API 的响应
-        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-        Pragma: 'no-cache',
-        Expires: '0',
-      },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     if (error instanceof Error) {
