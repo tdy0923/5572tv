@@ -35,20 +35,31 @@ async function handleRequest(request) {
 }
 
 async function handleTrailerCache(request, url) {
+  // CDN 层面缓存：直接转发到 Origin，用 CDN-Cache-Control 控制边缘缓存
   const cacheKey = new Request(url.toString(), { method: 'GET' });
-  const cached = await caches.default.match(cacheKey);
-  if (cached) return cached;
+
+  // 尝试 CF Cache API
+  try {
+    const cached = await caches.default.match(cacheKey);
+    if (cached) return cached;
+  } catch {}
 
   try {
     const originResp = await fetch(request, { redirect: 'follow' });
     if (originResp.ok) {
       const headers = new Headers(originResp.headers);
       headers.set('Cache-Control', 'public, max-age=86400');
+      // 同时设置 CDN-Cache-Control 让 Cloudflare 边缘缓存
+      headers.set('CDN-Cache-Control', 'public, max-age=86400');
+      headers.delete('Set-Cookie');
       const resp = new Response(originResp.body, {
         status: originResp.status,
         headers,
       });
-      await caches.default.put(cacheKey, resp.clone());
+      // 写入 CF Cache API
+      try {
+        await caches.default.put(cacheKey, resp.clone());
+      } catch {}
       return resp;
     }
     return originResp;
