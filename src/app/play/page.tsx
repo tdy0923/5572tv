@@ -3364,15 +3364,21 @@ function PlayPageClient() {
         let bestResults: SearchResult[] = [];
 
         const matchYearAndType = (result: SearchResult) => {
+          const episodes = Array.isArray(result.episodes)
+            ? result.episodes
+            : [];
           const yearMatch = videoYearRef.current
-            ? result.year.toLowerCase() === videoYearRef.current.toLowerCase()
+            ? String(result.year || '').toLowerCase() ===
+              String(videoYearRef.current).toLowerCase()
             : true;
           const typeMatch = searchType
-            ? (searchType === 'tv' && result.episodes.length > 1) ||
-              (searchType === 'movie' && result.episodes.length === 1)
+            ? (searchType === 'tv' && episodes.length > 1) ||
+              (searchType === 'movie' && episodes.length === 1)
             : true;
           return yearMatch && typeMatch;
         };
+
+        const safeStr = (v: any) => String(v || '');
 
         // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称
         const ADULT_KEYWORDS =
@@ -3576,7 +3582,7 @@ function PlayPageClient() {
               // 精确无结果，降级到包含匹配
               relevantMatches = allCandidates.filter((result) => {
                 if (isAdultContent(result)) return false;
-                const title = result.title.toLowerCase();
+                const title = safeStr(result.title).toLowerCase();
                 const normalizedTitle = title.replace(
                   /[^\w\u4e00-\u9fff]/g,
                   '',
