@@ -349,7 +349,9 @@ function HomeClient() {
   }, [announcement]);
 
   // 🚀 TanStack Query - 使用 useQuery 获取收藏数据（自动缓存，跨页面持久化）
-  const { data: allFavorites = {}, isLoading: favoritesLoading } = useQuery(allFavoritesOptions());
+  const { data: allFavorites = {}, isLoading: favoritesLoading } = useQuery(
+    allFavoritesOptions(),
+  );
 
   // 🚀 TanStack Query - 使用 useQuery 获取播放记录（自动缓存，跨页面持久化）
   const { data: allPlayRecords = {} } = useQuery(allPlayRecordsOptions());
@@ -454,11 +456,12 @@ function HomeClient() {
     NotificationPermission | 'unsupported'
   >('unsupported');
   const [favoriteGroups, setFavoriteGroups] = useState<string[]>(['默认']);
-  const [favoriteGroupFilter, setFavoriteGroupFilter] = useState<string>('全部');
+  const [favoriteGroupFilter, setFavoriteGroupFilter] =
+    useState<string>('全部');
   const [updateCount, setUpdateCount] = useState(0);
-  const [historyTimeline, setHistoryTimeline] = useState<
-    Record<string, any[]>
-  >({});
+  const [historyTimeline, setHistoryTimeline] = useState<Record<string, any[]>>(
+    {},
+  );
 
   useEffect(() => {
     setNotifPermission(getNotificationPermission());
@@ -469,7 +472,9 @@ function HomeClient() {
       fetch('/api/play-history/timeline')
         .then((r) => r.json())
         .then((data) => setHistoryTimeline(data.timeline || {}))
-        .catch((e) => console.debug('[Homepage] History timeline fetch error:', e));
+        .catch((e) =>
+          console.log('[Homepage] History timeline fetch error:', e),
+        );
     }
   }, [activeTab]);
 
@@ -548,7 +553,9 @@ function HomeClient() {
     fetch('/api/favorites/updates')
       .then((r) => r.json())
       .then((data) => setUpdateCount(data.count || 0))
-      .catch((e) => console.debug('[Homepage] Favorites updates fetch error:', e));
+      .catch((e) =>
+        console.log('[Homepage] Favorites updates fetch error:', e),
+      );
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
@@ -589,18 +596,20 @@ function HomeClient() {
             }
             return null;
           }),
-        ).then((results) => {
-          dispatch({
-            type: 'UPDATE_HOT_MOVIES',
-            payload: (prev) => {
-              const base = prev.length > 0 ? prev : homeData.hotMovies;
-              return base.map((m) => {
-                const detail = results.find((r) => r?.id === m.id);
-                return detail ? { ...m, ...detail } : m;
-              });
-            },
-          });
-        }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
+        )
+          .then((results) => {
+            dispatch({
+              type: 'UPDATE_HOT_MOVIES',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotMovies;
+                return base.map((m) => {
+                  const detail = results.find((r) => r?.id === m.id);
+                  return detail ? { ...m, ...detail } : m;
+                });
+              },
+            });
+          })
+          .catch((err) => console.log('[Homepage] Detail fetch error:', err));
       }, 2000);
       detailTimeoutRefs.current.push(t1);
     }
@@ -625,18 +634,20 @@ function HomeClient() {
             }
             return null;
           }),
-        ).then((results) => {
-          dispatch({
-            type: 'UPDATE_HOT_TV_SHOWS',
-            payload: (prev) => {
-              const base = prev.length > 0 ? prev : homeData.hotTvShows;
-              return base.map((s) => {
-                const detail = results.find((r) => r?.id === s.id);
-                return detail ? { ...s, ...detail } : s;
-              });
-            },
-          });
-        }).catch((err) => console.debug('[Homepage] Detail fetch error:', err));
+        )
+          .then((results) => {
+            dispatch({
+              type: 'UPDATE_HOT_TV_SHOWS',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotTvShows;
+                return base.map((s) => {
+                  const detail = results.find((r) => r?.id === s.id);
+                  return detail ? { ...s, ...detail } : s;
+                });
+              },
+            });
+          })
+          .catch((err) => console.log('[Homepage] Detail fetch error:', err));
       }, 2000);
       detailTimeoutRefs.current.push(t2);
     }
@@ -1230,182 +1241,187 @@ function HomeClient() {
                   ))
                 ) : (
                   <>
-                {(() => {
-                  // 筛选
-                  let filtered = favoriteItems;
-                  // 分组筛选
-                  if (favoriteGroupFilter !== '全部') {
-                    filtered = filtered.filter(
-                      (item) => (item.group || '默认') === favoriteGroupFilter,
-                    );
-                  }
-                  if (favoriteFilter === 'movie') {
-                    filtered = favoriteItems.filter((item) => {
-                      // 优先用 type 字段判断
-                      if (item.type) return item.type === 'movie';
-                      // 向后兼容：没有 type 时用 episodes 判断
-                      if (
-                        item.source === 'shortdrama' ||
-                        item.source_name === '短剧'
-                      )
-                        return false;
-                      if (item.source === 'bangumi') return false; // 排除动漫
-                      if (item.origin === 'live') return false; // 排除直播
-                      // vod 来源：按集数判断
-                      return item.episodes === 1;
-                    });
-                  } else if (favoriteFilter === 'tv') {
-                    filtered = favoriteItems.filter((item) => {
-                      // 优先用 type 字段判断
-                      if (item.type) return item.type === 'tv';
-                      // 向后兼容：没有 type 时用 episodes 判断
-                      if (
-                        item.source === 'shortdrama' ||
-                        item.source_name === '短剧'
-                      )
-                        return false;
-                      if (item.source === 'bangumi') return false; // 排除动漫
-                      if (item.origin === 'live') return false; // 排除直播
-                      // vod 来源：按集数判断
-                      return item.episodes > 1;
-                    });
-                  } else if (favoriteFilter === 'anime') {
-                    filtered = favoriteItems.filter((item) => {
-                      // 优先用 type 字段判断
-                      if (item.type) return item.type === 'anime';
-                      // 向后兼容：用 source 判断
-                      return item.source === 'bangumi';
-                    });
-                  } else if (favoriteFilter === 'shortdrama') {
-                    filtered = favoriteItems.filter((item) => {
-                      // 优先用 type 字段判断
-                      if (item.type) return item.type === 'shortdrama';
-                      // 向后兼容：用 source 判断
-                      return (
-                        item.source === 'shortdrama' ||
-                        item.source_name === '短剧'
-                      );
-                    });
-                  } else if (favoriteFilter === 'live') {
-                    filtered = favoriteItems.filter(
-                      (item) => item.origin === 'live',
-                    );
-                  } else if (favoriteFilter === 'variety') {
-                    filtered = favoriteItems.filter((item) => {
-                      // 优先用 type 字段判断
-                      if (item.type) return item.type === 'variety';
-                      // 向后兼容：暂无 fallback
-                      return false;
-                    });
-                  }
-
-                  // 排序
-                  if (favoriteSortBy === 'title') {
-                    filtered = [...filtered].sort((a, b) =>
-                      a.title.localeCompare(b.title, 'zh-CN'),
-                    );
-                  }
-                  // 'recent' 已经在 updateFavoriteItems 中按 save_time 排序了
-
-                  return filtered.map((item) => {
-                    // 智能计算即将上映状态
-                    let calculatedRemarks = item.remarks;
-
-                    if (item.releaseDate) {
-                      // 使用字符串比较（YYYY-MM-DD 格式可以直接比较）
-                      const releaseDate = item.releaseDate; // "YYYY-MM-DD"
-
-                      if (releaseDate < today) {
-                        // 已上映：计算天数差
-                        const releaseParts = releaseDate.split('-').map(Number);
-                        const todayParts = today.split('-').map(Number);
-                        const releaseMs = new Date(
-                          releaseParts[0],
-                          releaseParts[1] - 1,
-                          releaseParts[2],
-                        ).getTime();
-                        const todayMs = new Date(
-                          todayParts[0],
-                          todayParts[1] - 1,
-                          todayParts[2],
-                        ).getTime();
-                        const daysAgo = Math.floor(
-                          (todayMs - releaseMs) / (1000 * 60 * 60 * 24),
+                    {(() => {
+                      // 筛选
+                      let filtered = favoriteItems;
+                      // 分组筛选
+                      if (favoriteGroupFilter !== '全部') {
+                        filtered = filtered.filter(
+                          (item) =>
+                            (item.group || '默认') === favoriteGroupFilter,
                         );
-                        calculatedRemarks = `已上映${daysAgo}天`;
-                      } else if (releaseDate === today) {
-                        calculatedRemarks = '今日上映';
-                      } else {
-                        // 即将上映：计算天数差
-                        const releaseParts = releaseDate.split('-').map(Number);
-                        const todayParts = today.split('-').map(Number);
-                        const releaseMs = new Date(
-                          releaseParts[0],
-                          releaseParts[1] - 1,
-                          releaseParts[2],
-                        ).getTime();
-                        const todayMs = new Date(
-                          todayParts[0],
-                          todayParts[1] - 1,
-                          todayParts[2],
-                        ).getTime();
-                        const daysUntil = Math.ceil(
-                          (releaseMs - todayMs) / (1000 * 60 * 60 * 24),
-                        );
-                        calculatedRemarks = `${daysUntil}天后上映`;
                       }
-                    }
+                      if (favoriteFilter === 'movie') {
+                        filtered = favoriteItems.filter((item) => {
+                          // 优先用 type 字段判断
+                          if (item.type) return item.type === 'movie';
+                          // 向后兼容：没有 type 时用 episodes 判断
+                          if (
+                            item.source === 'shortdrama' ||
+                            item.source_name === '短剧'
+                          )
+                            return false;
+                          if (item.source === 'bangumi') return false; // 排除动漫
+                          if (item.origin === 'live') return false; // 排除直播
+                          // vod 来源：按集数判断
+                          return item.episodes === 1;
+                        });
+                      } else if (favoriteFilter === 'tv') {
+                        filtered = favoriteItems.filter((item) => {
+                          // 优先用 type 字段判断
+                          if (item.type) return item.type === 'tv';
+                          // 向后兼容：没有 type 时用 episodes 判断
+                          if (
+                            item.source === 'shortdrama' ||
+                            item.source_name === '短剧'
+                          )
+                            return false;
+                          if (item.source === 'bangumi') return false; // 排除动漫
+                          if (item.origin === 'live') return false; // 排除直播
+                          // vod 来源：按集数判断
+                          return item.episodes > 1;
+                        });
+                      } else if (favoriteFilter === 'anime') {
+                        filtered = favoriteItems.filter((item) => {
+                          // 优先用 type 字段判断
+                          if (item.type) return item.type === 'anime';
+                          // 向后兼容：用 source 判断
+                          return item.source === 'bangumi';
+                        });
+                      } else if (favoriteFilter === 'shortdrama') {
+                        filtered = favoriteItems.filter((item) => {
+                          // 优先用 type 字段判断
+                          if (item.type) return item.type === 'shortdrama';
+                          // 向后兼容：用 source 判断
+                          return (
+                            item.source === 'shortdrama' ||
+                            item.source_name === '短剧'
+                          );
+                        });
+                      } else if (favoriteFilter === 'live') {
+                        filtered = favoriteItems.filter(
+                          (item) => item.origin === 'live',
+                        );
+                      } else if (favoriteFilter === 'variety') {
+                        filtered = favoriteItems.filter((item) => {
+                          // 优先用 type 字段判断
+                          if (item.type) return item.type === 'variety';
+                          // 向后兼容：暂无 fallback
+                          return false;
+                        });
+                      }
 
-                    return (
-                      <div key={item.id + item.source} className='w-full'>
-                        <VideoCard
-                          query={item.search_title}
-                          {...item}
-                          from='favorite'
-                          remarks={calculatedRemarks}
-                        />
+                      // 排序
+                      if (favoriteSortBy === 'title') {
+                        filtered = [...filtered].sort((a, b) =>
+                          a.title.localeCompare(b.title, 'zh-CN'),
+                        );
+                      }
+                      // 'recent' 已经在 updateFavoriteItems 中按 save_time 排序了
+
+                      return filtered.map((item) => {
+                        // 智能计算即将上映状态
+                        let calculatedRemarks = item.remarks;
+
+                        if (item.releaseDate) {
+                          // 使用字符串比较（YYYY-MM-DD 格式可以直接比较）
+                          const releaseDate = item.releaseDate; // "YYYY-MM-DD"
+
+                          if (releaseDate < today) {
+                            // 已上映：计算天数差
+                            const releaseParts = releaseDate
+                              .split('-')
+                              .map(Number);
+                            const todayParts = today.split('-').map(Number);
+                            const releaseMs = new Date(
+                              releaseParts[0],
+                              releaseParts[1] - 1,
+                              releaseParts[2],
+                            ).getTime();
+                            const todayMs = new Date(
+                              todayParts[0],
+                              todayParts[1] - 1,
+                              todayParts[2],
+                            ).getTime();
+                            const daysAgo = Math.floor(
+                              (todayMs - releaseMs) / (1000 * 60 * 60 * 24),
+                            );
+                            calculatedRemarks = `已上映${daysAgo}天`;
+                          } else if (releaseDate === today) {
+                            calculatedRemarks = '今日上映';
+                          } else {
+                            // 即将上映：计算天数差
+                            const releaseParts = releaseDate
+                              .split('-')
+                              .map(Number);
+                            const todayParts = today.split('-').map(Number);
+                            const releaseMs = new Date(
+                              releaseParts[0],
+                              releaseParts[1] - 1,
+                              releaseParts[2],
+                            ).getTime();
+                            const todayMs = new Date(
+                              todayParts[0],
+                              todayParts[1] - 1,
+                              todayParts[2],
+                            ).getTime();
+                            const daysUntil = Math.ceil(
+                              (releaseMs - todayMs) / (1000 * 60 * 60 * 24),
+                            );
+                            calculatedRemarks = `${daysUntil}天后上映`;
+                          }
+                        }
+
+                        return (
+                          <div key={item.id + item.source} className='w-full'>
+                            <VideoCard
+                              query={item.search_title}
+                              {...item}
+                              from='favorite'
+                              remarks={calculatedRemarks}
+                            />
+                          </div>
+                        );
+                      });
+                    })()}
+                    {favoriteItems.length === 0 && (
+                      <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
+                        {/* SVG 插画 - 空收藏夹 */}
+                        <div className='mb-6 relative'>
+                          <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-pulse'></div>
+                          <svg
+                            className='w-32 h-32 relative z-10'
+                            viewBox='0 0 200 200'
+                            fill='none'
+                            xmlns='http://www.w3.org/2000/svg'
+                          >
+                            {/* 心形主体 */}
+                            <path
+                              d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
+                              className='fill-gray-300 dark:fill-gray-600 stroke-gray-400 dark:stroke-gray-500 transition-colors duration-300'
+                              strokeWidth='3'
+                            />
+                            {/* 虚线边框 */}
+                            <path
+                              d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
+                              fill='none'
+                              stroke='currentColor'
+                              strokeWidth='2'
+                              strokeDasharray='5,5'
+                              className='text-gray-400 dark:text-gray-500'
+                            />
+                          </svg>
+                        </div>
+
+                        {/* 文字提示 */}
+                        <h3 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
+                          收藏夹空空如也
+                        </h3>
+                        <p className='text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs'>
+                          快去发现喜欢的影视作品，点击 ❤️ 添加到收藏吧！
+                        </p>
                       </div>
-                    );
-                  });
-                })()}
-                {favoriteItems.length === 0 && (
-                  <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
-                    {/* SVG 插画 - 空收藏夹 */}
-                    <div className='mb-6 relative'>
-                      <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-pulse'></div>
-                      <svg
-                        className='w-32 h-32 relative z-10'
-                        viewBox='0 0 200 200'
-                        fill='none'
-                        xmlns='http://www.w3.org/2000/svg'
-                      >
-                        {/* 心形主体 */}
-                        <path
-                          d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
-                          className='fill-gray-300 dark:fill-gray-600 stroke-gray-400 dark:stroke-gray-500 transition-colors duration-300'
-                          strokeWidth='3'
-                        />
-                        {/* 虚线边框 */}
-                        <path
-                          d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='2'
-                          strokeDasharray='5,5'
-                          className='text-gray-400 dark:text-gray-500'
-                        />
-                      </svg>
-                    </div>
-
-                    {/* 文字提示 */}
-                    <h3 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-                      收藏夹空空如也
-                    </h3>
-                    <p className='text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs'>
-                      快去发现喜欢的影视作品，点击 ❤️ 添加到收藏吧！
-                    </p>
-                  </div>
-                )}
+                    )}
                   </>
                 )}
               </div>

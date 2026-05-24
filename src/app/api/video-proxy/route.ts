@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   try {
     new URL(videoUrl);
   } catch (e) {
-    console.debug('[VideoProxy] URL parse error:', e);
+    console.log('[VideoProxy] URL parse error:', e);
     return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
   }
 
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
     }
   } catch (e) {
-    console.debug('[VideoProxy] SSRF validation error:', e);
+    console.log('[VideoProxy] SSRF validation error:', e);
     return NextResponse.json({ error: '无效的URL' }, { status: 400 });
   }
 
@@ -164,7 +164,10 @@ export async function GET(request: Request) {
     if (!videoResponse.ok) {
       // 🎯 豆瓣视频 CDN 有浏览器级防盗链，服务器端无法绕过
       // 返回 204 避免触发前端错误处理，让 HeroBanner 正常降级
-      if (isDouban && (videoResponse.status === 403 || videoResponse.status === 404)) {
+      if (
+        isDouban &&
+        (videoResponse.status === 403 || videoResponse.status === 404)
+      ) {
         return new Response(null, { status: 204 });
       }
 

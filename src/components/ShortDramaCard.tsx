@@ -184,7 +184,10 @@ function ShortDramaCard({
         if (result && result.totalEpisodes > 1) {
           setRealEpisodeCount(result.totalEpisodes);
           setShowEpisodeCount(true);
-          sessionStorage.setItem(sessionStorageKey, String(result.totalEpisodes));
+          sessionStorage.setItem(
+            sessionStorageKey,
+            String(result.totalEpisodes),
+          );
           // 使用统一缓存系统缓存结果
           await setCache(
             cacheKey,
@@ -304,7 +307,7 @@ function ShortDramaCard({
       const date = new Date(updateTime);
       return date.toLocaleDateString('zh-CN');
     } catch (e) {
-      console.debug('[ShortDrama]', e);
+      console.log('[ShortDrama]', e);
       return updateTime;
     }
   };

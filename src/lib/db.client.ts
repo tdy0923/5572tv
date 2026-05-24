@@ -516,7 +516,7 @@ class HybridCacheManager {
               keysToRemove.push(key);
             }
           } catch (e) {
-            console.debug('[DBClient] Cache error:', e);
+            console.log('[DBClient] Cache error:', e);
             // 解析失败的缓存也删除
             keysToRemove.push(key);
           }
