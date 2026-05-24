@@ -3724,7 +3724,15 @@ function PlayPageClient() {
                     episodes_titles: [],
                   } as SearchResult);
                   console.log('🎬 使用豆瓣预告片作为播放源:', proxiedTrailer);
+                } else {
+                  console.log('⚠️ 豆瓣已找到影片但无预告片资源');
                 }
+              } else {
+                console.log(
+                  '⚠️ 豆瓣已找到影片但无预告片资源 (HTTP ' +
+                    trailerResp.status +
+                    ')',
+                );
               }
             } catch (trailerErr) {
               console.warn('获取豆瓣预告片失败:', trailerErr);
