@@ -103,12 +103,16 @@ export default function SiteConfigComponent({
   };
   const handleAdSave = () => {
     if (!editDialog.slot || !editDialog.ad) return;
-    setAdSettings((prev) => ({
-      ...prev,
-      [editDialog.slot]: prev[editDialog.slot].map((a: any) =>
-        a.id === editDialog.ad.id ? editDialog.ad : a,
-      ),
-    }));
+    setAdSettings((prev) => {
+      const slotAds = (prev as any)[editDialog.slot];
+      const ads = Array.isArray(slotAds) ? slotAds : [slotAds];
+      return {
+        ...prev,
+        [editDialog.slot]: ads.map((a: any) =>
+          a.id === editDialog.ad.id ? editDialog.ad : a,
+        ),
+      };
+    });
     setEditDialog({ isOpen: false, slot: '', ad: null });
   };
 
@@ -135,32 +139,35 @@ export default function SiteConfigComponent({
           位置: {activeAdMeta.description}
         </p>
         <div className='space-y-3'>
-          {(adSettings as any)[activeAdSlot]?.map((ad: any, i: number) => (
-            <div
-              key={ad.id || i}
-              className='p-4 border rounded-lg bg-white dark:bg-gray-800 space-y-2'
-            >
-              <div className='flex items-center justify-between'>
-                <span className='text-sm font-medium'>
-                  {ad.name || `广告 ${i + 1}`}
-                </span>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded ${ad.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
-                >
-                  {ad.enabled ? '启用' : '禁用'}
-                </span>
-              </div>
-              <p className='text-xs text-gray-500'>
-                {ad.content?.slice(0, 80)}...
-              </p>
-              <button
-                onClick={() => handleAdEdit(activeAdSlot, ad)}
-                className={buttonStyles.primarySmall}
+          {[adSettings[activeAdSlot]]
+            .flat()
+            .filter(Boolean)
+            .map((ad: any, i: number) => (
+              <div
+                key={ad.id || i}
+                className='p-4 border rounded-lg bg-white dark:bg-gray-800 space-y-2'
               >
-                编辑
-              </button>
-            </div>
-          ))}
+                <div className='flex items-center justify-between'>
+                  <span className='text-sm font-medium'>
+                    {ad.name || `广告 ${i + 1}`}
+                  </span>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded ${ad.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                  >
+                    {ad.enabled ? '启用' : '禁用'}
+                  </span>
+                </div>
+                <p className='text-xs text-gray-500'>
+                  {ad.content?.slice(0, 80)}...
+                </p>
+                <button
+                  onClick={() => handleAdEdit(activeAdSlot, ad)}
+                  className={buttonStyles.primarySmall}
+                >
+                  编辑
+                </button>
+              </div>
+            ))}
         </div>
         <button
           onClick={handleSiteSave}
