@@ -17,6 +17,11 @@ async function handleRequest(request) {
       return handleMediaProxy(request, url);
     }
 
+    // Douban 预告片：CF 边缘缓存 24h，防止限流
+    if (url.pathname === '/api/douban/refresh-trailer') {
+      return handleTrailerCache(request, url);
+    }
+
     if (url.pathname === '/') {
       return new Response(getRootHtml(), {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -26,6 +31,29 @@ async function handleRequest(request) {
     return handleGenericProxy(request, url);
   } catch (error) {
     return jsonResponse({ error: error.message }, 500);
+  }
+}
+
+async function handleTrailerCache(request, url) {
+  const cacheKey = new Request(url.toString(), { method: 'GET' });
+  const cached = await caches.default.match(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const originResp = await fetch(request, { redirect: 'follow' });
+    if (originResp.ok) {
+      const headers = new Headers(originResp.headers);
+      headers.set('Cache-Control', 'public, max-age=86400');
+      const resp = new Response(originResp.body, {
+        status: originResp.status,
+        headers,
+      });
+      await caches.default.put(cacheKey, resp.clone());
+      return resp;
+    }
+    return originResp;
+  } catch (e) {
+    return jsonResponse({ error: 'Edge proxy failed', detail: String(e) }, 502);
   }
 }
 
