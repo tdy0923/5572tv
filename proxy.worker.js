@@ -88,15 +88,29 @@ async function handleM3U8Proxy(request, url) {
   // 读取 M3U8 内容并重写 URL
   var text = await response.text();
   var baseUrl = decodedUrl.split('/').slice(0, -1).join('/') + '/';
-  // 重写：非 # 开头的行（segment URL）改为走代理
-  var rewritten = text.replace(/^[ \t]*(?!#)(.+)$/gm, function (match, url) {
-    return (
-      '/api/proxy/segment?url=' +
-      encodeURIComponent(
-        url.indexOf('://') > 0 ? url : baseUrl + url.replace(/\r$/, ''),
-      )
-    );
-  });
+  var lines = text.split('\n');
+  var rewritten = '';
+  var streamInf = false;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].replace(/\r$/, '');
+    if (!line || line.trim() === '') {
+      rewritten += '\n';
+      continue;
+    }
+    if (line.startsWith('#')) {
+      if (line.startsWith('#EXT-X-STREAM-INF:')) streamInf = true;
+      else streamInf = false;
+      rewritten += line + '\n';
+      continue;
+    }
+    // URL 行
+    var resolved = line.indexOf('://') > 0 ? line : baseUrl + line;
+    var proxyPath = streamInf
+      ? '/api/proxy/m3u8?url='
+      : '/api/proxy/segment?url=';
+    rewritten += proxyPath + encodeURIComponent(resolved) + '\n';
+    streamInf = false;
+  }
 
   var respHeaders = new Headers();
   respHeaders.set('Content-Type', 'application/vnd.apple.mpegurl');
