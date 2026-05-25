@@ -282,7 +282,7 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
       try {
         await fetch(m3u8Url, {
           method: 'HEAD',
-          mode: 'no-cors',
+          mode: 'cors',
           signal: AbortSignal.timeout(2000),
         });
         const pingTime = Math.round(performance.now() - startTime);
@@ -320,7 +320,7 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
       const pingStart = performance.now();
       let pingTime = 0;
 
-      const pingPromise = fetch(m3u8Url, { method: 'HEAD', mode: 'no-cors' })
+      const pingPromise = fetch(m3u8Url, { method: 'HEAD', mode: 'cors' })
         .then(() => {
           pingTime = performance.now() - pingStart;
         })

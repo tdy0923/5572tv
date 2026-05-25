@@ -134,12 +134,13 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
     }
     const episodeUrl =
       source.episodes.length > 1 ? source.episodes[1] : source.episodes[0];
+    const proxyTestUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true`;
 
     // 标记为已尝试
     setAttemptedSources((prev) => new Set(prev).add(sourceKey));
 
     try {
-      const info = await getVideoResolutionFromM3u8(episodeUrl);
+      const info = await getVideoResolutionFromM3u8(proxyTestUrl);
       setVideoInfoMap((prev) => new Map(prev).set(sourceKey, info));
     } catch (error) {
       // 失败时保存错误状态

@@ -1949,7 +1949,9 @@ function PlayPageClient() {
                 ? source.episodes[1]
                 : source.episodes[0];
 
-            const testResult = await getVideoResolutionFromM3u8(episodeUrl);
+            // 速度测试通过代理进行（避免直接请求 CDN 被 CORS 封禁）
+            const proxyUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true&_t=${Date.now()}`;
+            const testResult = await getVideoResolutionFromM3u8(proxyUrl);
 
             // 更新进度：显示测试结果
             setSpeedTestProgress({
