@@ -128,8 +128,6 @@ export async function GET(request: Request) {
   }
 
   // 创建 AbortController 用于超时控制
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
   const failureCacheKey = getImageFailureCacheKey(imageUrl);
 
   try {
@@ -162,47 +160,54 @@ export async function GET(request: Request) {
     let finalImageUrl = candidateUrls[0];
     let lastError: Error | null = null;
 
-    for (const candidateUrl of candidateUrls) {
+    // 并发请求所有候选 URL，取最快成功的响应
+    const fetchWithTimeout = async (url: string) => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
       try {
         let response: Response;
         try {
-          response = await fetch(candidateUrl, {
+          response = await fetch(url, {
             signal: controller.signal,
             headers: fetchHeaders,
           });
         } catch (fetchError: any) {
-          // SSL cert error (e.g. expired cert) - retry with rejectUnauthorized: false
           if (
-            candidateUrl.startsWith('https://') &&
+            url.startsWith('https://') &&
             (fetchError.code === 'CERT_HAS_EXPIRED' ||
               fetchError.cause?.code === 'CERT_HAS_EXPIRED' ||
               fetchError.message?.includes('certificate'))
           ) {
-            response = await fetchWithInsecureHttps(candidateUrl, fetchHeaders);
+            response = await fetchWithInsecureHttps(url, fetchHeaders);
           } else {
             throw fetchError;
           }
         }
-
         const contentType = response.headers.get('content-type');
         if (response.ok && isValidImageContentType(contentType)) {
-          imageResponse = response;
-          finalImageUrl = candidateUrl;
-          break;
+          return response;
         }
-
-        lastError = new Error(
-          `Upstream returned ${response.status} ${response.statusText || ''} (${contentType || 'unknown content-type'})`,
+        throw new Error(
+          `Upstream returned ${response.status} ${response.statusText || ''} (${contentType || 'unknown'})`,
         );
-      } catch (fetchError: any) {
-        lastError =
-          fetchError instanceof Error
-            ? fetchError
-            : new Error(String(fetchError));
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+
+    const results = await Promise.allSettled(
+      candidateUrls.map((url) => fetchWithTimeout(url)),
+    );
+
+    for (const [i, result] of results.entries()) {
+      if (result.status === 'fulfilled') {
+        imageResponse = result.value;
+        finalImageUrl = candidateUrls[i];
+        break;
+      } else {
+        lastError = result.reason;
       }
     }
-
-    clearTimeout(timeoutId);
 
     if (!imageResponse) {
       throw lastError || new Error('No valid upstream image response');
@@ -249,8 +254,6 @@ export async function GET(request: Request) {
       headers,
     });
   } catch (error: any) {
-    clearTimeout(timeoutId);
-
     try {
       await db.setCache(
         failureCacheKey,
