@@ -200,8 +200,8 @@ export async function GET(request: Request) {
 
     if (!videoResponse.body) {
       return NextResponse.json(
-        { error: 'Video response has no body' },
-        { status: 500 },
+        { error: 'Upstream returned empty response', upstream: true },
+        { status: 502 },
       );
     }
 
@@ -304,8 +304,8 @@ export async function GET(request: Request) {
 
     console.warn('[Video Proxy] Error fetching video:', error.message);
     return NextResponse.json(
-      { error: 'Error fetching video', details: error.message },
-      { status: 500 },
+      { error: 'Upstream fetch error', details: error.message, upstream: true },
+      { status: 502 },
     );
   }
 }
