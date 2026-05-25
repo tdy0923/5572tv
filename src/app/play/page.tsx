@@ -6648,6 +6648,18 @@ function PlayPageClient() {
           console.log('播放器已就绪，开始加载外部弹幕');
           setTimeout(async () => {
             try {
+              // 如果自动重试已加载成功，跳过
+              if (
+                danmuLoadedAtRef &&
+                danmuLoadedAtRef.current > 0 &&
+                danmuLoadedAtRef.current !== Date.now()
+              ) {
+                const elapsed = Date.now() - danmuLoadedAtRef.current;
+                if (elapsed < 10000) {
+                  console.log('弹幕已在别处加载，跳过初始加载');
+                  return;
+                }
+              }
               const result = await loadExternalDanmu(); // 这里会检查开关状态，返回 { count, data }
               console.log('外部弹幕加载结果:', result.count, '条');
 
