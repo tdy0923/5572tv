@@ -8,7 +8,14 @@ import Hls from 'hls.js';
 import { X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
@@ -599,6 +606,10 @@ function PlayPageClient() {
   // 重新加载触发器（用于触发 initAll 重新执行）
   const [reloadTrigger, setReloadTrigger] = useState(0);
   const reloadFlagRef = useRef<string | null>(null);
+  const searchParamsStr = useMemo(
+    () => searchParams.toString(),
+    [searchParams],
+  );
 
   // 监听 URL source/id 参数变化（观影室切换源同步）
   useEffect(() => {
@@ -624,12 +635,10 @@ function PlayPageClient() {
       // 标记此reload已处理
       reloadFlagRef.current = reloadFlag;
 
-      // 重置所有相关状态（但保留 detail，让 initAll 重新加载后再更新）
+      // 重置所有相关状态
       setCurrentSource(newSource);
       setCurrentId(newId);
       setCurrentEpisodeIndex(newIndex);
-      // 不清空 detail，避免触发 videoUrl 清空导致黑屏
-      // setDetail(null);
       setError(null);
       setLoading(true);
       setNeedPrefer(false);
@@ -638,7 +647,7 @@ function PlayPageClient() {
       // 触发重新加载（通过更新 reloadTrigger 来触发 initAll 重新执行）
       setReloadTrigger((prev) => prev + 1);
     }
-  }, [searchParams, currentSource, currentId]);
+  }, [searchParamsStr, currentSource, currentId]);
 
   // 换源相关状态
   const [availableSources, setAvailableSources] = useState<SearchResult[]>([]);
