@@ -3270,6 +3270,13 @@ function PlayPageClient() {
       id: string,
       title?: string,
     ): Promise<SearchResult[]> => {
+      // 豆瓣预告片源无需再请求详情
+      if (source === 'douban_trailer') {
+        return availableSourcesRef.current.filter(
+          (s) => s.source === 'douban_trailer',
+        );
+      }
+
       try {
         let detailResponse;
 
