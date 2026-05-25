@@ -222,9 +222,14 @@ export async function GET(request: Request) {
       (stats.avgResponseTime * (stats.requests - 1) + responseTime) /
       stats.requests;
 
+    // CDN-Cache-Control: master playlist 短缓存 10s + stale-while-revalidate
     return new Response(response?.body, {
       status: 200,
-      headers: responseHeaders,
+      headers: {
+        ...Object.fromEntries(responseHeaders),
+        'Access-Control-Allow-Origin': '*',
+        'CDN-Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+      },
     });
   } catch (error: any) {
     stats.errors++;
