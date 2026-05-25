@@ -1898,27 +1898,10 @@ function PlayPageClient() {
     sources: SearchResult[],
     weights: Record<string, number> = {},
   ): Promise<SearchResult> => {
-    const maxTestCount = 20;
-    const topPriorityCount = 5;
+    // 全部源并发测速，不再设上限（并行请求 + 8s 超时）
+    let sourcesToTest = sources;
 
-    // 混合策略：前5个高权重 + 随机15个
-    let sourcesToTest: SearchResult[];
-    if (sources.length <= maxTestCount) {
-      sourcesToTest = sources;
-    } else {
-      const prioritySources = sources.slice(0, topPriorityCount);
-      const remaining = sources
-        .slice(topPriorityCount)
-        .sort(() => 0.5 - Math.random());
-      sourcesToTest = [
-        ...prioritySources,
-        ...remaining.slice(0, maxTestCount - topPriorityCount),
-      ];
-    }
-
-    console.log(
-      `开始测速: 共${sources.length}个源，将测试${sourcesToTest.length}个`,
-    );
+    console.log(`开始测速: 共${sources.length}个源，全部并发`);
 
     // 并发测试所有源（8s 超时），跳过已知阻断的 CDN 域名
     const testPromises = sourcesToTest.map(async (source) => {
