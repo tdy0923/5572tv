@@ -3644,12 +3644,9 @@ function PlayPageClient() {
                   r.douban_id &&
                   r.douban_id > 0
                 ) {
-                  return (
-                    r.douban_id === videoDoubanIdRef.current &&
-                    matchYearAndType(r)
-                  );
+                  return r.douban_id === videoDoubanIdRef.current;
                 }
-                return matchYearAndType(r);
+                return true;
               })
               .slice(0, 12) as SearchResult[];
           }
