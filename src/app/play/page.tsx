@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
+import { getCdnDomain, isCdnBlocked } from '@/lib/cdn-blocklist';
 import { ClientCache } from '@/lib/client-cache';
 import {
   deletePlayRecord,
@@ -1888,165 +1889,74 @@ function PlayPageClient() {
     sources: SearchResult[],
     weights: Record<string, number> = {},
   ): Promise<SearchResult> => {
-    // 桌面设备使用小批量并发，避免创建过多实例
-    const concurrency = 3;
-    // 限制最大测试数量为20个源（平衡速度和覆盖率）
     const maxTestCount = 20;
-    const topPriorityCount = 5; // 前5个优先级最高的源（已按权重排序）
+    const topPriorityCount = 5;
 
-    // 🎯 混合策略：前5个（高权重）+ 随机15个
+    // 混合策略：前5个高权重 + 随机15个
     let sourcesToTest: SearchResult[];
     if (sources.length <= maxTestCount) {
-      // 如果源总数不超过20个，全部测试
       sourcesToTest = sources;
     } else {
-      // 保留前5个（已按权重排序，权重最高的在前）
       const prioritySources = sources.slice(0, topPriorityCount);
-
-      // 从剩余源中随机选择15个
-      const remainingSources = sources.slice(topPriorityCount);
-      const shuffled = remainingSources.sort(() => 0.5 - Math.random());
-      const randomSources = shuffled.slice(0, maxTestCount - topPriorityCount);
-
-      sourcesToTest = [...prioritySources, ...randomSources];
+      const remaining = sources
+        .slice(topPriorityCount)
+        .sort(() => 0.5 - Math.random());
+      sourcesToTest = [
+        ...prioritySources,
+        ...remaining.slice(0, maxTestCount - topPriorityCount),
+      ];
     }
 
     console.log(
-      `开始测速: 共${sources.length}个源，将测试前${topPriorityCount}个高权重源 + 随机${sourcesToTest.length - Math.min(topPriorityCount, sources.length)}个 = ${sourcesToTest.length}个`,
+      `开始测速: 共${sources.length}个源，将测试${sourcesToTest.length}个`,
     );
 
-    const allResults: Array<{
-      source: SearchResult;
-      testResult: { quality: string; loadSpeed: string; pingTime: number };
-    } | null> = [];
-
-    let shouldStop = false; // 早停标志
-    let testedCount = 0; // 已测试数量
-
-    for (let i = 0; i < sourcesToTest.length && !shouldStop; i += concurrency) {
-      const batch = sourcesToTest.slice(i, i + concurrency);
-      console.log(
-        `测速批次 ${Math.floor(i / concurrency) + 1}/${Math.ceil(sourcesToTest.length / concurrency)}: ${batch.length} 个源`,
-      );
-
-      const batchResults = await Promise.all(
-        batch.map(async (source, batchIndex) => {
-          try {
-            // 更新进度：显示当前正在测试的源
-            const currentIndex = i + batchIndex + 1;
-            setSpeedTestProgress({
-              current: currentIndex,
-              total: sourcesToTest.length,
-              currentSource: source.source_name,
-            });
-
-            if (!source.episodes || source.episodes.length === 0) {
-              return null;
-            }
-
-            const episodeUrl =
-              source.episodes.length > 1
-                ? source.episodes[1]
-                : source.episodes[0];
-
-            // 速度测试通过代理进行（避免直接请求 CDN 被 CORS 封禁）
-            const proxyUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true&_t=${Date.now()}`;
-            const testResult = await getVideoResolutionFromM3u8(proxyUrl);
-
-            // 更新进度：显示测试结果
-            setSpeedTestProgress({
-              current: currentIndex,
-              total: sourcesToTest.length,
-              currentSource: source.source_name,
-              result: `${testResult.quality} | ${testResult.loadSpeed} | ${testResult.pingTime}ms`,
-            });
-
-            return { source, testResult };
-          } catch (error) {
-            console.warn(`测速失败: ${source.source_name}`, error);
-
-            // 更新进度：显示失败
-            const currentIndex = i + batchIndex + 1;
-            setSpeedTestProgress({
-              current: currentIndex,
-              total: sourcesToTest.length,
-              currentSource: source.source_name,
-              result: '测速失败',
-            });
-
-            return null;
-          }
-        }),
-      );
-
-      allResults.push(...batchResults);
-      testedCount += batch.length;
-
-      // 🎯 保守策略早停判断：找到高质量源
-      const successfulInBatch = batchResults.filter(Boolean) as Array<{
-        source: SearchResult;
-        testResult: { quality: string; loadSpeed: string; pingTime: number };
-      }>;
-
-      for (const result of successfulInBatch) {
-        const { quality, loadSpeed } = result.testResult;
-        const speedMatch = loadSpeed.match(/^([\d.]+)\s*MB\/s$/);
-        const speedMBps = speedMatch ? parseFloat(speedMatch[1]) : 0;
-
-        // 🛑 保守策略：只有非常优质的源才早停
-        const is4KHighSpeed = quality === '4K' && speedMBps >= 8;
-        const is2KHighSpeed = quality === '2K' && speedMBps >= 6;
-
-        if (is4KHighSpeed || is2KHighSpeed) {
+    // 并发测试所有源（8s 超时），跳过已知阻断的 CDN 域名
+    const testPromises = sourcesToTest.map(async (source) => {
+      try {
+        if (!source.episodes || source.episodes.length === 0) return null;
+        const episodeUrl =
+          source.episodes.length > 1 ? source.episodes[1] : source.episodes[0];
+        const cdnDomain = getCdnDomain(episodeUrl);
+        if (cdnDomain && isCdnBlocked(cdnDomain)) {
           console.log(
-            `✓ 找到顶级优质源: ${result.source.source_name} (${quality}, ${loadSpeed})，停止测速`,
+            `⏭️ CDN 已封禁，跳过测速: ${cdnDomain} (${source.source_name})`,
           );
-          shouldStop = true;
-          break;
+          return null;
+        }
+        const proxyUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true&_t=${Date.now()}`;
+        const result = await getVideoResolutionFromM3u8(proxyUrl);
+        return { source, testResult: result };
+      } catch {
+        return null;
+      }
+    }) as Promise<{ source: SearchResult; testResult: any } | null>[];
+
+    // 8 秒超时后取已完成的
+    const timeoutPromise = new Promise<null>((r) =>
+      setTimeout(() => r(null), 8000),
+    );
+    const raceResult = await Promise.race([
+      Promise.allSettled(testPromises),
+      timeoutPromise,
+    ]);
+
+    const successfulResults: Array<{ source: SearchResult; testResult: any }> =
+      [];
+    if (raceResult && Array.isArray(raceResult)) {
+      for (const r of raceResult) {
+        if (r.status === 'fulfilled' && r.value) {
+          successfulResults.push(r.value);
         }
       }
-
-      // 批次间延迟，让资源有时间清理（减少延迟时间）
-      if (i + concurrency < sourcesToTest.length && !shouldStop) {
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      }
     }
-
-    // 等待所有测速完成，包含成功和失败的结果
-    // 保存所有测速结果到 precomputedVideoInfo，供 EpisodeSelector 使用（包含错误结果）
-    const newVideoInfoMap = new Map<
-      string,
-      {
-        quality: string;
-        loadSpeed: string;
-        pingTime: number;
-        hasError?: boolean;
-      }
-    >();
-    allResults.forEach((result, index) => {
-      const source = sources[index];
-      const sourceKey = `${source.source}-${source.id}`;
-
-      if (result) {
-        // 成功的结果
-        newVideoInfoMap.set(sourceKey, result.testResult);
-      }
-    });
-
-    // 过滤出成功的结果用于优选计算
-    const successfulResults = allResults.filter(Boolean) as Array<{
-      source: SearchResult;
-      testResult: { quality: string; loadSpeed: string; pingTime: number };
-    }>;
-
-    setPrecomputedVideoInfo(newVideoInfoMap);
 
     if (successfulResults.length === 0) {
       console.warn('所有播放源测速都失败，使用第一个播放源');
       return sources[0];
     }
 
-    // 找出所有有效速度的最大值，用于线性映射
+    // 评分排序（同现有逻辑）
     const validSpeeds = successfulResults
       .map((result) => {
         const speedStr = result.testResult.loadSpeed;
