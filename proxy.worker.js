@@ -46,7 +46,7 @@ async function handleM3U8Proxy(request, url) {
 
   var decodedUrl = decodeURIComponent(targetUrl);
 
-  // 从 CF 边缘拉取 M3U8
+  // 从 CF 边缘拉取 M3U8（15s 超时）
   var response = await fetch(decodedUrl, {
     headers: {
       'User-Agent': UA,
@@ -54,6 +54,7 @@ async function handleM3U8Proxy(request, url) {
       'Accept-Encoding': 'identity',
     },
     redirect: 'follow',
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!response.ok) {
@@ -72,6 +73,7 @@ async function handleM3U8Proxy(request, url) {
         Referer: new URL(decodedUrl).origin + '/',
       },
       redirect: 'follow',
+      signal: AbortSignal.timeout(15000),
     });
     if (!response.ok) {
       try {
@@ -86,15 +88,15 @@ async function handleM3U8Proxy(request, url) {
   // 读取 M3U8 内容并重写 URL
   var text = await response.text();
   var baseUrl = decodedUrl.split('/').slice(0, -1).join('/') + '/';
-  var rewritten = text.replace(
-    /^(?!\s*#)(?!\s*$)(\s*)([^\s#].*)$/gm,
-    function (match, ws, line) {
-      line = line.trim();
-      if (!line || line.startsWith('#')) return match;
-      var resolved = line.indexOf('://') > 0 ? line : baseUrl + line;
-      return ws + '/api/proxy/segment?url=' + encodeURIComponent(resolved);
-    },
-  );
+  // 重写：非 # 开头的行（segment URL）改为走代理
+  var rewritten = text.replace(/^[ \t]*(?!#)(.+)$/gm, function (match, url) {
+    return (
+      '/api/proxy/segment?url=' +
+      encodeURIComponent(
+        url.indexOf('://') > 0 ? url : baseUrl + url.replace(/\r$/, ''),
+      )
+    );
+  });
 
   var respHeaders = new Headers();
   respHeaders.set('Content-Type', 'application/vnd.apple.mpegurl');
