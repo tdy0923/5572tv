@@ -17,6 +17,11 @@ async function handleRequest(request) {
       return handleMediaProxy(request, url);
     }
 
+    // M3U8 playlist: CF 边缘拉取 CDN（Cloudflare IP），重写 segment URL
+    if (url.pathname === '/api/proxy/m3u8') {
+      return handleM3U8Proxy(request, url);
+    }
+
     // Douban 预告片：CF 边缘缓存 24h，防止限流
     if (url.pathname === '/api/douban/refresh-trailer') {
       return handleTrailerCache(request, url);
@@ -32,6 +37,70 @@ async function handleRequest(request) {
   } catch (error) {
     return jsonResponse({ error: error.message }, 500);
   }
+}
+
+// M3U8 代理：从 CF 边缘拉取 CDN（Cloudflare IP），重写 segment URL 走代理
+async function handleM3U8Proxy(request, url) {
+  var targetUrl = url.searchParams.get('url');
+  if (!targetUrl) return jsonResponse({ error: 'Missing url' }, 400);
+
+  var decodedUrl = decodeURIComponent(targetUrl);
+
+  // 从 CF 边缘拉取 M3U8
+  var response = await fetch(decodedUrl, {
+    headers: {
+      'User-Agent': UA,
+      Accept: '*/*',
+      'Accept-Encoding': 'identity',
+    },
+    redirect: 'follow',
+  });
+
+  if (!response.ok) {
+    // CDN 返回非 200，尝试用不同 UA + Referer 重试
+    try {
+      response.body.cancel();
+    } catch {}
+    var uas = [
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+    ];
+    response = await fetch(decodedUrl, {
+      headers: {
+        'User-Agent': uas[Math.floor(Math.random() * uas.length)],
+        Accept: '*/*',
+        Referer: new URL(decodedUrl).origin + '/',
+      },
+      redirect: 'follow',
+    });
+    if (!response.ok) {
+      try {
+        response.body.cancel();
+      } catch {}
+      return new Response('M3U8 fetch failed: ' + response.status, {
+        status: response.status,
+      });
+    }
+  }
+
+  // 读取 M3U8 内容并重写 URL
+  var text = await response.text();
+  var baseUrl = decodedUrl.split('/').slice(0, -1).join('/') + '/';
+  var rewritten = text.replace(
+    /^(?!\s*#)(?!\s*$)(\s*)([^\s#].*)$/gm,
+    function (match, ws, line) {
+      line = line.trim();
+      if (!line || line.startsWith('#')) return match;
+      var resolved = line.indexOf('://') > 0 ? line : baseUrl + line;
+      return ws + '/api/proxy/segment?url=' + encodeURIComponent(resolved);
+    },
+  );
+
+  var respHeaders = new Headers();
+  respHeaders.set('Content-Type', 'application/vnd.apple.mpegurl');
+  respHeaders.set('Access-Control-Allow-Origin', '*');
+  respHeaders.set('Cache-Control', 'public, max-age=10');
+  return new Response(rewritten, { status: 200, headers: respHeaders });
 }
 
 async function handleTrailerCache(request, url) {

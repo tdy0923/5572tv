@@ -7,5 +7,6 @@ routes = [
   { pattern = "www.5572.net/api/proxy/segment*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/key*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/stream*", zone_name = "5572.net" },
+  { pattern = "www.5572.net/api/proxy/m3u8*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/douban/refresh-trailer*", zone_name = "5572.net" },
 ]
