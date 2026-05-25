@@ -48,9 +48,9 @@ async function handleTrailerCache(request, url) {
     const originResp = await fetch(request, { redirect: 'follow' });
     if (originResp.ok) {
       const headers = new Headers(originResp.headers);
-      headers.set('Cache-Control', 'public, max-age=86400');
-      // 同时设置 CDN-Cache-Control 让 Cloudflare 边缘缓存
-      headers.set('CDN-Cache-Control', 'public, max-age=86400');
+      headers.set('Cache-Control', 'public, max-age=3600');
+      // 同时设置 CDN-Cache-Control 让 Cloudflare 边缘缓存 1 小时
+      headers.set('CDN-Cache-Control', 'public, max-age=3600');
       headers.delete('Set-Cookie');
       const resp = new Response(originResp.body, {
         status: originResp.status,

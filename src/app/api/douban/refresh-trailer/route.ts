@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { recordRequest } from '@/lib/performance-monitor';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
-const TRAILER_SUCCESS_CACHE_TTL = 24 * 60 * 60; // 24小时成功缓存
+const TRAILER_SUCCESS_CACHE_TTL = 60 * 60; // 1小时（Douban URL 通常几小时过期）
 const TRAILER_RATELIMIT_CACHE_TTL = 60; // 429限流缓存1分钟
 const DOUBAN_MIN_INTERVAL_MS = 500; // 内存限流：Douban请求间隔
 let lastDoubanRequestTime = 0;
