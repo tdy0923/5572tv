@@ -328,9 +328,9 @@ async function handleAuthentication(
     const clientIP = getClientIP(request);
 
     if (isIPTrusted(clientIP, trustedNetworkConfig.trustedIPs)) {
-      console.log(
-        `[Middleware] Trusted network auto-login for IP: ${clientIP}`,
-      );
+      //       console.log(
+      //         `[Middleware] Trusted network auto-login for IP: ${clientIP}`,
+      //       );
 
       // 检查是否已经有有效的认证 cookie
       const existingAuth = getAuthInfoFromCookie(request);

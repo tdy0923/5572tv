@@ -248,7 +248,7 @@ const PlayStatsPage: React.FC = () => {
       if (age >= CACHE_DURATION) {
         localStorage.removeItem('upcoming_releases_cache');
         localStorage.removeItem(cacheTimeKey);
-        console.log('已清理过期的即将上映缓存');
+        //         console.log('已清理过期的即将上映缓存');
       }
     }
 
@@ -274,7 +274,7 @@ const PlayStatsPage: React.FC = () => {
         localStorage.removeItem('5572tv_last_update_check');
         localStorage.removeItem('moontv_watching_updates');
         localStorage.removeItem('moontv_last_update_check');
-        console.log('已清理过期的追番更新缓存');
+        //         console.log('已清理过期的追番更新缓存');
       }
     }
 
@@ -288,7 +288,7 @@ const PlayStatsPage: React.FC = () => {
             const dataKey = key.replace('_time', '');
             localStorage.removeItem(dataKey);
             localStorage.removeItem(key);
-            console.log(`已清理过期缓存: ${dataKey}`);
+            //             console.log(`已清理过期缓存: ${dataKey}`);
           }
         }
       }
@@ -299,10 +299,10 @@ const PlayStatsPage: React.FC = () => {
 
   // 处理刷新按钮点击
   const handleRefreshClick = async () => {
-    console.log('刷新按钮被点击');
+    //     console.log('刷新按钮被点击');
     try {
       await invalidatePlayStats();
-      console.log('所有数据已刷新');
+      //       console.log('所有数据已刷新');
     } catch (error) {
       console.error('刷新数据失败:', error);
     }
@@ -371,11 +371,11 @@ const PlayStatsPage: React.FC = () => {
 
     let updateTimeout: ReturnType<typeof setTimeout> | null = null;
     const handlePlayRecordsUpdate = () => {
-      console.log('播放记录更新，重新检查 watchingUpdates');
+      //       console.log('播放记录更新，重新检查 watchingUpdates');
 
       // 🔧 防抖：避免无限循环，1秒内只执行一次
       if (updateTimeout) {
-        console.log('⏸️ 防抖：跳过本次更新请求');
+        //         console.log('⏸️ 防抖：跳过本次更新请求');
         return;
       }
 
@@ -399,37 +399,37 @@ const PlayStatsPage: React.FC = () => {
 
   // 处理追番更新卡片点击
   const handleWatchingUpdatesClick = () => {
-    console.log('点击追番卡片，watchingUpdates:', watchingUpdates);
-    console.log('updatedCount:', watchingUpdates?.updatedCount);
-    console.log(
-      'continueWatchingCount:',
-      watchingUpdates?.continueWatchingCount,
-    );
+    //     console.log('点击追番卡片，watchingUpdates:', watchingUpdates);
+    //     console.log('updatedCount:', watchingUpdates?.updatedCount);
+    //     console.log(
+    //       'continueWatchingCount:',
+    //       watchingUpdates?.continueWatchingCount,
+    //     );
 
     if (
       watchingUpdates &&
       ((watchingUpdates.updatedCount || 0) > 0 ||
         (watchingUpdates.continueWatchingCount || 0) > 0)
     ) {
-      console.log('条件满足，显示弹窗');
+      //       console.log('条件满足，显示弹窗');
       setShowWatchingUpdates(true);
-      console.log('setShowWatchingUpdates(true) 已调用');
+      //       console.log('setShowWatchingUpdates(true) 已调用');
 
       // 强制刷新状态
       setTimeout(() => {
         setShowWatchingUpdates((prev) => {
-          console.log('强制状态更新，当前值:', prev);
+          //           console.log('强制状态更新，当前值:', prev);
           return true;
         });
       }, 100);
     } else {
-      console.log('条件不满足，不显示弹窗');
+      //       console.log('条件不满足，不显示弹窗');
     }
   };
 
   // 测试函数：强制显示弹窗
   const forceShowPopup = () => {
-    console.log('强制显示弹窗');
+    //     console.log('强制显示弹窗');
     setShowWatchingUpdates(true);
   };
 

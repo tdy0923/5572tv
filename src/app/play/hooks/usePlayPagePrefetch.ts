@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
+
 import type { SearchResult } from '@/lib/types';
 
 interface UsePrefetchNextEpisodeOptions {
@@ -46,7 +47,7 @@ export function usePrefetchNextEpisode({
       const nextEpisodeIndex = currentEpisodeIndex + 1;
       const nextEpisode = detail.episodes[nextEpisodeIndex];
 
-      console.log(`🚀 预取下一集: 第${nextEpisodeIndex + 1}集`);
+      //       console.log(`🚀 预取下一集: 第${nextEpisodeIndex + 1}集`);
 
       // Prefetch video detail for next episode
       // This will cache the data so when user clicks next, it loads instantly
@@ -63,7 +64,15 @@ export function usePrefetchNextEpisode({
         staleTime: 5 * 60 * 1000, // 5 minutes
       });
     }
-  }, [currentTime, duration, currentEpisodeIndex, detail, source, id, queryClient]);
+  }, [
+    currentTime,
+    duration,
+    currentEpisodeIndex,
+    detail,
+    source,
+    id,
+    queryClient,
+  ]);
 }
 
 interface UsePrefetchDoubanDataOptions {
@@ -89,7 +98,7 @@ export function usePrefetchDoubanData({
 
     hasPrefetchedRef.current = true;
 
-    console.log(`🚀 预取豆瓣数据: ${videoDoubanId}`);
+    //     console.log(`🚀 预取豆瓣数据: ${videoDoubanId}`);
 
     // Prefetch Douban details
     queryClient.prefetchQuery({

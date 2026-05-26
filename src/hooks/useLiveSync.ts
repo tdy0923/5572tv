@@ -43,9 +43,16 @@ export function useLiveSync({
       channelUrl: currentSourceKey, // channelUrl 存储直播源 key
     };
 
-    console.log('[LiveSync] Broadcasting channel change:', state);
+    //     console.log('[LiveSync] Broadcasting channel change:', state);
     watchRoom.changeLiveChannel(state);
-  }, [isOwner, socket, currentChannelId, currentChannelName, currentSourceKey, watchRoom]);
+  }, [
+    isOwner,
+    socket,
+    currentChannelId,
+    currentChannelName,
+    currentSourceKey,
+    watchRoom,
+  ]);
 
   // 房员：接收并同步房主的频道切换
   useEffect(() => {
@@ -54,7 +61,7 @@ export function useLiveSync({
     const handleLiveChange = (state: LiveState) => {
       if (syncingRef.current) return;
 
-      console.log('[LiveSync] Received channel change:', state);
+      //       console.log('[LiveSync] Received channel change:', state);
       syncingRef.current = true;
 
       try {
@@ -88,7 +95,13 @@ export function useLiveSync({
     }, 500); // 延迟广播，避免频繁触发
 
     return () => clearTimeout(timer);
-  }, [isOwner, currentChannelId, currentSourceKey, broadcastChannelChange, isInRoom]);
+  }, [
+    isOwner,
+    currentChannelId,
+    currentSourceKey,
+    broadcastChannelChange,
+    isInRoom,
+  ]);
 
   return {
     isInRoom,

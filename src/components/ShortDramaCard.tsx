@@ -307,7 +307,7 @@ function ShortDramaCard({
       const date = new Date(updateTime);
       return date.toLocaleDateString('zh-CN');
     } catch (e) {
-      console.log('[ShortDrama]', e);
+      //       console.log('[ShortDrama]', e);
       return updateTime;
     }
   };

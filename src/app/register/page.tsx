@@ -35,7 +35,9 @@ function RegisterPageClient() {
   const [disabledReason, setDisabledReason] = useState('');
   const [requireInviteCode, setRequireInviteCode] = useState(false);
 
-  const getPasswordStrength = (pwd: string): { level: number; label: string; color: string } => {
+  const getPasswordStrength = (
+    pwd: string,
+  ): { level: number; label: string; color: string } => {
     let score = 0;
     if (pwd.length >= 6) score++;
     if (pwd.length >= 10) score++;
@@ -65,7 +67,7 @@ function RegisterPageClient() {
           setCachedWallpaperUrl(data.url);
         }
       } catch (error) {
-        console.log('Failed to fetch Bing wallpaper:', error);
+        //         console.log('Failed to fetch Bing wallpaper:', error);
       }
     };
 
@@ -278,10 +280,15 @@ function RegisterPageClient() {
             <div className='mt-2'>
               <div className='flex gap-1 mb-1'>
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`} />
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`}
+                  />
                 ))}
               </div>
-              <p className='text-xs text-gray-500'>密码强度: {strength.label}</p>
+              <p className='text-xs text-gray-500'>
+                密码强度: {strength.label}
+              </p>
             </div>
           )}
         </div>

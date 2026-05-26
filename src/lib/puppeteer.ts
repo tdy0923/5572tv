@@ -1,6 +1,6 @@
-import puppeteer, { Browser, Page } from 'puppeteer-core';
+import puppeteer, { Browser } from 'puppeteer-core';
 
-import { getRandomUserAgent, getRandomUserAgentWithInfo, getSecChUaHeaders } from './user-agent';
+import { getRandomUserAgentWithInfo, getSecChUaHeaders } from './user-agent';
 
 // 🎯 重试配置 - 基于2025-2026最佳实践
 const PUPPETEER_MAX_RETRIES = 3;
@@ -66,7 +66,9 @@ export async function getBrowser(): Promise<Browser> {
     if (process.env.CHROME_PATH) {
       launchOptions.executablePath = process.env.CHROME_PATH;
     } else {
-      throw new Error('本地开发环境需要设置 CHROME_PATH 环境变量指向 Chrome/Chromium 可执行文件');
+      throw new Error(
+        '本地开发环境需要设置 CHROME_PATH 环境变量指向 Chrome/Chromium 可执行文件',
+      );
     }
   }
 
@@ -77,10 +79,13 @@ export async function getBrowser(): Promise<Browser> {
  * 使用 Puppeteer 获取页面 HTML（单次尝试，内部使用）
  * 参考: https://www.zenrows.com/blog/puppeteer-avoid-detection
  */
-async function _fetchPageWithPuppeteerOnce(url: string, options?: {
-  waitUntil?: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
-  timeout?: number;
-}): Promise<{ html: string; cookies: any[] }> {
+async function _fetchPageWithPuppeteerOnce(
+  url: string,
+  options?: {
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
+    timeout?: number;
+  },
+): Promise<{ html: string; cookies: any[] }> {
   const browser = await getBrowser();
 
   try {
@@ -98,9 +103,9 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
       // 2. 模拟真实的Chrome对象
       (window as any).chrome = {
         runtime: {},
-        loadTimes: function() {},
-        csi: function() {},
-        app: {}
+        loadTimes: function () {},
+        csi: function () {},
+        app: {},
       };
 
       // 3. 覆盖 plugins 和 languages（headless 浏览器常见泄露点）
@@ -116,7 +121,9 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
       const originalQuery = window.navigator.permissions.query;
       window.navigator.permissions.query = (parameters: any) =>
         parameters.name === 'notifications'
-          ? Promise.resolve({ state: Notification.permission } as PermissionStatus)
+          ? Promise.resolve({
+              state: Notification.permission,
+            } as PermissionStatus)
           : originalQuery(parameters);
 
       // 5. 修复 hairline 泄露（headless Chrome 的特征）
@@ -128,8 +135,8 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
           effectiveType: '4g',
           rtt: 50,
           downlink: 10,
-          saveData: false
-        })
+          saveData: false,
+        }),
       });
     });
 
@@ -148,24 +155,27 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
 
     // 设置额外的请求头（与 douban API 保持一致）
     await page.setExtraHTTPHeaders({
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
       'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
       'Accept-Encoding': 'gzip, deflate, br, zstd',
       'Cache-Control': 'max-age=0',
-      'DNT': '1',
+      DNT: '1',
       'Sec-Fetch-Dest': 'document',
       'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Site': 'none',
       'Sec-Fetch-User': '?1',
       'Upgrade-Insecure-Requests': '1',
       // 随机添加 Referer（50% 概率）
-      ...(Math.random() > 0.5 ? { 'Referer': 'https://www.douban.com/' } : {}),
+      ...(Math.random() > 0.5 ? { Referer: 'https://www.douban.com/' } : {}),
       // 注意：Sec-CH-UA headers 需要通过 CDP 设置，Puppeteer 不直接支持
     });
 
     // 🎯 监听失败的请求（用于调试）
     page.on('requestfailed', (request) => {
-      console.warn(`[Puppeteer] Request failed: ${request.url()}, error: ${request.failure()?.errorText}`);
+      console.warn(
+        `[Puppeteer] Request failed: ${request.url()}, error: ${request.failure()?.errorText}`,
+      );
     });
 
     // 访问页面
@@ -179,7 +189,7 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
     let retries = 0;
     const maxRetries = 5;
     while (retries < maxRetries) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 每次等1秒
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 每次等1秒
 
       // 检查关键内容是否加载（豆瓣页面必有的元素）
       const isLoaded = await page.evaluate(() => {
@@ -190,13 +200,15 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
       });
 
       if (isLoaded) {
-        console.log(`[Puppeteer] ✅ 页面加载完成 (等待 ${retries + 1} 秒)`);
+        //         console.log(`[Puppeteer] ✅ 页面加载完成 (等待 ${retries + 1} 秒)`);
         break;
       }
 
       retries++;
       if (retries === maxRetries) {
-        console.warn(`[Puppeteer] ⚠️ 页面可能未完全加载，但已达到最大等待时间 (${maxRetries}秒)`);
+        console.warn(
+          `[Puppeteer] ⚠️ 页面可能未完全加载，但已达到最大等待时间 (${maxRetries}秒)`,
+        );
       }
     }
 
@@ -216,49 +228,60 @@ async function _fetchPageWithPuppeteerOnce(url: string, options?: {
  * 使用 Puppeteer 获取页面 HTML（带重试机制）
  * 参考: https://betterstack.com/community/guides/monitoring/exponential-backoff/
  */
-export async function fetchPageWithPuppeteer(url: string, options?: {
-  waitUntil?: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
-  timeout?: number;
-  maxRetries?: number;
-}): Promise<{ html: string; cookies: any[] }> {
+export async function fetchPageWithPuppeteer(
+  url: string,
+  options?: {
+    waitUntil?: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2';
+    timeout?: number;
+    maxRetries?: number;
+  },
+): Promise<{ html: string; cookies: any[] }> {
   const maxRetries = options?.maxRetries ?? PUPPETEER_MAX_RETRIES;
   let lastError: Error | undefined;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`[Puppeteer] 尝试 ${attempt + 1}/${maxRetries + 1}: ${url}`);
+      //       console.log(`[Puppeteer] 尝试 ${attempt + 1}/${maxRetries + 1}: ${url}`);
 
       const result = await _fetchPageWithPuppeteerOnce(url, options);
 
-      console.log(`[Puppeteer] ✅ 成功获取页面 (尝试 ${attempt + 1}/${maxRetries + 1}), HTML 长度: ${result.html.length}`);
+      //       console.log(`[Puppeteer] ✅ 成功获取页面 (尝试 ${attempt + 1}/${maxRetries + 1}), HTML 长度: ${result.html.length}`);
 
       return result;
     } catch (error) {
       lastError = error as Error;
 
-      console.error(`[Puppeteer] ❌ 尝试 ${attempt + 1}/${maxRetries + 1} 失败:`, error);
+      console.error(
+        `[Puppeteer] ❌ 尝试 ${attempt + 1}/${maxRetries + 1} 失败:`,
+        error,
+      );
 
       // 如果还有重试机会
       if (attempt < maxRetries) {
         const delay = calculateBackoffDelay(attempt);
-        console.log(`[Puppeteer] 等待 ${delay}ms 后重试...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        //         console.log(`[Puppeteer] 等待 ${delay}ms 后重试...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
   // 所有重试都失败
-  throw new Error(`Puppeteer在${maxRetries + 1}次尝试后失败: ${lastError?.message}`);
+  throw new Error(
+    `Puppeteer在${maxRetries + 1}次尝试后失败: ${lastError?.message}`,
+  );
 }
 
 /**
  * 使用 Puppeteer 绕过豆瓣的 Challenge 页面（带重试）
  */
-export async function bypassDoubanChallenge(url: string, maxRetries?: number): Promise<{
+export async function bypassDoubanChallenge(
+  url: string,
+  maxRetries?: number,
+): Promise<{
   html: string;
   cookies: any[];
 }> {
-  console.log(`[Puppeteer] 开始绕过豆瓣 Challenge: ${url}`);
+  //   console.log(`[Puppeteer] 开始绕过豆瓣 Challenge: ${url}`);
 
   const result = await fetchPageWithPuppeteer(url, {
     waitUntil: 'networkidle2',
@@ -266,7 +289,7 @@ export async function bypassDoubanChallenge(url: string, maxRetries?: number): P
     maxRetries,
   });
 
-  console.log(`[Puppeteer] ✅ 成功绕过Challenge，HTML 长度: ${result.html.length}`);
+  //   console.log(`[Puppeteer] ✅ 成功绕过Challenge，HTML 长度: ${result.html.length}`);
 
   return result;
 }

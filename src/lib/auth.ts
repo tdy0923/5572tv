@@ -26,7 +26,7 @@ export function getAuthInfoFromCookie(request: NextRequest): {
     const authData = JSON.parse(decoded);
     return authData;
   } catch (error) {
-    console.log('[Auth] Parse error:', error);
+    //     console.log('[Auth] Parse error:', error);
     return null;
   }
 }
@@ -82,7 +82,7 @@ export function getAuthInfoFromBrowserCookie(): {
     const authData = JSON.parse(decoded);
     return authData;
   } catch (error) {
-    console.log('[Auth] Parse error:', error);
+    //     console.log('[Auth] Parse error:', error);
     return null;
   }
 }
@@ -116,7 +116,7 @@ async function verifySignature(
       messageData,
     );
   } catch (error) {
-    console.log('[Auth] Parse error:', error);
+    //     console.log('[Auth] Parse error:', error);
     return false;
   }
 }

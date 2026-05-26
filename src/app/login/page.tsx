@@ -70,7 +70,7 @@ function LoginPageClient() {
           setCachedWallpaperUrl(data.url);
         }
       } catch (error) {
-        console.log('Failed to fetch Bing wallpaper:', error);
+        //         console.log('Failed to fetch Bing wallpaper:', error);
       }
     };
 
@@ -81,38 +81,38 @@ function LoginPageClient() {
   useEffect(() => {
     const fetchTelegramConfig = async () => {
       try {
-        console.log('[Login] Fetching server config...');
+        //         console.log('[Login] Fetching server config...');
         const response = await fetch('/api/server-config');
         const data = await response.json();
-        console.log('[Login] Server config received:', data);
-        console.log('[Login] TelegramAuthConfig:', data.TelegramAuthConfig);
+        //         console.log('[Login] Server config received:', data);
+        //         console.log('[Login] TelegramAuthConfig:', data.TelegramAuthConfig);
         if (data.TelegramAuthConfig?.enabled) {
-          console.log('[Login] Telegram is enabled!');
+          //           console.log('[Login] Telegram is enabled!');
           setTelegramEnabled(true);
         } else {
-          console.log('[Login] Telegram is NOT enabled');
+          //           console.log('[Login] Telegram is NOT enabled');
         }
 
         // 检查 OIDC 配置
-        console.log('[Login] OIDCConfig:', data.OIDCConfig);
-        console.log('[Login] OIDCProviders:', data.OIDCProviders);
+        //         console.log('[Login] OIDCConfig:', data.OIDCConfig);
+        //         console.log('[Login] OIDCProviders:', data.OIDCProviders);
 
         // 优先使用新的多 Provider 配置
         if (data.OIDCProviders && data.OIDCProviders.length > 0) {
-          console.log('[Login] Multiple OIDC providers enabled!');
+          //           console.log('[Login] Multiple OIDC providers enabled!');
           setOidcProviders(data.OIDCProviders);
           setOidcEnabled(true);
         } else if (data.OIDCConfig?.enabled) {
           // 向后兼容：旧的单 Provider 配置
-          console.log('[Login] OIDC is enabled!');
+          //           console.log('[Login] OIDC is enabled!');
           setOidcEnabled(true);
           setOidcButtonText(data.OIDCConfig.buttonText || '使用OIDC登录');
           setOidcIssuer(data.OIDCConfig.issuer || '');
         } else {
-          console.log('[Login] OIDC is NOT enabled');
+          //           console.log('[Login] OIDC is NOT enabled');
         }
       } catch (error) {
-        console.log('Failed to fetch server config:', error);
+        //         console.log('Failed to fetch server config:', error);
       }
     };
 
@@ -148,7 +148,7 @@ function LoginPageClient() {
           // 更新 localStorage 记录
           localStorage.setItem('lastRecordedLogin', loginTime.toString());
         } catch (error) {
-          console.log('记录登入时间失败:', error);
+          //           console.log('记录登入时间失败:', error);
           // 登入时间记录失败不影响正常登录流程
         }
 
@@ -169,7 +169,7 @@ function LoginPageClient() {
 
   // 生成 Telegram 登录链接
   const handleTelegramLogin = async () => {
-    console.log('[Frontend] Telegram login clicked');
+    //     console.log('[Frontend] Telegram login clicked');
     setError(null);
 
     // 验证 Telegram 用户名
@@ -181,10 +181,10 @@ function LoginPageClient() {
     setTelegramLoading(true);
 
     try {
-      console.log(
-        '[Frontend] Generating deep link for user:',
-        telegramUsername,
-      );
+      //       console.log(
+      //         '[Frontend] Generating deep link for user:',
+      //         telegramUsername,
+      //       );
       const res = await fetch('/api/telegram/send-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,11 +192,11 @@ function LoginPageClient() {
       });
 
       const data = await res.json();
-      console.log('[Frontend] API response:', {
-        ok: res.ok,
-        status: res.status,
-        data,
-      });
+      //       console.log('[Frontend] API response:', {
+      //         ok: res.ok,
+      //         status: res.status,
+      //         data,
+      //       });
 
       if (res.ok && data.deepLink) {
         setTelegramDeepLink(data.deepLink);
@@ -219,7 +219,11 @@ function LoginPageClient() {
       subtitle='欢迎回来，继续访问您的内容与播放记录'
       icon={<Sparkles className='h-6 w-6 text-white' />}
     >
-      <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-6' aria-label="登录表单">
+      <form
+        onSubmit={handleSubmit}
+        className='space-y-4 sm:space-y-6'
+        aria-label='登录表单'
+      >
         {shouldAskUsername && (
           <div className='group'>
             <label
@@ -280,7 +284,11 @@ function LoginPageClient() {
         </div>
 
         {error && (
-          <div role="alert" aria-live="polite" className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
+          <div
+            role='alert'
+            aria-live='polite'
+            className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'
+          >
             <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
             <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>
               {error}

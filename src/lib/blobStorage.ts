@@ -46,7 +46,7 @@ export async function getSpiderJarFromBlob(): Promise<{
 export async function uploadSpiderJarToBlob(
   buffer: Buffer,
   md5: string,
-  source: string
+  source: string,
 ): Promise<string | null> {
   if (!isBlobAvailable()) {
     console.warn('[Blob] Blob Storage not available, skipping upload');
@@ -59,8 +59,8 @@ export async function uploadSpiderJarToBlob(
       addRandomSuffix: false,
     });
 
-    console.log(`[Blob] ✅ Spider JAR uploaded to Blob: ${blob.url}`);
-    console.log(`[Blob] MD5: ${md5}, Source: ${source}`);
+    //     console.log(`[Blob] ✅ Spider JAR uploaded to Blob: ${blob.url}`);
+    //     console.log(`[Blob] MD5: ${md5}, Source: ${source}`);
     return blob.url;
   } catch (error) {
     console.error('[Blob] Failed to upload Spider JAR:', error);

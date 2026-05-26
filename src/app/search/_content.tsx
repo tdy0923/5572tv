@@ -141,13 +141,13 @@ function eventSourceIterable(
               try {
                 es.close();
               } catch (e) {
-                console.log('Search parse error:', e);
+                //                 console.log('Search parse error:', e);
               }
               close(payload.completedSources ?? 0);
               break;
           }
         } catch (e) {
-          console.log('Search parse error:', e);
+          //           console.log('Search parse error:', e);
         }
       };
 
@@ -155,7 +155,7 @@ function eventSourceIterable(
         try {
           es.close();
         } catch (e) {
-          console.log('Search parse error:', e);
+          //           console.log('Search parse error:', e);
         }
         close();
       };
@@ -164,7 +164,7 @@ function eventSourceIterable(
         try {
           es.close();
         } catch (e) {
-          console.log('Search parse error:', e);
+          //           console.log('Search parse error:', e);
         }
         close();
       });
@@ -1047,8 +1047,8 @@ function SearchPageClient() {
   useEffect(() => {
     fetch('/api/search/trending')
       .then((r) => r.json())
-      .then((data) => setTrendingSearches(data.trending || []))
-      .catch((e) => console.log('[Search] Trending fetch error:', e));
+      .then((data) => setTrendingSearches(data.trending || []));
+    //       .catch((e) => console.log('[Search] Trending fetch error:', e));
   }, []);
 
   // 监听搜索类型变化，如果切换到网盘/TMDB演员搜索且有搜索词，立即搜索
@@ -1170,7 +1170,7 @@ function SearchPageClient() {
   ) => {
     if (!query.trim()) return;
 
-    console.log(`🚀 [前端TMDB] 开始搜索: ${query}, type=${type}`);
+    //     console.log(`🚀 [前端TMDB] 开始搜索: ${query}, type=${type}`);
 
     setTmdbActorLoading(true);
     setTmdbActorError(null);

@@ -351,8 +351,8 @@ const TVBoxSecurityConfig = ({
         diagnoseUrl += `?token=${encodeURIComponent(securitySettings.token)}`;
       }
 
-      console.log('[Diagnose] Frontend - Token:', securitySettings.token);
-      console.log('[Diagnose] Frontend - Calling URL:', diagnoseUrl);
+      //       console.log('[Diagnose] Frontend - Token:', securitySettings.token);
+      //       console.log('[Diagnose] Frontend - Calling URL:', diagnoseUrl);
 
       const response = await fetch(diagnoseUrl);
       const result = await response.json();

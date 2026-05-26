@@ -108,11 +108,11 @@ export class EmbyClient {
     let serverUrl = config.ServerURL.replace(/\/$/, '');
 
     // 🔍 调试日志
-    console.log('🎬 EmbyClient 初始化配置:', {
-      transcodeMp4: config.transcodeMp4,
-      proxyPlay: config.proxyPlay,
-      key: config.key,
-    });
+    //     console.log('🎬 EmbyClient 初始化配置:', {
+    //       transcodeMp4: config.transcodeMp4,
+    //       proxyPlay: config.proxyPlay,
+    //       key: config.key,
+    //     });
 
     // 存储高级选项
     this.removeEmbyPrefix = config.removeEmbyPrefix || false;
@@ -588,18 +588,18 @@ export class EmbyClient {
 
     const token = this.apiKey || this.authToken;
 
-    console.log(
-      '🎵 [Client] 开始获取音轨，itemId:',
-      itemId,
-      'userId:',
-      this.userId,
-    );
+    //     console.log(
+    //       '🎵 [Client] 开始获取音轨，itemId:',
+    //       itemId,
+    //       'userId:',
+    //       this.userId,
+    //     );
 
     // 尝试从 PlaybackInfo 获取音轨信息
     try {
       const playbackInfoUrl = `${this.serverUrl}/Items/${itemId}/PlaybackInfo?UserId=${this.userId}${token ? `&api_key=${token}` : ''}`;
 
-      console.log('🎵 [Client] 请求 PlaybackInfo:', playbackInfoUrl);
+      //       console.log('🎵 [Client] 请求 PlaybackInfo:', playbackInfoUrl);
 
       const response = await fetch(playbackInfoUrl, {
         method: 'POST',
@@ -612,15 +612,15 @@ export class EmbyClient {
         }),
       });
 
-      console.log('🎵 [Client] PlaybackInfo 响应状态:', response.status);
+      //       console.log('🎵 [Client] PlaybackInfo 响应状态:', response.status);
 
       if (response.ok) {
         const data: PlaybackInfoResponse = await response.json();
-        console.log('🎵 [Client] PlaybackInfo 数据:', data);
+        //         console.log('🎵 [Client] PlaybackInfo 数据:', data);
 
         const streams =
           data.MediaSources?.[0]?.MediaStreams || data.MediaStreams || [];
-        console.log('🎵 [Client] 所有流:', streams);
+        //         console.log('🎵 [Client] 所有流:', streams);
 
         const audioStreams = streams
           .filter((stream) => stream.Type?.toLowerCase() === 'audio')
@@ -634,7 +634,7 @@ export class EmbyClient {
           .filter((stream) => stream.index >= 0)
           .sort((a, b) => a.index - b.index);
 
-        console.log('🎵 [Client] 过滤后的音频流:', audioStreams);
+        //         console.log('🎵 [Client] 过滤后的音频流:', audioStreams);
 
         if (audioStreams.length > 0) {
           return audioStreams;
@@ -649,11 +649,11 @@ export class EmbyClient {
 
     // 回退：从 Item 详情获取（显式请求 MediaStreams 字段）
     try {
-      console.log('🎵 [Client] 尝试从 Item 详情获取音轨');
+      //       console.log('🎵 [Client] 尝试从 Item 详情获取音轨');
 
       // 直接请求 MediaStreams 字段，而不是通过 getItem
       const itemDetailUrl = `${this.serverUrl}/Items/${itemId}?Fields=MediaStreams${token ? `&api_key=${token}` : ''}`;
-      console.log('🎵 [Client] 请求 Item 详情:', itemDetailUrl);
+      //       console.log('🎵 [Client] 请求 Item 详情:', itemDetailUrl);
 
       const response = await fetch(itemDetailUrl, {
         method: 'GET',
@@ -666,10 +666,10 @@ export class EmbyClient {
       }
 
       const item: any = await response.json();
-      console.log('🎵 [Client] Item 详情响应:', item);
+      //       console.log('🎵 [Client] Item 详情响应:', item);
 
       const streams = item.MediaStreams || [];
-      console.log('🎵 [Client] Item MediaStreams:', streams);
+      //       console.log('🎵 [Client] Item MediaStreams:', streams);
 
       const audioStreams = streams
         .filter((stream: any) => stream.Type?.toLowerCase() === 'audio')
@@ -683,7 +683,7 @@ export class EmbyClient {
         .filter((stream: AudioStream) => stream.index >= 0)
         .sort((a, b) => a.index - b.index);
 
-      console.log('🎵 [Client] 从 Item 获取的音频流:', audioStreams);
+      //       console.log('🎵 [Client] 从 Item 获取的音频流:', audioStreams);
       return audioStreams;
     } catch (error) {
       console.error('🎵 [Client] 获取音轨信息失败:', error);

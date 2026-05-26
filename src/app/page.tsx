@@ -472,9 +472,7 @@ function HomeClient() {
       fetch('/api/play-history/timeline')
         .then((r) => r.json())
         .then((data) => setHistoryTimeline(data.timeline || {}))
-        .catch((e) =>
-          console.log('[Homepage] History timeline fetch error:', e),
-        );
+        .catch(() => {});
     }
   }, [activeTab]);
 
@@ -553,15 +551,13 @@ function HomeClient() {
     fetch('/api/favorites/updates')
       .then((r) => r.json())
       .then((data) => setUpdateCount(data.count || 0))
-      .catch((e) =>
-        console.log('[Homepage] Favorites updates fetch error:', e),
-      );
+      .catch(() => {});
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
   useEffect(() => {
     if (homeData && homeData.hotShortDramas.length === 0 && !homeLoading) {
-      console.log('[TanStack Query] 热门短剧为空，强制刷新首页数据');
+      //       console.log('[TanStack Query] 热门短剧为空，强制刷新首页数据');
       refetchHomeData();
     }
   }, [homeData, homeLoading, refetchHomeData]);
@@ -596,20 +592,19 @@ function HomeClient() {
             }
             return null;
           }),
-        )
-          .then((results) => {
-            dispatch({
-              type: 'UPDATE_HOT_MOVIES',
-              payload: (prev) => {
-                const base = prev.length > 0 ? prev : homeData.hotMovies;
-                return base.map((m) => {
-                  const detail = results.find((r) => r?.id === m.id);
-                  return detail ? { ...m, ...detail } : m;
-                });
-              },
-            });
-          })
-          .catch((err) => console.log('[Homepage] Detail fetch error:', err));
+        ).then((results) => {
+          dispatch({
+            type: 'UPDATE_HOT_MOVIES',
+            payload: (prev) => {
+              const base = prev.length > 0 ? prev : homeData.hotMovies;
+              return base.map((m) => {
+                const detail = results.find((r) => r?.id === m.id);
+                return detail ? { ...m, ...detail } : m;
+              });
+            },
+          });
+        });
+        //           .catch((err) => console.log('[Homepage] Detail fetch error:', err));
       }, 2000);
       detailTimeoutRefs.current.push(t1);
     }
@@ -634,20 +629,19 @@ function HomeClient() {
             }
             return null;
           }),
-        )
-          .then((results) => {
-            dispatch({
-              type: 'UPDATE_HOT_TV_SHOWS',
-              payload: (prev) => {
-                const base = prev.length > 0 ? prev : homeData.hotTvShows;
-                return base.map((s) => {
-                  const detail = results.find((r) => r?.id === s.id);
-                  return detail ? { ...s, ...detail } : s;
-                });
-              },
-            });
-          })
-          .catch((err) => console.log('[Homepage] Detail fetch error:', err));
+        ).then((results) => {
+          dispatch({
+            type: 'UPDATE_HOT_TV_SHOWS',
+            payload: (prev) => {
+              const base = prev.length > 0 ? prev : homeData.hotTvShows;
+              return base.map((s) => {
+                const detail = results.find((r) => r?.id === s.id);
+                return detail ? { ...s, ...detail } : s;
+              });
+            },
+          });
+        });
+        //           .catch((err) => console.log('[Homepage] Detail fetch error:', err));
       }, 2000);
       detailTimeoutRefs.current.push(t2);
     }
