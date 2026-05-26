@@ -21,26 +21,23 @@ import { toast } from 'sonner';
 
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
-import { getCdnDomain, isCdnBlocked } from '@/lib/cdn-blocklist';
 import { ClientCache } from '@/lib/client-cache';
 import {
-  deletePlayRecord,
   generateStorageKey,
   getAllFavorites,
   getAllPlayRecords,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
 import { SearchResult } from '@/lib/types';
-import {
-  getVideoResolutionFromM3u8,
-  processImageUrl,
-  resolveCardPosterUrl,
-} from '@/lib/utils';
+import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
 import { useDanmu } from '@/hooks/useDanmu';
 
 import AcgSearch from '@/components/AcgSearch';
 import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
+
+import { useSourceSwitching } from './hooks/useSourceSwitching';
+import { useSpeedTest } from './hooks/useSpeedTest';
 const DanmuManualMatchModal = dynamic(
   () => import('@/components/DanmuManualMatchModal'),
   { ssr: false },
@@ -310,14 +307,6 @@ function PlayPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [detail, setDetail] = useState<SearchResult | null>(null);
 
-  // 测速进度状态
-  const [speedTestProgress, setSpeedTestProgress] = useState<{
-    current: number;
-    total: number;
-    currentSource: string;
-    result?: string;
-  } | null>(null);
-
   // 收藏状态
   const [favorited, setFavorited] = useState(false);
   // 追踪当前收藏实际存储的 key（source+id），用于切换源后正确删除
@@ -560,17 +549,6 @@ function PlayPageClient() {
   );
   const [currentId, setCurrentId] = useState(searchParams.get('id') || '');
 
-  // 解析 source 参数以获取 embyKey（仅用于 API 调用）
-  const parseSourceForApi = (
-    source: string,
-  ): { source: string; embyKey?: string } => {
-    if (source.startsWith('emby_')) {
-      const key = source.substring(5);
-      return { source: 'emby', embyKey: key };
-    }
-    return { source };
-  };
-
   // 短剧ID（用于获取详情显示，不影响源搜索）
   const [shortdramaId] = useState(searchParams.get('shortdrama_id') || '');
 
@@ -650,10 +628,6 @@ function PlayPageClient() {
     }
   }, [searchParamsStr, currentSource, currentId]);
 
-  // 换源相关状态
-  const [availableSources, setAvailableSources] = useState<SearchResult[]>([]);
-  const availableSourcesRef = useRef<SearchResult[]>([]);
-
   const currentSourceRef = useRef(currentSource);
   const currentIdRef = useRef(currentId);
   const videoTitleRef = useRef(videoTitle);
@@ -682,15 +656,6 @@ function PlayPageClient() {
   const [isAudioTrackSwitching, setIsAudioTrackSwitching] = useState(false);
   const audioTracksRef = useRef(audioTracks);
   const currentAudioTrackRef = useRef(currentAudioTrack);
-  // 🎯 自适应源重试状态：指数退避 [30s, 2min, 5min, 10min]
-  const RETRY_BACKOFFS = [30_000, 120_000, 300_000, 600_000];
-  const MAX_RETRIES = RETRY_BACKOFFS.length;
-  const sourceRetryStateRef = useRef<
-    Map<string, { failCount: number; lastFailTime: number }>
-  >(new Map());
-  const totalSessionFailuresRef = useRef(0);
-  const fallbackAutoRetriedRef = useRef(false);
-  const MAX_SESSION_FAILURES = 50;
 
   const tryTrailerFallback = useTrailerFallback(
     videoDoubanIdRef,
@@ -728,6 +693,9 @@ function PlayPageClient() {
     manualOverride: activeManualDanmuOverride,
   });
 
+  const { speedTestProgress, precomputedVideoInfo, fullSpeedTest } =
+    useSpeedTest();
+
   // ✅ 合并所有 ref 同步的 useEffect - 减少不必要的渲染
   useEffect(() => {
     blockAdEnabledRef.current = blockAdEnabled;
@@ -741,7 +709,6 @@ function PlayPageClient() {
     videoTitleRef.current = videoTitle;
     videoYearRef.current = videoYear;
     videoDoubanIdRef.current = videoDoubanId;
-    availableSourcesRef.current = availableSources;
     audioTracksRef.current = audioTracks;
     currentAudioTrackRef.current = currentAudioTrack;
   }, [
@@ -756,7 +723,6 @@ function PlayPageClient() {
     videoTitle,
     videoYear,
     videoDoubanId,
-    availableSources,
     audioTracks,
     currentAudioTrack,
   ]);
@@ -1041,11 +1007,6 @@ function PlayPageClient() {
     return false;
   });
 
-  // 保存优选时的测速结果，避免EpisodeSelector重复测速
-  const [precomputedVideoInfo, setPrecomputedVideoInfo] = useState<
-    Map<string, { quality: string; loadSpeed: string; pingTime: number }>
-  >(new Map());
-
   // 折叠状态（仅在 lg 及以上屏幕有效）
   const [isEpisodeSelectorCollapsed, setIsEpisodeSelectorCollapsed] =
     useState(false);
@@ -1062,7 +1023,6 @@ function PlayPageClient() {
 
   // 🚀 连续切换源防抖和资源管理
   const episodeSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isSourceChangingRef = useRef<boolean>(false); // 标记是否正在换源
   const isEpisodeChangingRef = useRef<boolean>(false); // 标记是否正在切换集数
   const isSkipControllerTriggeredRef = useRef<boolean>(false); // 标记是否通过 SkipController 触发了下一集
   const videoEndedHandledRef = useRef<boolean>(false); // 🔥 标记当前视频的 video:ended 事件是否已经被处理过（防止多个监听器重复触发）
@@ -1071,6 +1031,53 @@ function PlayPageClient() {
   const sourceSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingSwitchRef = useRef<any>(null); // 保存待处理的切换请求
   const switchPromiseRef = useRef<Promise<void> | null>(null); // 当前切换的Promise
+
+  const {
+    handleSourceChange,
+    availableSources,
+    setAvailableSources,
+    availableSourcesRef,
+    sourceRetryStateRef,
+    totalSessionFailuresRef,
+    fallbackAutoRetriedRef,
+    isSourceChangingRef,
+    sourceErrorCountRef,
+    getSourceIdentityKey,
+    markSourceFailed,
+    filterInvalidSources,
+    findWorkingSource,
+    resetSourceState,
+    MAX_SOURCE_ERRORS,
+    MAX_SESSION_FAILURES,
+  } = useSourceSwitching({
+    videoTitleRef,
+    videoYearRef,
+    videoDoubanIdRef,
+    setDetail,
+    setError,
+    artPlayerRef,
+    currentEpisodeIndex,
+    setCurrentEpisodeIndex,
+    currentSourceRef,
+    currentIdRef,
+    detailRef,
+    currentEpisodeIndexRef,
+    searchTitle,
+    setVideoTitle,
+    setVideoYear,
+    setVideoCover,
+    setVideoDoubanId,
+    setCurrentSource,
+    setCurrentId,
+    replacePlaybackUrlParams,
+    setVideoLoadingStage,
+    setIsVideoLoading,
+    loadExternalDanmu,
+    externalDanmuEnabledRef,
+    episodeSwitchTimeoutRef,
+    lastDanmuLoadKeyRef,
+    danmuLoadingRef,
+  });
 
   // 播放器就绪状态
   const [playerReady, setPlayerReady] = useState(false);
@@ -1637,88 +1644,6 @@ function PlayPageClient() {
     });
   };
 
-  const getSourceIdentityKey = (source: string, id: string) =>
-    `${source}::${id}`;
-
-  const isSourceAvailable = useCallback((sourceKey: string): boolean => {
-    const state = sourceRetryStateRef.current.get(sourceKey);
-    if (!state) return true;
-
-    const now = Date.now();
-    const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
-    const nextRetryTime = state.lastFailTime + RETRY_BACKOFFS[backoffIndex];
-
-    if (now >= nextRetryTime) {
-      sourceRetryStateRef.current.delete(sourceKey);
-      return true;
-    }
-    return false;
-  }, []);
-
-  const markSourceFailed = useCallback((sourceKey: string) => {
-    const prev = sourceRetryStateRef.current.get(sourceKey);
-    const failCount = Math.min((prev?.failCount || 0) + 1, MAX_RETRIES);
-    sourceRetryStateRef.current.set(sourceKey, {
-      failCount,
-      lastFailTime: Date.now(),
-    });
-    totalSessionFailuresRef.current++;
-  }, []);
-
-  const resetSourceRetries = useCallback(() => {
-    sourceRetryStateRef.current.clear();
-    totalSessionFailuresRef.current = 0;
-  }, []);
-
-  const filterInvalidSources = useCallback(
-    (sources: SearchResult[]): SearchResult[] => {
-      const now = Date.now();
-      return sources.filter((source) => {
-        const key = getSourceIdentityKey(source.source, source.id);
-        const state = sourceRetryStateRef.current.get(key);
-        if (!state) return true;
-
-        const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
-        if (now - state.lastFailTime > RETRY_BACKOFFS[backoffIndex]) {
-          sourceRetryStateRef.current.delete(key);
-          return true;
-        }
-        return false;
-      });
-    },
-    [],
-  );
-
-  // 🎯 HEAD 预检：播放前快速探测源是否可通
-  const quickProbe = useCallback(
-    async (
-      url: string,
-      timeout = 2000,
-      source?: string,
-    ): Promise<'ok' | 'slow' | 'fail'> => {
-      try {
-        const proxyUrl = new URL('/api/proxy/m3u8', window.location.origin);
-        proxyUrl.searchParams.set('url', url);
-        proxyUrl.searchParams.set('allowCORS', 'true');
-        if (source) proxyUrl.searchParams.set('5572tv-source', source);
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeout);
-        const resp = await fetch(proxyUrl.toString(), {
-          method: 'HEAD',
-          mode: 'cors',
-          signal: controller.signal,
-        });
-        clearTimeout(timer);
-        if (resp.ok) return 'ok';
-        return 'fail';
-      } catch (err: any) {
-        if (err?.name === 'AbortError') return 'slow';
-        return 'fail';
-      }
-    },
-    [],
-  );
-
   // 设置可用源列表（先按权重排序）
   const setAvailableSourcesWithWeight = async (
     sources: SearchResult[],
@@ -1899,209 +1824,6 @@ function PlayPageClient() {
     // );
 
     return sortedResults[0].source;
-  };
-
-  // 完整测速（桌面设备）
-  const fullSpeedTest = async (
-    sources: SearchResult[],
-    weights: Record<string, number> = {},
-  ): Promise<SearchResult> => {
-    // 全部源并发测速，不再设上限（并行请求 + 8s 超时）
-    let sourcesToTest = sources;
-
-    // console.log(`开始测速: 共${sources.length}个源，全部并发`);
-
-    // 并发测试所有源（8s 超时），跳过已知阻断的 CDN 域名
-    const testPromises = sourcesToTest.map(async (source) => {
-      try {
-        if (!source.episodes || source.episodes.length === 0) return null;
-        const episodeUrl =
-          source.episodes.length > 1 ? source.episodes[1] : source.episodes[0];
-        const cdnDomain = getCdnDomain(episodeUrl);
-        if (cdnDomain && isCdnBlocked(cdnDomain)) {
-          // console.log(
-          // `⏭️ CDN 已封禁，跳过测速: ${cdnDomain} (${source.source_name})`,
-          // );
-          return null;
-        }
-        const proxyUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true&_t=${Date.now()}`;
-        const result = await getVideoResolutionFromM3u8(proxyUrl);
-        return { source, testResult: result };
-      } catch {
-        return null;
-      }
-    }) as Promise<{ source: SearchResult; testResult: any } | null>[];
-
-    // 8 秒超时后取已完成的
-    const timeoutPromise = new Promise<null>((r) =>
-      setTimeout(() => r(null), 8000),
-    );
-    const raceResult = await Promise.race([
-      Promise.allSettled(testPromises),
-      timeoutPromise,
-    ]);
-
-    const successfulResults: Array<{ source: SearchResult; testResult: any }> =
-      [];
-    if (raceResult && Array.isArray(raceResult)) {
-      for (const r of raceResult) {
-        if (r.status === 'fulfilled' && r.value) {
-          successfulResults.push(r.value);
-        }
-      }
-    }
-
-    if (successfulResults.length === 0) {
-      console.warn('所有播放源测速都失败，使用第一个播放源');
-      setPrecomputedVideoInfo(new Map());
-      setSpeedTestProgress(null);
-      return sources[0];
-    }
-
-    // 评分排序（同现有逻辑）
-    const validSpeeds = successfulResults
-      .map((result) => {
-        const speedStr = result.testResult.loadSpeed;
-        if (speedStr === '未知' || speedStr === '测量中...') return 0;
-
-        const match = speedStr.match(/^([\d.]+)\s*(KB\/s|MB\/s)$/);
-        if (!match) return 0;
-
-        const value = parseFloat(match[1]);
-        const unit = match[2];
-        return unit === 'MB/s' ? value * 1024 : value; // 统一转换为 KB/s
-      })
-      .filter((speed) => speed > 0);
-
-    const maxSpeed = validSpeeds.length > 0 ? Math.max(...validSpeeds) : 1024; // 默认1MB/s作为基准
-
-    // 找出所有有效延迟的最小值和最大值，用于线性映射
-    const validPings = successfulResults
-      .map((result) => result.testResult.pingTime)
-      .filter((ping) => ping > 0);
-
-    const minPing = validPings.length > 0 ? Math.min(...validPings) : 50;
-    const maxPing = validPings.length > 0 ? Math.max(...validPings) : 1000;
-
-    // 计算每个结果的评分（结合测速结果和权重）
-    const resultsWithScore = successfulResults.map((result) => {
-      const testScore = calculateSourceScore(
-        result.testResult,
-        maxSpeed,
-        minPing,
-        maxPing,
-      );
-      const weight = weights[result.source.source] ?? 50;
-      // 权重加成：权重每增加10分，总分增加5%
-      // 例如：权重100的源比权重50的源，总分高出25%
-      const weightBonus = 1 + (weight - 50) * 0.005;
-      const finalScore = testScore * weightBonus;
-      return {
-        ...result,
-        score: finalScore,
-        testScore,
-        weight,
-      };
-    });
-
-    // 按综合评分排序，选择最佳播放源
-    resultsWithScore.sort((a, b) => b.score - a.score);
-
-    // console.log('播放源评分排序结果（含权重加成）:');
-    resultsWithScore.forEach((result, index) => {
-      // console.log(
-      // `${index + 1}. ${
-      // result.source.source_name
-      // } - 总分: ${result.score.toFixed(2)} (测速分: ${result.testScore.toFixed(2)}, 权重: ${result.weight}) [${result.testResult.quality}, ${
-      // result.testResult.loadSpeed
-      // }, ${result.testResult.pingTime}ms]`,
-      // );
-    });
-
-    // 清除测速进度状态
-    setSpeedTestProgress(null);
-
-    // 保存测速结果供 EpisodeSelector 展示
-    const infoMap = new Map<
-      string,
-      { quality: string; loadSpeed: string; pingTime: number }
-    >();
-    successfulResults.forEach((r) => {
-      infoMap.set(`${r.source.source}-${r.source.id}`, r.testResult);
-    });
-    setPrecomputedVideoInfo(infoMap);
-
-    return resultsWithScore[0].source;
-  };
-
-  // 计算播放源综合评分
-  const calculateSourceScore = (
-    testResult: {
-      quality: string;
-      loadSpeed: string;
-      pingTime: number;
-    },
-    maxSpeed: number,
-    minPing: number,
-    maxPing: number,
-  ): number => {
-    let score = 0;
-
-    // 分辨率评分 (40% 权重)
-    const qualityScore = (() => {
-      switch (testResult.quality) {
-        case '4K':
-          return 100;
-        case '2K':
-          return 85;
-        case '1080p':
-          return 75;
-        case '720p':
-          return 60;
-        case '480p':
-          return 40;
-        case 'SD':
-          return 20;
-        default:
-          return 0;
-      }
-    })();
-    score += qualityScore * 0.4;
-
-    // 下载速度评分 (40% 权重) - 基于最大速度线性映射
-    const speedScore = (() => {
-      const speedStr = testResult.loadSpeed;
-      if (speedStr === '未知' || speedStr === '测量中...') return 30;
-
-      // 解析速度值
-      const match = speedStr.match(/^([\d.]+)\s*(KB\/s|MB\/s)$/);
-      if (!match) return 30;
-
-      const value = parseFloat(match[1]);
-      const unit = match[2];
-      const speedKBps = unit === 'MB/s' ? value * 1024 : value;
-
-      // 基于最大速度线性映射，最高100分
-      const speedRatio = speedKBps / maxSpeed;
-      return Math.min(100, Math.max(0, speedRatio * 100));
-    })();
-    score += speedScore * 0.4;
-
-    // 网络延迟评分 (20% 权重) - 基于延迟范围线性映射
-    const pingScore = (() => {
-      const ping = testResult.pingTime;
-      if (ping <= 0) return 0; // 无效延迟给默认分
-
-      // 如果所有延迟都相同，给满分
-      if (maxPing === minPing) return 100;
-
-      // 线性映射：最低延迟=100分，最高延迟=0分
-      const pingRatio = (maxPing - ping) / (maxPing - minPing);
-      return Math.min(100, Math.max(0, pingRatio * 100));
-    })();
-    score += pingScore * 0.2;
-
-    return Math.round(score * 100) / 100; // 保留两位小数
   };
 
   // 重置音轨状态
@@ -3628,9 +3350,7 @@ function PlayPageClient() {
         return;
       }
       // 切换视频时重置源重试状态，避免上一部视频的失败标记影响当前播放
-      sourceRetryStateRef.current.clear();
-      totalSessionFailuresRef.current = 0;
-      fallbackAutoRetriedRef.current = false;
+      resetSourceState();
       setLoading(true);
       setLoadingStage(currentSource && currentId ? 'fetching' : 'searching');
       setLoadingMessage(
@@ -4018,259 +3738,6 @@ function PlayPageClient() {
   }, [currentSource, currentId, currentEpisodeIndex, searchParams]);
 
   // 🚀 优化的换源处理（防连续点击）
-  const handleSourceChange = async (
-    newSource: string,
-    newId: string,
-    newTitle: string,
-  ) => {
-    try {
-      // 防止连续点击换源
-      if (isSourceChangingRef.current) {
-        // console.log('⏸️ 正在换源中，忽略重复点击');
-        return;
-      }
-
-      // 🚀 设置换源标识，防止useEffect重复处理弹幕
-      isSourceChangingRef.current = true;
-
-      // 显示换源加载状态
-      setVideoLoadingStage('sourceChanging');
-      setIsVideoLoading(true);
-
-      // 🚀 立即重置弹幕相关状态，避免残留
-      lastDanmuLoadKeyRef.current = '';
-      danmuLoadingRef.current = false;
-
-      // 清除集数切换定时器
-      if (episodeSwitchTimeoutRef.current) {
-        clearTimeout(episodeSwitchTimeoutRef.current);
-        episodeSwitchTimeoutRef.current = null;
-      }
-
-      // 🚀 正确地清空弹幕状态（基于ArtPlayer插件API）
-      if (artPlayerRef.current?.plugins?.artplayerPluginDanmuku) {
-        const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
-
-        try {
-          // 🚀 正确清空弹幕：先reset回收DOM，再load清空队列
-          if (typeof plugin.reset === 'function') {
-            plugin.reset(); // 立即回收所有正在显示的弹幕DOM
-          }
-
-          if (typeof plugin.load === 'function') {
-            // 关键：load()不传参数会触发清空逻辑（danmuku === undefined）
-            plugin.load();
-          }
-
-          // 然后隐藏弹幕层
-          if (typeof plugin.hide === 'function') {
-            plugin.hide();
-          }
-        } catch (error) {
-          console.warn('清空弹幕时出错，但继续换源:', error);
-        }
-      }
-
-      // 记录当前播放进度（仅在同一集数切换时恢复）
-      const currentPlayTime = artPlayerRef.current?.currentTime || 0;
-      // console.log('换源前当前播放时间:', currentPlayTime);
-
-      // 🔥 关键修复：将播放进度保存到 sessionStorage，防止组件重新挂载时丢失
-      // 使用临时的 key，在新组件挂载后立即读取并清除
-      if (currentPlayTime > 1) {
-        const tempProgressKey = `temp_progress_${newSource}_${newId}_${currentEpisodeIndex}`;
-        sessionStorage.setItem(tempProgressKey, currentPlayTime.toString());
-        // console.log(
-        // `💾 已保存临时播放进度到 sessionStorage: ${tempProgressKey} = ${currentPlayTime.toFixed(2)}s`,
-        // );
-      }
-
-      const newDetail = availableSources.find(
-        (source) => source.source === newSource && source.id === newId,
-      );
-      if (!newDetail) {
-        isSourceChangingRef.current = false;
-        setIsVideoLoading(false);
-        setError('未找到匹配结果');
-        return;
-      }
-
-      // 如果是 emby 源且 episodes 为空，需要调用 detail 接口获取完整信息
-      let detailToUse = newDetail;
-      if (
-        (newDetail.source === 'emby' || newDetail.source.startsWith('emby_')) &&
-        (!newDetail.episodes || newDetail.episodes.length === 0)
-      ) {
-        // console.log(
-        // '[Play] Emby source has no episodes after switch, fetching detail...',
-        // );
-        try {
-          const { source: apiSource, embyKey } = parseSourceForApi(newSource);
-          const embyKeyParam = embyKey ? `&embyKey=${embyKey}` : '';
-          const detailResponse = await fetch(
-            `/api/emby/detail?id=${newId}${embyKeyParam}`,
-          );
-          if (detailResponse.ok) {
-            const detailSources =
-              (await detailResponse.json()) as SearchResult[];
-            if (detailSources.length > 0) {
-              detailToUse = detailSources[0];
-            }
-          }
-        } catch (err) {
-          console.error('[Play] Failed to fetch Emby detail:', err);
-        }
-      }
-
-      // 🔥 换源时保持当前集数不变（除非新源集数不够）
-      let targetIndex = currentEpisodeIndex;
-
-      // 只有当新源的集数不够时才调整到最后一集或第一集
-      if (detailToUse.episodes && detailToUse.episodes.length > 0) {
-        if (targetIndex >= detailToUse.episodes.length) {
-          // 当前集数超出新源范围，跳转到新源的最后一集
-          targetIndex = detailToUse.episodes.length - 1;
-          // console.log(
-          // `⚠️ 当前集数(${currentEpisodeIndex})超出新源范围(${detailToUse.episodes.length}集)，跳转到第${targetIndex + 1}集`,
-          // );
-          // 🔥 集数变化时，清除保存的临时进度
-          const tempProgressKey = `temp_progress_${newSource}_${newId}_${currentEpisodeIndex}`;
-          sessionStorage.removeItem(tempProgressKey);
-        } else {
-          // 集数在范围内，保持不变
-          // console.log(`✅ 换源保持当前集数: 第${targetIndex + 1}集`);
-        }
-      }
-
-      setVideoTitle(detailToUse.title || newTitle);
-      setVideoYear(detailToUse.year);
-      setVideoCover(resolveCardPosterUrl(detailToUse.poster));
-      // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
-      setVideoDoubanId(videoDoubanIdRef.current || detailToUse.douban_id || 0);
-      setCurrentSource(newSource);
-      setCurrentId(newId);
-      setDetail(detailToUse);
-
-      // 🔥 只有当集数确实改变时才调用 setCurrentEpisodeIndex
-      // 这样可以避免触发不必要的 useEffect 和集数切换逻辑
-      if (targetIndex !== currentEpisodeIndex) {
-        setCurrentEpisodeIndex(targetIndex);
-      }
-
-      // 更新URL参数（不刷新页面）
-      replacePlaybackUrlParams({
-        source: newSource,
-        id: newId,
-        year: detailToUse.year,
-        index: targetIndex.toString(),
-        title: detailToUse.title || newTitle,
-        stitle:
-          searchTitle || videoTitleRef.current || detailToUse.title || newTitle,
-      });
-
-      // 🚀 换源完成后，优化弹幕加载流程
-      setTimeout(async () => {
-        isSourceChangingRef.current = false; // 重置换源标识
-        setIsVideoLoading(false);
-
-        // 新源确认可用后，再清除前一个历史记录
-        if (currentSourceRef.current && currentIdRef.current) {
-          try {
-            await deletePlayRecord(
-              currentSourceRef.current,
-              currentIdRef.current,
-            );
-            // console.log('已清除前一个播放记录');
-          } catch (err) {
-            console.error('清除播放记录失败:', err);
-          }
-        }
-
-        if (
-          artPlayerRef.current?.plugins?.artplayerPluginDanmuku &&
-          externalDanmuEnabledRef.current
-        ) {
-          // 确保状态完全重置
-          lastDanmuLoadKeyRef.current = '';
-          danmuLoadingRef.current = false;
-
-          try {
-            const startTime = performance.now();
-            const result = await loadExternalDanmu();
-
-            if (
-              result.count > 0 &&
-              artPlayerRef.current?.plugins?.artplayerPluginDanmuku
-            ) {
-              const plugin =
-                artPlayerRef.current.plugins.artplayerPluginDanmuku;
-
-              // 🚀 确保在加载新弹幕前完全清空旧弹幕
-              plugin.reset(); // 立即回收所有正在显示的弹幕DOM
-              plugin.load(); // 不传参数，完全清空队列
-
-              // 🚀 优化大量弹幕的加载：分批处理，减少阻塞
-              if (result.count > 1000) {
-                // console.log(
-                // `📊 检测到大量弹幕 (${result.count}条)，启用分批加载`,
-                // );
-
-                // 先加载前500条，快速显示
-                const firstBatch = result.data.slice(0, 500);
-                plugin.load(firstBatch);
-
-                // 剩余弹幕分批异步加载，避免阻塞
-                const remainingBatches = [];
-                for (let i = 500; i < result.data.length; i += 300) {
-                  remainingBatches.push(result.data.slice(i, i + 300));
-                }
-
-                // 使用requestIdleCallback分批加载剩余弹幕
-                remainingBatches.forEach((batch, index) => {
-                  setTimeout(
-                    () => {
-                      if (
-                        artPlayerRef.current?.plugins?.artplayerPluginDanmuku
-                      ) {
-                        // 将批次弹幕追加到现有队列
-                        batch.forEach((danmu) => {
-                          plugin.emit(danmu).catch(console.warn);
-                        });
-                      }
-                    },
-                    (index + 1) * 100,
-                  ); // 每100ms加载一批
-                });
-
-                // console.log(
-                // `⚡ 分批加载完成: 首批${firstBatch.length}条 + ${remainingBatches.length}个后续批次`,
-                // );
-              } else {
-                // 弹幕数量较少，正常加载
-                plugin.load(result.data);
-                // console.log(`✅ 换源后弹幕加载完成: ${result.count} 条`);
-              }
-
-              const loadTime = performance.now() - startTime;
-              // console.log(`⏱️ 弹幕加载耗时: ${loadTime.toFixed(2)}ms`);
-            } else {
-              // console.log('📭 换源后没有弹幕数据');
-            }
-          } catch (error) {
-            console.error('❌ 换源后弹幕加载失败:', error);
-          }
-        }
-      }, 1000); // 减少到1秒延迟，加快响应
-    } catch (err) {
-      // 重置换源标识
-      isSourceChangingRef.current = false;
-
-      // 隐藏换源加载状态
-      setIsVideoLoading(false);
-      setError(err instanceof Error ? err.message : '换源失败');
-    }
-  };
-
   useEffect(() => {
     document.addEventListener('keydown', handleKeyboardShortcuts);
     return () => {
@@ -7033,8 +6500,6 @@ function PlayPageClient() {
         // 监听播放器错误 - 自动切换到备用源
         // NOTE: This is intentionally a plain object (closure-scoped), not a React ref.
         // It lives inside the initPlayer closure and resets when the player is re-created.
-        let sourceErrorCountRef = { current: 0 };
-        const MAX_SOURCE_ERRORS = 2;
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
 
@@ -7060,46 +6525,8 @@ function PlayPageClient() {
             // console.log(`🚫 已标记源为无效: ${failKey}`);
           }
 
-          // 找到下一个可用源，并用 HEAD 预检确认可通
-          const findWorkingSource = async (): Promise<SearchResult | null> => {
-            const candidates = filterInvalidSources(
-              availableSourcesRef.current,
-            );
-            let fallbackSlowSource: SearchResult | null = null;
-            for (const candidate of candidates) {
-              const cKey = getSourceIdentityKey(candidate.source, candidate.id);
-              if (candidate.source === failSource && candidate.id === failId)
-                continue;
-
-              const cUrl =
-                candidate.episodes?.[currentEpisodeIndexRef.current] ||
-                candidate.episodes?.[0];
-              if (failUrl && cUrl === failUrl) {
-                markSourceFailed(cKey);
-                continue;
-              }
-
-              // HEAD 预检：2 秒超时，通过代理检测避免 CORS 限制
-              if (cUrl) {
-                const probe = await quickProbe(cUrl, 2000, candidate.source);
-                if (probe === 'fail') {
-                  markSourceFailed(cKey);
-                  // console.log(`⏭️ HEAD 不通，跳过: ${candidate.source_name}`);
-                  continue;
-                }
-                if (probe === 'ok') return candidate;
-                // 'slow' = 超时但可能是网络慢，先记下，继续找更快的
-                fallbackSlowSource = fallbackSlowSource || candidate;
-                continue;
-              }
-              return candidate;
-            }
-            // 🎯 连接慢时，用最慢但可能能播的源
-            return fallbackSlowSource;
-          };
-
           // 🎯 托底方案：所有源都不可用，但最多只自动重试一次
-          findWorkingSource().then((nextSource) => {
+          findWorkingSource(failSource, failId, failUrl).then((nextSource) => {
             if (nextSource) {
               // console.log(
               // `🔄 自动切换到备用源: ${nextSource.source} - ${nextSource.title}`,
