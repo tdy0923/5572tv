@@ -1945,6 +1945,8 @@ function PlayPageClient() {
 
     if (successfulResults.length === 0) {
       console.warn('所有播放源测速都失败，使用第一个播放源');
+      setPrecomputedVideoInfo(new Map());
+      setSpeedTestProgress(null);
       return sources[0];
     }
 
@@ -2010,6 +2012,16 @@ function PlayPageClient() {
 
     // 清除测速进度状态
     setSpeedTestProgress(null);
+
+    // 保存测速结果供 EpisodeSelector 展示
+    const infoMap = new Map<
+      string,
+      { quality: string; loadSpeed: string; pingTime: number }
+    >();
+    successfulResults.forEach((r) => {
+      infoMap.set(`${r.source.source}-${r.source.id}`, r.testResult);
+    });
+    setPrecomputedVideoInfo(infoMap);
 
     return resultsWithScore[0].source;
   };
