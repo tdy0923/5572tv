@@ -64,6 +64,14 @@ export default async function RootLayout({
   let embyEnabled = false;
   let adSettings = undefined as any;
 
+  try {
+    const { getConfig } = await import('@/lib/config');
+    const cfg = await getConfig();
+    adSettings = cfg?.SiteConfig?.AdSettings || undefined;
+  } catch {
+    // ignore config load errors
+  }
+
   // 将运行时配置注入到全局 window 对象，供客户端在运行时读取
   const runtimeConfig = {
     STORAGE_TYPE: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
@@ -82,6 +90,7 @@ export default async function RootLayout({
     // 禁用预告片：Vercel 自动检测，或用户手动设置 DISABLE_HERO_TRAILER=true
     DISABLE_HERO_TRAILER:
       process.env.VERCEL === '1' || process.env.DISABLE_HERO_TRAILER === 'true',
+    AD_SETTINGS: adSettings,
   };
 
   return (
