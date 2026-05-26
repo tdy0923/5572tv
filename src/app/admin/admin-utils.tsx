@@ -102,12 +102,31 @@ export function AdminModulePanel({
   children,
 }: AdminModulePanelProps) {
   return (
-    <div className='rounded-lg border border-gray-200 bg-white p-4 shadow-sm'>
-      <div className='mb-4 flex items-center gap-2'>
+    <div className='overflow-hidden rounded-[28px] border border-black/6 bg-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-white/8 dark:bg-gray-800/55'>
+      <div className='flex items-center gap-3 border-b border-black/6 bg-gray-50/70 px-6 py-4 dark:border-white/8 dark:bg-gray-800/60'>
         {icon}
-        <h3 className='text-base font-semibold text-gray-800'>{title}</h3>
+        <div>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+            {title}
+          </h3>
+          <p className='mt-1 text-xs uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
+            Module Workspace
+          </p>
+        </div>
       </div>
-      {children}
+
+      <div className='border-b border-black/6 bg-white/60 px-6 py-3 dark:border-white/8 dark:bg-white/[0.03]'>
+        <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+            Single Module
+          </span>
+          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+            Admin Workspace
+          </span>
+        </div>
+      </div>
+
+      <div className='px-6 py-5'>{children}</div>
     </div>
   );
 }
