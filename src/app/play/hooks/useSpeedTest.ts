@@ -91,8 +91,14 @@ export function useSpeedTest() {
     ): Promise<SearchResult> => {
       let sourcesToTest = sources;
 
-      const testPromises = sourcesToTest.map(async (source) => {
+      const testPromises = sourcesToTest.map(async (source, i) => {
         try {
+          setSpeedTestProgress({
+            current: i + 1,
+            total: sourcesToTest.length,
+            currentSource: source.source_name,
+            result: '测试中...',
+          });
           if (!source.episodes || source.episodes.length === 0) return null;
           const episodeUrl =
             source.episodes.length > 1
@@ -179,8 +185,6 @@ export function useSpeedTest() {
       });
 
       resultsWithScore.sort((a, b) => b.score - a.score);
-
-      resultsWithScore.forEach((result, index) => {});
 
       setSpeedTestProgress(null);
 

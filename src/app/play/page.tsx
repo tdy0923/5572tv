@@ -3274,7 +3274,7 @@ function PlayPageClient() {
     if (e.altKey && e.key === 'ArrowRight') {
       const d = detailRef.current;
       const idx = currentEpisodeIndexRef.current;
-      if (d && idx < d.episodes.length - 1) {
+      if (d && d.episodes && idx < d.episodes.length - 1) {
         handleNextEpisode();
         e.preventDefault();
       }
