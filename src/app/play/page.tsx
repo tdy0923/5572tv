@@ -375,10 +375,6 @@ function PlayPageClient() {
   const [downloadEnabled, setDownloadEnabled] = useState(true);
 
   // 视频分辨率状态
-  const [_videoResolution, setVideoResolution] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
 
   // 进度条拖拽状态管理
   const isDraggingProgressRef = useRef(false);
@@ -3545,6 +3541,39 @@ function PlayPageClient() {
     findMatchedFavoriteKey,
   ]);
 
+  // 根据 type_name 推断内容类型
+  const inferType = (typeName?: string): string | undefined => {
+    if (!typeName) return undefined;
+    const lowerType = typeName.toLowerCase();
+    if (
+      lowerType.includes('短剧') ||
+      lowerType.includes('shortdrama') ||
+      lowerType.includes('short-drama') ||
+      lowerType.includes('short drama')
+    )
+      return 'shortdrama';
+    if (lowerType.includes('综艺') || lowerType.includes('variety'))
+      return 'variety';
+    if (lowerType.includes('电影') || lowerType.includes('movie'))
+      return 'movie';
+    if (
+      lowerType.includes('电视剧') ||
+      lowerType.includes('剧集') ||
+      lowerType.includes('tv') ||
+      lowerType.includes('series')
+    )
+      return 'tv';
+    if (
+      lowerType.includes('动漫') ||
+      lowerType.includes('动画') ||
+      lowerType.includes('anime')
+    )
+      return 'anime';
+    if (lowerType.includes('纪录片') || lowerType.includes('documentary'))
+      return 'documentary';
+    return undefined;
+  };
+
   // 自动更新收藏的集数和片源信息（支持豆瓣/Bangumi/短剧等虚拟源）
   useEffect(() => {
     if (!detail || !currentSource || !currentId) return;
@@ -3577,42 +3606,6 @@ function PlayPageClient() {
 
           // 提取收藏key中的source和id
           const { source: favSource, id: favId } = parseStorageKey(favoriteKey);
-
-          // 根据 type_name 推断内容类型
-          const inferType = (typeName?: string): string | undefined => {
-            if (!typeName) return undefined;
-            const lowerType = typeName.toLowerCase();
-            if (
-              lowerType.includes('短剧') ||
-              lowerType.includes('shortdrama') ||
-              lowerType.includes('short-drama') ||
-              lowerType.includes('short drama')
-            )
-              return 'shortdrama';
-            if (lowerType.includes('综艺') || lowerType.includes('variety'))
-              return 'variety';
-            if (lowerType.includes('电影') || lowerType.includes('movie'))
-              return 'movie';
-            if (
-              lowerType.includes('电视剧') ||
-              lowerType.includes('剧集') ||
-              lowerType.includes('tv') ||
-              lowerType.includes('series')
-            )
-              return 'tv';
-            if (
-              lowerType.includes('动漫') ||
-              lowerType.includes('动画') ||
-              lowerType.includes('anime')
-            )
-              return 'anime';
-            if (
-              lowerType.includes('纪录片') ||
-              lowerType.includes('documentary')
-            )
-              return 'documentary';
-            return undefined;
-          };
 
           // 确定内容类型：优先使用已有的 type，如果没有则推断
           let contentType =
@@ -3685,39 +3678,6 @@ function PlayPageClient() {
         },
       );
     } else {
-      // 根据 type_name 推断内容类型
-      const inferType = (typeName?: string): string | undefined => {
-        if (!typeName) return undefined;
-        const lowerType = typeName.toLowerCase();
-        if (
-          lowerType.includes('短剧') ||
-          lowerType.includes('shortdrama') ||
-          lowerType.includes('short-drama') ||
-          lowerType.includes('short drama')
-        )
-          return 'shortdrama';
-        if (lowerType.includes('综艺') || lowerType.includes('variety'))
-          return 'variety';
-        if (lowerType.includes('电影') || lowerType.includes('movie'))
-          return 'movie';
-        if (
-          lowerType.includes('电视剧') ||
-          lowerType.includes('剧集') ||
-          lowerType.includes('tv') ||
-          lowerType.includes('series')
-        )
-          return 'tv';
-        if (
-          lowerType.includes('动漫') ||
-          lowerType.includes('动画') ||
-          lowerType.includes('anime')
-        )
-          return 'anime';
-        if (lowerType.includes('纪录片') || lowerType.includes('documentary'))
-          return 'documentary';
-        return undefined;
-      };
-
       // 根据 source 或 type_name 确定内容类型
       let contentType = inferType(detailRef.current?.type_name);
       // 如果 type_name 无法推断类型，检查 source 是否为 shortdrama
@@ -5032,12 +4992,6 @@ function PlayPageClient() {
                 badge.style.background = gradientStyle;
                 badge.style.boxShadow = boxShadow;
               }
-
-              // 同时更新state供React使用
-              setVideoResolution({
-                width: video.videoWidth,
-                height: video.videoHeight,
-              });
 
               // 显示徽章并启动自动隐藏定时器
               showBadge();
