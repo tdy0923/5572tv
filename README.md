@@ -1,9 +1,9 @@
 <div align="center">
 
-# 5572影视 v1.3.0
+# 5572影视 v1.4.0
 
 [![Docker](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://github.com/tdy0923/5572tv/pkgs/container/5572tv)
-[![Release](https://img.shields.io/badge/release-v1.3.0-green)](https://github.com/tdy0923/5572tv/releases/tag/v1.3.0)
+[![Release](https://img.shields.io/badge/release-v1.4.0-green)](https://github.com/tdy0923/5572tv/releases/tag/v1.4.0)
 [![Node](https://img.shields.io/badge/node-22-green?logo=node.js)](https://nodejs.org)
 [![Next](https://img.shields.io/badge/next-16.2-black?logo=next.js)](https://nextjs.org)
 
@@ -39,7 +39,7 @@ docker run -d -p 3000:3000 \
 docker pull ghcr.io/tdy0923/5572tv:latest
 ```
 
-GitHub Releases: [v1.3.0](https://github.com/tdy0923/5572tv/releases/tag/v1.3.0)
+GitHub Releases: [v1.4.0](https://github.com/tdy0923/5572tv/releases/tag/v1.4.0)
 
 ## 更新日志
 

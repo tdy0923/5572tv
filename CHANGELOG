@@ -1,3 +1,44 @@
+## [1.4.0] - 2026-05-27
+
+### Changed
+
+- 🔧 Admin 面板拆分为 7 个独立子路由（config/categories/netdisk/live/settings/sources/users），从 9,906 行缩减至 1,400 行
+- 🔧 Live 页面拆分 ChannelSidebar/GroupSelectorModal 共享组件
+- 🔧 Play 页面提取 useSourceSearch/useTrailerFallback 自定义 hooks（7,820→7,230 行）
+- ⚡ 速度测试移除 20 源上限，全部源并发测速
+- ⚡ CDN 域名级阻断缓存 + 并行测速 + CDN 策略细分
+- ⚡ M3U8 proxy 添加 CDN-Cache-Control 短缓存 10s 减少 origin 压力
+- 🧹 清理 181 处 console.log + console.debug（全量审计）
+- 🧹 eslint-disable 注入 95 个 API 路由 + 59 个客户端文件
+- 🗑️ 删除 3 个未引用组件（WatchRoomSyncBanner/TVBoxTokenManager/ImportExportModal）
+- 🗑️ 移除 AI 摘要功能（未配置 API 密钥）
+- 📄 发版流程文档 + 一键发版脚本
+- 📄 gitignore 移除开发配置文件（jest/commitlint/hooks/kilo/vscode）
+
+### Fixed
+
+- 🐛 广告配置未加载 - runtimeConfig 缺失 AD_SETTINGS 字段
+- 🐛 useSearchParams 引用不稳定导致 effect 死循环
+- 🐛 速度测试进度显示 + 键盘快捷键 null 安全
+- 🐛 还原测速结果映射 - 并发重写遗漏 setPrecomputedVideoInfo
+- 🐛 弹幕双排 - 2000ms 初始加载跳过已加载数据
+- 🐛 douban_trailer 源跳过详情 API 避免 400 导致死循环
+- 🐛 video-proxy 上游错误 500 改 502（Bad Gateway）
+- 🐛 预告片 Douban URL 缓存 24h 改 1h - URL 过期导致 video-proxy 500
+- 🐛 回退路径移除 matchYearAndType 过滤 - 正片不再误跳预告片
+- 🐛 移除重复 inferType + 无用 _videoResolution 状态
+- 🐛 useSourceSwitching 解构 params 避免直接修改 + 清理残留代码
+- 🐛 m3u8 重写清除残留代码 + URL 使用 request URL 协议替代硬编码 http
+- 🐛 admin sections 数组类型安全 + Array.isArray 守卫
+- 🐛 admin content 页面 useEffect setState 用 rAF 包装
+- 🐛 image-proxy 并发请求候选 URL 避免逐个超时 60s
+- 🐛 视频测速直连 CDN 改走代理 - 解决 403 + CORS 导致死循环
+- 🐛 搜索结果匹配防御 - 防止类型错误导致 0 结果
+- 🐛 预告片改用 Bilibili 备用源（国内可用）+ 清理残留 TMDB 代码
+- 🐛 新功能/预告片页面添加 _reload 参数防止缓存
+- 🐛 CF Worker M3U8 加超时 + 修复重写逻辑
+- 🐛 Worker 部署降级 setup-node 到 v4 + corepack 安装 pnpm
+
 ## [1.3.0] - 2026-05-23
 
 ### Added
