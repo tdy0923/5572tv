@@ -7,7 +7,7 @@
 import Hls from 'hls.js';
 import { X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import {
   Suspense,
   useCallback,
@@ -288,7 +288,6 @@ interface WakeLockSentinel {
 }
 
 function PlayPageClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { createTask, setShowDownloadPanel } = useDownload();
 
@@ -376,7 +375,7 @@ function PlayPageClient() {
   const [downloadEnabled, setDownloadEnabled] = useState(true);
 
   // 视频分辨率状态
-  const [videoResolution, setVideoResolution] = useState<{
+  const [_videoResolution, setVideoResolution] = useState<{
     width: number;
     height: number;
   } | null>(null);
@@ -400,7 +399,8 @@ function PlayPageClient() {
 
   // 自定义去广告代码
   const [customAdFilterCode, setCustomAdFilterCode] = useState<string>('');
-  const [customAdFilterVersion, setCustomAdFilterVersion] = useState<number>(1);
+  const [_customAdFilterVersion, setCustomAdFilterVersion] =
+    useState<number>(1);
   const customAdFilterCodeRef = useRef(customAdFilterCode);
 
   // WebSR超分相关状态
@@ -1081,7 +1081,7 @@ function PlayPageClient() {
   });
 
   // 播放器就绪状态
-  const [playerReady, setPlayerReady] = useState(false);
+  const [_playerReady, setPlayerReady] = useState(false);
 
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);

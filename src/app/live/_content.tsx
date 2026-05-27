@@ -353,7 +353,7 @@ function LivePageClient() {
     currentSourceKey: currentSource?.key || '',
     onChannelChange: (channelId: string, sourceKey: string) => {
       // 房员接收到频道切换指令
-      //       console.log('[Live] Received channel change from owner:', {
+      //       // console.log('[Live] Received channel change from owner:', {
       //         channelId,
       //         sourceKey,
       //       });
@@ -397,7 +397,7 @@ function LivePageClient() {
 
     setIsRefreshingSource(true);
     try {
-      //       console.log('开始刷新直播源...');
+      //       // console.log('开始刷新直播源...');
 
       // 调用后端刷新API
       const response = await fetch('/api/admin/live/refresh', {
@@ -416,7 +416,7 @@ function LivePageClient() {
         throw new Error(result.error || '刷新直播源失败');
       }
 
-      //       console.log('直播源刷新成功');
+      //       // console.log('直播源刷新成功');
 
       // 重新获取直播源列表
       await fetchLiveSources();
@@ -439,13 +439,13 @@ function LivePageClient() {
     if (autoRefreshEnabled) {
       const intervalMs = autoRefreshInterval * 60 * 1000; // 转换为毫秒
       autoRefreshTimerRef.current = setInterval(() => {
-        //         console.log(`自动刷新直播源 (间隔: ${autoRefreshInterval}分钟)`);
+        //         // console.log(`自动刷新直播源 (间隔: ${autoRefreshInterval}分钟)`);
         refreshLiveSources();
       }, intervalMs);
 
-      //       console.log(`自动刷新已启用，间隔: ${autoRefreshInterval}分钟`);
+      //       // console.log(`自动刷新已启用，间隔: ${autoRefreshInterval}分钟`);
     } else {
-      //       console.log('自动刷新已禁用');
+      //       // console.log('自动刷新已禁用');
     }
   };
 
@@ -641,7 +641,7 @@ function LivePageClient() {
           (c: LiveChannel) => c.id === pendingSyncChannelId,
         );
         if (syncChannel) {
-          //           console.log(
+          //           // console.log(
           //             '[Live] Auto-switching to synced channel:',
           //             syncChannel.name,
           //           );
@@ -710,7 +710,7 @@ function LivePageClient() {
       window.location.protocol === 'https:' &&
       url.startsWith('http:')
     ) {
-      //       console.log(
+      //       // console.log(
       //         `🔐 Mixed Content: ${url.substring(0, 50)}... => ❌ 需要代理 (HTTPS页面不能加载HTTP资源)`,
       //       );
       // 直接返回false，不浪费时间检测，也不计入统计
@@ -738,7 +738,7 @@ function LivePageClient() {
             // 缓存有效，直接使用
             corsSupportRef.current.set(url, supports);
             setCorsSupport(new Map(corsSupportRef.current));
-            //             console.log(
+            //             // console.log(
             //               `💾 CORS缓存命中: ${url.substring(0, 50)}... => ${supports ? '✅ 直连' : '❌ 代理'} (${Math.floor(age / 86400000)}天前检测)`,
             //             );
             return supports;
@@ -799,7 +799,7 @@ function LivePageClient() {
         return newStats;
       });
 
-      //       console.log(
+      //       // console.log(
       //         `🔍 CORS检测: ${url.substring(0, 50)}... => ${supports ? '✅ 支持直连' : '❌ 需要代理'}`,
       //       );
 
@@ -824,7 +824,7 @@ function LivePageClient() {
             }),
           );
         } catch (e) {
-          //           console.log('Live error:', e);
+          //           // console.log('Live error:', e);
         }
       }
 
@@ -853,7 +853,7 @@ function LivePageClient() {
         }
       }
 
-      //       console.log(
+      //       // console.log(
       //         `🔍 CORS检测: ${url.substring(0, 50)}... => ❌ 需要代理 (${errorMsg})`,
       //       );
 
@@ -1705,7 +1705,7 @@ function LivePageClient() {
 
       // v1.6.13 增强：处理片段解析错误（针对initPTS修复）
       if (data.details === Hls.ErrorDetails.FRAG_PARSING_ERROR) {
-        //         console.log('直播片段解析错误，尝试重新加载...');
+        //         // console.log('直播片段解析错误，尝试重新加载...');
         // 重新开始加载，利用v1.6.13的initPTS修复
         try {
           hls.startLoad();
@@ -1722,7 +1722,7 @@ function LivePageClient() {
         data.err.message &&
         data.err.message.includes('timestamp')
       ) {
-        //         console.log('直播时间戳错误，利用v1.6.13修复重新加载...');
+        //         // console.log('直播时间戳错误，利用v1.6.13修复重新加载...');
         try {
           // 对于直播，直接重新开始加载最新片段
           hls.trigger(Hls.Events.BUFFER_RESET, undefined);
@@ -1747,7 +1747,7 @@ function LivePageClient() {
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
             hlsNetworkRetryCount++;
-            //             console.log(
+            //             // console.log(
             //               `Network error (${hlsNetworkRetryCount}/${MAX_HLS_NETWORK_RETRIES}), attempting to recover...`,
             //             );
 
@@ -1761,7 +1761,7 @@ function LivePageClient() {
 
             // 根据具体的网络错误类型进行处理
             if (data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR) {
-              //               console.log('Manifest load error, attempting reload...');
+              //               // console.log('Manifest load error, attempting reload...');
               setTimeout(() => {
                 try {
                   hls.loadSource(url);
@@ -1779,7 +1779,7 @@ function LivePageClient() {
             break;
 
           case Hls.ErrorTypes.MEDIA_ERROR:
-            //             console.log('Media error, attempting to recover...');
+            //             // console.log('Media error, attempting to recover...');
             try {
               hls.recoverMediaError();
             } catch (e) {
@@ -1800,7 +1800,7 @@ function LivePageClient() {
             break;
 
           default:
-            //             console.log('Fatal error, destroying HLS instance');
+            //             // console.log('Fatal error, destroying HLS instance');
             setUnsupportedType('fatal-error');
             setIsVideoLoading(false);
             hls.destroy();
@@ -1822,7 +1822,7 @@ function LivePageClient() {
           const throughputBps = (data.frag.stats.loaded * 8 * 1000) / loadTime; // bits per second
           const throughputMbps = throughputBps / 1000000;
           if (process.env.NODE_ENV === 'development') {
-            //             console.log(
+            //             // console.log(
             //               `Fragment loaded: ${loadTime.toFixed(2)}ms, size: ${data.frag.stats.loaded}B, throughput: ${throughputMbps.toFixed(2)} Mbps`,
             //             );
           }
@@ -1847,13 +1847,13 @@ function LivePageClient() {
     // 监听质量切换
     hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
       if (process.env.NODE_ENV === 'development') {
-        //         console.log(`Quality switched to level ${data.level}`);
+        //         // console.log(`Quality switched to level ${data.level}`);
       }
     });
 
     // 监听缓冲区清理事件
     hls.on(Hls.Events.BUFFER_FLUSHED, (event, data) => {
-      //       console.log('Buffer flushed:', data);
+      //       // console.log('Buffer flushed:', data);
     });
   }
 
@@ -1914,7 +1914,7 @@ function LivePageClient() {
         console.error('FLV Error:', errorType, errorDetail);
         if (errorType === flvjs.ErrorTypes.NETWORK_ERROR) {
           flvNetworkRetryCount++;
-          //           console.log(
+          //           // console.log(
           //             `FLV 网络错误 (${flvNetworkRetryCount}/${MAX_FLV_NETWORK_RETRIES})，尝试重新加载...`,
           //           );
 
@@ -1971,7 +1971,7 @@ function LivePageClient() {
         return;
       }
 
-      //       console.log('视频URL:', videoUrl);
+      //       // console.log('视频URL:', videoUrl);
 
       // 销毁之前的播放器实例并创建新的
       if (artPlayerRef.current) {
@@ -2000,7 +2000,7 @@ function LivePageClient() {
       if (useDirect) {
         // 直连模式：直接使用原始 URL
         targetUrl = videoUrl;
-        //         console.log(
+        //         // console.log(
         //           `🎬 播放模式: ⚡ 直连 (${isFlvUrl ? 'FLV' : 'M3U8'}) | URL: ${targetUrl.substring(0, 100)}...`,
         //         );
       } else {
@@ -2009,14 +2009,14 @@ function LivePageClient() {
           ? '/api/proxy/stream'
           : '/api/proxy/m3u8';
         targetUrl = `${proxyEndpoint}?url=${encodeURIComponent(videoUrl)}&5572tv-source=${currentSourceRef.current?.key || ''}`;
-        //         console.log(
+        //         // console.log(
         //           `🎬 播放模式: 🔄 代理 (${isFlvUrl ? 'FLV' : 'M3U8'}) | URL: ${targetUrl.substring(0, 100)}...`,
         //         );
       }
 
       // 根据 URL 类型选择播放器类型
       const playerType = isFlvUrl ? 'flv' : 'm3u8';
-      //       console.log(`📺 播放器类型: ${playerType} | FLV检测: ${isFlvUrl}`);
+      //       // console.log(`📺 播放器类型: ${playerType} | FLV检测: ${isFlvUrl}`);
 
       const customType = {
         m3u8: m3u8Loader,
@@ -2093,7 +2093,7 @@ function LivePageClient() {
 
                     // 如果可拖动范围大于60秒，说明支持回放
                     if (seekableRange > 60) {
-                      //                       console.log(
+                      //                       // console.log(
                       //                         '✓ 检测到支持回放，可拖动范围:',
                       //                         Math.floor(seekableRange),
                       //                         '秒',
@@ -2101,7 +2101,7 @@ function LivePageClient() {
                       setDvrDetected(true);
                       setDvrSeekableRange(Math.floor(seekableRange));
                     } else {
-                      //                       console.log(
+                      //                       // console.log(
                       //                         '✗ 纯直播流，可拖动范围:',
                       //                         Math.floor(seekableRange),
                       //                         '秒',
@@ -2110,7 +2110,7 @@ function LivePageClient() {
                     }
                   }
                 } catch (error) {
-                  //                   console.log('DVR检测失败:', error);
+                  //                   // console.log('DVR检测失败:', error);
                 }
               }
             }, 3000); // 等待3秒让HLS加载足够的片段
@@ -2145,7 +2145,7 @@ function LivePageClient() {
             // MediaError codes: 1=ABORTED, 2=NETWORK, 3=DECODE, 4=SRC_NOT_SUPPORTED
             if (errorCode === 2) {
               // 网络错误由 HLS/FLV 处理
-              //               console.log('Video element network error (handled by HLS/FLV)');
+              //               // console.log('Video element network error (handled by HLS/FLV)');
             } else if (errorCode === 3) {
               // 只在没有已设置错误时才设置解码错误
               setUnsupportedType((prev) => prev || 'decode-error');

@@ -79,7 +79,7 @@ interface MutationContext {
  * // 使用 mutateAsync（返回 Promise）
  * try {
  *   await addFavorite.mutateAsync({ ... });
-//  *   console.log('添加成功');
+//  *   // console.log('添加成功');
  * } catch (error) {
  *   console.error('添加失败', error);
  * }

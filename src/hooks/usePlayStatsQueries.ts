@@ -18,7 +18,7 @@ const adminStatsOptions = () =>
   queryOptions<PlayStatsResult>({
     queryKey: ['playStats', 'admin'],
     queryFn: async () => {
-      //     console.log('开始获取管理员统计数据...');
+      //     // console.log('开始获取管理员统计数据...');
       const response = await fetch('/api/admin/play-stats');
 
       if (response.status === 401) {
@@ -31,7 +31,7 @@ const adminStatsOptions = () =>
       }
 
       const data = await response.json();
-      //     console.log('管理员统计数据获取成功');
+      //     // console.log('管理员统计数据获取成功');
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -57,7 +57,7 @@ const userStatsOptions = () =>
   queryOptions({
     queryKey: ['playStats', 'user'],
     queryFn: async () => {
-      //     console.log('开始获取用户个人统计数据...');
+      //     // console.log('开始获取用户个人统计数据...');
       const response = await fetch('/api/user/my-stats');
 
       if (response.status === 401) {
@@ -70,7 +70,7 @@ const userStatsOptions = () =>
       }
 
       const data = await response.json();
-      //     console.log('用户个人统计数据获取成功');
+      //     // console.log('用户个人统计数据获取成功');
       return data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -136,7 +136,7 @@ const upcomingReleasesOptions = () =>
       if (response.ok) {
         const data = await response.json();
         const items = data.items || [];
-        //       console.log(`📊 获取到 ${items.length} 条即将上映数据`);
+        //       // console.log(`📊 获取到 ${items.length} 条即将上映数据`);
         return items;
       }
 

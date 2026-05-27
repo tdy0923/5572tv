@@ -592,7 +592,7 @@ export default function AIRecommendModal({
           return; // 有缓存就不显示欢迎消息
         } else {
           // 超过30分钟或旧格式时删除缓存
-          //           console.log(
+          //           // console.log(
           //             hasOldFormatWelcome
           //               ? 'AI欢迎消息格式已更新，清除旧缓存'
           //               : 'AI聊天记录已超过30分钟，自动清除缓存',
@@ -640,7 +640,7 @@ export default function AIRecommendModal({
 
           // 检查缓存是否有效（30分钟内）
           if (now - timestamp < 30 * 60 * 1000) {
-            //             console.log('🔄 检测到其他 tab 更新，同步聊天记录');
+            //             // console.log('🔄 检测到其他 tab 更新，同步聊天记录');
 
             // 🔥 设置同步标志，防止触发保存（仅跳过本次 setMessages 引起的保存）
             isSyncingRef.current = true;

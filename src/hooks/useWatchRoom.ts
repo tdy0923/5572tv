@@ -84,11 +84,11 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
   // 连接到观影室服务器
   const connect = useCallback(() => {
     if (socket) {
-      //       console.log('[WatchRoom] Already connected');
+      //       // console.log('[WatchRoom] Already connected');
       return;
     }
 
-    //     console.log('[WatchRoom] Connecting to server:', serverUrl);
+    //     // console.log('[WatchRoom] Connecting to server:', serverUrl);
 
     const newSocket = io(serverUrl, {
       auth: {
@@ -105,7 +105,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
 
     // 连接成功
     newSocket.on('connect', () => {
-      //       console.log('[WatchRoom] Connected to server');
+      //       // console.log('[WatchRoom] Connected to server');
       setConnected(true);
 
       // 启动心跳
@@ -116,7 +116,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
 
     // 连接断开
     newSocket.on('disconnect', (reason) => {
-      //       console.log('[WatchRoom] Disconnected:', reason);
+      //       // console.log('[WatchRoom] Disconnected:', reason);
       setConnected(false);
       setCurrentRoom(null);
       setMembers([]);
@@ -137,38 +137,38 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
 
     // 房间事件
     newSocket.on('room:created', (room: Room) => {
-      //       console.log('[WatchRoom] Room created:', room);
+      //       // console.log('[WatchRoom] Room created:', room);
       setCurrentRoom(room);
       setMembers([]);
       setMessages([]);
     });
 
     newSocket.on('room:joined', ({ room, members: roomMembers }) => {
-      //       console.log('[WatchRoom] Joined room:', room);
+      //       // console.log('[WatchRoom] Joined room:', room);
       setCurrentRoom(room);
       setMembers(roomMembers);
       setMessages([]);
     });
 
     newSocket.on('room:left', () => {
-      //       console.log('[WatchRoom] Left room');
+      //       // console.log('[WatchRoom] Left room');
       setCurrentRoom(null);
       setMembers([]);
       setMessages([]);
     });
 
     newSocket.on('room:member-joined', (member: Member) => {
-      //       console.log('[WatchRoom] Member joined:', member);
+      //       // console.log('[WatchRoom] Member joined:', member);
       setMembers((prev) => [...prev, member]);
     });
 
     newSocket.on('room:member-left', (userId: string) => {
-      //       console.log('[WatchRoom] Member left:', userId);
+      //       // console.log('[WatchRoom] Member left:', userId);
       setMembers((prev) => prev.filter((m) => m.id !== userId));
     });
 
     newSocket.on('room:deleted', () => {
-      //       console.log('[WatchRoom] Room deleted');
+      //       // console.log('[WatchRoom] Room deleted');
       setCurrentRoom(null);
       setMembers([]);
       setMessages([]);
@@ -177,7 +177,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
 
     // 播放事件（由其他组件处理，这里只记录）
     newSocket.on('play:update', (state: PlayState) => {
-      //       console.log('[WatchRoom] Play state updated:', state);
+      //       // console.log('[WatchRoom] Play state updated:', state);
       // 更新房间的 currentState
       setCurrentRoom((prev) =>
         prev ? { ...prev, currentState: state } : null,
@@ -185,19 +185,19 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
     });
 
     newSocket.on('play:seek', (currentTime: number) => {
-      //       console.log('[WatchRoom] Seek to:', currentTime);
+      //       // console.log('[WatchRoom] Seek to:', currentTime);
     });
 
     newSocket.on('play:play', () => {
-      //       console.log('[WatchRoom] Play');
+      //       // console.log('[WatchRoom] Play');
     });
 
     newSocket.on('play:pause', () => {
-      //       console.log('[WatchRoom] Pause');
+      //       // console.log('[WatchRoom] Pause');
     });
 
     newSocket.on('play:change', (state: PlayState) => {
-      //       console.log('[WatchRoom] Video changed:', state);
+      //       // console.log('[WatchRoom] Video changed:', state);
       // 更新房间的 currentState
       setCurrentRoom((prev) =>
         prev ? { ...prev, currentState: state } : null,
@@ -205,7 +205,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
     });
 
     newSocket.on('live:change', (state: LiveState) => {
-      //       console.log('[WatchRoom] Live channel changed:', state);
+      //       // console.log('[WatchRoom] Live channel changed:', state);
       // 更新房间的 currentState
       setCurrentRoom((prev) =>
         prev ? { ...prev, currentState: state } : null,
@@ -213,7 +213,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
     });
 
     newSocket.on('state:cleared', () => {
-      //       console.log('[WatchRoom] State cleared');
+      //       // console.log('[WatchRoom] State cleared');
       // 清除房间的 currentState
       setCurrentRoom((prev) =>
         prev ? { ...prev, currentState: undefined } : null,
@@ -222,7 +222,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
 
     // 聊天事件
     newSocket.on('chat:message', (message: ChatMessage) => {
-      //       console.log('[WatchRoom] New message:', message);
+      //       // console.log('[WatchRoom] New message:', message);
       setMessages((prev) => [...prev, message]);
     });
 
@@ -237,7 +237,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
   // 断开连接
   const disconnect = useCallback(() => {
     if (socket) {
-      //       console.log('[WatchRoom] Disconnecting...');
+      //       // console.log('[WatchRoom] Disconnecting...');
       socket.disconnect();
       setSocket(null);
       setConnected(false);
@@ -295,7 +295,7 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
         return { success: false, error: '未连接到服务器' };
       }
 
-      //     console.log('[WatchRoom] Joining room with userName:', userName);
+      //     // console.log('[WatchRoom] Joining room with userName:', userName);
 
       return new Promise<{
         success: boolean;
@@ -304,9 +304,9 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
         error?: string;
       }>((resolve) => {
         socket.emit('room:join', { roomId, password, userName }, (response) => {
-          //         console.log('[WatchRoom] Join room response:', response);
+          //         // console.log('[WatchRoom] Join room response:', response);
           if (response.success && response.room && response.members) {
-            //           console.log('[WatchRoom] Members received:', response.members);
+            //           // console.log('[WatchRoom] Members received:', response.members);
             // 立即更新状态
             setCurrentRoom(response.room);
             setMembers(response.members);
