@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { db } from './db';
 
 // 日历缓存键

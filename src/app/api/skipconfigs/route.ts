@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -406,7 +407,6 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('跳过配置 API 错误:', error);
     const errorResponse = { error: '服务器内部错误' };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');

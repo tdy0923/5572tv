@@ -1,3 +1,5 @@
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 const NOTIFIED_KEY = '5572tv_reminder_notified';

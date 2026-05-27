@@ -1,7 +1,10 @@
+/* eslint-disable no-console */
 /**
  * Vercel Blob Storage utilities for Spider JAR caching
  * Only works on Vercel deployment with BLOB_READ_WRITE_TOKEN configured
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import { head, put } from '@vercel/blob';
 

@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { ClientCache } from './client-cache';
 import { DoubanCommentsResult, DoubanItem, DoubanResult } from './types';
 import { DEFAULT_USER_AGENT, getRandomUserAgent } from './user-agent';

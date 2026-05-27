@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // 观影室播放同步Hook (基于 MoonTVPlus 实现，适配外部 watch-room-server)
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';

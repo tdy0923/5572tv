@@ -1,3 +1,5 @@
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const FAILED_TRAILER_REFRESHES_KEY = 'failed-trailer-refreshes';

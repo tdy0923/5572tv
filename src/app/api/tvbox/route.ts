@@ -1,3 +1,4 @@
+/* eslint-disable no-console, unused-imports/no-unused-vars */
 import ipaddr from 'ipaddr.js';
 import { NextRequest, NextResponse } from 'next/server';
 

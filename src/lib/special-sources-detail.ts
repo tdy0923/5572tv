@@ -1,4 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import { getConfig } from '@/lib/config';
 import { SearchResult } from '@/lib/types';
@@ -8,7 +10,7 @@ import { SearchResult } from '@/lib/types';
  */
 export async function getEmbyDetail(
   source: string,
-  id: string
+  id: string,
 ): Promise<SearchResult> {
   const config = await getConfig();
 
@@ -79,7 +81,7 @@ export async function getEmbyDetail(
       douban_id: 0,
       desc: item.Overview || '',
       episodes: await Promise.all(
-        allEpisodes.map((ep) => client.getStreamUrl(ep.Id))
+        allEpisodes.map((ep) => client.getStreamUrl(ep.Id)),
       ),
       episodes_titles: allEpisodes.map((ep) => {
         const seasonNum = ep.ParentIndexNumber || 1;
@@ -98,7 +100,7 @@ export async function getEmbyDetail(
  */
 export async function getSpecialSourceDetail(
   source: string,
-  id: string
+  id: string,
 ): Promise<SearchResult | null> {
   try {
     // Emby 源（包括 emby 和 emby_xxx）
@@ -118,8 +120,5 @@ export async function getSpecialSourceDetail(
  * 检查是否是特殊源
  */
 export function isSpecialSource(source: string): boolean {
-  return (
-    source === 'emby' ||
-    source.startsWith('emby_')
-  );
+  return source === 'emby' || source.startsWith('emby_');
 }

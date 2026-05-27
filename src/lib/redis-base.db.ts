@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { createClient, RedisClientType } from 'redis';
 
 import { AdminConfig } from './admin.types';

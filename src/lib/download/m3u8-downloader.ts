@@ -1,7 +1,10 @@
+/* eslint-disable no-console */
 /**
  * M3U8 视频下载工具
  * 基于 get-m3u8 项目的核心功能改编
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import CryptoJS from 'crypto-js';
 
@@ -688,7 +691,6 @@ export async function downloadM3U8Video(
         }
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('创建流式写入器失败，降级为普通下载:', error);
       writer = null;
     }
@@ -720,7 +722,7 @@ export async function downloadM3U8Video(
 
         if (data === 'failed') {
           // 失败的片段，跳过
-          // eslint-disable-next-line no-console
+
           console.warn(`⚠️ 跳过失败片段 ${nextWriteIndex + 1}`);
           pendingWrites.delete(nextWriteIndex);
           nextWriteIndex++;
@@ -746,7 +748,6 @@ export async function downloadM3U8Video(
           pendingWrites.delete(nextWriteIndex);
           nextWriteIndex++;
         } catch (error) {
-          // eslint-disable-next-line no-console
           console.error(`片段 ${nextWriteIndex + 1} 写入流失败:`, error);
           // 写入失败意味着用户可能取消了下载，应该停止整个下载任务
           throw new Error(
@@ -784,7 +785,6 @@ export async function downloadM3U8Video(
           message: '下载完成！',
         });
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('提前完成时关闭流失败:', error);
         throw error;
       }
@@ -948,7 +948,7 @@ export async function downloadM3U8Video(
         error instanceof Error && error.message.includes('写入失败');
       if (isWriteError) {
         // 写入失败意味着用户可能取消了下载，不应该重试，直接抛出错误停止下载
-        // eslint-disable-next-line no-console
+
         console.error('写入流失败，用户可能取消了下载，停止下载任务');
         throw error;
       }
@@ -963,7 +963,6 @@ export async function downloadM3U8Video(
         task.requestHeaders?.referer &&
         retryCount < maxRetries
       ) {
-        // eslint-disable-next-line no-console
         console.warn(
           `片段 ${index + 1} 遇到 403 错误，尝试轮换 referer 重试...`,
         );
@@ -991,7 +990,6 @@ export async function downloadM3U8Video(
 
       // 如果还有重试机会，进行重试
       if (retryCount < maxRetries) {
-        // eslint-disable-next-line no-console
         console.warn(
           `片段 ${index + 1} 下载失败，${retryDelay}ms 后进行第 ${retryCount + 1} 次重试...`,
         );
@@ -1015,7 +1013,6 @@ export async function downloadM3U8Video(
       task.finishList[index].status = 'error';
       task.finishList[index].retryCount = retryCount;
 
-      // eslint-disable-next-line no-console
       console.error(
         `片段 ${index + 1} 下载失败（已重试 ${maxRetries} 次）:`,
         error,
@@ -1029,7 +1026,6 @@ export async function downloadM3U8Video(
         // 使用串行化写入函数，确保写入操作按顺序执行，避免多线程并发写入
         await flushPendingWrites();
 
-        // eslint-disable-next-line no-console
         console.warn(`边下边存模式：已跳过失败片段 ${index + 1}，继续下载...`);
         onProgress?.({
           current: completedCount,
@@ -1099,7 +1095,6 @@ export async function downloadM3U8Video(
           message: '下载完成！',
         });
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('关闭流失败:', error);
         throw error;
       }
@@ -1111,7 +1106,6 @@ export async function downloadM3U8Video(
       try {
         await writer.abort();
       } catch (abortError) {
-        // eslint-disable-next-line no-console
         console.error('中止流失败:', abortError);
       }
     }
@@ -1134,7 +1128,6 @@ export async function downloadM3U8Video(
       .slice(startSegment - 1, endSegment)
       .filter((item) => item.status === 'error').length;
 
-    // eslint-disable-next-line no-console
     console.warn(`⚠️ 有 ${failedCount} 个片段下载失败，等待手动重试...`);
 
     onProgress?.({

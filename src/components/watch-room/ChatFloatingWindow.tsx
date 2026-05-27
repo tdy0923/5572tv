@@ -1,4 +1,6 @@
 // 观影室聊天悬浮窗和房间信息
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import {

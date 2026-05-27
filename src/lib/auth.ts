@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { NextRequest } from 'next/server';
 
 // WARNING: This function does NOT verify the HMAC signature. It only parses the

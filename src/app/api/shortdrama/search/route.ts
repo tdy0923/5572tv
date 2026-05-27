@@ -1,7 +1,12 @@
+/* eslint-disable no-console, unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
-import { recordRequest, getDbQueryCount, resetDbQueryCount } from '@/lib/performance-monitor';
+import {
+  getDbQueryCount,
+  recordRequest,
+  resetDbQueryCount,
+} from '@/lib/performance-monitor';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -14,7 +19,7 @@ async function searchFromSource(
   api: string,
   query: string,
   page: number,
-  size: number
+  size: number,
 ) {
   // Step 1: 获取分类列表，找到"短剧"分类的ID
   const listUrl = `${api}?ac=list`;
@@ -22,7 +27,7 @@ async function searchFromSource(
   const listResponse = await fetch(listUrl, {
     headers: {
       'User-Agent': DEFAULT_USER_AGENT,
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     signal: AbortSignal.timeout(10000),
   });
@@ -35,8 +40,8 @@ async function searchFromSource(
   const categories = listData.class || [];
 
   // 查找"短剧"分类（只要包含"短剧"两个字即可）
-  const shortDramaCategory = categories.find((cat: any) =>
-    cat.type_name && cat.type_name.includes('短剧')
+  const shortDramaCategory = categories.find(
+    (cat: any) => cat.type_name && cat.type_name.includes('短剧'),
   );
 
   if (!shortDramaCategory) {
@@ -52,7 +57,7 @@ async function searchFromSource(
   const response = await fetch(apiUrl, {
     headers: {
       'User-Agent': DEFAULT_USER_AGENT,
-      'Accept': 'application/json',
+      Accept: 'application/json',
     },
     signal: AbortSignal.timeout(10000),
   });
@@ -65,7 +70,9 @@ async function searchFromSource(
   const items = data.list || [];
 
   // 过滤出短剧分类的结果
-  const shortDramaItems = items.filter((item: any) => item.type_id === categoryId);
+  const shortDramaItems = items.filter(
+    (item: any) => item.type_id === categoryId,
+  );
   const limitedItems = shortDramaItems.slice(0, size);
 
   const list = limitedItems.map((item: any) => ({
@@ -93,17 +100,13 @@ async function searchFromSource(
 }
 
 // 服务端专用函数，从所有短剧源聚合搜索结果
-async function searchShortDramasInternal(
-  query: string,
-  page = 1,
-  size = 20
-) {
+async function searchShortDramasInternal(query: string, page = 1, size = 20) {
   try {
     const config = await getConfig();
 
     // 筛选出所有启用的短剧源
     const shortDramaSources = config.SourceConfig.filter(
-      source => source.type === 'shortdrama' && !source.disabled
+      (source) => source.type === 'shortdrama' && !source.disabled,
     );
 
     // 如果没有配置短剧源，使用默认源
@@ -112,15 +115,15 @@ async function searchShortDramasInternal(
         'https://wwzy.tv/api.php/provide/vod',
         query,
         page,
-        size
+        size,
       );
     }
 
     // 有配置短剧源，聚合所有源的搜索结果
     const results = await Promise.allSettled(
-      shortDramaSources.map(source =>
-        searchFromSource(source.api, query, page, size)
-      )
+      shortDramaSources.map((source) =>
+        searchFromSource(source.api, query, page, size),
+      ),
     );
 
     // 合并所有成功的结果
@@ -136,12 +139,13 @@ async function searchShortDramasInternal(
 
     // 去重
     const uniqueItems = Array.from(
-      new Map(allItems.map(item => [item.name, item])).values()
+      new Map(allItems.map((item) => [item.name, item])).values(),
     );
 
     // 按更新时间排序
-    uniqueItems.sort((a, b) =>
-      new Date(b.update_time).getTime() - new Date(a.update_time).getTime()
+    uniqueItems.sort(
+      (a, b) =>
+        new Date(b.update_time).getTime() - new Date(a.update_time).getTime(),
     );
 
     return {
@@ -156,7 +160,7 @@ async function searchShortDramasInternal(
         'https://wwzy.tv/api.php/provide/vod',
         query,
         page,
-        size
+        size,
       );
     } catch (fallbackError) {
       return { list: [], hasMore: false };
@@ -177,7 +181,10 @@ export async function GET(request: NextRequest) {
 
     if (!query) {
       const errorResponse = { error: '缺少必要参数: query' };
-      const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const responseSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -185,7 +192,8 @@ export async function GET(request: NextRequest) {
         path: '/api/shortdrama/search',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -199,7 +207,10 @@ export async function GET(request: NextRequest) {
 
     if (isNaN(pageNum) || isNaN(pageSize)) {
       const errorResponse = { error: '参数格式错误' };
-      const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const responseSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -207,7 +218,8 @@ export async function GET(request: NextRequest) {
         path: '/api/shortdrama/search',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -225,13 +237,22 @@ export async function GET(request: NextRequest) {
 
     // 1小时 = 3600秒（搜索结果更新频繁，短期缓存）
     const cacheTime = 3600;
-    response.headers.set('Cache-Control', `public, max-age=${cacheTime}, s-maxage=${cacheTime}`);
+    response.headers.set(
+      'Cache-Control',
+      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+    );
     response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    response.headers.set('Vercel-CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
+    response.headers.set(
+      'Vercel-CDN-Cache-Control',
+      `public, s-maxage=${cacheTime}`,
+    );
 
     // 调试信息
     response.headers.set('X-Cache-Duration', '1hour');
-    response.headers.set('X-Cache-Expires-At', new Date(Date.now() + cacheTime * 1000).toISOString());
+    response.headers.set(
+      'X-Cache-Expires-At',
+      new Date(Date.now() + cacheTime * 1000).toISOString(),
+    );
     response.headers.set('X-Debug-Timestamp', new Date().toISOString());
 
     // Vary头确保不同设备有不同缓存
@@ -256,7 +277,10 @@ export async function GET(request: NextRequest) {
     console.error('搜索短剧失败:', error);
 
     const errorResponse = { error: '服务器内部错误' };
-    const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+    const responseSize = Buffer.byteLength(
+      JSON.stringify(errorResponse),
+      'utf8',
+    );
 
     recordRequest({
       timestamp: startTime,

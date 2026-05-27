@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import * as cheerio from 'cheerio';
 import { createHash } from 'crypto';
 

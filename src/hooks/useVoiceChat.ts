@@ -1,4 +1,7 @@
+/* eslint-disable no-console */
 // React Hook for Voice Chat in Watch Room
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';

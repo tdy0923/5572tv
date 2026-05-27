@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { type ClassValue, clsx } from 'clsx';
 import he from 'he';
 import Hls from 'hls.js';

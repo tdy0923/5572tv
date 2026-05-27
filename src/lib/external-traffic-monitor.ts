@@ -6,6 +6,8 @@
  * 不再持久化到 Kvrocks，以防止 WAL 爆满和浪费 Upstash 命令
  */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 interface ExternalTrafficMetrics {
   timestamp: number;
   url: string;
@@ -56,7 +58,10 @@ export function recordExternalTraffic(metrics: ExternalTrafficMetrics): void {
   // 清理超过48小时的旧数据
   const now = Date.now();
   const cutoffTime = now - MAX_CACHE_AGE;
-  while (externalTrafficCache.length > 0 && externalTrafficCache[0].timestamp < cutoffTime) {
+  while (
+    externalTrafficCache.length > 0 &&
+    externalTrafficCache[0].timestamp < cutoffTime
+  ) {
     externalTrafficCache.shift();
   }
 
@@ -77,7 +82,7 @@ export async function getExternalTrafficStats(hours: number = 1) {
 
   // 过滤时间范围内的数据
   const filteredData = externalTrafficCache.filter(
-    (item) => item.timestamp >= startTime
+    (item) => item.timestamp >= startTime,
   );
 
   if (filteredData.length === 0) {
@@ -94,14 +99,21 @@ export async function getExternalTrafficStats(hours: number = 1) {
   // 计算总流量
   const totalTraffic = filteredData.reduce(
     (sum, item) => sum + item.requestSize + item.responseSize,
-    0
+    0,
   );
-  const requestTraffic = filteredData.reduce((sum, item) => sum + item.requestSize, 0);
-  const responseTraffic = filteredData.reduce((sum, item) => sum + item.responseSize, 0);
+  const requestTraffic = filteredData.reduce(
+    (sum, item) => sum + item.requestSize,
+    0,
+  );
+  const responseTraffic = filteredData.reduce(
+    (sum, item) => sum + item.responseSize,
+    0,
+  );
 
   // 计算平均响应时间
   const avgDuration = Math.round(
-    filteredData.reduce((sum, item) => sum + item.duration, 0) / filteredData.length
+    filteredData.reduce((sum, item) => sum + item.duration, 0) /
+      filteredData.length,
   );
 
   // 按域名分组统计
@@ -134,7 +146,7 @@ export async function getExternalTrafficStats(hours: number = 1) {
  */
 export async function monitoredFetch(
   url: string | URL,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<Response> {
   const startTime = Date.now();
 

@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { unstable_noStore } from 'next/cache';
 
 import { DEFAULT_AD_SETTINGS } from '@/lib/ad-settings';

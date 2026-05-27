@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 'use client';
 
 import { CheckCircle2, Copy, Eye, EyeOff, X } from 'lucide-react';

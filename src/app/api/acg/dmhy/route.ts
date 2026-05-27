@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { parseStringPromise } from 'xml2js';
 
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     if (!keyword || typeof keyword !== 'string') {
       return NextResponse.json(
         { error: '搜索关键词不能为空' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
     if (!trimmedKeyword) {
       return NextResponse.json(
         { error: '搜索关键词不能为空' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     if (isNaN(pageNum) || pageNum < 1) {
       return NextResponse.json(
         { error: '页码必须是大于0的整数' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
           ...cached,
           fromCache: true,
           cacheSource: 'database',
-          cacheTimestamp: new Date().toISOString()
+          cacheTimestamp: new Date().toISOString(),
         });
       }
 
@@ -112,7 +113,8 @@ export async function POST(req: NextRequest) {
     const results = items.map((item: any) => {
       const title = item.title?.[0] || '';
       const link = item.link?.[0] || '';
-      const guid = item.guid?.[0] || link || `${title}-${item.pubDate?.[0] || ''}`;
+      const guid =
+        item.guid?.[0] || link || `${title}-${item.pubDate?.[0] || ''}`;
       const pubDate = item.pubDate?.[0] || '';
       const description = item.description?.[0] || '';
       const torrentUrl = item.enclosure?.[0]?.$?.url || '';
@@ -152,7 +154,9 @@ export async function POST(req: NextRequest) {
     // 保存到缓存
     try {
       await db.setCache(cacheKey, responseData, ACG_CACHE_TIME);
-      console.log(`💾 DMHY 搜索结果已缓存: "${trimmedKeyword}" - ${results.length} 个结果, TTL: ${ACG_CACHE_TIME}s`);
+      console.log(
+        `💾 DMHY 搜索结果已缓存: "${trimmedKeyword}" - ${results.length} 个结果, TTL: ${ACG_CACHE_TIME}s`,
+      );
     } catch (cacheError) {
       console.warn('DMHY 搜索缓存保存失败:', cacheError);
     }
@@ -162,7 +166,7 @@ export async function POST(req: NextRequest) {
     console.error('DMHY 搜索失败:', error);
     return NextResponse.json(
       { error: error.message || '搜索失败' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

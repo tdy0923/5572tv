@@ -1,4 +1,6 @@
 // 使用轻量级 switch-chinese 库（93.8KB vs opencc-js 5.6MB）
+/* eslint-disable unused-imports/no-unused-vars */
+
 import stcasc, { ChineseType } from 'switch-chinese';
 
 import { API_CONFIG, ApiSite, getConfig } from '@/lib/config';

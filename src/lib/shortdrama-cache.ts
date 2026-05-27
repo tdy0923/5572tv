@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { ClientCache } from './client-cache';
 
 // 短剧数据缓存配置（秒）

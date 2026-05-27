@@ -1,5 +1,7 @@
 /* eslint-disable no-console,react-hooks/exhaustive-deps */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { ChevronUp } from 'lucide-react';

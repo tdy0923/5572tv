@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -14,7 +15,10 @@ export async function GET(request: NextRequest) {
   try {
     const authCookie = getAuthInfoFromCookie(request);
     if (!authCookie?.username) {
-      return NextResponse.json({ error: '未登录', sources: [] }, { status: 401 });
+      return NextResponse.json(
+        { error: '未登录', sources: [] },
+        { status: 401 },
+      );
     }
 
     const adminConfig = await getConfig();
@@ -30,6 +34,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ sources: publicSources });
   } catch (error) {
     console.error('[Emby Public Sources] 获取公共源失败:', error);
-    return NextResponse.json({ error: '获取公共源失败', sources: [] }, { status: 500 });
+    return NextResponse.json(
+      { error: '获取公共源失败', sources: [] },
+      { status: 500 },
+    );
   }
 }

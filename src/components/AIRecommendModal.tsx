@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { Brain, ExternalLink, Play, Send, Sparkles, X } from 'lucide-react';

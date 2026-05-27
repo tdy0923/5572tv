@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';

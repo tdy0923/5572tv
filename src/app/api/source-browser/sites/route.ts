@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';

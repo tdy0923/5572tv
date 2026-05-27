@@ -1,8 +1,11 @@
+/* eslint-disable no-console */
 /**
  * IndexedDB 工具 - 用于持久化下载任务和片段数据
  * 支持断点续传和页面刷新后恢复下载
  * 使用 Storage Buckets API (Chrome 126+) 优化性能
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import type { M3U8Task } from './m3u8-downloader';
 

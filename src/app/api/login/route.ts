@@ -1,4 +1,4 @@
-/* eslint-disable no-console,@typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -18,7 +18,7 @@ const STORAGE_TYPE =
 // 生成签名
 async function generateSignature(
   data: string,
-  secret: string
+  secret: string,
 ): Promise<string> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secret);
@@ -30,7 +30,7 @@ async function generateSignature(
     keyData,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
-    ['sign']
+    ['sign'],
   );
 
   // 生成签名
@@ -47,7 +47,7 @@ async function generateAuthCookie(
   username?: string,
   password?: string,
   role?: 'owner' | 'admin' | 'user',
-  includePassword = false
+  includePassword = false,
 ): Promise<string> {
   const authData: any = { role: role || 'user' };
 
@@ -71,16 +71,23 @@ async function generateAuthCookie(
 export async function POST(req: NextRequest) {
   try {
     // Basic rate limiting using in-memory store
-    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const ip =
+      req.headers.get('x-forwarded-for') ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
     const rateLimitKey = `login:${ip}`;
     const now = Date.now();
     const WINDOW = 60000; // 1 minute
     const MAX_ATTEMPTS = 10;
 
     // Simple in-memory rate limiter (works for single instance)
-    if (!(globalThis as any).__rateLimit) (globalThis as any).__rateLimit = new Map();
+    if (!(globalThis as any).__rateLimit)
+      (globalThis as any).__rateLimit = new Map();
     const rl = (globalThis as any).__rateLimit;
-    const attempts = rl.get(rateLimitKey) || { count: 0, resetTime: now + WINDOW };
+    const attempts = rl.get(rateLimitKey) || {
+      count: 0,
+      resetTime: now + WINDOW,
+    };
     if (now > attempts.resetTime) {
       attempts.count = 0;
       attempts.resetTime = now + WINDOW;
@@ -88,7 +95,10 @@ export async function POST(req: NextRequest) {
     attempts.count++;
     rl.set(rateLimitKey, attempts);
     if (attempts.count > MAX_ATTEMPTS) {
-      return NextResponse.json({ error: '登录尝试过于频繁，请稍后再试' }, { status: 429 });
+      return NextResponse.json(
+        { error: '登录尝试过于频繁，请稍后再试' },
+        { status: 429 },
+      );
     }
 
     // 本地 / localStorage 模式——仅校验固定密码
@@ -119,7 +129,7 @@ export async function POST(req: NextRequest) {
       if (password !== envPassword) {
         return NextResponse.json(
           { ok: false, error: '密码错误' },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -129,7 +139,7 @@ export async function POST(req: NextRequest) {
         undefined,
         password,
         'user',
-        true
+        true,
       ); // localstorage 模式包含 password
       const expires = new Date();
       expires.setDate(expires.getDate() + 7); // 7天过期
@@ -166,7 +176,7 @@ export async function POST(req: NextRequest) {
         username,
         password,
         'owner',
-        false
+        false,
       ); // 数据库模式不包含 password
       const expires = new Date();
       expires.setDate(expires.getDate() + 7); // 7天过期
@@ -185,7 +195,9 @@ export async function POST(req: NextRequest) {
     }
 
     const config = await getConfig();
-    const legacyUser = config.UserConfig.Users.find((u) => u.username === username);
+    const legacyUser = config.UserConfig.Users.find(
+      (u) => u.username === username,
+    );
     const userV2 = await db.getUserInfoV2(username);
     const user = userV2 || legacyUser;
     if (user?.banned) {
@@ -205,7 +217,7 @@ export async function POST(req: NextRequest) {
       if (!pass) {
         return NextResponse.json(
           { error: '用户名或密码错误' },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -215,7 +227,7 @@ export async function POST(req: NextRequest) {
         username,
         password,
         user?.role || 'user',
-        false
+        false,
       );
       const expires = new Date();
       expires.setDate(expires.getDate() + 7); // 7天过期

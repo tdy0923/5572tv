@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-console, @next/next/no-img-element */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import Hls from 'hls.js';

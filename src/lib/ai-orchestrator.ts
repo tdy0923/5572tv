@@ -1,7 +1,10 @@
+/* eslint-disable no-console */
 /**
  * AI数据源协调器（简化版）
  * 负责意图分析和可选的联网搜索增强
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 export interface VideoContext {
   title?: string;

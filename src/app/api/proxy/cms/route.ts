@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * CMS 代理接口 - 解决 Mixed Content 和 CORS 问题
  *

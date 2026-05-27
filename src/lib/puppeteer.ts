@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import puppeteer, { Browser } from 'puppeteer-core';
 
 import { getRandomUserAgentWithInfo, getSecChUaHeaders } from './user-agent';

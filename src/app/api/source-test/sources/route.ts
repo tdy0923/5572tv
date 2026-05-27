@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminRoleFromRequest } from '@/lib/admin-auth';
@@ -10,7 +11,10 @@ export const runtime = 'nodejs';
 export async function GET(request: NextRequest) {
   const role = await getAdminRoleFromRequest(request);
   if (!role) {
-    return NextResponse.json({ error: '你没有权限访问源检测功能' }, { status: 401 });
+    return NextResponse.json(
+      { error: '你没有权限访问源检测功能' },
+      { status: 401 },
+    );
   }
 
   try {
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest) {
       { sources },
       {
         headers: { 'Cache-Control': 'no-store' },
-      }
+      },
     );
   } catch (error) {
     return NextResponse.json({ error: '获取源列表失败' }, { status: 500 });

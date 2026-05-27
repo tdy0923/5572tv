@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import ipaddr from 'ipaddr.js';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -14,12 +15,12 @@ export async function POST(request: NextRequest) {
       {
         error: '不支持本地存储进行管理员配置',
       },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const authInfo = getAuthInfoFromCookie(request);
-  
+
   // 检查用户权限
   if (!authInfo || !authInfo.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,40 +30,61 @@ export async function POST(request: NextRequest) {
 
   try {
     const tvboxSecurityConfig = await request.json();
-    
+
     // 验证配置数据
     if (typeof tvboxSecurityConfig.enableAuth !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid enableAuth value' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid enableAuth value' },
+        { status: 400 },
+      );
     }
 
     if (typeof tvboxSecurityConfig.enableIpWhitelist !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid enableIpWhitelist value' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid enableIpWhitelist value' },
+        { status: 400 },
+      );
     }
 
     if (typeof tvboxSecurityConfig.enableRateLimit !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid enableRateLimit value' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid enableRateLimit value' },
+        { status: 400 },
+      );
     }
 
     // 验证Token
     if (tvboxSecurityConfig.enableAuth) {
-      if (!tvboxSecurityConfig.token || typeof tvboxSecurityConfig.token !== 'string') {
+      if (
+        !tvboxSecurityConfig.token ||
+        typeof tvboxSecurityConfig.token !== 'string'
+      ) {
         return NextResponse.json({ error: 'Token不能为空' }, { status: 400 });
       }
       if (tvboxSecurityConfig.token.length < 8) {
-        return NextResponse.json({ error: 'Token长度至少8位' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Token长度至少8位' },
+          { status: 400 },
+        );
       }
     }
 
     // 验证IP白名单
     if (tvboxSecurityConfig.enableIpWhitelist) {
       if (!Array.isArray(tvboxSecurityConfig.allowedIPs)) {
-        return NextResponse.json({ error: 'allowedIPs必须是数组' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'allowedIPs必须是数组' },
+          { status: 400 },
+        );
       }
-      
+
       // 验证每个IP格式
       for (const ip of tvboxSecurityConfig.allowedIPs) {
         if (typeof ip !== 'string' || !isValidIPOrCIDR(ip.trim())) {
-          return NextResponse.json({ error: `无效的IP地址格式: ${ip}` }, { status: 400 });
+          return NextResponse.json(
+            { error: `无效的IP地址格式: ${ip}` },
+            { status: 400 },
+          );
         }
       }
     }
@@ -71,24 +93,27 @@ export async function POST(request: NextRequest) {
     if (tvboxSecurityConfig.enableRateLimit) {
       const rateLimit = tvboxSecurityConfig.rateLimit;
       if (!Number.isInteger(rateLimit) || rateLimit < 1 || rateLimit > 1000) {
-        return NextResponse.json({ error: '频率限制应在1-1000之间' }, { status: 400 });
+        return NextResponse.json(
+          { error: '频率限制应在1-1000之间' },
+          { status: 400 },
+        );
       }
     }
 
     // 获取当前配置
     const adminConfig = await getConfig();
-    
+
     // 权限校验
     if (username !== process.env.USERNAME) {
       // 管理员
       const user = adminConfig.UserConfig.Users.find(
-        (u) => u.username === username
+        (u) => u.username === username,
       );
       if (!user || user.role !== 'admin' || user.banned) {
         return NextResponse.json({ error: '权限不足' }, { status: 401 });
       }
     }
-    
+
     // 更新TVBox安全配置
     adminConfig.TVBoxSecurityConfig = {
       enableAuth: tvboxSecurityConfig.enableAuth,
@@ -96,26 +121,31 @@ export async function POST(request: NextRequest) {
       enableIpWhitelist: tvboxSecurityConfig.enableIpWhitelist,
       allowedIPs: tvboxSecurityConfig.allowedIPs || [],
       enableRateLimit: tvboxSecurityConfig.enableRateLimit,
-      rateLimit: tvboxSecurityConfig.rateLimit || 60
+      rateLimit: tvboxSecurityConfig.rateLimit || 60,
     };
 
     // 保存配置到数据库
     await db.saveAdminConfig(adminConfig);
-    
+
     // 清除配置缓存，强制下次重新从数据库读取
     clearConfigCache();
 
-    return NextResponse.json({ success: true }, {
-      headers: {
-        'Cache-Control': 'no-store', // 不缓存结果
+    return NextResponse.json(
+      { success: true },
+      {
+        headers: {
+          'Cache-Control': 'no-store', // 不缓存结果
+        },
       },
-    });
-
+    );
   } catch (error) {
     console.error('Save TVBox security config error:', error);
-    return NextResponse.json({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 },
+    );
   }
 }
 

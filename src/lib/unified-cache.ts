@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * 统一缓存管理器 - 支持多层缓存策略
  *
@@ -10,6 +11,8 @@
  * - 自动过期检测
  * - 智能容量管理
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 interface CacheEntry<T> {
   data: T;

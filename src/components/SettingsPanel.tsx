@@ -4,9 +4,9 @@ import { Check, ChevronDown, ExternalLink, X } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { getLocale, setLocale } from '@/lib/i18n';
 import { useEmbyConfigQuery } from '@/hooks/useUserMenuQueries';
 
-import { getLocale, setLocale } from '@/lib/i18n';
 import { UserEmbyConfig } from './UserEmbyConfig';
 
 interface SettingsPanelProps {
@@ -261,7 +261,8 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   };
 
   const handleResetSettings = () => {
-    if (!window.confirm('确定要恢复默认设置吗？这将清除所有自定义配置。')) return;
+    if (!window.confirm('确定要恢复默认设置吗？这将清除所有自定义配置。'))
+      return;
 
     const RC = (window as any).RUNTIME_CONFIG || {};
     const defaultDoubanProxyType = RC.DOUBAN_PROXY_TYPE || 'direct';
@@ -654,7 +655,9 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
             {/* 语言切换 */}
             <div className='flex items-center justify-between py-3'>
               <div>
-                <p className='text-sm font-medium text-gray-700 dark:text-gray-200'>语言 / Language</p>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                  语言 / Language
+                </p>
               </div>
               <select
                 value={getLocale()}

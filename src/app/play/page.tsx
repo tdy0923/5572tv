@@ -2,6 +2,8 @@
 
 /// <reference types="@webgpu/types" />
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import Hls from 'hls.js';

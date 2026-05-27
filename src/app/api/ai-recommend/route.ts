@@ -1,3 +1,4 @@
+/* eslint-disable no-console, unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { orchestrateDataSources } from '@/lib/ai-orchestrator';

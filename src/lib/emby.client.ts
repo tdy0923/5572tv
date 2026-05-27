@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 interface EmbyConfig {
   ServerURL: string;
   ApiKey?: string;

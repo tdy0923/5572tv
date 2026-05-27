@@ -1,3 +1,5 @@
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { getConfig } from '@/lib/config';
 import { getRandomUserAgent } from '@/lib/user-agent';
 

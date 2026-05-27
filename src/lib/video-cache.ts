@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * 视频缓存管理模块
  *
@@ -10,6 +11,8 @@
  * - 快速响应（本地文件读取）
  * - 自动过期清理
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import { createHash } from 'crypto';
 import { promises as fs } from 'fs';

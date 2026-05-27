@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps, no-console */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { queryOptions, useQuery } from '@tanstack/react-query';

@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
 import { fetchDoubanData } from '@/lib/douban';
+import { recordRequest } from '@/lib/performance-monitor';
 import { DoubanItem, DoubanResult } from '@/lib/types';
 import { getRandomUserAgent } from '@/lib/user-agent';
-import { recordRequest } from '@/lib/performance-monitor';
 
 interface DoubanApiResponse {
   subjects: Array<{
@@ -155,7 +155,10 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    const errorResponse = { error: '获取豆瓣数据失败', details: (error as Error).message };
+    const errorResponse = {
+      error: '获取豆瓣数据失败',
+      details: (error as Error).message,
+    };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
 
     recordRequest({
@@ -249,7 +252,7 @@ function handleTop250(pageStart: number) {
           error: '获取豆瓣 Top250 数据失败',
           details: (error as Error).message,
         },
-        { status: 500 }
+        { status: 500 },
       );
     });
 }

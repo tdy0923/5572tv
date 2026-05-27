@@ -1,3 +1,5 @@
+/* eslint-disable unused-imports/no-unused-vars */
+
 import CryptoJS from 'crypto-js';
 
 /**

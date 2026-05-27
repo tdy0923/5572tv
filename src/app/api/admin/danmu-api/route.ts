@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
   if (storageType === 'localstorage') {
     return NextResponse.json(
       { error: '不支持本地存储进行管理员配置' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -43,8 +44,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Get danmu API config error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 },
     );
   }
 }
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
   if (storageType === 'localstorage') {
     return NextResponse.json(
       { error: '不支持本地存储进行管理员配置' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -71,7 +74,7 @@ export async function POST(request: NextRequest) {
   // 验证是否为管理员或站长
   const adminConfig = await getConfig();
   const userConfig = adminConfig.UserConfig?.Users?.find(
-    (u) => u.username === authInfo.username
+    (u) => u.username === authInfo.username,
   );
 
   const isOwner = authInfo.username === process.env.USERNAME;
@@ -86,11 +89,17 @@ export async function POST(request: NextRequest) {
 
     // 验证配置数据
     if (typeof danmuApiConfig.enabled !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid enabled value' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid enabled value' },
+        { status: 400 },
+      );
     }
 
     if (typeof danmuApiConfig.useCustomApi !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid useCustomApi value' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid useCustomApi value' },
+        { status: 400 },
+      );
     }
 
     // 如果使用自定义 API，验证 URL 格式
@@ -98,21 +107,29 @@ export async function POST(request: NextRequest) {
       try {
         new URL(danmuApiConfig.customApiUrl);
       } catch {
-        return NextResponse.json({ error: '无效的API地址格式' }, { status: 400 });
+        return NextResponse.json(
+          { error: '无效的API地址格式' },
+          { status: 400 },
+        );
       }
     }
 
     // 验证超时时间
     const timeout = parseInt(danmuApiConfig.timeout) || 15;
     if (timeout < 5 || timeout > 60) {
-      return NextResponse.json({ error: '超时时间必须在5-60秒之间' }, { status: 400 });
+      return NextResponse.json(
+        { error: '超时时间必须在5-60秒之间' },
+        { status: 400 },
+      );
     }
 
     // 更新弹幕API配置
     adminConfig.DanmuApiConfig = {
       enabled: danmuApiConfig.enabled,
       useCustomApi: danmuApiConfig.useCustomApi,
-      customApiUrl: (danmuApiConfig.customApiUrl || '').trim().replace(/\/$/, ''),
+      customApiUrl: (danmuApiConfig.customApiUrl || '')
+        .trim()
+        .replace(/\/$/, ''),
       customToken: (danmuApiConfig.customToken || '').trim(),
       timeout: timeout,
     };
@@ -129,13 +146,15 @@ export async function POST(request: NextRequest) {
         headers: {
           'Cache-Control': 'no-store',
         },
-      }
+      },
     );
   } catch (error) {
     console.error('Save danmu API config error:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : 'Internal server error',
+      },
+      { status: 500 },
     );
   }
 }

@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
+
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 

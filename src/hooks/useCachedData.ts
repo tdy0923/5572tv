@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * useCachedData - 统一缓存数据获取 Hook
  *

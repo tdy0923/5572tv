@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * 性能监控模块
  * 收集和聚合应用性能数据
@@ -5,6 +6,8 @@
  * 注意：性能数据仅保存在内存中（最多 10000 条，48 小时）
  * 不再持久化到 Kvrocks，以防止 WAL 爆满
  */
+
+/* eslint-disable unused-imports/no-unused-vars */
 
 import { db } from './db';
 import {

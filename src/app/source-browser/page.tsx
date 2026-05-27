@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
 import { ExternalLink, Layers, Server, Tv, X } from 'lucide-react';

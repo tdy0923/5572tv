@@ -1,10 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console, unused-imports/no-unused-vars */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCacheTime, getConfig } from '@/lib/config';
-import { parseShortDramaEpisode } from '@/lib/shortdrama.client';
-import { recordRequest, getDbQueryCount, resetDbQueryCount } from '@/lib/performance-monitor';
+import {
+  getDbQueryCount,
+  recordRequest,
+  resetDbQueryCount,
+} from '@/lib/performance-monitor';
 
 // 标记为动态路由
 export const dynamic = 'force-dynamic';
@@ -22,7 +25,10 @@ export async function GET(request: NextRequest) {
 
     if (!id || !episode) {
       const errorResponse = { error: '缺少必要参数: id, episode' };
-      const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const responseSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -30,7 +36,8 @@ export async function GET(request: NextRequest) {
         path: '/api/shortdrama/parse',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -44,7 +51,10 @@ export async function GET(request: NextRequest) {
 
     if (isNaN(videoId) || isNaN(episodeNum)) {
       const errorResponse = { error: '参数格式错误' };
-      const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const responseSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -52,7 +62,8 @@ export async function GET(request: NextRequest) {
         path: '/api/shortdrama/parse',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -66,7 +77,9 @@ export async function GET(request: NextRequest) {
     try {
       const config = await getConfig();
       const shortDramaConfig = config.ShortDramaConfig;
-      alternativeApiUrl = shortDramaConfig?.enableAlternative ? shortDramaConfig.alternativeApiUrl : undefined;
+      alternativeApiUrl = shortDramaConfig?.enableAlternative
+        ? shortDramaConfig.alternativeApiUrl
+        : undefined;
     } catch (configError) {
       console.error('读取短剧配置失败:', configError);
       // 配置读取失败时，不使用备用API
@@ -76,7 +89,7 @@ export async function GET(request: NextRequest) {
     // 直接调用外部API，避免循环调用
     const config = await getConfig();
     const defaultApi = 'https://wwzy.tv/api.php/provide/vod';
-    
+
     const params = new URLSearchParams({
       ac: 'detail',
       ids: videoId.toString(),
@@ -84,7 +97,8 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(`${defaultApi}?${params.toString()}`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         Accept: 'application/json',
       },
       signal: AbortSignal.timeout(15000),
@@ -95,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    
+
     if (!data.list || data.list.length === 0) {
       return NextResponse.json({ error: '未找到短剧数据' }, { status: 404 });
     }
@@ -128,7 +142,10 @@ export async function GET(request: NextRequest) {
 
     if (result.code !== 0) {
       const errorResponse = { error: '解析失败' };
-      const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+      const responseSize = Buffer.byteLength(
+        JSON.stringify(errorResponse),
+        'utf8',
+      );
 
       recordRequest({
         timestamp: startTime,
@@ -136,7 +153,8 @@ export async function GET(request: NextRequest) {
         path: '/api/shortdrama/parse',
         statusCode: 400,
         duration: Date.now() - startTime,
-        memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
+        memoryUsed:
+          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
         dbQueries: getDbQueryCount(),
         requestSize: 0,
         responseSize,
@@ -162,9 +180,18 @@ export async function GET(request: NextRequest) {
     // 设置与豆瓣一致的缓存策略
     const cacheTime = await getCacheTime();
     const finalResponse = NextResponse.json(apiResponse);
-    finalResponse.headers.set('Cache-Control', `public, max-age=${cacheTime}, s-maxage=${cacheTime}`);
-    finalResponse.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    finalResponse.headers.set('Vercel-CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
+    finalResponse.headers.set(
+      'Cache-Control',
+      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+    );
+    finalResponse.headers.set(
+      'CDN-Cache-Control',
+      `public, s-maxage=${cacheTime}`,
+    );
+    finalResponse.headers.set(
+      'Vercel-CDN-Cache-Control',
+      `public, s-maxage=${cacheTime}`,
+    );
     finalResponse.headers.set('Netlify-Vary', 'query');
 
     // 记录性能指标
@@ -186,7 +213,10 @@ export async function GET(request: NextRequest) {
     console.error('短剧解析失败:', error);
 
     const errorResponse = { error: '服务器内部错误' };
-    const responseSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+    const responseSize = Buffer.byteLength(
+      JSON.stringify(errorResponse),
+      'utf8',
+    );
 
     recordRequest({
       timestamp: startTime,

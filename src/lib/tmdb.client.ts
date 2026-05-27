@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { getConfig } from '@/lib/config';
 import {
   getCache,

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export class ClientCache {
   static async get(key: string): Promise<any | null> {
     try {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -79,7 +80,10 @@ async function getShortDramaCategoriesFromSources(
     sources.map(async (source: any) => {
       try {
         const response = await fetch(`${source.api}?ac=list`, {
-          headers: { 'User-Agent': DEFAULT_USER_AGENT, Accept: 'application/json' },
+          headers: {
+            'User-Agent': DEFAULT_USER_AGENT,
+            Accept: 'application/json',
+          },
           signal: AbortSignal.timeout(8000),
         });
         if (!response.ok) return [];
@@ -88,7 +92,11 @@ async function getShortDramaCategoriesFromSources(
         return classes
           .filter((c: any) => {
             const name = String(c.type_name || '');
-            return name.includes('短剧') || name.includes('短篇') || name.includes('短集');
+            return (
+              name.includes('短剧') ||
+              name.includes('短篇') ||
+              name.includes('短集')
+            );
           })
           .map((c: any) => ({ type_id: c.type_id, type_name: c.type_name }));
       } catch {
@@ -153,18 +161,23 @@ async function getShortDramaCategoriesInternal() {
     }
 
     // 从采集源中查找短剧分类
-  console.log('📋 [CATEGORIES] 从采集源中查找短剧分类...');
-  const sourceCategories = await getShortDramaCategoriesFromSources(config);
-  if (sourceCategories.length > 0) {
-    console.log(`  ✅ 从采集源找到 ${sourceCategories.length} 个短剧分类`);
-    // 按 type_id 去重并转换格式
-    const uniqueSourceCategories = Array.from(
-      new Map(sourceCategories.map((c) => [`${c.type_id}_${c.type_name}`, { type_id: c.type_id, type_name: c.type_name }])).values(),
-    );
-    return uniqueSourceCategories;
-  }
+    console.log('📋 [CATEGORIES] 从采集源中查找短剧分类...');
+    const sourceCategories = await getShortDramaCategoriesFromSources(config);
+    if (sourceCategories.length > 0) {
+      console.log(`  ✅ 从采集源找到 ${sourceCategories.length} 个短剧分类`);
+      // 按 type_id 去重并转换格式
+      const uniqueSourceCategories = Array.from(
+        new Map(
+          sourceCategories.map((c) => [
+            `${c.type_id}_${c.type_name}`,
+            { type_id: c.type_id, type_name: c.type_name },
+          ]),
+        ).values(),
+      );
+      return uniqueSourceCategories;
+    }
 
-  console.log('⚠️ 所有配置的短剧源都未返回分类，回退到默认源');
+    console.log('⚠️ 所有配置的短剧源都未返回分类，回退到默认源');
   }
 
   // 没有配置短剧源或全部失败，使用默认源

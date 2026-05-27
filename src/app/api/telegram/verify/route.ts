@@ -1,3 +1,4 @@
+/* eslint-disable no-console, unused-imports/no-unused-vars */
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 

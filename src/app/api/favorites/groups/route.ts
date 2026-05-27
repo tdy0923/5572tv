@@ -1,6 +1,5 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
+
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { db } from '@/lib/db';
 
