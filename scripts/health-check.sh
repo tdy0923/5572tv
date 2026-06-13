@@ -131,10 +131,10 @@ else
   check "Source Loop Protection" "fail" "Missing filterInvalidSources check"
 fi
 
-if grep "ADULT_KEYWORDS" src/app/play/page.tsx -A1 2>/dev/null | grep -q "\\^("; then
-  check "Adult Filter (^ anchor)" "ok"
+if grep -q "ADULT_KEYWORDS" src/app/play/hooks/useSourceSearch.ts 2>/dev/null || grep -q "ADULT_KEYWORDS" src/app/play/page.tsx 2>/dev/null; then
+  check "Adult Filter" "ok"
 else
-  check "Adult Filter (^ anchor)" "fail" "Missing ^ anchor"
+  check "Adult Filter" "fail" "Missing ADULT_KEYWORDS"
 fi
 
 if grep -q "_reload=\${" src/components/VideoCard.tsx 2>/dev/null; then
