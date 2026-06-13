@@ -132,14 +132,18 @@ export async function GET(request: Request) {
   const failureCacheKey = getImageFailureCacheKey(imageUrl);
 
   try {
-    const cachedFailure = await db.getCache(failureCacheKey);
-    if (cachedFailure) {
-      return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
+    // 豆瓣图片不使用失败缓存，每次重试
+    const imageUrlObj = new URL(imageUrl);
+    const isDoubanImage = imageUrlObj.hostname.includes('doubanio.com');
+
+    if (!isDoubanImage) {
+      const cachedFailure = await db.getCache(failureCacheKey);
+      if (cachedFailure) {
+        return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
+      }
     }
 
     // 动态设置 Referer 和 Origin（根据图片源域名）
-    const imageUrlObj = new URL(imageUrl);
-    const isDoubanImage = imageUrlObj.hostname.includes('doubanio.com');
     const sourceOrigin = isDoubanImage
       ? 'https://movie.douban.com'
       : `${imageUrlObj.protocol}//${imageUrlObj.host}`;
