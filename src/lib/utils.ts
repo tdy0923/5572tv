@@ -207,31 +207,23 @@ export function processImageUrl(originalUrl: string): string {
   }
 
   const { proxyType, proxyUrl } = getDoubanImageProxyConfig();
+  // 🛡️ 豆瓣图片始终通过代理，确保浏览器能正常加载
   switch (proxyType) {
     case 'server':
       return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
     case 'img3':
-      return normalizedUrl.replace(
-        /img\d+\.doubanio\.com/g,
-        'img3.doubanio.com',
-      );
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img3.doubanio.com'))}`;
     case 'cmliussss-cdn-tencent':
-      return normalizedUrl.replace(
-        /img\d+\.doubanio\.com/g,
-        'img.doubanio.cmliussss.net',
-      );
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img.doubanio.cmliussss.net'))}`;
     case 'cmliussss-cdn-ali':
-      return normalizedUrl.replace(
-        /img\d+\.doubanio\.com/g,
-        'img.doubanio.cmliussss.com',
-      );
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img.doubanio.cmliussss.com'))}`;
     case 'baidu':
-      return `https://image.baidu.com/search/down?url=${encodeURIComponent(normalizedUrl)}`;
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
     case 'custom':
-      return `${proxyUrl}${encodeURIComponent(normalizedUrl)}`;
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
     case 'direct':
     default:
-      return normalizedUrl;
+      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
   }
 }
 
