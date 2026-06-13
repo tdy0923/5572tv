@@ -2,6 +2,7 @@ import * as https from 'https';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
+import { getDoubanCookie } from '@/lib/douban-anti-crawler';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -154,6 +155,18 @@ export async function GET(request: Request) {
       'Accept-Encoding': 'gzip, deflate, br',
       Connection: 'keep-alive',
     };
+
+    // 豆瓣图片需要反爬 cookie
+    if (isDoubanImage) {
+      try {
+        const cookie = await getDoubanCookie(sourceOrigin);
+        if (cookie) {
+          (fetchHeaders as Record<string, string>)['Cookie'] = cookie;
+        }
+      } catch {
+        // cookie 获取失败不阻塞图片加载
+      }
+    }
 
     const candidateUrls = buildCandidateImageUrls(imageUrl);
     let imageResponse: Response | null = null;
