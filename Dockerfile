@@ -66,6 +66,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/start.js ./start.js
 # 从构建器中复制 public 和 .next/static 目录
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# 安装 serverExternalPackages 中声明的外部依赖
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/redis ./node_modules/redis
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm ./node_modules/.pnpm
 
 # 切换到非特权用户
 USER nextjs
