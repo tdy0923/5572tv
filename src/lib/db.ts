@@ -17,13 +17,16 @@ import {
 import { UpstashRedisStorage } from './upstash.db';
 
 // storage type 常量: 'localstorage' | 'redis' | 'upstash'，默认 'localstorage'
+// 🛡️ 优先使用 KVROCKS_URL 环境变量判断，避免 NEXT_PUBLIC_ 前缀在构建时被内联
 const STORAGE_TYPE =
-  (process.env.NEXT_PUBLIC_STORAGE_TYPE as
-    | 'localstorage'
-    | 'redis'
-    | 'upstash'
-    | 'kvrocks'
-    | undefined) || 'localstorage';
+  (process.env.KVROCKS_URL
+    ? 'kvrocks'
+    : (process.env.NEXT_PUBLIC_STORAGE_TYPE as
+        | 'localstorage'
+        | 'redis'
+        | 'upstash'
+        | 'kvrocks'
+        | undefined)) || 'localstorage';
 
 // 创建存储实例
 function createStorage(): IStorage {
