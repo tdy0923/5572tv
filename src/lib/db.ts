@@ -27,6 +27,7 @@ const STORAGE_TYPE =
 
 // 创建存储实例
 function createStorage(): IStorage {
+  console.log('[DB] STORAGE_TYPE:', STORAGE_TYPE);
   switch (STORAGE_TYPE) {
     case 'redis':
       return new RedisStorage();
@@ -36,6 +37,7 @@ function createStorage(): IStorage {
       return new KvrocksStorage();
     case 'localstorage':
     default:
+      console.log('[DB] WARNING: Using localstorage (no persistent storage)');
       return null as unknown as IStorage;
   }
 }
@@ -46,6 +48,7 @@ let storageInstance: IStorage | null = null;
 function getStorage(): IStorage {
   if (!storageInstance) {
     storageInstance = createStorage();
+    console.log('[DB] Storage initialized:', storageInstance ? 'OK' : 'NULL');
   }
   return storageInstance;
 }
