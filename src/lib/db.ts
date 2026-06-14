@@ -418,8 +418,15 @@ export class DbManager {
   async getAdminConfig(): Promise<AdminConfig | null> {
     incrementDbQuery();
     if (typeof (this.storage as any).getAdminConfig === 'function') {
-      return (this.storage as any).getAdminConfig();
+      console.log('[DB] Calling storage.getAdminConfig()');
+      const result = await (this.storage as any).getAdminConfig();
+      console.log('[DB] getAdminConfig result:', result ? 'has data' : 'null');
+      return result;
     }
+    console.log(
+      '[DB] storage.getAdminConfig is NOT a function, storage:',
+      typeof this.storage,
+    );
     return null;
   }
 

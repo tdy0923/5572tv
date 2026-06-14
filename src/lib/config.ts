@@ -338,9 +338,16 @@ export async function getConfig(): Promise<AdminConfig> {
   // 读 db
   let adminConfig: AdminConfig | null = null;
   try {
+    console.log('[Config] Reading admin config from DB...');
     adminConfig = await db.getAdminConfig();
+    console.log(
+      '[Config] DB result:',
+      adminConfig
+        ? `has SourceConfig: ${adminConfig.SourceConfig?.length || 0}`
+        : 'null',
+    );
   } catch (e) {
-    console.error('获取管理员配置失败:', e);
+    console.error('[Config] 获取管理员配置失败:', e);
   }
 
   // db 中无配置，执行一次初始化
