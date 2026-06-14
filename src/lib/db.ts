@@ -30,7 +30,6 @@ const STORAGE_TYPE =
 
 // 创建存储实例
 function createStorage(): IStorage {
-  console.log('[DB] STORAGE_TYPE:', STORAGE_TYPE);
   switch (STORAGE_TYPE) {
     case 'redis':
       return new RedisStorage();
@@ -40,7 +39,6 @@ function createStorage(): IStorage {
       return new KvrocksStorage();
     case 'localstorage':
     default:
-      console.log('[DB] WARNING: Using localstorage (no persistent storage)');
       return null as unknown as IStorage;
   }
 }
@@ -51,7 +49,6 @@ let storageInstance: IStorage | null = null;
 function getStorage(): IStorage {
   if (!storageInstance) {
     storageInstance = createStorage();
-    console.log('[DB] Storage initialized:', storageInstance ? 'OK' : 'NULL');
   }
   return storageInstance;
 }
@@ -418,15 +415,8 @@ export class DbManager {
   async getAdminConfig(): Promise<AdminConfig | null> {
     incrementDbQuery();
     if (typeof (this.storage as any).getAdminConfig === 'function') {
-      console.log('[DB] Calling storage.getAdminConfig()');
-      const result = await (this.storage as any).getAdminConfig();
-      console.log('[DB] getAdminConfig result:', result ? 'has data' : 'null');
-      return result;
+      return (this.storage as any).getAdminConfig();
     }
-    console.log(
-      '[DB] storage.getAdminConfig is NOT a function, storage:',
-      typeof this.storage,
-    );
     return null;
   }
 
