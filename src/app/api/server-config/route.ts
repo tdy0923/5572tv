@@ -16,6 +16,7 @@ export async function GET(_request: NextRequest) {
     StorageType: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
     Version: CURRENT_VERSION,
     DownloadEnabled: config.DownloadConfig?.enabled ?? true,
+    EnableExternalPlayer: config.SiteConfig?.EnableExternalPlayer ?? false,
     allowRegister: config.UserConfig?.AllowRegister !== false,
     requireInviteCode: config.UserConfig?.RequireInviteCode ?? false,
   };

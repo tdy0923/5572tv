@@ -21,6 +21,7 @@ export interface AdminConfig {
     ShowAdultContent: boolean; // 是否显示成人内容，默认 false
     FluidSearch: boolean;
     EnableWebLive: boolean;
+    EnableExternalPlayer?: boolean;
     // TMDB配置
     TMDBApiKey?: string;
     TMDBLanguage?: string;

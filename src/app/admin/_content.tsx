@@ -55,6 +55,7 @@ import ConfigFileComponent from './sections/config-file';
 import LiveSourceConfig from './sections/live-source-config';
 import NetDiskConfig from './sections/netdisk-config';
 import SiteConfigComponent from './sections/site-config';
+import SourceScripts from './sections/source-scripts';
 import UserConfig from './sections/user-config';
 import VideoSourceConfig from './sections/video-source-config';
 function AdminMetricCard({
@@ -157,6 +158,7 @@ function AdminPageClient() {
         items: [
           { id: 'source-config', label: '视频源', icon: Video },
           { id: 'live-config', label: '直播源', icon: Tv },
+          { id: 'source-scripts', label: '源脚本', icon: FileText },
           { id: 'system-tools', label: '源检测', icon: TestTube },
           { id: 'category-config', label: '分类配置', icon: FolderOpen },
           { id: 'netdisk-config', label: '网盘搜索', icon: Database },
@@ -232,6 +234,7 @@ function AdminPageClient() {
       内容源与发现: new Set([
         'source-config',
         'live-config',
+        'source-scripts',
         'system-tools',
         'category-config',
         'netdisk-config',
@@ -986,6 +989,21 @@ function AdminPageClient() {
                       config={config}
                       refreshConfig={fetchConfig}
                     />
+                  </AdminModulePanel>
+                )}
+
+                {/* 源脚本配置标签 */}
+                {isSectionActive('source-scripts') && (
+                  <AdminModulePanel
+                    title='源脚本配置'
+                    icon={
+                      <FileText
+                        size={20}
+                        className='text-gray-600 dark:text-gray-400'
+                      />
+                    }
+                  >
+                    <SourceScripts />
                   </AdminModulePanel>
                 )}
 

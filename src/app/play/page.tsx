@@ -62,6 +62,10 @@ const OwnerChangeDialog = dynamic(
   { ssr: false },
 );
 import PlayErrorDisplay from '@/components/play/PlayErrorDisplay';
+const ExternalPlayerButton = dynamic(
+  () => import('@/components/play/ExternalPlayerButton'),
+  { ssr: false },
+);
 const SourceSwitchDialog = dynamic(
   () => import('@/components/play/SourceSwitchDialog'),
   { ssr: false },
@@ -377,6 +381,9 @@ function PlayPageClient() {
   // 下载功能启用状态
   const [downloadEnabled, setDownloadEnabled] = useState(true);
 
+  // 外部播放器功能启用状态
+  const [enableExternalPlayer, setEnableExternalPlayer] = useState(false);
+
   // 视频分辨率状态
 
   // 进度条拖拽状态管理
@@ -468,6 +475,7 @@ function PlayPageClient() {
         if (response.ok) {
           const config = await response.json();
           setDownloadEnabled(config.DownloadEnabled ?? true);
+          setEnableExternalPlayer(config.EnableExternalPlayer ?? false);
         }
       } catch (error) {
         console.error('获取服务器配置失败:', error);
@@ -6293,6 +6301,13 @@ function PlayPageClient() {
                 downloadEnabled={downloadEnabled}
                 onDownloadClick={() => setShowDownloadEpisodeSelector(true)}
                 onDownloadPanelClick={() => setShowDownloadPanel(true)}
+              />
+
+              {/* 外部播放器按钮 */}
+              <ExternalPlayerButton
+                videoUrl={videoUrl}
+                videoTitle={videoTitle}
+                enabled={enableExternalPlayer}
               />
 
               {/* 折叠控制按钮 - 仅在 lg 及以上屏幕显示 */}

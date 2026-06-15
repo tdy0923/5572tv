@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <circle cx="32" cy="32" r="30" fill="#1a1a2e"/>
+  <circle cx="32" cy="32" r="28" fill="#0f3460"/>
+  <path d="M24 22c0-2 2-4 4-4h8c2 0 4 2 4 4v20c0 2-2 4-4 4h-8c-2 0-4-2-4-4z" fill="url(#iina_grad)" opacity="0.8"/>
+  <path d="M28 26v12l10-6z" fill="#fff"/>
+  <defs>
+    <linearGradient id="iina_grad" x1="24" y1="18" x2="40" y2="46">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+  </defs>
+</svg>

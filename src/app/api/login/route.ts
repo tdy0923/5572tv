@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
+import {
+  checkFail2Ban,
+  recordFailedAttempt,
+  recordSuccessfulLogin,
+} from '@/lib/fail2ban';
 
 export const runtime = 'nodejs';
 
@@ -101,6 +106,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Fail2ban check
+    const f2b = checkFail2Ban(ip);
+    if (f2b.blocked) {
+      const res = NextResponse.json(
+        { error: '访问已被暂时封禁，请稍后再试' },
+        { status: 429 },
+      );
+      if (f2b.retryAfter) {
+        res.headers.set('Retry-After', String(f2b.retryAfter));
+      }
+      return res;
+    }
+
     // 本地 / localStorage 模式——仅校验固定密码
     if (STORAGE_TYPE === 'localstorage') {
       const envPassword = process.env.PASSWORD;
@@ -127,12 +145,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (password !== envPassword) {
+        recordFailedAttempt(ip);
         return NextResponse.json(
           { ok: false, error: '密码错误' },
           { status: 401 },
         );
       }
 
+      recordSuccessfulLogin(ip);
       // 验证成功，设置认证cookie
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(
@@ -189,8 +209,10 @@ export async function POST(req: NextRequest) {
         secure: false, // 根据协议自动设置
       });
 
+      recordSuccessfulLogin(ip);
       return response;
     } else if (username === process.env.USERNAME) {
+      recordFailedAttempt(ip);
       return NextResponse.json({ error: '用户名或密码错误' }, { status: 401 });
     }
 
@@ -215,12 +237,14 @@ export async function POST(req: NextRequest) {
       }
 
       if (!pass) {
+        recordFailedAttempt(ip);
         return NextResponse.json(
           { error: '用户名或密码错误' },
           { status: 401 },
         );
       }
 
+      recordSuccessfulLogin(ip);
       // 验证成功，设置认证cookie
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(

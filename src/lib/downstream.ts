@@ -6,6 +6,10 @@ import stcasc, { ChineseType } from 'switch-chinese';
 import { API_CONFIG, ApiSite, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import { getCachedSearchPage, setCachedSearchPage } from '@/lib/search-cache';
+import {
+  executeDetailScript,
+  executeSearchScript,
+} from '@/lib/source-script-executor';
 import { SearchResult } from '@/lib/types';
 import { resolvePosterUrl } from '@/lib/utils';
 import { cleanHtmlTags } from '@/lib/utils';
@@ -253,6 +257,34 @@ export async function searchFromApi(
   try {
     if (await isSearchSourceCircuitOpen(apiSite.key)) {
       return [];
+    }
+
+    // Check for custom search script
+    const scriptResult = await executeSearchScript(
+      apiSite.key,
+      query,
+      API_CONFIG.search.headers,
+    );
+    if (scriptResult?.custom && scriptResult.results.length > 0) {
+      await clearSearchSourceFailures(apiSite.key);
+      // Normalize script results into SearchResult format
+      return scriptResult.results.map((item: any) => ({
+        id: String(item.id || ''),
+        title: String(item.title || ''),
+        poster: String(item.poster || ''),
+        episodes: Array.isArray(item.episodes) ? item.episodes : [],
+        episodes_titles: Array.isArray(item.episodes_titles)
+          ? item.episodes_titles
+          : [],
+        source: apiSite.key,
+        source_name: apiSite.name,
+        class: String(item.class || ''),
+        year: String(item.year || 'unknown'),
+        desc: String(item.desc || ''),
+        type_name: String(item.type_name || ''),
+        douban_id: item.douban_id || 0,
+        remarks: item.remarks,
+      }));
     }
 
     const apiBaseUrl = apiSite.api;
@@ -622,6 +654,16 @@ export async function getDetailFromApi(
   apiSite: ApiSite,
   id: string,
 ): Promise<SearchResult> {
+  // Check for custom detail script
+  const scriptResult = await executeDetailScript(
+    apiSite.key,
+    id,
+    API_CONFIG.detail.headers,
+  );
+  if (scriptResult) {
+    return scriptResult;
+  }
+
   if (apiSite.detail) {
     return handleSpecialSourceDetail(id, apiSite);
   }

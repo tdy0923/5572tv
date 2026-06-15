@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
+import {
+  checkFail2Ban,
+  recordFailedAttempt,
+  recordSuccessfulLogin,
+} from '@/lib/fail2ban';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +55,23 @@ async function generateAuthCookie(
 
 export async function GET(request: NextRequest) {
   try {
+    const ip =
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+
+    const f2b = checkFail2Ban(ip);
+    if (f2b.blocked) {
+      const res = NextResponse.json(
+        { error: '访问已被暂时封禁，请稍后再试' },
+        { status: 429 },
+      );
+      if (f2b.retryAfter) {
+        res.headers.set('Retry-After', String(f2b.retryAfter));
+      }
+      return res;
+    }
+
     console.log('[OIDC Callback] Request URL:', request.url);
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
@@ -82,6 +104,7 @@ export async function GET(request: NextRequest) {
 
     // 检查是否有错误
     if (error) {
+      recordFailedAttempt(ip);
       console.error('OIDC认证错误:', error);
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent('OIDC认证失败')}`, origin),
@@ -90,6 +113,7 @@ export async function GET(request: NextRequest) {
 
     // 验证必需参数
     if (!code || !state) {
+      recordFailedAttempt(ip);
       return NextResponse.redirect(
         new URL('/login?error=' + encodeURIComponent('缺少必需参数'), origin),
       );
@@ -98,6 +122,7 @@ export async function GET(request: NextRequest) {
     // 验证state并获取 provider ID
     const storedStateData = request.cookies.get('oidc_state')?.value;
     if (!storedStateData) {
+      recordFailedAttempt(ip);
       return NextResponse.redirect(
         new URL('/login?error=' + encodeURIComponent('状态验证失败'), origin),
       );
@@ -117,6 +142,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (storedState !== state) {
+      recordFailedAttempt(ip);
       return NextResponse.redirect(
         new URL('/login?error=' + encodeURIComponent('状态验证失败'), origin),
       );
@@ -147,6 +173,7 @@ export async function GET(request: NextRequest) {
       !oidcConfig.clientId ||
       !oidcConfig.clientSecret
     ) {
+      recordFailedAttempt(ip);
       return NextResponse.redirect(
         new URL('/login?error=' + encodeURIComponent('OIDC配置不完整'), origin),
       );
@@ -198,6 +225,7 @@ export async function GET(request: NextRequest) {
 
     console.log('[OIDC Callback] Token response status:', tokenResponse.status);
     if (!tokenResponse.ok) {
+      recordFailedAttempt(ip);
       const errorText = await tokenResponse.text();
       console.error('获取token失败:', errorText);
       return NextResponse.redirect(
@@ -218,6 +246,7 @@ export async function GET(request: NextRequest) {
         providerId !== 'wechat' &&
         providerId !== 'github')
     ) {
+      recordFailedAttempt(ip);
       return NextResponse.redirect(
         new URL('/login?error=' + encodeURIComponent('token无效'), origin),
       );
@@ -357,6 +386,7 @@ export async function GET(request: NextRequest) {
         userRole = userInfoV2.role;
         // 检查用户是否被封禁
         if (userInfoV2.banned) {
+          recordFailedAttempt(ip);
           return NextResponse.redirect(
             new URL('/login?error=' + encodeURIComponent('用户被封禁'), origin),
           );
@@ -381,6 +411,7 @@ export async function GET(request: NextRequest) {
 
     if (username) {
       // 用户已存在,直接登录
+      recordSuccessfulLogin(ip);
       const response = NextResponse.redirect(new URL('/', origin));
       const cookieValue = await generateAuthCookie(username, userRole);
       const expires = new Date();

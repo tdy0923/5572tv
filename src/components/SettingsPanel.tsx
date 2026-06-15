@@ -126,6 +126,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   const [enableAutoNextEpisode, setEnableAutoNextEpisode] = useState(true);
   const [requireClearConfirmation, setRequireClearConfirmation] =
     useState(false);
+  const [enableExternalPlayer, setEnableExternalPlayer] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState<'TS' | 'MP4'>('TS');
   const [exactSearch, setExactSearch] = useState(true);
   const [isDoubanDropdownOpen, setIsDoubanDropdownOpen] = useState(false);
@@ -169,6 +170,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
       setEnableAutoSkip(readLS('enableAutoSkip', true));
       setEnableAutoNextEpisode(readLS('enableAutoNextEpisode', true));
       setRequireClearConfirmation(readLS('requireClearConfirmation', false));
+      setEnableExternalPlayer(readLS('enableExternalPlayer', false));
       const fmt = localStorage.getItem('downloadFormat');
       if (fmt === 'TS' || fmt === 'MP4') setDownloadFormat(fmt);
       const es = localStorage.getItem('exactSearch');
@@ -205,6 +207,10 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   const handleRequireClearConfirmationToggle = set(
     setRequireClearConfirmation,
     'requireClearConfirmation',
+  );
+  const handleEnableExternalPlayerToggle = set(
+    setEnableExternalPlayer,
+    'enableExternalPlayer',
   );
   const handleDownloadFormatChange = set<'TS' | 'MP4'>(
     setDownloadFormat,
@@ -285,6 +291,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     setEnableAutoSkip(true);
     setEnableAutoNextEpisode(true);
     setPlayerBufferMode('standard');
+    setEnableExternalPlayer(false);
     setDownloadFormat('TS');
 
     localStorage.setItem('defaultAggregateSearch', JSON.stringify(true));
@@ -301,6 +308,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.setItem('enableAutoSkip', JSON.stringify(true));
     localStorage.setItem('enableAutoNextEpisode', JSON.stringify(true));
     localStorage.setItem('requireClearConfirmation', JSON.stringify(false));
+    localStorage.setItem('enableExternalPlayer', JSON.stringify(false));
     localStorage.setItem('playerBufferMode', 'standard');
     localStorage.setItem('downloadFormat', 'TS');
     localStorage.removeItem('fluidSearch');
@@ -649,6 +657,21 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
               <Toggle
                 checked={liveDirectConnect}
                 onChange={handleLiveDirectConnectToggle}
+              />
+            </div>
+
+            <div className='flex items-center justify-between'>
+              <div>
+                <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  外部播放器
+                </h4>
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                  开启后，播放页面显示外部播放器按钮，支持PotPlayer、VLC等
+                </p>
+              </div>
+              <Toggle
+                checked={enableExternalPlayer}
+                onChange={handleEnableExternalPlayerToggle}
               />
             </div>
 

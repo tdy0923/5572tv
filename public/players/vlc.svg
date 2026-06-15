@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <circle cx="32" cy="32" r="30" fill="#ff6600"/>
+  <circle cx="32" cy="32" r="28" fill="#ff8800"/>
+  <path d="M22 18h4l12 28h-4z" fill="#fff"/>
+  <path d="M22 18h4l12 28h-4z" fill="url(#vlc_grad)" opacity="0.4"/>
+  <path d="M34 18h4l-12 28h-4z" fill="#fff" opacity="0.9"/>
+  <path d="M34 18h4l-12 28h-4z" fill="url(#vlc_grad2)" opacity="0.3"/>
+  <path d="M30 26l4 0 8 16h-4z" fill="#fff"/>
+  <defs>
+    <linearGradient id="vlc_grad" x1="22" y1="18" x2="38" y2="46">
+      <stop offset="0%" stop-color="#ffa500"/>
+      <stop offset="100%" stop-color="#ff6600"/>
+    </linearGradient>
+    <linearGradient id="vlc_grad2" x1="26" y1="18" x2="34" y2="46">
+      <stop offset="0%" stop-color="#ff4500"/>
+      <stop offset="100%" stop-color="#ff6600"/>
+    </linearGradient>
+  </defs>
+</svg>

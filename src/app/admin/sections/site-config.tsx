@@ -49,6 +49,7 @@ export default function SiteConfigComponent({
     DoubanProxy: '',
     DoubanImageProxyType: 'direct',
     DoubanImageProxy: '',
+    EnableExternalPlayer: false,
   });
   const [adSettings, setAdSettings] = useState<AdSettings>(DEFAULT_AD_SETTINGS);
   const [openAsDialog, setOpenAsDialog] = useState(false);
@@ -75,6 +76,7 @@ export default function SiteConfigComponent({
       DoubanProxy: s.DoubanProxy || '',
       DoubanImageProxyType: s.DoubanImageProxyType || 'direct',
       DoubanImageProxy: s.DoubanImageProxy || '',
+      EnableExternalPlayer: s.EnableExternalPlayer ?? false,
     });
     if (s.AdSettings) setAdSettings(mergeAdSettings(s.AdSettings));
   }, [config]);
@@ -342,6 +344,34 @@ export default function SiteConfigComponent({
             />
           </div>
         )}
+        <div className='flex items-center justify-between py-2'>
+          <div>
+            <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              外部播放器
+            </label>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+              开启后，用户可在播放页面使用外部播放器（PotPlayer、VLC、MPV等）打开视频
+            </p>
+          </div>
+          <button
+            onClick={() =>
+              setS('EnableExternalPlayer', !S.EnableExternalPlayer)
+            }
+            className='relative inline-flex h-6 w-11 items-center rounded-full transition-colors'
+            style={{
+              backgroundColor: S.EnableExternalPlayer ? '#22c55e' : '#d1d5db',
+            }}
+          >
+            <span
+              className='inline-block h-4 w-4 transform rounded-full bg-white transition-transform'
+              style={{
+                transform: S.EnableExternalPlayer
+                  ? 'translateX(22px)'
+                  : 'translateX(2px)',
+              }}
+            />
+          </button>
+        </div>
       </div>
       <button
         onClick={handleSiteSave}
