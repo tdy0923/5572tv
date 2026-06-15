@@ -64,40 +64,39 @@ export const UserMenu: React.FC = () => {
   const [isWatchingUpdatesOpen, setIsWatchingUpdatesOpen] = useState(false);
   const [isContinueWatchingOpen, setIsContinueWatchingOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-  const [authInfo] = useState<AuthInfo | null>(() => {
-    if (typeof window !== 'undefined') {
-      return getAuthInfoFromBrowserCookie();
-    }
-    return null;
-  });
-  const [storageType] = useState<string>(() => {
-    // 🔧 优化：直接从 RUNTIME_CONFIG 读取初始值，避免默认值导致的多次渲染
-    if (typeof window !== 'undefined') {
-      return (window as any).RUNTIME_CONFIG?.STORAGE_TYPE || 'localstorage';
-    }
-    return 'localstorage';
-  });
+  const [authInfo, setAuthInfo] = useState<AuthInfo | null>(null);
+
+  useEffect(() => {
+    setAuthInfo(getAuthInfoFromBrowserCookie());
+  }, []);
+  const [storageType, setStorageType] = useState<string>('localstorage');
+
+  useEffect(() => {
+    setStorageType(
+      (window as any).RUNTIME_CONFIG?.STORAGE_TYPE || 'localstorage',
+    );
+  }, []);
   const [mounted] = useState(() => typeof window !== 'undefined');
   const [watchingUpdates, setWatchingUpdates] = useState<WatchingUpdate | null>(
     null,
   );
   const [hasUnreadUpdates, setHasUnreadUpdates] = useState(false);
   const [dismissedReleases, setDismissedReleases] = useState<Set<string>>(
-    () => {
-      // 从localStorage加载已忽略的新上映列表
-      if (typeof window !== 'undefined') {
-        try {
-          const saved =
-            localStorage.getItem('5572tv_dismissed_releases') ||
-            localStorage.getItem('moontv_dismissed_releases');
-          return saved ? new Set(JSON.parse(saved)) : new Set();
-        } catch {
-          return new Set();
-        }
-      }
-      return new Set();
-    },
+    new Set(),
   );
+
+  useEffect(() => {
+    try {
+      const saved =
+        localStorage.getItem('5572tv_dismissed_releases') ||
+        localStorage.getItem('moontv_dismissed_releases');
+      if (saved) {
+        setDismissedReleases(new Set(JSON.parse(saved)));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
   // 🚀 TanStack Query - 观影室配置
   const { data: showWatchRoom = false } = useWatchRoomConfigQuery();
   // 🚀 TanStack Query - 下载功能配置
@@ -142,22 +141,24 @@ export const UserMenu: React.FC = () => {
     isFavoritesOpen,
   ]);
 
-  // 数据查询条件（从 localStorage 读初始值，供 playRecords query 用）
-  const [continueWatchingMinProgress] = useState(() =>
-    typeof window !== 'undefined'
-      ? Number(localStorage.getItem('continueWatchingMinProgress')) || 5
-      : 5,
-  );
-  const [continueWatchingMaxProgress] = useState(() =>
-    typeof window !== 'undefined'
-      ? Number(localStorage.getItem('continueWatchingMaxProgress')) || 100
-      : 100,
-  );
-  const [enableContinueWatchingFilter] = useState(() =>
-    typeof window !== 'undefined'
-      ? localStorage.getItem('enableContinueWatchingFilter') === 'true'
-      : false,
-  );
+  const [continueWatchingMinProgress, setContinueWatchingMinProgress] =
+    useState(5);
+  const [continueWatchingMaxProgress, setContinueWatchingMaxProgress] =
+    useState(100);
+  const [enableContinueWatchingFilter, setEnableContinueWatchingFilter] =
+    useState(false);
+
+  useEffect(() => {
+    setContinueWatchingMinProgress(
+      Number(localStorage.getItem('continueWatchingMinProgress')) || 5,
+    );
+    setContinueWatchingMaxProgress(
+      Number(localStorage.getItem('continueWatchingMaxProgress')) || 100,
+    );
+    setEnableContinueWatchingFilter(
+      localStorage.getItem('enableContinueWatchingFilter') === 'true',
+    );
+  }, []);
 
   // 修改密码相关状态
   const [newPassword, setNewPassword] = useState('');

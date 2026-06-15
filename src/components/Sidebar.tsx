@@ -19,6 +19,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -72,22 +73,23 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (typeof window.__sidebarCollapsed === 'boolean') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsCollapsed(window.__sidebarCollapsed);
+        return;
+      }
+      const saved = localStorage.getItem('sidebarCollapsed');
+      if (saved !== null) {
+        const val = JSON.parse(saved);
+        window.__sidebarCollapsed = val;
 
-    if (typeof window.__sidebarCollapsed === 'boolean') {
-      return window.__sidebarCollapsed;
+        setIsCollapsed(val);
+      }
     }
-
-    const saved = localStorage.getItem('sidebarCollapsed');
-    if (saved !== null) {
-      const val = JSON.parse(saved);
-      window.__sidebarCollapsed = val;
-      return val;
-    }
-
-    return false;
-  });
+  }, []);
 
   // 当折叠状态变化时，同步到 <html> data 属性，供首屏 CSS 使用
   useLayoutEffect(() => {
@@ -160,10 +162,13 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
     [],
   );
 
-  const menuItems = useMemo(() => {
-    if (typeof window === 'undefined') return baseMenuItems;
+  const [runtimeConfig, setRuntimeConfig] = useState<any>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRuntimeConfig((window as any).RUNTIME_CONFIG);
+  }, []);
 
-    const runtimeConfig = (window as any).RUNTIME_CONFIG;
+  const menuItems = useMemo(() => {
     const allowLive = runtimeConfig?.ENABLE_WEB_LIVE === true;
     const nextItems = [...baseMenuItems];
 
@@ -184,7 +189,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
     }
 
     return nextItems;
-  }, [baseMenuItems]);
+  }, [baseMenuItems, runtimeConfig]);
 
   return (
     <SidebarContext.Provider value={contextValue}>

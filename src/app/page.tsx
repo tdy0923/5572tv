@@ -212,9 +212,14 @@ function HomeClient() {
   // 解构状态以便使用
   const { activeTab, upcomingReleases, username, showAnnouncement } = state;
 
-  const hasUnreadAnnouncement = useMemo(() => {
-    if (typeof window === 'undefined' || !announcement) return false;
-    return localStorage.getItem('hasSeenAnnouncement') !== announcement;
+  const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && announcement) {
+      setHasUnreadAnnouncement(
+        localStorage.getItem('hasSeenAnnouncement') !== announcement,
+      );
+    }
   }, [announcement, showAnnouncement]);
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
@@ -283,12 +288,14 @@ function HomeClient() {
   const workerRef = useRef<Worker | null>(null);
 
   // 🎯 优化：缓存问候语计算
-  const greeting = useMemo(() => {
+  const [greeting, setGreeting] = useState('早上好');
+
+  useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return '早上好';
-    if (hour < 18) return '下午好';
-    return '晚上好';
-  }, []); // 空依赖数组，只在组件挂载时计算一次
+    if (hour < 12) setGreeting('早上好');
+    else if (hour < 18) setGreeting('下午好');
+    else setGreeting('晚上好');
+  }, []);
 
   // 🎯 优化：缓存今日番剧计算
   const todayAnimes = useMemo(() => {
@@ -303,22 +310,24 @@ function HomeClient() {
   }, [bangumiCalendarData]); // 依赖bangumiCalendarData，数据变化时重新计算
 
   // 🎯 优化：缓存今天的日期（用于上映日期计算）
-  const today = useMemo(() => {
-    // 使用 Asia/Shanghai 时区，返回 YYYY-MM-DD 格式字符串（与 watching-updates.ts 保持一致）
+  const [today, setToday] = useState('');
+
+  useEffect(() => {
     const dateStr = new Date().toLocaleDateString('zh-CN', {
       timeZone: 'Asia/Shanghai',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    return dateStr.replace(/\//g, '-'); // "2026/04/02" -> "2026-04-02"
-  }, []); // 空依赖，只在组件挂载时计算一次
+    setToday(dateStr.replace(/\//g, '-'));
+  }, []);
 
   const [requireClearConfirmation, setRequireClearConfirmation] =
     useState(false);
   const [announcementPinned, setAnnouncementPinned] = useState(false);
 
   // 合并初始化逻辑 - 优化性能，减少重渲染
+
   useEffect(() => {
     // 获取用户名
     const authInfo = getAuthInfoFromBrowserCookie();
@@ -535,6 +544,7 @@ function HomeClient() {
   }, []);
 
   // 加载收藏分组
+
   useEffect(() => {
     const loadGroups = async () => {
       try {
@@ -549,6 +559,7 @@ function HomeClient() {
   }, []);
 
   // 加载收藏更新数
+
   useEffect(() => {
     fetch('/api/favorites/updates')
       .then((r) => r.json())

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // 简单的 className 合并函数
 function cn(...classes: (string | boolean | undefined | null)[]): string {
@@ -120,11 +120,13 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
     [],
   );
 
+  const [runtimeConfig, setRuntimeConfig] = useState<any>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRuntimeConfig((window as any).RUNTIME_CONFIG);
+  }, []);
+
   const navItems = useMemo(() => {
-    const runtimeConfig =
-      typeof window !== 'undefined'
-        ? (window as any).RUNTIME_CONFIG
-        : undefined;
     const allowLive = runtimeConfig?.ENABLE_WEB_LIVE === true;
     const filteredBaseItems = allowLive
       ? baseNavItems
@@ -144,7 +146,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
     }
 
     return filteredBaseItems;
-  }, [baseNavItems]);
+  }, [baseNavItems, runtimeConfig]);
 
   // 判断是否激活
   const isActive = useCallback(

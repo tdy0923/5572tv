@@ -394,13 +394,12 @@ function PlayPageClient() {
   const resizeResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 去广告开关（从 localStorage 继承，默认 true）
-  const [blockAdEnabled, setBlockAdEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const v = localStorage.getItem('enable_blockad');
-      if (v !== null) return v === 'true';
-    }
-    return true;
-  });
+  const [blockAdEnabled, setBlockAdEnabled] = useState<boolean>(true);
+
+  useEffect(() => {
+    const v = localStorage.getItem('enable_blockad');
+    if (v !== null) setBlockAdEnabled(v === 'true');
+  }, []);
   const blockAdEnabledRef = useRef(blockAdEnabled);
 
   // 自定义去广告代码
@@ -411,37 +410,24 @@ function PlayPageClient() {
 
   // WebSR超分相关状态
   const [webGPUSupported, setWebGPUSupported] = useState<boolean>(false);
-  const [websrEnabled, setWebsrEnabled] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('websr_enabled') === 'true';
-    }
-    return false;
-  });
-  const [websrMode, setWebsrMode] = useState<'upscale' | 'restore'>(() => {
-    if (typeof window !== 'undefined') {
-      const v = localStorage.getItem('websr_mode');
-      if (v === 'restore') return 'restore';
-    }
-    return 'upscale';
-  });
+  const [websrEnabled, setWebsrEnabled] = useState<boolean>(false);
+  const [websrMode, setWebsrMode] = useState<'upscale' | 'restore'>('upscale');
   const [websrContentType, setWebsrContentType] = useState<'an' | 'rl' | '3d'>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const v = localStorage.getItem('websr_content_type');
-        if (v === 'rl' || v === '3d') return v;
-      }
-      return 'an';
-    },
+    'an',
   );
   const [websrNetworkSize, setWebsrNetworkSize] = useState<'s' | 'm' | 'l'>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const v = localStorage.getItem('websr_network_size');
-        if (v === 'm' || v === 'l') return v;
-      }
-      return 's';
-    },
+    's',
   );
+
+  useEffect(() => {
+    setWebsrEnabled(localStorage.getItem('websr_enabled') === 'true');
+    const vMode = localStorage.getItem('websr_mode');
+    if (vMode === 'restore') setWebsrMode('restore');
+    const vType = localStorage.getItem('websr_content_type');
+    if (vType === 'rl' || vType === '3d') setWebsrContentType(vType);
+    const vSize = localStorage.getItem('websr_network_size');
+    if (vSize === 'm' || vSize === 'l') setWebsrNetworkSize(vSize);
+  }, []);
   const [websrCompareEnabled, setWebsrCompareEnabled] = useState(false);
   const [websrComparePosition, setWebsrComparePosition] = useState(50);
 
@@ -468,6 +454,7 @@ function PlayPageClient() {
   const netdiskModalContentRef = useRef<HTMLDivElement>(null);
 
   // 获取服务器配置（下载功能开关）
+
   useEffect(() => {
     const fetchServerConfig = async () => {
       try {
@@ -580,6 +567,7 @@ function PlayPageClient() {
   });
 
   // 监听 URL index 参数变化（观影室切集同步）
+
   useEffect(() => {
     const indexParam = searchParams.get('index');
     const parsedIndex = indexParam ? parseInt(indexParam, 10) : 0;
@@ -599,6 +587,7 @@ function PlayPageClient() {
   );
 
   // 监听 URL source/id 参数变化（观影室切换源同步）
+
   useEffect(() => {
     const newSource = searchParams.get('source') || '';
     const newId = searchParams.get('id') || '';
@@ -762,6 +751,7 @@ function PlayPageClient() {
   }, [currentEpisodeIndex, detail, portalContainer]);
 
   // 获取自定义去广告代码
+
   useEffect(() => {
     const fetchAdFilterCode = async () => {
       try {
@@ -823,6 +813,7 @@ function PlayPageClient() {
   }, []);
 
   // WebGPU支持检测
+
   useEffect(() => {
     const checkWebGPUSupport = async () => {
       if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
@@ -903,6 +894,7 @@ function PlayPageClient() {
   }, [websrCompareEnabled, websrComparePosition]);
 
   // 加载详情（豆瓣或bangumi）
+
   useEffect(() => {
     const loadMovieDetails = async () => {
       if (
@@ -941,6 +933,7 @@ function PlayPageClient() {
   // 🚀 豆瓣评论由 useDoubanCommentsQuery 自动加载，无需手动 useEffect
 
   // 加载短剧详情（仅用于显示简介等信息，不影响源搜索）
+
   useEffect(() => {
     const loadShortdramaDetails = async () => {
       if (!shortdramaId || loadingShortdramaDetails || shortdramaDetails) {
@@ -1598,6 +1591,7 @@ function PlayPageClient() {
   }, []);
 
   // 从 detail 中加载音轨信息（useEffect 监听）
+
   useEffect(() => {
     const isEmbySource =
       detail?.source === 'emby' || detail?.source?.startsWith('emby_');
@@ -2684,6 +2678,7 @@ function PlayPageClient() {
   }, [detail, currentEpisodeIndex]);
 
   // 进入页面时直接获取全部源信息
+
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -3114,6 +3109,7 @@ function PlayPageClient() {
   }, [reloadTrigger]); // 添加 reloadTrigger 作为依赖，当它变化时重新执行 initAll
 
   // 播放记录处理
+
   useEffect(() => {
     const initFromHistory = async () => {
       if (!currentSource || !currentId) return;

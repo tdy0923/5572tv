@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { FastLink } from './FastLink';
 import { NavActionCluster } from './NavActionCluster';
@@ -135,11 +135,13 @@ export default function ModernNav({
     return queryString ? `${pathname}?${queryString}` : pathname;
   }, [pathname, searchParams]);
 
+  const [runtimeConfig, setRuntimeConfig] = useState<any>(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRuntimeConfig((window as any).RUNTIME_CONFIG);
+  }, []);
+
   const menuItems = useMemo(() => {
-    const runtimeConfig =
-      typeof window !== 'undefined'
-        ? (window as any).RUNTIME_CONFIG
-        : undefined;
     const newItems = [...baseMenuItems];
 
     if (runtimeConfig?.ENABLE_WEB_LIVE) {
@@ -171,7 +173,7 @@ export default function ModernNav({
     }
 
     return newItems;
-  }, [baseMenuItems, userEmbyConfig, publicSourcesData]);
+  }, [baseMenuItems, userEmbyConfig, publicSourcesData, runtimeConfig]);
 
   const isActive = (href: string) => {
     const typeMatch = href.match(/type=([^&]+)/)?.[1];

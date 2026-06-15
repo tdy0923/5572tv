@@ -49,8 +49,14 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
     y: number;
     width: number;
   }>({ x: 0, y: 0, width: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMobile(window.innerWidth < 768);
+  }, []);
 
   const mergedValues = useMemo(() => {
     return {
@@ -261,7 +267,7 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
             style={{
               left: `${dropdownPosition.x}px`,
               top: `${dropdownPosition.y}px`,
-              ...(typeof window !== 'undefined' && window.innerWidth < 768
+              ...(isMobile
                 ? { width: `${dropdownPosition.width}px` }
                 : {
                     minWidth: `${Math.max(dropdownPosition.width, activeCategory === 'title' ? 400 : 240)}px`,

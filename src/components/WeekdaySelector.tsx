@@ -29,8 +29,11 @@ const WeekdaySelector: React.FC<WeekdaySelectorProps> = ({
     return weekdayMap[today];
   };
 
-  const [selectedWeekday, setSelectedWeekday] =
-    useState<string>(getTodayWeekday());
+  const [selectedWeekday, setSelectedWeekday] = useState<string>('Mon');
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedWeekday(getTodayWeekday());
+  }, []);
 
   const onWeekdayChangeRef = useRef(onWeekdayChange);
 
