@@ -4,7 +4,7 @@ import { createReadStream } from 'fs';
 import { NextResponse } from 'next/server';
 
 import { isUrlSafe } from '@/lib/ssrf-protection';
-import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
+import { DEFAULT_USER_AGENT, getRandomUserAgent } from '@/lib/user-agent';
 import {
   cacheTrailerUrl,
   cacheVideoContent,
@@ -89,11 +89,12 @@ export async function GET(request: Request) {
     const referer = isDouban ? 'https://movie.douban.com/' : sourceOrigin + '/';
     const origin = isDouban ? 'https://movie.douban.com' : sourceOrigin;
 
-    // 构建请求头
+    // 构建请求头（每次重试使用不同的User-Agent）
+    const currentUA = getRandomUserAgent();
     const fetchHeaders: HeadersInit = {
       Referer: referer,
       Origin: origin,
-      'User-Agent': DEFAULT_USER_AGENT,
+      'User-Agent': currentUA,
       Accept:
         'video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5',
       'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
@@ -114,15 +115,60 @@ export async function GET(request: Request) {
       fetchHeaders['If-Modified-Since'] = ifModifiedSince;
     }
 
-    const videoResponse = await fetch(videoUrl, {
-      signal: controller.signal,
-      headers: fetchHeaders,
-    });
+    // 重试逻辑：403/402 错误重试最多2次
+    let videoResponse: Response;
+    let lastError: Error | null = null;
+    const MAX_RETRIES = 2;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        videoResponse = await fetch(videoUrl, {
+          signal: controller.signal,
+          headers: fetchHeaders,
+        });
+
+        // 如果是可重试的错误且还有重试次数
+        if (
+          (videoResponse.status === 403 ||
+            videoResponse.status === 402 ||
+            videoResponse.status === 429) &&
+          attempt < MAX_RETRIES
+        ) {
+          // 指数退避延迟，429使用Retry-After头
+          let delay = Math.pow(2, attempt) * 1000;
+          if (videoResponse.status === 429) {
+            const retryAfter = videoResponse.headers.get('retry-after');
+            if (retryAfter) {
+              delay = Math.max(parseInt(retryAfter, 10) * 1000, delay);
+            }
+          }
+          console.warn(
+            `[VideoProxy] 收到 ${videoResponse.status}，${delay}ms 后重试 (${attempt + 1}/${MAX_RETRIES})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+
+        break; // 成功或不再重试
+      } catch (fetchError: any) {
+        lastError = fetchError;
+        if (attempt < MAX_RETRIES && fetchError.name !== 'AbortError') {
+          const delay = Math.pow(2, attempt) * 1000;
+          console.warn(
+            `[VideoProxy] 请求失败，${delay}ms 后重试 (${attempt + 1}/${MAX_RETRIES}):`,
+            fetchError.message,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+        throw fetchError;
+      }
+    }
 
     clearTimeout(timeoutId);
 
     // 处理 304 Not Modified（缓存重验证成功）
-    if (videoResponse.status === 304) {
+    if (videoResponse!.status === 304) {
       const headers = new Headers();
       const etag = videoResponse.headers.get('etag');
       const lastModified = videoResponse.headers.get('last-modified');
