@@ -136,8 +136,18 @@ export async function fetchWithRetry(
     });
     attempts.push({ ua: DEFAULT_USER_AGENT, via: 'direct' });
   } else {
-    // 新 CDN：尝试默认 UA，失败后换 UA+Referer，再失败走 Proxy
-    attempts.push({ ua: originalUA, via: 'direct' });
+    // 新 CDN：始终先发 Referer+Origin（防盗链绕过），失败后换 UA，再失败走 Proxy
+    attempts.push({
+      ua: originalUA,
+      via: 'direct',
+      setup: (h) => {
+        try {
+          const p = new URL(url);
+          h.set('Referer', p.origin + '/');
+          h.set('Origin', p.origin);
+        } catch {}
+      },
+    });
     attempts.push({
       ua: UA_POOL[Math.floor(Math.random() * UA_POOL.length)],
       via: 'ua_rotate',
@@ -185,6 +195,44 @@ export async function fetchWithRetry(
       if (response.ok) {
         if (domain) reportCdnResult(domain, true, a.via);
         return response;
+      }
+
+      if (response.status === 403) {
+        // Capture Set-Cookie from CDN (e.g., cf_clearance) and retry with cookie
+        const setCookie = response.headers.get('set-cookie');
+        if (setCookie && domain) {
+          const cookieKey = `cdn_cookie:${domain}`;
+          if (!(globalThis as any).__cdnCookies)
+            (globalThis as any).__cdnCookies = new Map();
+          const jar = (globalThis as any).__cdnCookies;
+          // Parse cookies from Set-Cookie header
+          const cookies = setCookie
+            .split(',')
+            .map((c: string) => c.trim().split(';')[0])
+            .filter(Boolean);
+          const existing = jar.get(cookieKey) || [];
+          jar.set(cookieKey, [...existing, ...cookies].slice(-10)); // Keep last 10
+
+          // Retry with cookie
+          try {
+            const cookieHeaders = new Headers(headers);
+            cookieHeaders.set('Cookie', jar.get(cookieKey).join('; '));
+            const retryResp = await fetch(url, {
+              ...init,
+              headers: cookieHeaders,
+            });
+            if (retryResp.ok) {
+              if (domain) reportCdnResult(domain, true, a.via);
+              return retryResp;
+            }
+          } catch {}
+        }
+
+        // Continue to next attempt
+        try {
+          response.body?.cancel();
+        } catch {}
+        continue;
       }
 
       if (response.status !== 403) {

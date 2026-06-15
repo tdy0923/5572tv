@@ -70,16 +70,30 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
-    // 参考 hls.js fetch-loader，构建标准headers
+    // 构建目标域名的 Referer 和 Origin（防盗链绕过）
+    let targetOrigin = '';
+    try {
+      const targetUrlObj = new URL(decodedUrl);
+      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+    } catch {}
+
+    // 参考 hls.js fetch-loader + GitHub 影视源码最佳实践，构建完整浏览器 headers
     const headers: Record<string, string> = {
       'User-Agent': ua,
       Accept:
         'application/vnd.apple.mpegurl, application/x-mpegurl, application/octet-stream, */*',
-      'Accept-Encoding': 'identity', // 避免gzip压缩导致的处理复杂性
+      'Accept-Encoding': 'identity',
       'Accept-Language': 'en-US,en;q=0.9',
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
       Connection: 'keep-alive',
+      // 防盗链绕过：Referer + Origin（最关键）
+      ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
+      ...(targetOrigin ? { Origin: targetOrigin } : {}),
+      // Sec-CH-UA Client Hints（Cloudflare 等 CDN 检查）
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'cross-site',
     };
 
     response = await fetchWithRetry(

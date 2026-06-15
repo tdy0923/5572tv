@@ -71,15 +71,29 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
+    // 构建目标域名的 Referer 和 Origin（防盗链绕过）
+    let targetOrigin = '';
+    try {
+      const targetUrlObj = new URL(decodedUrl);
+      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+    } catch {}
+
     response = await fetchWithRetry(
       decodedUrl,
       {
         signal: controller.signal,
         headers: {
+          'User-Agent': ua,
           Accept: 'video/mp2t, video/*, */*',
           'Accept-Encoding': 'identity',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
+          // 防盗链绕过
+          ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
+          ...(targetOrigin ? { Origin: targetOrigin } : {}),
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'cross-site',
         },
 
         agent: typeof window === 'undefined' ? agent : undefined,

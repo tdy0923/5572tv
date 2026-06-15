@@ -161,10 +161,17 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
+    // 构建目标域名的 Referer 和 Origin（防盗链绕过）
+    let targetOrigin = '';
+    try {
+      const targetUrlObj = new URL(decodedUrl);
+      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+    } catch {}
+
     const imageResponse = await fetch(decodedUrl, {
       cache: 'no-cache',
       redirect: 'follow',
-      credentials: 'same-origin',
+      credentials: 'omit',
       signal: controller.signal,
       headers: {
         'User-Agent': ua,
@@ -172,6 +179,9 @@ export async function GET(request: Request) {
           'image/webp,image/avif,image/png,image/jpeg,image/gif,image/svg+xml,*/*;q=0.8',
         'Accept-Encoding': 'identity',
         'Cache-Control': 'no-cache',
+        // 防盗链绕过
+        ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
+        ...(targetOrigin ? { Origin: targetOrigin } : {}),
         ...(cached?.etag && { 'If-None-Match': cached.etag }),
       },
 
