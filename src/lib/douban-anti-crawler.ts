@@ -55,14 +55,16 @@ function sha512(data: string): string {
 function proofOfWork(data: string, difficulty = 4): number {
   let nonce = 0;
   const targetSubStr = '0'.repeat(difficulty);
+  const MAX_NONCE = 10_000_000; // 防止无限循环
 
-  while (true) {
+  while (nonce < MAX_NONCE) {
     nonce += 1;
     const hash = sha512(data + nonce);
     if (hash.startsWith(targetSubStr)) {
       return nonce;
     }
   }
+  return -1; // 未找到满足条件的 nonce
 }
 
 /**
@@ -159,6 +161,11 @@ export async function getDoubanCookie(
       const startTime = Date.now();
       const sol = proofOfWork(formData.cha, 4);
       const elapsed = Date.now() - startTime;
+
+      // 检查 proofOfWork 是否成功
+      if (sol === -1) {
+        throw new Error('Proof of work failed: nonce limit exceeded');
+      }
 
       //       console.log(`[Douban Anti-Crawler] Proof of work calculated: ${sol} (${elapsed}ms)`);
 

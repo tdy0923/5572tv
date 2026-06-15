@@ -475,6 +475,15 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
     artPlayerRef,
   ]);
 
+  // ==================== 清理防抖定时器 ====================
+  useEffect(() => {
+    return () => {
+      if (danmuOperationTimeoutRef.current) {
+        clearTimeout(danmuOperationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // ==================== 弹幕操作处理（防抖优化）====================
 
   const handleDanmuOperationOptimized = useCallback(

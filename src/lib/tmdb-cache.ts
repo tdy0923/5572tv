@@ -175,14 +175,18 @@ export function clearTMDBCache(): void {
 }
 
 // 初始化缓存系统
+let tmdbCacheCleanupIntervalId: ReturnType<typeof setInterval> | null = null;
+
 async function initTMDBCache(): Promise<void> {
   // 立即清理一次过期缓存
   await cleanExpiredCache();
 
-  // 每1小时清理一次过期缓存
-  setInterval(() => cleanExpiredCache(), 60 * 60 * 1000);
-
-  //   console.log('TMDB缓存系统已初始化');
+  // 每1小时清理一次过期缓存（清理旧的防止热重载泄漏）
+  if (tmdbCacheCleanupIntervalId) clearInterval(tmdbCacheCleanupIntervalId);
+  tmdbCacheCleanupIntervalId = setInterval(
+    () => cleanExpiredCache(),
+    60 * 60 * 1000,
+  );
 }
 
 // 在模块加载时初始化缓存系统

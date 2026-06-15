@@ -326,7 +326,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     <>
       {/* 背景遮罩 */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
         onClick={onClose}
         onTouchMove={(e) => e.preventDefault()}
         onWheel={(e) => e.preventDefault()}
@@ -335,7 +335,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
 
       {/* 设置面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90dvh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        className='fixed top-1/2 left-1/2 z-45 flex max-h-[90dvh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='本地设置'
@@ -400,6 +400,8 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 <button
                   type='button'
                   onClick={() => setIsDoubanDropdownOpen(!isDoubanDropdownOpen)}
+                  aria-expanded={isDoubanDropdownOpen}
+                  aria-label='选择豆瓣数据源'
                   className='ui-input w-full pr-10 text-left text-sm'
                 >
                   {

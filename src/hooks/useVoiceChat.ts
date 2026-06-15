@@ -279,7 +279,10 @@ export function useVoiceChat({
       stopLocalStream();
       closeAllConnections();
       // 使用 requestAnimationFrame 延迟 setState 以避免 effect 内同步更新
-      requestAnimationFrame(() => setIsConnected(false));
+      const rafId = requestAnimationFrame(() => setIsConnected(false));
+      return () => {
+        cancelAnimationFrame(rafId);
+      };
     }
 
     return () => {

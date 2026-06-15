@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'; // 禁用缓存
 export async function GET(request: NextRequest) {
   try {
     // 从 cookie 获取用户信息
-    const authCookie = getAuthInfoFromCookie(request);
+    const authCookie = await getAuthInfoFromCookie(request);
 
     if (!authCookie?.username) {
       return NextResponse.json(

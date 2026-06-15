@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 从 cookie 获取用户信息
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
       const errorSize = Buffer.byteLength(
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
 
   try {
     // 从 cookie 获取用户信息
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
       const errorSize = Buffer.byteLength(
@@ -427,7 +427,7 @@ export async function DELETE(request: NextRequest) {
 
   try {
     // 从 cookie 获取用户信息
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       const errorResponse = { error: 'Unauthorized' };
       const errorSize = Buffer.byteLength(

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { getBaseUrl, resolveUrl } from '@/lib/live';
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +51,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing url' }, { status: 400 });
   }
 
+  // SSRF protection: block internal/private IPs
+  const decodedUrl = decodeURIComponent(url);
+  if (!isUrlSafe(decodedUrl)) {
+    stats.errors++;
+    return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+  }
+
   const ua = await getSourceUserAgent(source);
 
   let response: Response | null = null;
@@ -58,8 +66,6 @@ export async function GET(request: Request) {
   const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
 
   try {
-    const decodedUrl = decodeURIComponent(url);
-
     // 选择合适的 agent
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;

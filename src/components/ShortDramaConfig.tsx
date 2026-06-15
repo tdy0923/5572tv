@@ -153,6 +153,7 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
                   enableAlternative: e.target.checked,
                 }))
               }
+              aria-label='启用备用API自动切换'
             />
             <div
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${

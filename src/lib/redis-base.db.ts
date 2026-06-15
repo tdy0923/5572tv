@@ -456,6 +456,17 @@ export abstract class BaseRedisStorage implements IStorage {
 
   // 删除用户及其所有数据
   async deleteUser(userName: string): Promise<void> {
+    // 读取 OIDC 映射 BEFORE deleting user info (fix:先读后删，防止oidcSub泄漏)
+    let oidcSub: string | undefined;
+    try {
+      const userInfo = await this.getUserInfoV2(userName);
+      if (userInfo?.oidcSub) {
+        oidcSub = userInfo.oidcSub;
+      }
+    } catch {
+      // ignore
+    }
+
     // 删除用户密码 (V1)
     await this.withRetry(() => this.client.del(this.userPwdKey(userName)));
 
@@ -466,15 +477,8 @@ export abstract class BaseRedisStorage implements IStorage {
     await this.withRetry(() => this.client.zRem(this.userListKey(), userName));
 
     // 删除 OIDC 映射（如果存在）
-    try {
-      const userInfo = await this.getUserInfoV2(userName);
-      if (userInfo?.oidcSub) {
-        await this.withRetry(() =>
-          this.client.del(this.oidcSubKey(userInfo.oidcSub!)),
-        );
-      }
-    } catch (e) {
-      // 忽略错误，用户信息可能已被删除
+    if (oidcSub) {
+      await this.withRetry(() => this.client.del(this.oidcSubKey(oidcSub!)));
     }
 
     // 删除搜索历史

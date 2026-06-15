@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
-  const authInfo = getAuthInfoFromCookie(request as any);
+  const authInfo = await getAuthInfoFromCookie(request as any);
   if (!authInfo?.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

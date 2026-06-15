@@ -234,6 +234,7 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
                     enabled: e.target.checked,
                   }))
                 }
+                aria-label='启用外部弹幕数据'
                 className='sr-only peer'
               />
               <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
@@ -272,6 +273,7 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
                         useCustomApi: e.target.checked,
                       }))
                     }
+                    aria-label='使用自定义API'
                     className='sr-only peer'
                   />
                   <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>

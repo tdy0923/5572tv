@@ -98,7 +98,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
   if (!isVisible || !mounted) return null;
 
   return createPortal(
-    <div className='fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4'>
       <div
         className={`absolute inset-0 bg-black/80 transition-opacity duration-200 ease-out ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
         style={{ backdropFilter: 'blur(4px)', willChange: 'opacity' }}

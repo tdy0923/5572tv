@@ -388,10 +388,10 @@ function ShortDramaCard({
             )}
 
             {/* 评分 - 只在评分大于0时显示 */}
-            {Number(drama.vote_average) > 0 && (
+            {drama.vote_average != null && Number(drama.vote_average) > 0 && (
               <div className='flex items-center rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-105'>
                 <Star className='h-3 w-3 mr-0.5 fill-current' />
-                {drama.vote_average.toFixed(1)}
+                {Number(drama.vote_average).toFixed(1)}
               </div>
             )}
           </div>

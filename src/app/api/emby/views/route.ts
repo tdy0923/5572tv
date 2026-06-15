@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const embyKey = searchParams.get('embyKey') || undefined;
 
     // 从 cookie 获取用户信息
-    const authCookie = getAuthInfoFromCookie(request);
+    const authCookie = await getAuthInfoFromCookie(request);
 
     if (!authCookie?.username) {
       return NextResponse.json(

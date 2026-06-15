@@ -4,10 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Bangumi API 代理路由
  * 解决客户端直接调用 Bangumi API 可能遇到的 CORS 问题
- *
- * 用法:
- * GET /api/proxy/bangumi?path=calendar
- * GET /api/proxy/bangumi?path=v0/subjects/12345
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -16,6 +12,14 @@ export async function GET(request: NextRequest) {
   if (!path) {
     return NextResponse.json(
       { error: 'Missing path parameter' },
+      { status: 400 },
+    );
+  }
+
+  // Path validation: only allow safe alphanumeric/dot/dash/slash paths
+  if (/[^a-zA-Z0-9\/\.\-]/.test(path) || path.includes('..')) {
+    return NextResponse.json(
+      { error: 'Invalid path parameter' },
       { status: 400 },
     );
   }

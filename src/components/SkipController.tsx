@@ -1313,7 +1313,7 @@ export default function SkipController({
       {/* 设置模式面板 - 增强版批量设置 */}
       {isSettingMode && (
         <div
-          className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-9999 p-4 animate-fade-in'
+          className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in'
           onClick={handleCloseDialog}
         >
           <div
@@ -1920,7 +1920,7 @@ export default function SkipController({
             cursor: isDragging ? 'grabbing' : 'default',
             userSelect: isDragging ? 'none' : 'auto',
           }}
-          className='z-9998 max-w-sm bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
+          className='z-55 max-w-sm bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
         >
           <div className='p-3'>
             <h4 className='drag-handle font-medium mb-2 text-gray-900 dark:text-gray-100 text-sm flex items-center cursor-move select-none'>

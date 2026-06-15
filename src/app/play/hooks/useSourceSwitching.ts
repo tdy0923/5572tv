@@ -303,6 +303,9 @@ export function useSourceSwitching(params: {
       });
 
       setTimeout(async () => {
+        // Guard against unmount during timeout
+        if (!isSourceChangingRef.current && !params.artPlayerRef.current)
+          return;
         isSourceChangingRef.current = false;
         setIsVideoLoading(false);
 

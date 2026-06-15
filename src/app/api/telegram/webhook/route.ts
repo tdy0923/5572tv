@@ -30,13 +30,16 @@ export async function POST(request: Request) {
       const chatId = update.message.chat.id;
       const token = update.message.text.split(' ')[1]; // 获取 token
 
-      console.log('[Webhook] Received /start with token:', token);
+      console.log(
+        '[Webhook] Received /start with token:',
+        token.slice(0, 4) + '...',
+      );
       console.log('[Webhook] Chat ID:', chatId);
 
       // 从数据库验证 token
       console.log('[Webhook] Attempting to retrieve token from database...');
       const tokenData = await getTelegramToken(token);
-      console.log('[Webhook] Token data retrieved:', tokenData);
+      console.log('[Webhook] Token exists:', !!tokenData);
 
       if (!tokenData) {
         console.log('[Webhook] Token not found or expired');

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   console.log('request', request.url);
 
   // 添加用户认证检查
-  const authInfo = getAuthInfoFromCookie(request);
+  const authInfo = await getAuthInfoFromCookie(request);
   if (!authInfo || !authInfo.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

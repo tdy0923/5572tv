@@ -433,17 +433,18 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
         {shortdramaDetails?.metadata && (
           <div className='mt-4 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-4'>
             {/* 评分 */}
-            {shortdramaDetails.metadata.vote_average > 0 && (
-              <div className='flex items-center gap-2'>
-                <span className='text-yellow-500'>⭐</span>
-                <span className='font-semibold text-gray-800 dark:text-gray-200'>
-                  {shortdramaDetails.metadata.vote_average.toFixed(1)}
-                </span>
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  / 10
-                </span>
-              </div>
-            )}
+            {shortdramaDetails.metadata?.vote_average != null &&
+              shortdramaDetails.metadata.vote_average > 0 && (
+                <div className='flex items-center gap-2'>
+                  <span className='text-yellow-500'>⭐</span>
+                  <span className='font-semibold text-gray-800 dark:text-gray-200'>
+                    {Number(shortdramaDetails.metadata.vote_average).toFixed(1)}
+                  </span>
+                  <span className='text-sm text-gray-500 dark:text-gray-400'>
+                    / 10
+                  </span>
+                </div>
+              )}
             {/* 演员 */}
             {shortdramaDetails.metadata.author && (
               <div className='flex items-start gap-2'>
@@ -574,26 +575,6 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                         key={work.id}
                         ref={(node) => {
                           if (node) {
-                            // 移除旧的监听器
-                            const oldClick = (node as any)._clickHandler;
-                            const oldTouchStart = (node as any)
-                              ._touchStartHandler;
-                            const oldTouchEnd = (node as any)._touchEndHandler;
-                            if (oldClick)
-                              node.removeEventListener('click', oldClick, true);
-                            if (oldTouchStart)
-                              node.removeEventListener(
-                                'touchstart',
-                                oldTouchStart,
-                                true,
-                              );
-                            if (oldTouchEnd)
-                              node.removeEventListener(
-                                'touchend',
-                                oldTouchEnd,
-                                true,
-                              );
-
                             // 长按检测
                             let touchStartTime = 0;
                             let isLongPress = false;
@@ -602,29 +583,18 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                             const touchStartHandler = (e: Event) => {
                               touchStartTime = Date.now();
                               isLongPress = false;
-
-                              // 设置长按定时器（500ms）
                               longPressTimer = setTimeout(() => {
                                 isLongPress = true;
                               }, 500);
                             };
 
                             const touchEndHandler = (e: Event) => {
-                              // 清除长按定时器
                               if (longPressTimer) {
                                 clearTimeout(longPressTimer);
                                 longPressTimer = null;
                               }
-
                               const touchDuration = Date.now() - touchStartTime;
-
-                              // 如果是长按（超过500ms）或已标记为长按，不跳转
-                              if (isLongPress || touchDuration >= 500) {
-                                // 让 VideoCard 的长按菜单正常工作
-                                return;
-                              }
-
-                              // 否则是短按，执行跳转
+                              if (isLongPress || touchDuration >= 500) return;
                               e.preventDefault();
                               e.stopPropagation();
                               e.stopImmediatePropagation();
@@ -650,11 +620,31 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                             );
                             node.addEventListener('click', clickHandler, true);
 
-                            // 保存引用以便清理
+                            // Save handlers for cleanup on unmount/re-render
                             (node as any)._touchStartHandler =
                               touchStartHandler;
                             (node as any)._touchEndHandler = touchEndHandler;
                             (node as any)._clickHandler = clickHandler;
+
+                            // Return cleanup function for React
+                            return () => {
+                              node.removeEventListener(
+                                'touchstart',
+                                touchStartHandler,
+                                true,
+                              );
+                              node.removeEventListener(
+                                'touchend',
+                                touchEndHandler,
+                                true,
+                              );
+                              node.removeEventListener(
+                                'click',
+                                clickHandler,
+                                true,
+                              );
+                              if (longPressTimer) clearTimeout(longPressTimer);
+                            };
                           }
                         }}
                         style={{
@@ -716,26 +706,6 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                       key={item.id}
                       ref={(node) => {
                         if (node) {
-                          // 移除旧的监听器
-                          const oldClick = (node as any)._clickHandler;
-                          const oldTouchStart = (node as any)
-                            ._touchStartHandler;
-                          const oldTouchEnd = (node as any)._touchEndHandler;
-                          if (oldClick)
-                            node.removeEventListener('click', oldClick, true);
-                          if (oldTouchStart)
-                            node.removeEventListener(
-                              'touchstart',
-                              oldTouchStart,
-                              true,
-                            );
-                          if (oldTouchEnd)
-                            node.removeEventListener(
-                              'touchend',
-                              oldTouchEnd,
-                              true,
-                            );
-
                           // 长按检测
                           let touchStartTime = 0;
                           let isLongPress = false;
@@ -744,29 +714,18 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           const touchStartHandler = (e: Event) => {
                             touchStartTime = Date.now();
                             isLongPress = false;
-
-                            // 设置长按定时器（500ms）
                             longPressTimer = setTimeout(() => {
                               isLongPress = true;
                             }, 500);
                           };
 
                           const touchEndHandler = (e: Event) => {
-                            // 清除长按定时器
                             if (longPressTimer) {
                               clearTimeout(longPressTimer);
                               longPressTimer = null;
                             }
-
                             const touchDuration = Date.now() - touchStartTime;
-
-                            // 如果是长按（超过500ms）或已标记为长按，不跳转
-                            if (isLongPress || touchDuration >= 500) {
-                              // 让 VideoCard 的长按菜单正常工作
-                              return;
-                            }
-
-                            // 否则是短按，执行跳转
+                            if (isLongPress || touchDuration >= 500) return;
                             e.preventDefault();
                             e.stopPropagation();
                             e.stopImmediatePropagation();
@@ -792,10 +751,29 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           );
                           node.addEventListener('click', clickHandler, true);
 
-                          // 保存引用以便清理
                           (node as any)._touchStartHandler = touchStartHandler;
                           (node as any)._touchEndHandler = touchEndHandler;
                           (node as any)._clickHandler = clickHandler;
+
+                          // Return cleanup function for React
+                          return () => {
+                            node.removeEventListener(
+                              'touchstart',
+                              touchStartHandler,
+                              true,
+                            );
+                            node.removeEventListener(
+                              'touchend',
+                              touchEndHandler,
+                              true,
+                            );
+                            node.removeEventListener(
+                              'click',
+                              clickHandler,
+                              true,
+                            );
+                            if (longPressTimer) clearTimeout(longPressTimer);
+                          };
                         }
                       }}
                       style={{

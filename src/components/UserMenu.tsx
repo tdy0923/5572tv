@@ -678,13 +678,13 @@ export const UserMenu: React.FC = () => {
     <>
       {/* 背景遮罩 - 普通菜单无需模糊 */}
       <div
-        className='fixed inset-0 bg-transparent z-1000'
+        className='fixed inset-0 bg-transparent z-40'
         onClick={handleCloseMenu}
       />
 
       {/* 菜单面板 */}
       <div
-        className='fixed top-16 right-4 w-60 max-h-[calc(100vh-5rem)] overflow-y-auto ui-surface z-1001 select-none'
+        className='fixed top-16 right-4 w-60 max-h-[calc(100vh-5rem)] overflow-y-auto ui-surface z-45 select-none'
         role='dialog'
         aria-modal='true'
         aria-label='用户菜单'
@@ -910,7 +910,7 @@ export const UserMenu: React.FC = () => {
     <>
       {/* 背景遮罩 */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
         onClick={handleCloseChangePassword}
         onTouchMove={(e) => {
           // 只阻止滚动，允许其他触摸事件
@@ -927,7 +927,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 修改密码面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-1001 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
+        className='fixed top-1/2 left-1/2 z-45 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='修改密码'
@@ -1036,7 +1036,7 @@ export const UserMenu: React.FC = () => {
     <>
       {/* 背景遮罩 */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
         onClick={handleCloseWatchingUpdates}
         onTouchMove={(e) => {
           e.preventDefault();
@@ -1051,7 +1051,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 更新弹窗 */}
       <div
-        className='fixed top-1/2 left-1/2 z-1001 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        className='fixed top-1/2 left-1/2 z-45 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='更新提醒'
@@ -1272,7 +1272,7 @@ export const UserMenu: React.FC = () => {
     <>
       {/* 背景遮罩 */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
         onClick={handleCloseContinueWatching}
         onTouchMove={(e) => {
           e.preventDefault();
@@ -1287,7 +1287,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 继续观看弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
+        className='fixed inset-x-4 top-1/2 z-45 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
@@ -1376,7 +1376,7 @@ export const UserMenu: React.FC = () => {
     <>
       {/* 背景遮罩 */}
       <div
-        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-1000'
+        className='fixed inset-0 bg-black/50 backdrop-blur-sm z-40'
         onClick={handleCloseFavorites}
         onTouchMove={(e) => {
           e.preventDefault();
@@ -1391,7 +1391,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 收藏弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 z-1001 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
+        className='fixed inset-x-4 top-1/2 z-45 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'

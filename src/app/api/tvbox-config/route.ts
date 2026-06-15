@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic'; // 强制动态渲染
 export async function GET(request: NextRequest) {
   try {
     // 检查用户是否登录
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

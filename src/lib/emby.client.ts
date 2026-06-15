@@ -142,6 +142,8 @@ export class EmbyClient {
     this.password = config.Password;
   }
 
+  private authMutex: Promise<void> = Promise.resolve();
+
   private async ensureAuthenticated(): Promise<void> {
     // 如果有 ApiKey 但没有 userId，需要获取用户 ID
     if (this.apiKey && !this.userId) {
@@ -156,14 +158,19 @@ export class EmbyClient {
     // 如果有 AuthToken，假设它是有效的
     if (this.authToken) return;
 
-    // 如果有用户名，自动认证（密码可选）
+    // 如果有用户名，自动认证（密码可选）— 使用互斥锁防止并发认证
     if (this.username) {
-      const authResult = await this.authenticate(
-        this.username,
-        this.password || '',
-      );
-      this.authToken = authResult.AccessToken;
-      this.userId = authResult.User.Id;
+      this.authMutex = this.authMutex.then(async () => {
+        // Double-check after acquiring lock
+        if (this.authToken) return;
+        const authResult = await this.authenticate(
+          this.username,
+          this.password || '',
+        );
+        this.authToken = authResult.AccessToken;
+        this.userId = authResult.User.Id;
+      });
+      await this.authMutex;
     }
   }
 

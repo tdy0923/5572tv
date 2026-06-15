@@ -93,7 +93,7 @@ export function DownloadPanel() {
   };
 
   return (
-    <div className='fixed inset-0 z-9999 overflow-y-auto'>
+    <div className='fixed inset-0 z-65 overflow-y-auto'>
       <div className='flex items-end md:items-center justify-center min-h-screen md:min-h-full p-0 md:p-4'>
         {/* 背景遮罩 */}
         <div

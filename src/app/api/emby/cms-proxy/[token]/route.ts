@@ -33,7 +33,23 @@ export async function GET(
   // 验证 TVBox Token
   const subscribeToken = process.env.TVBOX_SUBSCRIBE_TOKEN;
 
-  if (!subscribeToken || token !== subscribeToken) {
+  // Fix: If TVBOX_SUBSCRIBE_TOKEN is not set, deny all access (prevent bypass)
+  if (!subscribeToken) {
+    return NextResponse.json(
+      {
+        code: 503,
+        msg: 'TVBox订阅Token未配置',
+        page: 1,
+        pagecount: 0,
+        limit: 0,
+        total: 0,
+        list: [],
+      },
+      { status: 503 },
+    );
+  }
+
+  if (token !== subscribeToken) {
     return NextResponse.json({
       code: 401,
       msg: '无效的访问token',

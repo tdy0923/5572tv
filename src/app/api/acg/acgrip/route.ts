@@ -15,7 +15,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   // 权限检查：需要登录
-  const authInfo = getAuthInfoFromCookie(req);
+  const authInfo = await getAuthInfoFromCookie(req);
   if (!authInfo || !authInfo.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

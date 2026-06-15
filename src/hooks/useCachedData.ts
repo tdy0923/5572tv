@@ -251,7 +251,7 @@ export function useCachedData<T>({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [cacheKey, ...dependencies]);
+  }, [cacheKey, JSON.stringify(dependencies)]);
 
   // 组件卸载时标记
   useEffect(() => {

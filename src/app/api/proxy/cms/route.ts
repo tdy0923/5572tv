@@ -1,19 +1,12 @@
 /* eslint-disable no-console */
 /**
  * CMS 代理接口 - 解决 Mixed Content 和 CORS 问题
- *
- * 功能：
- * 1. 代理外部 CMS API 请求（HTTP/HTTPS）
- * 2. 解决 HTTPS 页面无法请求 HTTP 资源的问题
- * 3. 解决第三方 API 的 CORS 限制
- * 4. 安全白名单机制，防止被滥用
- * 5. 成人内容源拦截（纵深防御第二层）
- * 6. ☁️ Cloudflare Worker 代理加速（优先使用，失败时降级到本地）
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 使用 Node.js Runtime 以获得更好的网络兼容性
@@ -118,6 +111,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid URL format' },
         { status: 400, headers: getCorsHeaders() },
+      );
+    }
+
+    // SSRF protection: block internal/private IPs
+    if (!isUrlSafe(targetUrl)) {
+      return NextResponse.json(
+        { error: '禁止访问内部地址' },
+        { status: 403, headers: getCorsHeaders() },
       );
     }
 

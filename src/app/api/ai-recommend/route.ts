@@ -24,7 +24,7 @@ interface ChatRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
 
     // 检查用户权限
     if (!authInfo || !authInfo.username) {
@@ -919,7 +919,7 @@ ${
 // 获取AI推荐历史
 export async function GET(request: NextRequest) {
   try {
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
 
     if (!authInfo || !authInfo.username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

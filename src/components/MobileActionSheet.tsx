@@ -261,6 +261,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
 
           <button
             onClick={onClose}
+            aria-label='关闭'
             className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150'
           >
             <X size={20} className='text-gray-500 dark:text-gray-400' />

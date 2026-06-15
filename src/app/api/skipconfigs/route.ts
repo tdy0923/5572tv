@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取认证信息
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
 
     // 如果是直接传入的认证信息（客户端模式），使用传入的信息
     const finalUsername = username || authInfo?.username;

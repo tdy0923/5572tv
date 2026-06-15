@@ -5,20 +5,8 @@ import { CURRENT_VERSION } from '@/lib/version';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const config = await getConfig();
-
-  // 检查是否是内部请求（middleware 获取信任网络配置）
-  const isInternalRequest =
-    request.headers.get('x-internal-request') === 'true';
-  const requestedKey = new URL(request.url).searchParams.get('key');
-
-  // 内部请求：只返回特定配置
-  if (isInternalRequest && requestedKey === 'TrustedNetworkConfig') {
-    return NextResponse.json({
-      TrustedNetworkConfig: config.TrustedNetworkConfig || null,
-    });
-  }
 
   const result: any = {
     SiteName: config.SiteConfig.SiteName,

@@ -72,43 +72,77 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // 读取配置以获取备用API地址
+    // 读取配置以获取主API和备用API地址
+    let primaryApi = 'https://wwzy.tv/api.php/provide/vod';
     let alternativeApiUrl: string | undefined;
     try {
       const config = await getConfig();
       const shortDramaConfig = config.ShortDramaConfig;
+      if (shortDramaConfig?.primaryApiUrl) {
+        primaryApi = shortDramaConfig.primaryApiUrl;
+      }
       alternativeApiUrl = shortDramaConfig?.enableAlternative
         ? shortDramaConfig.alternativeApiUrl
         : undefined;
     } catch (configError) {
       console.error('读取短剧配置失败:', configError);
-      // 配置读取失败时，不使用备用API
-      alternativeApiUrl = undefined;
     }
-
-    // 直接调用外部API，避免循环调用
-    const config = await getConfig();
-    const defaultApi = 'https://wwzy.tv/api.php/provide/vod';
 
     const params = new URLSearchParams({
       ac: 'detail',
       ids: videoId.toString(),
     });
 
-    const response = await fetch(`${defaultApi}?${params.toString()}`, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(15000),
-    });
+    let data: any = null;
+    let lastError: string = '';
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // 尝试主API
+    try {
+      const response = await fetch(`${primaryApi}?${params.toString()}`, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+      if (response.ok) {
+        data = await response.json();
+      } else {
+        lastError = `主API HTTP ${response.status}`;
+      }
+    } catch (e) {
+      lastError = `主API请求失败: ${e}`;
     }
 
-    const data = await response.json();
+    // 主API失败时，尝试备用API
+    if ((!data || !data.list || data.list.length === 0) && alternativeApiUrl) {
+      try {
+        const altResponse = await fetch(
+          `${alternativeApiUrl}/api.php/provide/vod?${params.toString()}`,
+          {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              Accept: 'application/json',
+            },
+            signal: AbortSignal.timeout(15000),
+          },
+        );
+        if (altResponse.ok) {
+          data = await altResponse.json();
+        }
+      } catch (e) {
+        console.error('备用API也失败:', e);
+      }
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { error: lastError || '短剧API请求失败' },
+        { status: 502 },
+      );
+    }
 
     if (!data.list || data.list.length === 0) {
       return NextResponse.json({ error: '未找到短剧数据' }, { status: 404 });
@@ -195,7 +229,7 @@ export async function GET(request: NextRequest) {
     finalResponse.headers.set('Netlify-Vary', 'query');
 
     // 记录性能指标
-    const responseSize = Buffer.byteLength(JSON.stringify(response), 'utf8');
+    const responseSize = Buffer.byteLength(JSON.stringify(apiResponse), 'utf8');
     recordRequest({
       timestamp: startTime,
       method: 'GET',

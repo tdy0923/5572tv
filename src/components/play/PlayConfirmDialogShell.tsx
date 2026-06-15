@@ -30,7 +30,7 @@ export default function PlayConfirmDialogShell({
   if (!show) return null;
 
   return (
-    <div className='fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
       <div className='mx-4 max-w-sm rounded-[28px] border border-black/6 bg-white/86 p-6 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/8 dark:bg-[#151a22]/86'>
         <div className='text-center'>
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 dark:bg-white/10'>

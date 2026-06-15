@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import { createReadStream } from 'fs';
 import { NextResponse } from 'next/server';
 
+import { isUrlSafe } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 import {
   cacheTrailerUrl,
@@ -37,50 +38,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing video URL' }, { status: 400 });
   }
 
-  // URL 格式验证
-  try {
-    new URL(videoUrl);
-  } catch (e) {
-    console.log('[VideoProxy] URL parse error:', e);
-    return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
-  }
-
-  // SSRF protection: block internal/private IPs
-  try {
-    const parsedUrl = new URL(videoUrl);
-    const hostname = parsedUrl.hostname;
-    if (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      hostname === '0.0.0.0' ||
-      hostname.startsWith('10.') ||
-      hostname.startsWith('172.16.') ||
-      hostname.startsWith('172.17.') ||
-      hostname.startsWith('172.18.') ||
-      hostname.startsWith('172.19.') ||
-      hostname.startsWith('172.20.') ||
-      hostname.startsWith('172.21.') ||
-      hostname.startsWith('172.22.') ||
-      hostname.startsWith('172.23.') ||
-      hostname.startsWith('172.24.') ||
-      hostname.startsWith('172.25.') ||
-      hostname.startsWith('172.26.') ||
-      hostname.startsWith('172.27.') ||
-      hostname.startsWith('172.28.') ||
-      hostname.startsWith('172.29.') ||
-      hostname.startsWith('172.30.') ||
-      hostname.startsWith('172.31.') ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('169.254.') ||
-      hostname === '0.0.0.0' ||
-      hostname.endsWith('.internal')
-    ) {
-      return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
-    }
-  } catch (e) {
-    console.log('[VideoProxy] SSRF validation error:', e);
-    return NextResponse.json({ error: '无效的URL' }, { status: 400 });
+  // URL 格式验证 + SSRF protection
+  if (!isUrlSafe(videoUrl)) {
+    return NextResponse.json(
+      { error: '禁止访问内部地址或无效URL' },
+      { status: 403 },
+    );
   }
 
   // 🎯 优先检查缓存（Kvrocks + 文件系统）
@@ -335,6 +298,11 @@ export async function HEAD(request: Request) {
 
   if (!videoUrl) {
     return new NextResponse(null, { status: 400 });
+  }
+
+  // SSRF protection: block internal/private IPs
+  if (!isUrlSafe(videoUrl)) {
+    return new NextResponse(null, { status: 403 });
   }
 
   try {

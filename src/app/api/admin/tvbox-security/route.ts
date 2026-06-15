@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const authInfo = getAuthInfoFromCookie(request);
+  const authInfo = await getAuthInfoFromCookie(request);
 
   // 检查用户权限
   if (!authInfo || !authInfo.username) {

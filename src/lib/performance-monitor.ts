@@ -2,12 +2,10 @@
 /**
  * 性能监控模块
  * 收集和聚合应用性能数据
- *
- * 注意：性能数据仅保存在内存中（最多 10000 条，48 小时）
- * 不再持久化到 Kvrocks，以防止 WAL 爆满
  */
 
 /* eslint-disable unused-imports/no-unused-vars */
+import os from 'os';
 
 import { db } from './db';
 import {
@@ -143,7 +141,6 @@ export function collectSystemMetrics(): SystemMetrics {
   }
 
   const memUsage = process.memoryUsage();
-  const os = require('os');
 
   // 如果基线未初始化（模块加载时初始化失败），现在初始化
   if (lastCpuUsage === null || lastCpuTime === null) {

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
 import { getDoubanCookie } from '@/lib/douban-anti-crawler';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -101,47 +102,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing image URL' }, { status: 400 });
   }
 
-  // URL 格式验证
-  try {
-    new URL(imageUrl);
-  } catch {
-    return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 });
-  }
-
-  // SSRF protection: block internal/private IPs
-  try {
-    const parsedUrl = new URL(imageUrl);
-    const hostname = parsedUrl.hostname;
-    if (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      hostname === '0.0.0.0' ||
-      hostname.startsWith('10.') ||
-      hostname.startsWith('172.16.') ||
-      hostname.startsWith('172.17.') ||
-      hostname.startsWith('172.18.') ||
-      hostname.startsWith('172.19.') ||
-      hostname.startsWith('172.20.') ||
-      hostname.startsWith('172.21.') ||
-      hostname.startsWith('172.22.') ||
-      hostname.startsWith('172.23.') ||
-      hostname.startsWith('172.24.') ||
-      hostname.startsWith('172.25.') ||
-      hostname.startsWith('172.26.') ||
-      hostname.startsWith('172.27.') ||
-      hostname.startsWith('172.28.') ||
-      hostname.startsWith('172.29.') ||
-      hostname.startsWith('172.30.') ||
-      hostname.startsWith('172.31.') ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('169.254.') ||
-      hostname.endsWith('.internal')
-    ) {
-      return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
-    }
-  } catch {
-    return NextResponse.json({ error: '无效的URL' }, { status: 400 });
+  // URL 格式验证 + SSRF protection
+  if (!isUrlSafe(imageUrl)) {
+    return NextResponse.json(
+      { error: '禁止访问内部地址或无效URL' },
+      { status: 403 },
+    );
   }
 
   // 创建 AbortController 用于超时控制

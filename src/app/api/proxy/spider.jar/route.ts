@@ -2,19 +2,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getSpiderJar } from '@/lib/spiderJar';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
 // Spider JAR 本地代理端点 - 使用统一的 jar 获取逻辑
-// 支持通过查询参数指定自定义 jar URL
 export async function GET(req: NextRequest) {
   try {
-    // 检查是否有自定义 jar URL 参数
     const { searchParams } = new URL(req.url);
     const customUrl = searchParams.get('url');
     const forceRefresh = searchParams.get('refresh') === '1';
 
-    // 使用管理模块获取 jar（优先使用缓存）
+    // SSRF protection: block internal/private IPs if custom URL provided
+    if (customUrl && !isUrlSafe(customUrl)) {
+      return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+    }
+
     const jarInfo = await getSpiderJar(forceRefresh, customUrl || undefined);
 
     console.log(

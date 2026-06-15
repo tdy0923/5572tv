@@ -1,18 +1,19 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
+import { BoundedMap } from '@/lib/bounded-map';
 import { getConfig } from '@/lib/config';
 import { getRandomUserAgent } from '@/lib/user-agent';
 
 const DEFAULT_USER_AGENT = 'AptvPlayer/1.4.10';
 
-// CDN 域名级策略缓存（进程级别，跨请求有效）
-const cdnStrategy = new Map<
+// CDN 域名级策略缓存（进程级别，跨请求有效，最多500条自动淘汰）
+const cdnStrategy = new BoundedMap<
   string,
   {
     best: 'direct' | 'ua_rotate' | 'proxy' | 'blocked';
     lastOk: number;
   }
->();
+>(500);
 
 export function getCdnDomain(url: string): string {
   try {

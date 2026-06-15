@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -86,9 +87,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing url' }, { status: 400 });
   }
 
-  const ua = await getSourceUserAgent(source);
-
+  // SSRF protection: block internal/private IPs
   const decodedUrl = decodeURIComponent(url);
+  if (!isUrlSafe(decodedUrl)) {
+    keyStats.errors++;
+    return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+  }
+
+  const ua = await getSourceUserAgent(source);
   const cacheKey = `${source}-${decodedUrl}`;
 
   // 检查缓存

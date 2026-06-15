@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!currentUser) {
-      const authInfo = getAuthInfoFromCookie(request);
+      const authInfo = await getAuthInfoFromCookie(request);
       if (authInfo?.username) {
         currentUser =
           config.UserConfig.Users.find(

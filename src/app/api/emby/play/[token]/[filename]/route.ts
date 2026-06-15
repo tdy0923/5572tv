@@ -40,7 +40,7 @@ export async function GET(
 
     // 双重验证：TVBox Token 或 用户登录
     const subscribeToken = process.env.TVBOX_SUBSCRIBE_TOKEN;
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
 
     // 验证 TVBox Token
     const hasValidToken = subscribeToken && requestToken === subscribeToken;

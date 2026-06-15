@@ -20,9 +20,19 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const API_RATE_LIMIT = 30;
 const PAGE_RATE_LIMIT = 60;
+let lastRateLimitCleanup = 0;
 
 function checkRateLimit(ip: string, isApi: boolean): boolean {
   const now = Date.now();
+
+  // Periodic cleanup every 60s
+  if (now - lastRateLimitCleanup > RATE_LIMIT_WINDOW) {
+    lastRateLimitCleanup = now;
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (now > entry.resetTime) rateLimitStore.delete(key);
+    }
+  }
+
   const key = `${ip}:${isApi ? 'api' : 'page'}`;
   const limit = isApi ? API_RATE_LIMIT : PAGE_RATE_LIMIT;
 
@@ -37,14 +47,6 @@ function checkRateLimit(ip: string, isApi: boolean): boolean {
     return false;
   }
   return true;
-}
-
-// Clean up old entries periodically
-if (rateLimitStore.size > 10000) {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (now > entry.resetTime) rateLimitStore.delete(key);
-  }
 }
 
 // 从环境变量获取信任网络配置（优先）
@@ -88,39 +90,11 @@ async function getTrustedNetworkFromAPI(
   }
 
   try {
-    const url = new URL('/api/server-config', request.url);
-    url.searchParams.set('key', 'TrustedNetworkConfig');
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'x-internal-request': 'true',
-      },
-    });
-
-    trustedNetworkFetched = true;
-    trustedNetworkCacheTime = now;
-
-    if (response.ok) {
-      const data = await response.json();
-      if (data.TrustedNetworkConfig) {
-        trustedNetworkCache = {
-          enabled: data.TrustedNetworkConfig.enabled ?? false,
-          trustedIPs: data.TrustedNetworkConfig.trustedIPs || [],
-        };
-
-        if (!trustedNetworkCache.enabled) {
-          return null;
-        }
-
-        return trustedNetworkCache;
-      }
-    }
-
-    // API 返回但没有配置 - 标记为禁用而不是 null，这样走禁用缓存逻辑
-    trustedNetworkCache = { enabled: false, trustedIPs: [] };
+    // TrustedNetworkConfig now only comes from environment variables
+    // (removed insecure header-based API endpoint)
+    return getTrustedNetworkFromEnv();
   } catch {
-    // 请求失败时标记为禁用，使用长缓存时间避免频繁重试
-    trustedNetworkCache = { enabled: false, trustedIPs: [] };
+    return getTrustedNetworkFromEnv();
   }
 
   return null;
@@ -335,7 +309,7 @@ async function handleAuthentication(
       //       );
 
       // 检查是否已经有有效的认证 cookie
-      const existingAuth = getAuthInfoFromCookie(request);
+      const existingAuth = await getAuthInfoFromCookie(request);
       if (
         existingAuth &&
         (existingAuth.password ||
@@ -359,7 +333,7 @@ async function handleAuthentication(
   }
 
   // 从cookie获取认证信息
-  const authInfo = getAuthInfoFromCookie(request);
+  const authInfo = await getAuthInfoFromCookie(request);
 
   if (!authInfo) {
     return handleAuthFailure(request, pathname);

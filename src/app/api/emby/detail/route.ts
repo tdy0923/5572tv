@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 从 cookie 获取用户信息
-    const authCookie = getAuthInfoFromCookie(request);
+    const authCookie = await getAuthInfoFromCookie(request);
 
     if (!authCookie?.username) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });

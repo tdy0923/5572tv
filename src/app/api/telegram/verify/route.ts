@@ -85,7 +85,12 @@ export async function GET(request: Request) {
     const token = searchParams.get('token');
     const confirm = searchParams.get('confirm'); // 新增：确认参数
 
-    console.log(`[Verify ${requestId}] Token:`, token, 'Confirm:', confirm);
+    console.log(
+      `[Verify ${requestId}] Token:`,
+      token ? token.slice(0, 4) + '...' : null,
+      'Confirm:',
+      confirm,
+    );
 
     if (!token) {
       console.log(`[Verify ${requestId}] No token provided`);
@@ -202,7 +207,7 @@ export async function GET(request: Request) {
     // 有 confirm 参数，真正消费 token 并登录
     console.log(`[Verify ${requestId}] Confirm param present, consuming token`);
     const tokenData = await verifyAndConsumeTelegramToken(token);
-    console.log(`[Verify ${requestId}] Token data retrieved:`, tokenData);
+    console.log(`[Verify ${requestId}] Token consumed, exists:`, !!tokenData);
 
     if (!tokenData) {
       console.log(
@@ -256,10 +261,6 @@ export async function GET(request: Request) {
           `[Verify ${requestId}] Auto-register enabled, creating new user`,
         );
         initialPassword = generatePassword();
-        console.log(
-          `[Verify ${requestId}] Generated password:`,
-          initialPassword,
-        );
 
         console.log(`[Verify ${requestId}] Calling db.registerUser...`);
         await db.registerUser(username, initialPassword);
@@ -341,12 +342,7 @@ export async function GET(request: Request) {
     console.log(`[Verify ${requestId}] ========== FINAL STATUS ==========`);
     console.log(`[Verify ${requestId}] Username:`, username);
     console.log(`[Verify ${requestId}] Is new user:`, isNewUser);
-    console.log(
-      `[Verify ${requestId}] Initial password:`,
-      isNewUser ? initialPassword : 'N/A',
-    );
     console.log(`[Verify ${requestId}] Cookie expires:`, expires.toISOString());
-    console.log(`[Verify ${requestId}] Auth data:`, authDataString);
     console.log(`[Verify ${requestId}] ===================================`);
 
     // Create HTML response that sets cookies and redirects
@@ -378,7 +374,6 @@ export async function GET(request: Request) {
     console.log(
       `[Verify ${requestId}] Setting auth cookie via response.cookies.set()...`,
     );
-    console.log(`[Verify ${requestId}] Auth data string:`, authDataString);
     console.log(`[Verify ${requestId}] Cookie settings:`, {
       path: '/',
       expires: expires.toISOString(),
@@ -396,10 +391,6 @@ export async function GET(request: Request) {
     });
 
     console.log(`[Verify ${requestId}] Auth cookie set, verifying...`);
-    console.log(
-      `[Verify ${requestId}] Response cookies:`,
-      response.cookies.getAll(),
-    );
 
     // Set new user cookie if needed
     if (isNewUser && initialPassword) {

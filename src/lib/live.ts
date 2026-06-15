@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable unused-imports/no-unused-vars */
 
+import { BoundedMap } from '@/lib/bounded-map';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 
@@ -45,7 +46,7 @@ interface EpgCache {
   timestamp: number;
 }
 
-const epgCache = new Map<string, EpgCache>();
+const epgCache = new BoundedMap<string, EpgCache>(500);
 
 export interface LiveChannels {
   channelNumber: number;
@@ -82,16 +83,16 @@ export interface TvBoxConfig {
   [key: string]: any;
 }
 
-const cachedLiveChannels: { [key: string]: LiveChannels } = {};
+const cachedLiveChannels = new BoundedMap<string, LiveChannels>(200);
 
 export function deleteCachedLiveChannels(key: string) {
-  delete cachedLiveChannels[key];
+  cachedLiveChannels.delete(key);
 }
 
 export async function getCachedLiveChannels(
   key: string,
 ): Promise<LiveChannels | null> {
-  if (!cachedLiveChannels[key]) {
+  if (!cachedLiveChannels.has(key)) {
     const config = await getConfig();
     const liveInfo = config.LiveConfig?.find((live) => live.key === key);
     if (!liveInfo) {
@@ -104,7 +105,7 @@ export async function getCachedLiveChannels(
     liveInfo.channelNumber = channelNum;
     await db.saveAdminConfig(config);
   }
-  return cachedLiveChannels[key] || null;
+  return cachedLiveChannels.get(key) || null;
 }
 
 export async function refreshLiveChannels(liveInfo: {
@@ -120,8 +121,8 @@ export async function refreshLiveChannels(liveInfo: {
 }): Promise<number> {
   //   console.log(`[Live] Starting refresh for source: ${liveInfo.name} (${liveInfo.url})`);
 
-  if (cachedLiveChannels[liveInfo.key]) {
-    delete cachedLiveChannels[liveInfo.key];
+  if (cachedLiveChannels.has(liveInfo.key)) {
+    cachedLiveChannels.delete(liveInfo.key);
   }
 
   if (!liveInfo.url) {
@@ -249,13 +250,13 @@ export async function refreshLiveChannels(liveInfo: {
       result.channels,
     );
 
-    cachedLiveChannels[liveInfo.key] = {
+    cachedLiveChannels.set(liveInfo.key, {
       channelNumber: result.channels.length,
       channels: result.channels,
       epgUrl: epgUrl,
       epgs: epgs,
       epgLogos: logos,
-    };
+    });
     return result.channels.length;
   } catch (error) {
     console.error('Failed to refresh live channels:', error);

@@ -70,6 +70,37 @@ async function generateAuthCookie(
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting: max 5 registrations per IP per 10 minutes
+    const ip =
+      req.headers.get('x-forwarded-for') ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
+    const rateLimitKey = `register:${ip}`;
+    const now = Date.now();
+    const WINDOW = 600000; // 10 minutes
+    const MAX_ATTEMPTS = 5;
+
+    if (!(globalThis as any).__registerRateLimit)
+      (globalThis as any).__registerRateLimit = new Map();
+    const rl = (globalThis as any).__registerRateLimit;
+    const attempts = rl.get(rateLimitKey) || {
+      count: 0,
+      resetTime: now + WINDOW,
+    };
+    if (now > attempts.resetTime) {
+      attempts.count = 0;
+      attempts.resetTime = now + WINDOW;
+    }
+    attempts.count++;
+    rl.set(rateLimitKey, attempts);
+
+    if (attempts.count > MAX_ATTEMPTS) {
+      return NextResponse.json(
+        { error: '注册请求过于频繁，请稍后再试' },
+        { status: 429 },
+      );
+    }
+
     // localStorage 模式不支持注册
     if (STORAGE_TYPE === 'localstorage') {
       return NextResponse.json(

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const authInfo = getAuthInfoFromCookie(request);
+    const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -194,7 +194,10 @@ export async function POST(request: NextRequest) {
           );
         }
         if (targetPassword.length < 6) {
-          return NextResponse.json({ error: '密码长度至少6位' }, { status: 400 });
+          return NextResponse.json(
+            { error: '密码长度至少6位' },
+            { status: 400 },
+          );
         }
 
         // 使用 V1 注册用户

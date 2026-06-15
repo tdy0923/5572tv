@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 
 import { getSourceUserAgent } from '@/lib/proxy';
+import { isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -121,9 +122,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing image URL' }, { status: 400 });
   }
 
-  const ua = await getSourceUserAgent(source);
-
+  // SSRF protection: block internal/private IPs
   const decodedUrl = decodeURIComponent(imageUrl);
+  if (!isUrlSafe(decodedUrl)) {
+    logoStats.errors++;
+    return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+  }
+
+  const ua = await getSourceUserAgent(source);
   const cacheKey = `${source || 'default'}-${decodedUrl}`;
 
   // 检查缓存

@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const authCookie = getAuthInfoFromCookie(request);
+    const authCookie = await getAuthInfoFromCookie(request);
     if (!authCookie?.username) {
       return NextResponse.json(
         { error: '未登录', sources: [] },

@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     await ensureAdmin(req);
 
     // 获取用户名
-    const authInfo = getAuthInfoFromCookie(req);
+    const authInfo = await getAuthInfoFromCookie(req);
     const username = authInfo?.username || process.env.USERNAME || 'admin';
 
     const body = await req.json();
@@ -57,14 +57,14 @@ export async function POST(req: NextRequest) {
     if (maxUses < 1 || maxUses > 1000) {
       return NextResponse.json(
         { error: '使用次数必须在 1-1000 之间' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (expiresIn < 3600 || expiresIn > 31536000) {
       return NextResponse.json(
         { error: '过期时间必须在 1小时-1年 之间' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -139,7 +139,10 @@ export async function PATCH(req: NextRequest) {
     const { disabled } = body;
 
     if (typeof disabled !== 'boolean') {
-      return NextResponse.json({ error: '缺少 disabled 参数' }, { status: 400 });
+      return NextResponse.json(
+        { error: '缺少 disabled 参数' },
+        { status: 400 },
+      );
     }
 
     const success = await toggleInviteCode(code, disabled);

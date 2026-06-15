@@ -62,7 +62,15 @@ export async function POST(request: Request) {
       baseUrl, // 保存请求的域名
     };
 
-    console.log('[Magic Link] Storing token:', token, 'Data:', tokenData);
+    console.log(
+      '[Magic Link] Storing token:',
+      token.slice(0, 4) + '...',
+      'Data:',
+      {
+        telegramUsername: tokenData.telegramUsername,
+        expiresAt: tokenData.expiresAt,
+      },
+    );
     await setTelegramToken(token, tokenData);
     console.log('[Magic Link] Token saved successfully');
 

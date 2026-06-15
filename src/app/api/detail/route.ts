@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const startMemory = process.memoryUsage().heapUsed;
   resetDbQueryCount();
 
-  const authInfo = getAuthInfoFromCookie(request);
+  const authInfo = await getAuthInfoFromCookie(request);
   if (!authInfo || !authInfo.username) {
     const errorResponse = { error: 'Unauthorized' };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');

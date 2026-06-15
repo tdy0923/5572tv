@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { isUrlSafe } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -36,11 +37,16 @@ export async function GET(request: Request) {
     );
   }
 
+  // SSRF protection: block internal/private IPs
+  const decodedUrl = decodeURIComponent(url);
+  if (!isUrlSafe(decodedUrl)) {
+    return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
 
   try {
-    const decodedUrl = decodeURIComponent(url);
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 

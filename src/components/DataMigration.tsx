@@ -308,15 +308,22 @@ const DataMigration = ({ onRefreshConfig }: DataMigrationProps) => {
         throw new Error(result.error || `导入失败: ${response.status}`);
       }
 
+      // Sanitize values to prevent XSS
+      const escapeHtml = (val: any) =>
+        String(val || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       showAlert({
         type: 'success',
         title: '导入成功',
         html: `
           <div class="text-left">
             <p><strong>导入完成！</strong></p>
-            <p class="mt-2">导入的用户数量: ${result.importedUsers}</p>
-            <p>备份时间: ${new Date(result.timestamp).toLocaleString('zh-CN')}</p>
-            <p>服务器版本: ${result.serverVersion || '未知版本'}</p>
+            <p class="mt-2">导入的用户数量: ${escapeHtml(result.importedUsers)}</p>
+            <p>备份时间: ${escapeHtml(new Date(result.timestamp).toLocaleString('zh-CN'))}</p>
+            <p>服务器版本: ${escapeHtml(result.serverVersion || '未知版本')}</p>
             <p class="mt-3 text-orange-600">请刷新页面以查看最新数据。</p>
           </div>
         `,

@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const startMemory = process.memoryUsage().heapUsed;
   resetDbQueryCount();
 
-  const authInfo = getAuthInfoFromCookie(request);
+  const authInfo = await getAuthInfoFromCookie(request);
   if (!authInfo || !authInfo.username) {
     const errorResponse = { error: 'Unauthorized' };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
@@ -203,6 +203,11 @@ export async function GET(request: NextRequest) {
         const typeName = result.type_name || '';
         return !yellowWords.some((word: string) => typeName.includes(word));
       });
+    }
+    // Limit search results to prevent memory exhaustion
+    const MAX_SEARCH_RESULTS = 200;
+    if (flattenedResults.length > MAX_SEARCH_RESULTS) {
+      flattenedResults = flattenedResults.slice(0, MAX_SEARCH_RESULTS);
     }
     if (flattenedResults.length === 0) {
       // no cache if empty

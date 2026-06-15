@@ -142,7 +142,8 @@ function replacePlaybackUrlParams(updates: Record<string, string | null>) {
     }
   });
 
-  window.history.replaceState({}, '', newUrl.toString());
+  // Fix: Use __NA flag to bypass Next.js router interception (prevents infinite remount loop)
+  window.history.replaceState({ __NA: true }, '', newUrl.toString());
 }
 
 // 音轨辅助函数
@@ -579,7 +580,7 @@ function PlayPageClient() {
       // // console.log('[PlayPage] URL index changed, updating episode:', newIndex);
       setCurrentEpisodeIndex(newIndex);
     }
-  }, [searchParams]);
+  }, [searchParams.get('index')]);
 
   // 重新加载触发器（用于触发 initAll 重新执行）
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -3065,7 +3066,13 @@ function PlayPageClient() {
         );
       }
       newUrl.searchParams.delete('prefer');
-      window.history.replaceState({}, '', newUrl.toString());
+      newUrl.searchParams.delete('_reload');
+      // Fix: Only call replaceState if URL actually changed (prevents unnecessary router updates)
+      const newUrlStr = newUrl.toString();
+      if (newUrlStr !== window.location.href) {
+        // Fix: Use __NA flag to bypass Next.js router interception (prevents infinite remount loop)
+        window.history.replaceState({ __NA: true }, '', newUrlStr);
+      }
 
       setLoadingStage('ready');
       setLoadingMessage('✨ 准备就绪，即将开始播放...');
@@ -7178,7 +7185,9 @@ export default function PlayPage() {
 
 function PlayPageClientWrapper() {
   const searchParams = useSearchParams();
-  const key = searchParams.toString();
+  // Fix: Only remount when source+id actually changes, NOT on every URL param update
+  // Using full searchParams.toString() caused infinite remount loop with replaceState
+  const key = `${searchParams.get('source') || ''}+${searchParams.get('id') || ''}`;
 
   return <PlayPageClient key={key} />;
 }

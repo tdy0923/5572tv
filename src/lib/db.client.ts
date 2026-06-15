@@ -17,6 +17,7 @@
  */
 
 import { getAuthInfoFromBrowserCookie } from './auth';
+import { BoundedMap } from './bounded-map';
 import type { PlayRecord } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
 // watching-updates 已移除，保留空函数以避免编译错误
@@ -122,8 +123,8 @@ const STORAGE_TYPE = (() => {
 // 搜索历史最大保存条数
 const SEARCH_HISTORY_LIMIT = 20;
 
-// ---- 内存缓存（用于 Kvrocks/Upstash 模式）----
-const memoryCache: Map<string, UserCacheStore> = new Map();
+// ---- 内存缓存（用于 Kvrocks/Upstash 模式，最多100条自动淘汰）----
+const memoryCache: BoundedMap<string, UserCacheStore> = new BoundedMap(100);
 
 // ---- 缓存管理器 ----
 class HybridCacheManager {

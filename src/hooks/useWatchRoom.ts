@@ -87,11 +87,14 @@ export function useWatchRoom(options: UseWatchRoomOptions): UseWatchRoomReturn {
   // 连接到观影室服务器
   const connect = useCallback(() => {
     if (socket) {
-      //       // console.log('[WatchRoom] Already connected');
       return;
     }
 
-    //     // console.log('[WatchRoom] Connecting to server:', serverUrl);
+    // 清理旧的心跳定时器（防止泄漏）
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current);
+      heartbeatIntervalRef.current = null;
+    }
 
     const newSocket = io(serverUrl, {
       auth: {
