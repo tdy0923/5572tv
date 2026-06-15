@@ -447,13 +447,7 @@ function SearchPageClient() {
   const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [useFluidSearch, setUseFluidSearch] = useState(true);
   // 虚拟化开关状态
-  const [useVirtualization, setUseVirtualization] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('useVirtualization');
-      return saved !== null ? JSON.parse(saved) : true; // 默认启用
-    }
-    return true;
-  });
+  const [useVirtualization, setUseVirtualization] = useState(true);
 
   const [searchPrefsLoaded, setSearchPrefsLoaded] = useState(false);
 
@@ -590,28 +584,9 @@ function SearchPageClient() {
     yearOrder: 'none',
   });
 
-  // 获取默认聚合设置：只读取用户本地设置，默认为 true
-  const getDefaultAggregate = () => {
-    if (typeof window !== 'undefined') {
-      const userSetting = localStorage.getItem('defaultAggregateSearch');
-      if (userSetting !== null) {
-        return JSON.parse(userSetting);
-      }
-    }
-    return true; // 默认启用聚合
-  };
-
-  const [viewMode, setViewMode] = useState<'agg' | 'all'>(() => {
-    return getDefaultAggregate() ? 'agg' : 'all';
-  });
+  const [viewMode, setViewMode] = useState<'agg' | 'all'>('agg');
   const [resultDisplayMode, setResultDisplayMode] = useState<'card' | 'list'>(
-    () => {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('searchResultDisplayMode');
-        if (saved === 'card' || saved === 'list') return saved;
-      }
-      return 'card';
-    },
+    'card',
   );
   const [expandedSourceTags, setExpandedSourceTags] = useState<
     Record<string, boolean>
@@ -620,6 +595,24 @@ function SearchPageClient() {
     url: string;
     alt: string;
   } | null>(null);
+
+  // Load saved search preferences from localStorage after mount
+  useEffect(() => {
+    try {
+      const savedVirtualization = localStorage.getItem('useVirtualization');
+      if (savedVirtualization !== null) {
+        setUseVirtualization(JSON.parse(savedVirtualization));
+      }
+      const savedAggregate = localStorage.getItem('defaultAggregateSearch');
+      if (savedAggregate !== null) {
+        setViewMode(JSON.parse(savedAggregate) ? 'agg' : 'all');
+      }
+      const savedDisplayMode = localStorage.getItem('searchResultDisplayMode');
+      if (savedDisplayMode === 'card' || savedDisplayMode === 'list') {
+        setResultDisplayMode(savedDisplayMode);
+      }
+    } catch {}
+  }, []);
 
   // 保存虚拟化设置
   const toggleVirtualization = () => {

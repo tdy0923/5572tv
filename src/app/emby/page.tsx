@@ -172,11 +172,17 @@ export default function PrivateLibraryPage() {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const runtimeConfig = useMemo(() => {
-    if (typeof window !== 'undefined' && (window as any).RUNTIME_CONFIG) {
-      return (window as any).RUNTIME_CONFIG;
+  const [runtimeConfig, setRuntimeConfig] = useState<{ EMBY_ENABLED: boolean }>(
+    {
+      EMBY_ENABLED: false,
+    },
+  );
+
+  useEffect(() => {
+    if ((window as any).RUNTIME_CONFIG) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time mount config load
+      setRuntimeConfig((window as any).RUNTIME_CONFIG);
     }
-    return { EMBY_ENABLED: false };
   }, []);
 
   const parseSourceParam = (
@@ -195,31 +201,31 @@ export default function PrivateLibraryPage() {
     return undefined;
   });
   const [selectedView, setSelectedView] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('emby_sortBy') ?? 'PremiereDate';
-    }
-    return 'PremiereDate';
-  });
-  const [sortOrder, setSortOrder] = useState<'Ascending' | 'Descending'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('emby_sortOrder');
-      if (saved === 'Ascending' || saved === 'Descending') return saved;
-    }
-    return 'Descending';
-  });
+  const [sortBy, setSortBy] = useState<string>('PremiereDate');
+  const [sortOrder, setSortOrder] = useState<'Ascending' | 'Descending'>(
+    'Descending',
+  );
   const [mounted] = useState(() => typeof window !== 'undefined');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // 虚拟化开关状态
-  const [useVirtualization, setUseVirtualization] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('useEmbyVirtualization');
-      return saved !== null ? JSON.parse(saved) : true; // 默认启用
-    }
-    return true;
-  });
+  const [useVirtualization, setUseVirtualization] = useState(true);
+
+  // Load saved preferences from localStorage after mount
+  useEffect(() => {
+    const loadPrefs = () => {
+      const savedSortBy = localStorage.getItem('emby_sortBy');
+      if (savedSortBy) setSortBy(savedSortBy);
+      const savedSortOrder = localStorage.getItem('emby_sortOrder');
+      if (savedSortOrder === 'Ascending' || savedSortOrder === 'Descending')
+        setSortOrder(savedSortOrder);
+      const savedVirtualization = localStorage.getItem('useEmbyVirtualization');
+      if (savedVirtualization !== null)
+        setUseVirtualization(JSON.parse(savedVirtualization));
+    };
+    loadPrefs();
+  }, []);
 
   // 从 URL 读取 source 参数
   useEffect(() => {

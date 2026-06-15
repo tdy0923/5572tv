@@ -36,13 +36,7 @@ export default function ShortDramaPage() {
   // 用于防止分类切换时的闪烁
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   // 虚拟化开关状态
-  const [useVirtualization, setUseVirtualization] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('useShortDramaVirtualization');
-      return saved !== null ? JSON.parse(saved) : true; // 默认启用
-    }
-    return true;
-  });
+  const [useVirtualization, setUseVirtualization] = useState(true);
   const [virtualCategories, setVirtualCategories] = useState<
     { type_id: number; type_name: string }[]
   >([]);
@@ -89,6 +83,14 @@ export default function ShortDramaPage() {
     try {
       const saved = localStorage.getItem('shortdrama-search-history');
       if (saved) setSearchHistory(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  // Load virtualization preference from localStorage after mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('useShortDramaVirtualization');
+      if (saved !== null) setUseVirtualization(JSON.parse(saved));
     } catch {}
   }, []);
 

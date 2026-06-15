@@ -9,7 +9,7 @@ import {
   TagIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import {
   GlassPanel,
@@ -125,6 +125,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
   resultCount = 0,
 }) => {
   const [localFilters, setLocalFilters] = useState<TMDBFilterState>(filters);
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   const genres = contentType === 'movie' ? MOVIE_GENRES : TV_GENRES;
   const sortOptions = SORT_OPTIONS.filter(
@@ -216,7 +217,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
                   }
                   className='px-3 py-2'
                   min='1900'
-                  max={new Date().getFullYear()}
+                  max={currentYear}
                 />
                 <PanelField
                   type='number'
@@ -230,7 +231,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
                   }
                   className='px-3 py-2'
                   min='1900'
-                  max={new Date().getFullYear()}
+                  max={currentYear}
                 />
               </div>
             </div>

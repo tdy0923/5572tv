@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronDown, MonitorPlay } from 'lucide-react';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface ExternalPlayerButtonProps {
   videoUrl: string;
@@ -30,6 +30,7 @@ const PLAYERS: PlayerConfig[] = [
     name: 'VLC',
     icon: '/players/vlc.svg',
     buildUrl: (url) =>
+      typeof navigator !== 'undefined' &&
       /iPad|iPhone|iPod/i.test(navigator.userAgent)
         ? `vlc-x-callback://x-callback-url/stream?url=${encodeURIComponent(url)}`
         : `vlc://${url}`,
@@ -83,15 +84,21 @@ const ExternalPlayerButton = memo(function ExternalPlayerButton({
     [videoUrl],
   );
 
-  const detectPlatform = useMemo(() => {
-    if (typeof navigator === 'undefined') return 'unknown';
+  const [detectPlatform, setDetectPlatform] = useState('unknown');
+  const platformDetectedRef = useRef(false);
+
+  useEffect(() => {
+    if (platformDetectedRef.current) return;
+    platformDetectedRef.current = true;
     const ua = navigator.userAgent;
-    if (/iPad|iPhone|iPod/i.test(ua)) return 'iOS';
-    if (/Android/i.test(ua)) return 'Android';
-    if (/Mac/i.test(ua)) return 'macOS';
-    if (/Win/i.test(ua)) return 'Windows';
-    if (/Linux/i.test(ua)) return 'Linux';
-    return 'unknown';
+    let platform = 'unknown';
+    if (/iPad|iPhone|iPod/i.test(ua)) platform = 'iOS';
+    else if (/Android/i.test(ua)) platform = 'Android';
+    else if (/Mac/i.test(ua)) platform = 'macOS';
+    else if (/Win/i.test(ua)) platform = 'Windows';
+    else if (/Linux/i.test(ua)) platform = 'Linux';
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time mount detection
+    setDetectPlatform(platform);
   }, []);
 
   const recommendedPlayers = useMemo(() => {
