@@ -63,11 +63,13 @@ export default async function RootLayout({
   let aiRecommendEnabled = false;
   let embyEnabled = false;
   let adSettings = undefined as any;
+  let customCSS = '';
 
   try {
     const { getConfig } = await import('@/lib/config');
     const cfg = await getConfig();
     adSettings = cfg?.SiteConfig?.AdSettings || undefined;
+    customCSS = cfg?.SiteConfig?.CustomCSS || '';
   } catch {
     // ignore config load errors
   }
@@ -121,6 +123,7 @@ export default async function RootLayout({
             `,
           }}
         />
+        {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}

@@ -30,6 +30,7 @@ export interface AdminConfig {
     CustomAdFilterCode?: string;
     CustomAdFilterVersion?: number;
     AdSettings?: AdSettings;
+    CustomCSS?: string;
     // 默认用户组
     DefaultUserTags?: string[];
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ChevronDown, ExternalLink, X } from 'lucide-react';
+import { Check, ChevronDown, ExternalLink, RotateCcw, X } from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -134,6 +134,12 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   const [isDoubanImageProxyDropdownOpen, setIsDoubanImageProxyDropdownOpen] =
     useState(false);
 
+  // Theme customization state
+  const [primaryColor, setPrimaryColor] = useState('#3b82f6');
+  const [bgColor, setBgColor] = useState('#ffffff');
+  const [fgColor, setFgColor] = useState('#171717');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   // ── Emby config via TanStack Query ────────────────────────────────────────
   const { data: embyConfig = { sources: [] } } = useEmbyConfigQuery(isOpen);
 
@@ -177,6 +183,12 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
       const es = localStorage.getItem('exactSearch');
       if (es !== null) setExactSearch(es === 'true');
       setPlayerBufferMode(readLS('playerBufferMode', 'standard'));
+
+      // Load theme settings
+      setPrimaryColor(readLS('themePrimaryColor', '#3b82f6'));
+      setBgColor(readLS('themeBgColor', '#ffffff'));
+      setFgColor(readLS('themeFgColor', '#171717'));
+      setIsDarkMode(readLS('themeIsDarkMode', false));
     });
 
     return () => {
@@ -295,6 +307,12 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     setEnableExternalPlayer(false);
     setDownloadFormat('TS');
 
+    // Reset theme settings
+    setPrimaryColor('#3b82f6');
+    setBgColor('#ffffff');
+    setFgColor('#171717');
+    setIsDarkMode(false);
+
     localStorage.setItem('defaultAggregateSearch', JSON.stringify(true));
     localStorage.setItem('enableOptimization', JSON.stringify(false));
     localStorage.setItem('fluidSearch', JSON.stringify(defaultFluidSearch));
@@ -314,6 +332,91 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.setItem('downloadFormat', 'TS');
     localStorage.removeItem('fluidSearch');
     localStorage.removeItem('exactSearch');
+
+    // Reset theme localStorage
+    localStorage.setItem('themePrimaryColor', '#3b82f6');
+    localStorage.setItem('themeBgColor', '#ffffff');
+    localStorage.setItem('themeFgColor', '#171717');
+    localStorage.setItem('themeIsDarkMode', 'false');
+
+    // Clear user theme CSS
+    const existingStyle = document.getElementById('user-theme-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+  };
+
+  // Apply user theme CSS
+  const applyUserTheme = (
+    primary: string,
+    bg: string,
+    fg: string,
+    dark: boolean,
+  ) => {
+    let styleEl = document.getElementById('user-theme-style');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'user-theme-style';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = `
+      :root {
+        --primary: ${primary};
+        --background: ${bg};
+        --foreground: ${fg};
+      }
+      body {
+        background-color: ${bg} !important;
+        color: ${fg} !important;
+      }
+    `;
+
+    if (dark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
+  const handlePrimaryColorChange = (color: string) => {
+    setPrimaryColor(color);
+    localStorage.setItem('themePrimaryColor', color);
+    applyUserTheme(color, bgColor, fgColor, isDarkMode);
+  };
+
+  const handleBgColorChange = (color: string) => {
+    setBgColor(color);
+    localStorage.setItem('themeBgColor', color);
+    applyUserTheme(primaryColor, color, fgColor, isDarkMode);
+  };
+
+  const handleFgColorChange = (color: string) => {
+    setFgColor(color);
+    localStorage.setItem('themeFgColor', color);
+    applyUserTheme(primaryColor, bgColor, color, isDarkMode);
+  };
+
+  const handleDarkModeToggle = (dark: boolean) => {
+    setIsDarkMode(dark);
+    localStorage.setItem('themeIsDarkMode', String(dark));
+    applyUserTheme(primaryColor, bgColor, fgColor, dark);
+  };
+
+  const handleResetTheme = () => {
+    setPrimaryColor('#3b82f6');
+    setBgColor('#ffffff');
+    setFgColor('#171717');
+    setIsDarkMode(false);
+
+    localStorage.setItem('themePrimaryColor', '#3b82f6');
+    localStorage.setItem('themeBgColor', '#ffffff');
+    localStorage.setItem('themeFgColor', '#171717');
+    localStorage.setItem('themeIsDarkMode', 'false');
+
+    const existingStyle = document.getElementById('user-theme-style');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
   };
 
   useEffect(() => {
@@ -328,6 +431,24 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  // Apply user theme on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const savedPrimary = localStorage.getItem('themePrimaryColor');
+    const savedBg = localStorage.getItem('themeBgColor');
+    const savedFg = localStorage.getItem('themeFgColor');
+    const savedDark = localStorage.getItem('themeIsDarkMode');
+
+    if (savedPrimary || savedBg || savedFg || savedDark) {
+      applyUserTheme(
+        savedPrimary || '#3b82f6',
+        savedBg || '#ffffff',
+        savedFg || '#171717',
+        savedDark === 'true',
+      );
+    }
+  }, []);
 
   if (!isOpen) return null;
 
@@ -1029,6 +1150,101 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
               <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800'>
                 💡
                 TS格式下载速度快，兼容性好；MP4格式经过转码，体积略小，兼容性更广
+              </div>
+            </div>
+          </div>
+
+          {/* 主题定制 */}
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  主题定制
+                </h4>
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                  自定义站点颜色和主题
+                </p>
+              </div>
+              <button
+                onClick={handleResetTheme}
+                className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              >
+                <RotateCcw size={12} />
+                重置
+              </button>
+            </div>
+
+            <div className='space-y-3'>
+              <div className='flex items-center justify-between'>
+                <label className='text-sm text-gray-600 dark:text-gray-400'>
+                  主色调
+                </label>
+                <div className='flex items-center gap-2'>
+                  <input
+                    type='color'
+                    value={primaryColor}
+                    onChange={(e) => handlePrimaryColorChange(e.target.value)}
+                    className='w-8 h-8 rounded cursor-pointer border-0'
+                  />
+                  <input
+                    type='text'
+                    value={primaryColor}
+                    onChange={(e) => handlePrimaryColorChange(e.target.value)}
+                    className='w-20 px-2 py-1 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                  />
+                </div>
+              </div>
+
+              <div className='flex items-center justify-between'>
+                <label className='text-sm text-gray-600 dark:text-gray-400'>
+                  背景色
+                </label>
+                <div className='flex items-center gap-2'>
+                  <input
+                    type='color'
+                    value={bgColor}
+                    onChange={(e) => handleBgColorChange(e.target.value)}
+                    className='w-8 h-8 rounded cursor-pointer border-0'
+                  />
+                  <input
+                    type='text'
+                    value={bgColor}
+                    onChange={(e) => handleBgColorChange(e.target.value)}
+                    className='w-20 px-2 py-1 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                  />
+                </div>
+              </div>
+
+              <div className='flex items-center justify-between'>
+                <label className='text-sm text-gray-600 dark:text-gray-400'>
+                  前景色
+                </label>
+                <div className='flex items-center gap-2'>
+                  <input
+                    type='color'
+                    value={fgColor}
+                    onChange={(e) => handleFgColorChange(e.target.value)}
+                    className='w-8 h-8 rounded cursor-pointer border-0'
+                  />
+                  <input
+                    type='text'
+                    value={fgColor}
+                    onChange={(e) => handleFgColorChange(e.target.value)}
+                    className='w-20 px-2 py-1 text-xs font-mono border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                  />
+                </div>
+              </div>
+
+              <div className='flex items-center justify-between'>
+                <div>
+                  <h5 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    深色模式
+                  </h5>
+                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                    切换深色/浅色主题
+                  </p>
+                </div>
+                <Toggle checked={isDarkMode} onChange={handleDarkModeToggle} />
               </div>
             </div>
           </div>

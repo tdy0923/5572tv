@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  BookOpen,
   Cat,
   Clover,
   Film,
@@ -84,6 +85,13 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
         icon: PlaySquare,
         label: '短剧',
         href: '/shortdrama',
+        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
+        activeTextColor: 'text-white',
+      },
+      {
+        icon: BookOpen,
+        label: '漫画',
+        href: '/manga',
         activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
         activeTextColor: 'text-white',
       },

@@ -19,6 +19,7 @@ export async function GET(_request: NextRequest) {
     EnableExternalPlayer: config.SiteConfig?.EnableExternalPlayer ?? false,
     allowRegister: config.UserConfig?.AllowRegister !== false,
     requireInviteCode: config.UserConfig?.RequireInviteCode ?? false,
+    CustomCSS: config.SiteConfig?.CustomCSS || '',
   };
 
   // 添加 Telegram 登录配置（仅公开必要信息）

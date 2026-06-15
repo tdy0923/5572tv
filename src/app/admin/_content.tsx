@@ -19,13 +19,14 @@ import {
   Users,
   Video,
 } from 'lucide-react';
-import { KeyRound, LayoutTemplate, MessageSquare } from 'lucide-react';
+import { KeyRound, LayoutTemplate, MessageSquare, Palette } from 'lucide-react';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { AdminConfig, AdminConfigResult } from '@/lib/admin.types';
 
 import PerformanceMonitor from '@/components/admin/PerformanceMonitor';
+import ThemeEditor from '@/components/admin/ThemeEditor';
 import AIRecommendConfig from '@/components/AIRecommendConfig';
 import CacheManager from '@/components/CacheManager';
 import CustomAdFilterConfig from '@/components/CustomAdFilterConfig';
@@ -135,6 +136,7 @@ function AdminPageClient() {
         group: '站点基础',
         items: [
           { id: 'site-config', label: '站点配置', icon: Settings },
+          { id: 'theme-config', label: '主题定制', icon: Palette },
           { id: 'config-file', label: '配置文件', icon: FileText },
         ],
       },
@@ -221,7 +223,7 @@ function AdminPageClient() {
 
   const adminSectionGroups = useMemo(
     () => ({
-      站点基础: new Set(['config-file', 'site-config']),
+      站点基础: new Set(['config-file', 'site-config', 'theme-config']),
       广告管理: new Set(['site-ads']),
       用户与权限: new Set([
         'user-config',
@@ -836,6 +838,33 @@ function AdminPageClient() {
                       <SiteConfigComponent
                         config={config}
                         refreshConfig={fetchConfig}
+                      />
+                    </AdminModulePanel>
+                  </div>
+                )}
+
+                {/* 主题定制标签 */}
+                {isSectionActive('theme-config') && (
+                  <div id='theme-config'>
+                    <AdminModulePanel
+                      title='主题定制'
+                      icon={
+                        <Palette
+                          size={20}
+                          className='text-purple-600 dark:text-purple-400'
+                        />
+                      }
+                    >
+                      <ThemeEditor
+                        initialCustomCSS={config?.SiteConfig?.CustomCSS || ''}
+                        onSave={async (css) => {
+                          await fetch('/api/theme/css', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ CustomCSS: css }),
+                          });
+                          await fetchConfig();
+                        }}
                       />
                     </AdminModulePanel>
                   </div>
