@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   Lock,
+  QrCode,
   Send,
   Sparkles,
   User,
@@ -322,6 +323,27 @@ function LoginPageClient() {
             >
               <UserPlus className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
               <span>立即注册</span>
+              <span className='inline-block transition-transform group-hover:translate-x-1'>
+                →
+              </span>
+            </a>
+          </div>
+        )}
+
+        {/* 扫码登录 */}
+        {shouldAskUsername && (
+          <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
+            <p className='text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4'>
+              或使用手机扫码登录
+            </p>
+            <a
+              href='/qr-login'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='ui-secondary-button group w-full text-xs sm:text-sm'
+            >
+              <QrCode className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+              <span>扫码登录</span>
               <span className='inline-block transition-transform group-hover:translate-x-1'>
                 →
               </span>

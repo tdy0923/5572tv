@@ -73,6 +73,85 @@ async function generateAuthCookie(
   return encodeURIComponent(JSON.stringify(authData));
 }
 
+// 记录设备信息
+async function trackDevice(
+  username: string,
+  userAgent: string,
+  ip: string,
+): Promise<void> {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(`${userAgent}:${ip}`);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const deviceId = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    const lowerUa = userAgent.toLowerCase();
+    let deviceType: 'desktop' | 'mobile' | 'tablet' | 'unknown' = 'unknown';
+    let deviceName = 'Unknown Device';
+
+    if (
+      lowerUa.includes('mobile') ||
+      (lowerUa.includes('android') && !lowerUa.includes('tablet')) ||
+      lowerUa.includes('iphone') ||
+      lowerUa.includes('windows phone')
+    ) {
+      deviceType = 'mobile';
+      if (lowerUa.includes('iphone')) deviceName = 'iPhone';
+      else if (lowerUa.includes('android')) deviceName = 'Android Device';
+      else deviceName = 'Mobile Device';
+    } else if (
+      lowerUa.includes('tablet') ||
+      lowerUa.includes('ipad') ||
+      (lowerUa.includes('android') && !lowerUa.includes('mobile'))
+    ) {
+      deviceType = 'tablet';
+      deviceName = lowerUa.includes('ipad') ? 'iPad' : 'Tablet';
+    } else if (
+      lowerUa.includes('windows') ||
+      lowerUa.includes('macintosh') ||
+      lowerUa.includes('linux')
+    ) {
+      deviceType = 'desktop';
+      if (lowerUa.includes('windows')) deviceName = 'Windows PC';
+      else if (lowerUa.includes('macintosh')) deviceName = 'Mac';
+      else deviceName = 'Linux PC';
+
+      if (lowerUa.includes('chrome') && !lowerUa.includes('edg'))
+        deviceName += ' (Chrome)';
+      else if (lowerUa.includes('firefox')) deviceName += ' (Firefox)';
+      else if (lowerUa.includes('safari') && !lowerUa.includes('chrome'))
+        deviceName += ' (Safari)';
+      else if (lowerUa.includes('edg')) deviceName += ' (Edge)';
+    }
+
+    const devicesKey = `device:${username}`;
+    const devices: Record<string, any> = (await db.getCache(devicesKey)) || {};
+    const now = Date.now();
+
+    if (devices[deviceId]) {
+      devices[deviceId].lastSeen = now;
+      devices[deviceId].ip = ip;
+    } else {
+      devices[deviceId] = {
+        id: deviceId,
+        username,
+        userAgent,
+        ip,
+        loginTime: now,
+        lastSeen: now,
+        deviceType,
+        deviceName,
+      };
+    }
+
+    await db.setCache(devicesKey, devices);
+  } catch (error) {
+    console.error('记录设备信息失败:', error);
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Basic rate limiting using in-memory store
@@ -153,6 +232,10 @@ export async function POST(req: NextRequest) {
       }
 
       recordSuccessfulLogin(ip);
+      // 记录设备信息
+      const userAgent = req.headers.get('user-agent') || '';
+      await trackDevice('local_user', userAgent, ip);
+
       // 验证成功，设置认证cookie
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(
@@ -190,6 +273,10 @@ export async function POST(req: NextRequest) {
       username === process.env.USERNAME &&
       password === process.env.PASSWORD
     ) {
+      // 记录设备信息
+      const userAgent = req.headers.get('user-agent') || '';
+      await trackDevice(username, userAgent, ip);
+
       // 验证成功，设置认证cookie
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(
@@ -245,6 +332,10 @@ export async function POST(req: NextRequest) {
       }
 
       recordSuccessfulLogin(ip);
+      // 记录设备信息
+      const userAgent = req.headers.get('user-agent') || '';
+      await trackDevice(username, userAgent, ip);
+
       // 验证成功，设置认证cookie
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(

@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { getLocale, setLocale } from '@/lib/i18n';
 import { useEmbyConfigQuery } from '@/hooks/useUserMenuQueries';
 
+import { DeviceList } from './DeviceList';
 import { UserEmbyConfig } from './UserEmbyConfig';
 
 interface SettingsPanelProps {
@@ -390,6 +391,21 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </p>
               </div>
               <UserEmbyConfig initialConfig={embyConfig} />
+            </div>
+
+            <div className='border-t border-gray-200 dark:border-gray-700'></div>
+
+            {/* 设备管理 */}
+            <div className='space-y-3'>
+              <div>
+                <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  设备管理
+                </h4>
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                  查看和管理已登录的设备
+                </p>
+              </div>
+              <DeviceList />
             </div>
 
             <div className='border-t border-gray-200 dark:border-gray-700'></div>
