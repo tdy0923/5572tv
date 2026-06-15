@@ -108,7 +108,7 @@ async function getShortDramaListInternal(
     // 如果没有配置短剧源，使用默认源
     if (shortDramaSources.length === 0) {
       return await fetchListFromSource(
-        'https://wwzy.tv/api.php/provide/vod',
+        'https://tyyszy.com/api.php/provide/vod',
         page,
         size,
       );
@@ -152,7 +152,7 @@ async function getShortDramaListInternal(
     // fallback到默认源
     try {
       return await fetchListFromSource(
-        'https://wwzy.tv/api.php/provide/vod',
+        'https://tyyszy.com/api.php/provide/vod',
         page,
         size,
       );

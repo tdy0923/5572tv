@@ -112,7 +112,7 @@ async function searchShortDramasInternal(query: string, page = 1, size = 20) {
     // 如果没有配置短剧源，使用默认源
     if (shortDramaSources.length === 0) {
       return await searchFromSource(
-        'https://wwzy.tv/api.php/provide/vod',
+        'https://tyyszy.com/api.php/provide/vod',
         query,
         page,
         size,
@@ -157,7 +157,7 @@ async function searchShortDramasInternal(query: string, page = 1, size = 20) {
     // fallback到默认源
     try {
       return await searchFromSource(
-        'https://wwzy.tv/api.php/provide/vod',
+        'https://tyyszy.com/api.php/provide/vod',
         query,
         page,
         size,

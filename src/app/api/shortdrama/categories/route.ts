@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-// 默认短剧源
-const DEFAULT_SHORT_DRAMA_API = 'https://wwzy.tv/api.php/provide/vod';
+// 默认短剧源（域名已迁移）
+const DEFAULT_SHORT_DRAMA_API = 'https://tyyszy.com/api.php/provide/vod';
 
 // 从单个源获取短剧分类
 async function getCategoriesFromSource(

@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 读取配置以获取主API和备用API地址
-    let primaryApi = 'https://wwzy.tv/api.php/provide/vod';
+    let primaryApi = 'https://tyyszy.com/api.php/provide/vod';
     let alternativeApiUrl: string | undefined;
     try {
       const config = await getConfig();
