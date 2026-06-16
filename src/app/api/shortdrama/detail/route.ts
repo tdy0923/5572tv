@@ -7,7 +7,7 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
-import { parseShortDramaEpisode } from '@/lib/shortdrama.client';
+import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 标记为动态路由
 export const dynamic = 'force-dynamic';
@@ -72,86 +72,107 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // 读取配置以获取备用API地址
+    // 直接从主API获取数据（避免链式调用parse导致Cloudflare超时）
+    let primaryApi = 'https://tyyszy.com/api.php/provide/vod';
     let alternativeApiUrl: string | undefined;
     try {
       const config = await getConfig();
       const shortDramaConfig = config.ShortDramaConfig;
+      if (shortDramaConfig?.primaryApiUrl) {
+        primaryApi = shortDramaConfig.primaryApiUrl;
+      }
       alternativeApiUrl = shortDramaConfig?.enableAlternative
         ? shortDramaConfig.alternativeApiUrl
         : undefined;
     } catch (configError) {
       console.error('读取短剧配置失败:', configError);
-      // 配置读取失败时，不使用备用API
-      alternativeApiUrl = undefined;
     }
 
-    // 先尝试指定集数，如果提供了剧名且配置了备用API则自动fallback
-    let result = await parseShortDramaEpisode(
-      videoId,
-      episodeNum,
-      true,
-      name || undefined,
-      alternativeApiUrl,
-    );
+    const params = new URLSearchParams({
+      ac: 'detail',
+      ids: videoId.toString(),
+    });
 
-    // 如果失败，尝试其他集数
-    if (result.code !== 0 || !result.data || !result.data.totalEpisodes) {
-      result = await parseShortDramaEpisode(
-        videoId,
-        episodeNum === 1 ? 2 : 1,
-        true,
-        name || undefined,
-        alternativeApiUrl,
-      );
-    }
+    let data: any = null;
+    let lastError: string = '';
 
-    // 如果还是失败，尝试第0集
-    if (result.code !== 0 || !result.data || !result.data.totalEpisodes) {
-      result = await parseShortDramaEpisode(
-        videoId,
-        0,
-        true,
-        name || undefined,
-        alternativeApiUrl,
-      );
-    }
-
-    if (result.code !== 0 || !result.data) {
-      const errorResponse = { error: result.msg || '解析失败' };
-      const responseSize = Buffer.byteLength(
-        JSON.stringify(errorResponse),
-        'utf8',
-      );
-
-      recordRequest({
-        timestamp: startTime,
-        method: 'GET',
-        path: '/api/shortdrama/detail',
-        statusCode: 400,
-        duration: Date.now() - startTime,
-        memoryUsed:
-          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-        dbQueries: getDbQueryCount(),
-        requestSize: 0,
-        responseSize,
+    // 尝试主API
+    try {
+      const response = await fetch(`${primaryApi}?${params.toString()}`, {
+        headers: {
+          'User-Agent': DEFAULT_USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(12000),
       });
-
-      return NextResponse.json(errorResponse, { status: 400 });
+      if (response.ok) {
+        data = await response.json();
+      } else {
+        lastError = `主API HTTP ${response.status}`;
+      }
+    } catch (e) {
+      lastError = `主API请求失败: ${e}`;
     }
 
-    const totalEpisodes = Math.max(result.data.totalEpisodes || 1, 1);
+    // 主API失败时，尝试备用API
+    if ((!data || !data.list || data.list.length === 0) && alternativeApiUrl) {
+      try {
+        const altResponse = await fetch(
+          `${alternativeApiUrl}/api.php/provide/vod?${params.toString()}`,
+          {
+            headers: {
+              'User-Agent': DEFAULT_USER_AGENT,
+              Accept: 'application/json',
+            },
+            signal: AbortSignal.timeout(12000),
+          },
+        );
+        if (altResponse.ok) {
+          data = await altResponse.json();
+        }
+      } catch (e) {
+        console.error('备用API也失败:', e);
+      }
+    }
+
+    if (!data || !data.list || data.list.length === 0) {
+      return NextResponse.json(
+        { error: lastError || '短剧API请求失败' },
+        { status: 502 },
+      );
+    }
+
+    const drama = data.list[0];
+    const playUrl = drama.vod_play_url || '';
+    // 解析播放地址：格式为 "01$url1#02$url2"
+    const episodes = playUrl.split('#').map((ep: string) => {
+      const parts = ep.split('$');
+      return { name: parts[0], url: parts[1] || '' };
+    });
+
+    const totalEpisodes = Math.max(episodes.length || 1, 1);
+
+    // 直接提取所有集数的视频URL，通过代理避免CORS问题
+    const episodeUrls: string[] = episodes.map((ep: any) => {
+      if (ep.url) {
+        return `/api/proxy/shortdrama?url=${encodeURIComponent(ep.url)}`;
+      }
+      return '';
+    });
 
     // 转换为兼容格式
     // 注意：始终使用请求的原始ID（主API的ID），不使用result.data.videoId（可能是备用API的ID）
     const response: any = {
       id: id, // 使用原始请求ID，保持一致性
-      title: result.data!.videoName,
-      poster: result.data!.cover,
-      episodes: Array.from(
-        { length: totalEpisodes },
-        (_, i) => `shortdrama:${id}:${i}`, // 使用原始请求ID
-      ),
+      title: drama.vod_name || '',
+      poster: drama.vod_pic || '',
+      episodes:
+        episodeUrls.length > 0
+          ? episodeUrls
+          : Array.from(
+              { length: totalEpisodes },
+              (_, i) => `shortdrama:${id}:${i}`,
+            ),
       episodes_titles: Array.from(
         { length: totalEpisodes },
         (_, i) => `第${i + 1}集`,
@@ -159,15 +180,10 @@ export async function GET(request: NextRequest) {
       source: 'shortdrama',
       source_name: '短剧',
       year: new Date().getFullYear().toString(),
-      desc: result.data!.description,
+      desc: drama.vod_content || drama.vod_blurb || '',
       type_name: '短剧',
-      drama_name: result.data!.videoName, // 添加剧名，用于备用API fallback
+      drama_name: drama.vod_name || '',
     };
-
-    // 如果备用API返回了元数据，添加到响应中
-    if (result.metadata) {
-      response.metadata = result.metadata;
-    }
 
     // 设置与豆瓣一致的缓存策略
     const cacheTime = await getCacheTime();
