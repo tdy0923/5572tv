@@ -124,6 +124,11 @@ export default async function RootLayout({
           }}
         />
         {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
+        <script
+          defer
+          src='https://tg.yunku.de/script.js'
+          data-website-id='73df4a1d-50cd-41de-a1b0-308bcb1018ea'
+        />
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}
