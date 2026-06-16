@@ -120,12 +120,10 @@ export async function GET(request: NextRequest) {
 
     const totalEpisodes = Math.max(episodes.length || 1, 1);
 
-    // 直接提取所有集数的视频URL，通过代理避免CORS问题
+    // 直接提取所有集数的视频URL
+    // 注意：不使用代理，让用户浏览器直接播放（CDN封锁云服务器IP，但住宅IP可访问）
     const episodeUrls: string[] = episodes.map((ep: any) => {
-      if (ep.url) {
-        return `/api/proxy/shortdrama?url=${encodeURIComponent(ep.url)}`;
-      }
-      return '';
+      return ep.url || '';
     });
 
     // 转换为兼容格式
