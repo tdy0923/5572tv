@@ -1,31 +1,31 @@
 [
   {
-    "key": "adult_69mj",
-    "name": "69美剧",
+    "key": "adult_01",
+    "name": "成人01",
     "api": "https://www.69mj.com/xgapp.php/v2/",
     "detail": "https://www.69mj.com",
     "is_adult": true,
     "weight": 30
   },
   {
-    "key": "adult_xhfzy",
-    "name": "小黑方资源",
+    "key": "adult_02",
+    "name": "成人02",
     "api": "https://api.xhfzy.com/api.php/provide/vod/",
     "detail": "https://api.xhfzy.com",
     "is_adult": true,
     "weight": 25
   },
   {
-    "key": "adult_bfzy",
-    "name": "暴风成人",
+    "key": "adult_03",
+    "name": "成人03",
     "api": "https://bfzy4.com/api.php/provide/vod/",
     "detail": "https://bfzy4.com",
     "is_adult": true,
     "weight": 25
   },
   {
-    "key": "adult_ffzy",
-    "name": "非凡成人",
+    "key": "adult_04",
+    "name": "成人04",
     "api": "http://ffzy4.tv/api.php/provide/vod/",
     "detail": "https://ffzy4.tv",
     "is_adult": true,

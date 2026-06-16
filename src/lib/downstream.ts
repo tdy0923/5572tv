@@ -778,10 +778,10 @@ async function handleSpecialSourceDetail(
   const html = await response.text();
   let matches: string[] = [];
 
-  if (apiSite.key === 'ffzy') {
-    const ffzyPattern =
+  if (apiSite.key === 'zy_01') {
+    const zy01Pattern =
       /\$(https?:\/\/[^"'\s]+?\/\d{8}\/\d+_[a-f0-9]+\/index\.m3u8)/g;
-    matches = html.match(ffzyPattern) || [];
+    matches = html.match(zy01Pattern) || [];
   }
 
   if (matches.length === 0) {

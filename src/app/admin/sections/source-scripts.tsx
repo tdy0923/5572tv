@@ -218,7 +218,7 @@ export default function SourceScripts() {
                   setForm({ ...form, targetSource: e.target.value })
                 }
                 className={inpCls}
-                placeholder='e.g. ffzy, hongniu'
+                placeholder='e.g. zy_01, zy_02'
               />
             </div>
           </div>
