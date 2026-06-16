@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCacheTime, getConfig } from '@/lib/config';
+import { getCacheTime } from '@/lib/config';
 import {
   getDbQueryCount,
   recordRequest,
@@ -72,21 +72,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // 直接从主API获取数据（避免链式调用parse导致Cloudflare超时）
-    let primaryApi = 'https://tyyszy.com/api.php/provide/vod';
-    let alternativeApiUrl: string | undefined;
-    try {
-      const config = await getConfig();
-      const shortDramaConfig = config.ShortDramaConfig;
-      if (shortDramaConfig?.primaryApiUrl) {
-        primaryApi = shortDramaConfig.primaryApiUrl;
-      }
-      alternativeApiUrl = shortDramaConfig?.enableAlternative
-        ? shortDramaConfig.alternativeApiUrl
-        : undefined;
-    } catch (configError) {
-      console.error('读取短剧配置失败:', configError);
-    }
+    // 直接从主API获取数据（跳过getConfig以避免Cloudflare超时）
+    const primaryApi = 'https://tyyszy.com/api.php/provide/vod';
 
     const params = new URLSearchParams({
       ac: 'detail',
@@ -114,26 +101,7 @@ export async function GET(request: NextRequest) {
       lastError = `主API请求失败: ${e}`;
     }
 
-    // 主API失败时，尝试备用API
-    if ((!data || !data.list || data.list.length === 0) && alternativeApiUrl) {
-      try {
-        const altResponse = await fetch(
-          `${alternativeApiUrl}/api.php/provide/vod?${params.toString()}`,
-          {
-            headers: {
-              'User-Agent': DEFAULT_USER_AGENT,
-              Accept: 'application/json',
-            },
-            signal: AbortSignal.timeout(12000),
-          },
-        );
-        if (altResponse.ok) {
-          data = await altResponse.json();
-        }
-      } catch (e) {
-        console.error('备用API也失败:', e);
-      }
-    }
+    // 主API失败时，不再尝试备用API（避免超时）
 
     if (!data || !data.list || data.list.length === 0) {
       return NextResponse.json(
