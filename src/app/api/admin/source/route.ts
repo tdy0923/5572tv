@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 type Action =
   | 'add'
   | 'batch_add'
+  | 'health_check'
   | 'update'
   | 'disable'
   | 'enable'
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
     const ACTIONS: Action[] = [
       'add',
       'batch_add',
+      'health_check',
       'update',
       'disable',
       'enable',
@@ -172,6 +174,80 @@ export async function POST(request: NextRequest) {
         }
         return NextResponse.json(
           { ok: true, added, skipped, total: sources.length, errors },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
+      }
+      case 'health_check': {
+        const { timeout } = body as { timeout?: number };
+        const checkTimeout = timeout || 8;
+        const sources = adminConfig.SourceConfig.filter((s) => !s.disabled);
+        const results: Array<{
+          key: string;
+          name: string;
+          status: 'ok' | 'fail';
+          code: number;
+        }> = [];
+
+        // Batch test with concurrency limit
+        const batchSize = 15;
+        for (let i = 0; i < sources.length; i += batchSize) {
+          const batch = sources.slice(i, i + batchSize);
+          const batchResults = await Promise.all(
+            batch.map(async (s) => {
+              try {
+                const testUrl =
+                  s.api + (s.api.includes('?') ? '&' : '?') + 'ac=list&pg=1';
+                const controller = new AbortController();
+                const timer = setTimeout(
+                  () => controller.abort(),
+                  checkTimeout * 1000,
+                );
+                const resp = await fetch(testUrl, {
+                  signal: controller.signal,
+                  headers: { 'User-Agent': 'Mozilla/5.0' },
+                });
+                clearTimeout(timer);
+                const ok = resp.status >= 200 && resp.status < 400;
+                return {
+                  key: s.key,
+                  name: s.name,
+                  status: ok ? ('ok' as const) : ('fail' as const),
+                  code: resp.status,
+                };
+              } catch {
+                return {
+                  key: s.key,
+                  name: s.name,
+                  status: 'fail' as const,
+                  code: 0,
+                };
+              }
+            }),
+          );
+          results.push(...batchResults);
+        }
+
+        // Auto-disable failed sources
+        const failedKeys = results
+          .filter((r) => r.status === 'fail')
+          .map((r) => r.key);
+        failedKeys.forEach((key) => {
+          const entry = adminConfig.SourceConfig.find((s) => s.key === key);
+          if (entry) entry.disabled = true;
+        });
+
+        const okCount = results.filter((r) => r.status === 'ok').length;
+        const failCount = results.filter((r) => r.status === 'fail').length;
+
+        return NextResponse.json(
+          {
+            ok: true,
+            total: results.length,
+            okCount,
+            failCount,
+            auto_disabled: failedKeys.length,
+            results,
+          },
           { headers: { 'Cache-Control': 'no-store' } },
         );
       }
