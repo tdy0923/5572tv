@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { filterAdsFromM3U8 } from '@/lib/hls-ad-filter';
 import { getBaseUrl, resolveUrl } from '@/lib/live';
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
 import { isUrlSafe } from '@/lib/ssrf-protection';
@@ -160,9 +161,23 @@ export async function GET(request: Request) {
       // 使用最终的响应URL作为baseUrl，而不是原始的请求URL
       const baseUrl = getBaseUrl(finalUrl);
 
+      // 广告过滤（如果启用）
+      const filterAds = searchParams.get('filterAds') !== '0';
+      let finalContent = m3u8Content;
+      let adFilterResult = null;
+      if (filterAds) {
+        adFilterResult = filterAdsFromM3U8(m3u8Content);
+        if (adFilterResult.removedCount > 0) {
+          console.log(
+            `🎯 广告过滤: 移除 ${adFilterResult.removedCount} 个广告片段, 原因: ${adFilterResult.reasons.join(', ')}`,
+          );
+        }
+        finalContent = adFilterResult.filtered;
+      }
+
       // 重写 M3U8 内容
       const modifiedContent = rewriteM3U8Content(
-        m3u8Content,
+        finalContent,
         baseUrl,
         request,
         allowCORS,

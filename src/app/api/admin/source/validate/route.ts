@@ -1,199 +1,173 @@
 /* eslint-disable no-console */
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
-import { getAvailableApiSites } from '@/lib/config';
-import { API_CONFIG } from '@/lib/config';
+import { getConfig } from '@/lib/config';
+import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: NextRequest) {
-  const authInfo = await getAuthInfoFromCookie(request);
-  if (!authInfo || !authInfo.username) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+interface ValidationResult {
+  key: string;
+  name: string;
+  status: 'valid' | 'no_results' | 'invalid' | 'error';
+  itemCount: number;
+  responseTime: number;
+  error?: string;
+}
 
-  const { searchParams } = new URL(request.url);
-  const searchKeyword = searchParams.get('q');
+async function validateSource(
+  key: string,
+  name: string,
+  api: string,
+  keyword: string,
+  timeout: number,
+): Promise<ValidationResult> {
+  const startTime = Date.now();
+  try {
+    const searchUrl = `${api}?ac=detail&wd=${encodeURIComponent(keyword)}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout * 1000);
 
-  if (!searchKeyword) {
-    return new Response(JSON.stringify({ error: '搜索关键词不能为空' }), {
-      status: 400,
+    const response = await fetch(searchUrl, {
+      signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        'User-Agent': DEFAULT_USER_AGENT,
+        Accept: 'application/json',
       },
     });
-  }
+    clearTimeout(timer);
 
-  // 🔑 使用 getAvailableApiSites() 来获取源列表，自动应用代理配置
-  const apiSites = await getAvailableApiSites(authInfo.username);
+    const responseTime = Date.now() - startTime;
 
-  // 共享状态
-  let streamClosed = false;
-
-  // 创建可读流
-  const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-
-      // 辅助函数：安全地向控制器写入数据
-      const safeEnqueue = (data: Uint8Array) => {
-        try {
-          if (
-            streamClosed ||
-            (!controller.desiredSize && controller.desiredSize !== 0)
-          ) {
-            return false;
-          }
-          controller.enqueue(data);
-          return true;
-        } catch (error) {
-          console.warn('Failed to enqueue data:', error);
-          streamClosed = true;
-          return false;
-        }
+    if (!response.ok) {
+      return {
+        key,
+        name,
+        status: 'invalid',
+        itemCount: 0,
+        responseTime,
+        error: `HTTP ${response.status}`,
       };
+    }
 
-      // 发送开始事件
-      const startEvent = `data: ${JSON.stringify({
-        type: 'start',
-        totalSources: apiSites.length,
-      })}\n\n`;
+    const data = await response.json();
+    const items = data.list || [];
+    const matchingItems = items.filter(
+      (item: any) => item.vod_name && item.vod_name.includes(keyword),
+    );
 
-      if (!safeEnqueue(encoder.encode(startEvent))) {
-        return;
-      }
+    return {
+      key,
+      name,
+      status: matchingItems.length > 0 ? 'valid' : 'no_results',
+      itemCount: matchingItems.length,
+      responseTime,
+    };
+  } catch (e: any) {
+    return {
+      key,
+      name,
+      status: 'error',
+      itemCount: 0,
+      responseTime: Date.now() - startTime,
+      error: e.message || 'Unknown error',
+    };
+  }
+}
 
-      // 记录已完成的源数量
-      let completedSources = 0;
+export async function GET(request: NextRequest) {
+  try {
+    const authInfo = await getAuthInfoFromCookie(request);
+    if (!authInfo || !authInfo.username) {
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-      // 为每个源创建验证 Promise
-      const validationPromises = apiSites.map(async (site) => {
-        try {
-          // 构建搜索URL，只获取第一页
-          const searchUrl = `${site.api}?ac=videolist&wd=${encodeURIComponent(searchKeyword)}`;
+    const { searchParams } = request.nextUrl;
+    const keyword = searchParams.get('keyword') || '速度与激情';
+    const timeout = parseInt(searchParams.get('timeout') || '10', 10);
+    const concurrency = parseInt(searchParams.get('concurrency') || '10', 10);
 
-          // 🔍 调试：记录实际请求的URL
-          // 设置超时控制
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const config = await getConfig();
+    const sources = config.SourceConfig.filter((s) => !s.disabled);
 
-          try {
-            const response = await fetch(searchUrl, {
-              headers: API_CONFIG.search.headers,
-              signal: controller.signal,
-            });
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
 
-            clearTimeout(timeoutId);
+        // Send start event
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ type: 'start', totalSources: sources.length, keyword })}\n\n`,
+          ),
+        );
 
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}`);
-            }
+        let completedSources = 0;
+        const batchSize = concurrency;
 
-            const data = (await response.json()) as any;
+        for (let i = 0; i < sources.length; i += batchSize) {
+          const batch = sources.slice(i, i + batchSize);
+          const results = await Promise.allSettled(
+            batch.map((s) =>
+              validateSource(s.key, s.name, s.api, keyword, timeout),
+            ),
+          );
 
-            // 检查结果是否有效
-            let status: 'valid' | 'no_results' | 'invalid';
-            if (
-              data &&
-              data.list &&
-              Array.isArray(data.list) &&
-              data.list.length > 0
-            ) {
-              // 检查是否有标题包含搜索词的结果
-              const validResults = data.list.filter((item: any) => {
-                const title = item.vod_name || '';
-                return title
-                  .toLowerCase()
-                  .includes(searchKeyword.toLowerCase());
-              });
+          for (const result of results) {
+            if (result.status === 'fulfilled') {
+              const validation = result.value;
+              completedSources++;
 
-              if (validResults.length > 0) {
-                status = 'valid';
-              } else {
-                status = 'no_results';
-              }
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    type: 'source_result',
+                    ...validation,
+                    completed: completedSources,
+                    total: sources.length,
+                  })}\n\n`,
+                ),
+              );
             } else {
-              status = 'no_results';
-            }
-
-            // 发送该源的验证结果
-            completedSources++;
-
-            if (!streamClosed) {
-              const sourceEvent = `data: ${JSON.stringify({
-                type: 'source_result',
-                source: site.key,
-                status,
-              })}\n\n`;
-
-              if (!safeEnqueue(encoder.encode(sourceEvent))) {
-                streamClosed = true;
-                return;
-              }
-            }
-          } finally {
-            clearTimeout(timeoutId);
-          }
-        } catch (error) {
-          console.warn(`验证失败 ${site.name}:`, error);
-
-          // 发送源错误事件
-          completedSources++;
-
-          if (!streamClosed) {
-            const errorEvent = `data: ${JSON.stringify({
-              type: 'source_error',
-              source: site.key,
-              status: 'invalid',
-            })}\n\n`;
-
-            if (!safeEnqueue(encoder.encode(errorEvent))) {
-              streamClosed = true;
-              return;
+              completedSources++;
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    type: 'source_error',
+                    key: 'unknown',
+                    name: 'unknown',
+                    status: 'error',
+                    error: result.reason?.message || 'Unknown error',
+                    completed: completedSources,
+                    total: sources.length,
+                  })}\n\n`,
+                ),
+              );
             }
           }
         }
 
-        // 检查是否所有源都已完成
-        if (completedSources === apiSites.length) {
-          if (!streamClosed) {
-            // 发送最终完成事件
-            const completeEvent = `data: ${JSON.stringify({
-              type: 'complete',
-              completedSources,
-            })}\n\n`;
+        // Send complete event
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ type: 'complete', total: sources.length })}\n\n`,
+          ),
+        );
 
-            if (safeEnqueue(encoder.encode(completeEvent))) {
-              try {
-                controller.close();
-              } catch (error) {
-                console.warn('Failed to close controller:', error);
-              }
-            }
-          }
-        }
-      });
+        controller.close();
+      },
+    });
 
-      // 等待所有验证完成
-      await Promise.allSettled(validationPromises);
-    },
-
-    cancel() {
-      streamClosed = true;
-    },
-  });
-
-  // 返回流式响应
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (error) {
+    console.error('源验证失败:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
 }
