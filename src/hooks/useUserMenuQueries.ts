@@ -138,7 +138,7 @@ const versionCheckOptions = () =>
     queryFn: () => checkForUpdates(),
     staleTime: 30 * 60 * 1000, // 30 minutes - no need to check frequently
     gcTime: 60 * 60 * 1000,
-    retry: 1,
+    retry: false,
   });
 
 /**

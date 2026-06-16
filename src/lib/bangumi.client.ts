@@ -35,8 +35,24 @@ export interface BangumiCalendarData {
   }[];
 }
 
+// Client-side cache for bangumi calendar (updates daily, cache for 10 min)
+let bangumiCalendarCache: {
+  data: BangumiCalendarData[];
+  expiresAt: number;
+} | null = null;
+const BANGUMI_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
 export async function GetBangumiCalendarData(): Promise<BangumiCalendarData[]> {
+  // Check in-memory cache first
+  if (bangumiCalendarCache && Date.now() < bangumiCalendarCache.expiresAt) {
+    return bangumiCalendarCache.data;
+  }
+
   const response = await fetch('/api/proxy/bangumi?path=calendar');
   const data = await response.json();
+
+  // Cache the result
+  bangumiCalendarCache = { data, expiresAt: Date.now() + BANGUMI_CACHE_TTL };
+
   return data;
 }

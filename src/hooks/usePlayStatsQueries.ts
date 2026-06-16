@@ -36,7 +36,7 @@ const adminStatsOptions = () =>
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000,
-    retry: 1,
+    retry: false,
   });
 
 /**
@@ -75,7 +75,7 @@ const userStatsOptions = () =>
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000,
-    retry: 1,
+    retry: false,
   });
 
 /**

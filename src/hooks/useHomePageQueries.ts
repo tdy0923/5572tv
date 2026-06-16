@@ -164,7 +164,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
           }),
         staleTime: 2 * 60 * 1000, // 2分钟 - 热门内容更新较频繁
         gcTime: 10 * 60 * 1000, // 10分钟
-        retry: 2, // 失败重试2次
+        retry: false,
       },
       // 2. 热门电视剧
       {
@@ -173,7 +173,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
           getDoubanCategories({ kind: 'tv', category: 'tv', type: 'tv' }),
         staleTime: 2 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
-        retry: 2,
+        retry: false,
       },
       // 3. 热门综艺
       {
@@ -182,7 +182,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
           getDoubanCategories({ kind: 'tv', category: 'show', type: 'show' }),
         staleTime: 2 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
-        retry: 2,
+        retry: false,
       },
       // 4. 热门动漫
       {
@@ -195,7 +195,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
           }),
         staleTime: 2 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
-        retry: 2,
+        retry: false,
       },
       // 5. 短剧推荐
       {
@@ -203,7 +203,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
         queryFn: () => getRecommendedShortDramas(undefined, 8),
         staleTime: 5 * 60 * 1000, // 5分钟 - 短剧推荐更新较慢
         gcTime: 15 * 60 * 1000, // 15分钟
-        retry: 2,
+        retry: false,
       },
       // 6. 番剧日历
       {
@@ -211,7 +211,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
         queryFn: () => GetBangumiCalendarData(),
         staleTime: 10 * 60 * 1000, // 10分钟 - 每日更新，可以缓存更久
         gcTime: 30 * 60 * 1000, // 30分钟
-        retry: 2,
+        retry: false,
       },
     ],
     combine,

@@ -65,7 +65,7 @@ const doubanDetailsOptions = (doubanId?: number | string) =>
     },
     staleTime: 30 * 60 * 1000, // 30分钟 - 外部 API 数据变化很少
     gcTime: 60 * 60 * 1000, // 1小时
-    retry: 2, // 失败重试 2 次
+    retry: false,
   });
 
 /**
@@ -106,7 +106,7 @@ const doubanCommentsOptions = (doubanId?: number | string) =>
     },
     staleTime: 5 * 60 * 1000, // 5分钟 - 评论更新较频繁
     gcTime: 15 * 60 * 1000, // 15分钟
-    retry: 2,
+    retry: false,
   });
 
 /**
@@ -140,7 +140,7 @@ const bangumiDetailsOptions = (bangumiId?: number | string) =>
     },
     staleTime: 30 * 60 * 1000, // 30分钟
     gcTime: 60 * 60 * 1000, // 1小时
-    retry: 2,
+    retry: false,
   });
 
 /**
@@ -174,7 +174,7 @@ const shortdramaDetailsOptions = (shortdramaId?: string) =>
     },
     staleTime: 10 * 60 * 1000, // 10分钟
     gcTime: 30 * 60 * 1000, // 30分钟
-    retry: 2,
+    retry: false,
   });
 
 /**

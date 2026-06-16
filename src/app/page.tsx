@@ -41,10 +41,6 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
 } from '@/lib/reminder-notification';
-import {
-  cleanExpiredCache,
-  clearRecommendsCache,
-} from '@/lib/shortdrama-cache';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { DoubanItem } from '@/lib/types';
 import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
@@ -526,11 +522,8 @@ function HomeClient() {
   }, [favoriteItems]);
 
   useEffect(() => {
-    // 清理过期缓存
-    cleanExpiredCache().catch(console.error);
-
-    // 清除可能缓存了空数据的短剧推荐缓存
-    clearRecommendsCache().catch(console.error);
+    // Don't aggressively clear recommend cache on mount - let it expire naturally
+    // This was causing request storms by clearing valid cache and forcing refetches
 
     // 🚀 TanStack Query 会自动加载数据，无需手动调用
 
@@ -568,10 +561,21 @@ function HomeClient() {
   }, []);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
+  // Only refetch once, not repeatedly - track if we've already tried
+  const hasRetriedShortDramaRef = useRef(false);
   useEffect(() => {
-    if (homeData && homeData.hotShortDramas.length === 0 && !homeLoading) {
-      //       console.log('[TanStack Query] 热门短剧为空，强制刷新首页数据');
-      refetchHomeData();
+    if (
+      homeData &&
+      homeData.hotShortDramas.length === 0 &&
+      !homeLoading &&
+      !hasRetriedShortDramaRef.current
+    ) {
+      hasRetriedShortDramaRef.current = true;
+      // Delay to avoid immediate refetch storm
+      const timer = setTimeout(() => {
+        refetchHomeData();
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [homeData, homeLoading, refetchHomeData]);
 

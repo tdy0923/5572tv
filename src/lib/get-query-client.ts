@@ -18,6 +18,10 @@ function makeQueryClient() {
         staleTime: 5 * 60 * 1000,
         // 垃圾回收时间：10分钟后清理未使用的缓存
         gcTime: 10 * 60 * 1000,
+        // 全局禁用自动重试，防止失败请求风暴
+        retry: false,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
       },
       dehydrate: {
         // 在服务端渲染时，包含 pending 状态的查询

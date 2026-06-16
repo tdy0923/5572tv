@@ -68,6 +68,12 @@ export async function getShortDramaCategories(): Promise<ShortDramaCategory[]> {
   }
 }
 
+// In-memory cache for recommend data (avoids HTTP requests to /api/cache)
+const recommendMemCache = new Map<
+  string,
+  { data: ShortDramaItem[]; expiresAt: number }
+>();
+
 // 获取推荐短剧列表
 export async function getRecommendedShortDramas(
   category?: number,
@@ -76,9 +82,20 @@ export async function getRecommendedShortDramas(
   const cacheKey = getCacheKey('recommends', { category, size });
 
   try {
-    // 检查缓存
+    // 1. Check in-memory cache first (~0ms, no HTTP)
+    const memCached = recommendMemCache.get(cacheKey);
+    if (memCached && Date.now() < memCached.expiresAt) {
+      return memCached.data;
+    }
+
+    // 2. Check persistent cache
     const cached = await getCache(cacheKey);
     if (cached) {
+      // Populate in-memory cache
+      recommendMemCache.set(cacheKey, {
+        data: cached,
+        expiresAt: Date.now() + 5 * 60 * 1000, // 5 min in-memory
+      });
       return cached;
     }
 
@@ -99,6 +116,11 @@ export async function getRecommendedShortDramas(
     // 只缓存非空结果，避免缓存错误/空数据
     if (Array.isArray(result) && result.length > 0) {
       await setCache(cacheKey, result, SHORTDRAMA_CACHE_EXPIRE.recommends);
+      // Also populate in-memory cache
+      recommendMemCache.set(cacheKey, {
+        data: result,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+      });
     }
     return result;
   } catch (error) {

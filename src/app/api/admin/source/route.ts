@@ -11,6 +11,7 @@ export const runtime = 'nodejs';
 // 支持的操作类型
 type Action =
   | 'add'
+  | 'batch_add'
   | 'update'
   | 'disable'
   | 'enable'
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
     // 基础校验
     const ACTIONS: Action[] = [
       'add',
+      'batch_add',
       'update',
       'disable',
       'enable',
@@ -116,6 +118,62 @@ export async function POST(request: NextRequest) {
             weight !== undefined ? Math.max(0, Math.min(100, weight)) : 50,
         });
         break;
+      }
+      case 'batch_add': {
+        const { sources } = body as {
+          sources?: Array<{
+            key: string;
+            name: string;
+            api: string;
+            detail?: string;
+            is_adult?: boolean;
+            type?: 'vod' | 'shortdrama';
+            weight?: number;
+          }>;
+        };
+        if (!Array.isArray(sources) || sources.length === 0) {
+          return NextResponse.json(
+            { error: '缺少 sources 数组或为空' },
+            { status: 400 },
+          );
+        }
+        let added = 0;
+        let skipped = 0;
+        const errors: string[] = [];
+        for (const s of sources) {
+          if (!s.key || !s.name || !s.api) {
+            errors.push(
+              `跳过: 缺少必要参数 (key=${s.key || '?'}, name=${s.name || '?'})`,
+            );
+            skipped++;
+            continue;
+          }
+          if (
+            adminConfig.SourceConfig.some((existing) => existing.key === s.key)
+          ) {
+            skipped++;
+            continue;
+          }
+          adminConfig.SourceConfig.push({
+            key: s.key,
+            name: s.name,
+            api: s.api,
+            detail: s.detail,
+            from: 'custom',
+            disabled: false,
+            is_adult: s.is_adult || false,
+            type: s.type || 'vod',
+            weight:
+              s.weight !== undefined
+                ? Math.max(0, Math.min(100, s.weight))
+                : 50,
+          });
+          added++;
+        }
+        return NextResponse.json(
+          { ok: true, added, skipped, total: sources.length, errors },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
       }
       case 'update': {
         const { key, name, api, detail, is_adult, type, weight } = body as {

@@ -150,19 +150,35 @@ async function clearRecommendsCache(): Promise<void> {
 
 // 初始化缓存系统（参考豆瓣实现）
 let cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
+let initialized = false;
 
 async function initShortdramaCache(): Promise<void> {
-  // 立即清理一次过期缓存
-  await cleanExpiredCache();
+  if (initialized) return;
+  initialized = true;
 
-  // 每1小时清理一次过期缓存（清理旧的防止热重载泄漏）
-  if (cleanupIntervalId) clearInterval(cleanupIntervalId);
-  cleanupIntervalId = setInterval(() => cleanExpiredCache(), 60 * 60 * 1000);
+  // Defer cleanup to avoid module-load HTTP requests
+  // Wait 5 seconds before first cleanup to let page finish loading
+  setTimeout(async () => {
+    await cleanExpiredCache();
+
+    // 每1小时清理一次过期缓存（清理旧的防止热重载泄漏）
+    if (cleanupIntervalId) clearInterval(cleanupIntervalId);
+    cleanupIntervalId = setInterval(() => cleanExpiredCache(), 60 * 60 * 1000);
+  }, 5000);
 }
 
-// 在模块加载时初始化缓存系统
+// Only init in browser, but defer it
 if (typeof window !== 'undefined') {
-  initShortdramaCache().catch(console.error);
+  // Use requestIdleCallback to defer non-critical init
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      initShortdramaCache().catch(console.error);
+    });
+  } else {
+    setTimeout(() => {
+      initShortdramaCache().catch(console.error);
+    }, 1000);
+  }
 }
 
 export {

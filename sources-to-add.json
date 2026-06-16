@@ -1,0 +1,288 @@
+{
+  "_说明": "采集源批量导入文件 - 从TVBox开源配置中收集的MacCMS采集源",
+  "_使用方法": "登录管理后台 -> 影视源管理 -> 逐个添加，或通过API批量添加",
+  "_注意": "请先测试源是否可用再启用，部分源可能已失效",
+
+  "regular_sources": [
+    {
+      "key": "ffzy",
+      "name": "非凡资源",
+      "api": "http://ffzy1.tv/api.php/provide/vod/",
+      "detail": "https://ffzy1.tv",
+      "weight": 80
+    },
+    {
+      "key": "lzzy",
+      "name": "量子资源",
+      "api": "https://lzizy1.com/api.php/provide/vod/",
+      "detail": "https://lzizy1.com",
+      "weight": 75
+    },
+    {
+      "key": "hwzy",
+      "name": "虎牙资源",
+      "api": "https://www.huyaapi.com/api.php/provide/vod/",
+      "detail": "https://www.huyaapi.com",
+      "weight": 70
+    },
+    {
+      "key": "bfzy",
+      "name": "暴风资源",
+      "api": "https://app.bfzyapi.com/api.php/provide/vod/",
+      "detail": "https://bfzyapi.com",
+      "weight": 65
+    },
+    {
+      "key": "kklzy",
+      "name": "可可资源",
+      "api": "https://kekezy1.com/api.php/provide/vod/",
+      "detail": "https://kekezy1.com",
+      "weight": 60
+    },
+    {
+      "key": "hzzy",
+      "name": "火狐资源",
+      "api": "https://hhzyapi.com/api.php/provide/vod/",
+      "detail": "https://hhzyapi.com",
+      "weight": 55
+    },
+    {
+      "key": "sjzy",
+      "name": "索尼资源",
+      "api": "https://suoniapi.com/api.php/provide/vod/",
+      "detail": "https://suoniapi.com",
+      "weight": 55
+    },
+    {
+      "key": "feisu",
+      "name": "飞速资源",
+      "api": "https://www.feisuzyapi.com/api.php/provide/vod/",
+      "detail": "https://www.feisuzyapi.com",
+      "weight": 50
+    },
+    {
+      "key": "tpzy",
+      "name": "淘片资源",
+      "api": "https://taopianapi.com/cjapi/mc/vod/json.html",
+      "detail": "https://taopianapi.com",
+      "weight": 50
+    },
+    {
+      "key": "bdzy",
+      "name": "百度资源",
+      "api": "https://api.apibdzy.com/api.php/provide/vod/",
+      "detail": "https://apibdzy.com",
+      "weight": 50
+    },
+    {
+      "key": "if101",
+      "name": "if101资源",
+      "api": "https://demo.if101.tv/api.php/provide/vod",
+      "detail": "https://if101.tv",
+      "weight": 45
+    },
+    {
+      "key": "49zy",
+      "name": "四九资源",
+      "api": "https://49zy1.com/api.php/provide/vod/",
+      "detail": "https://49zy1.com",
+      "weight": 45
+    },
+    {
+      "key": "snzy",
+      "name": "三丰资源",
+      "api": "https://api.1080pzy.tv/api.php/provide/vod/",
+      "detail": "https://api.1080pzy.tv",
+      "weight": 40
+    },
+    {
+      "key": "hongniu",
+      "name": "红牛资源",
+      "api": "https://www.hongniuzy2.com/api.php/provide/vod/",
+      "detail": "https://www.hongniuzy2.com",
+      "weight": 40
+    },
+    {
+      "key": "tkzy",
+      "name": "天空资源",
+      "api": "https://api.tiankongapi.com/api.php/provide/vod/",
+      "detail": "https://api.tiankongapi.com",
+      "weight": 40
+    },
+    {
+      "key": "jkun",
+      "name": "快看资源",
+      "api": "https://kuankanapi.com/api.php/provide/vod/",
+      "detail": "https://kuankanapi.com",
+      "weight": 40
+    },
+    {
+      "key": "lydzy",
+      "name": "闪电资源",
+      "api": "https://sdzyapi.com/api.php/provide/vod/",
+      "detail": "https://sdzyapi.com",
+      "weight": 35
+    },
+    {
+      "key": "wzzy",
+      "name": "玩偶资源",
+      "api": "https://www.wogg.net/api.php/provide/vod/",
+      "detail": "https://www.wogg.net",
+      "weight": 35
+    },
+    {
+      "key": "jYzy",
+      "name": "鲸鱼资源",
+      "api": "https://jyzyapi.com/provide/vod/",
+      "detail": "https://jyzyapi.com",
+      "weight": 35
+    },
+    {
+      "key": "kbzy",
+      "name": "酷点资源",
+      "api": "https://kudian10.com/api.php/provide/vod/",
+      "detail": "https://kudian10.com",
+      "weight": 35
+    },
+    {
+      "key": "360zy",
+      "name": "360资源",
+      "api": "https://www.360zy.com/api.php/provide/vod/",
+      "detail": "https://www.360zy.com",
+      "weight": 30
+    },
+    {
+      "key": "mozidian",
+      "name": "魔都资源",
+      "api": "https://mdzyapi.com/api.php/provide/vod/",
+      "detail": "https://mdzyapi.com",
+      "weight": 30
+    },
+    {
+      "key": "tfzy",
+      "name": "腾飞资源",
+      "api": "https://api.pengteng.xyz/api.php/provide/vod/",
+      "detail": "https://api.pengteng.xyz",
+      "weight": 30
+    },
+    {
+      "key": "ikun",
+      "name": "爱坤资源",
+      "api": "https://ikunzyapi.com/api.php/provide/vod/",
+      "detail": "https://ikunzyapi.com",
+      "weight": 25
+    },
+    {
+      "key": "xlzy",
+      "name": "迅雷资源",
+      "api": "https://api.xlmvapi.com/api.php/provide/vod/",
+      "detail": "https://api.xlmvapi.com",
+      "weight": 25
+    },
+    {
+      "key": "xbzy",
+      "name": "小暴资源",
+      "api": "https://www.xbaozi.com/api.php/provide/vod/",
+      "detail": "https://www.xbaozi.com",
+      "weight": 25
+    },
+    {
+      "key": "dydzy",
+      "name": "第一电影资源",
+      "api": "https://api.diYiDianYing.com/api.php/provide/vod/",
+      "detail": "https://api.diYiDianYing.com",
+      "weight": 25
+    },
+    {
+      "key": "lydzy2",
+      "name": "凌云资源",
+      "api": "https://www.lydapi.com/api.php/provide/vod/",
+      "detail": "https://www.lydapi.com",
+      "weight": 25
+    },
+    {
+      "key": "jkzy",
+      "name": "极客资源",
+      "api": "https://jkunzyapi.com/api.php/provide/vod/",
+      "detail": "https://jkunzyapi.com",
+      "weight": 25
+    },
+    {
+      "key": "xzzy",
+      "name": "星智资源",
+      "api": "https://xinzhiapi.com/api.php/provide/vod/",
+      "detail": "https://xinzhiapi.com",
+      "weight": 20
+    },
+    {
+      "key": "hclzy",
+      "name": "红尘资源",
+      "api": "https://hongchenzyapi.com/api.php/provide/vod/",
+      "detail": "https://hongchenzyapi.com",
+      "weight": 20
+    },
+    {
+      "key": "jczy",
+      "name": "嘉诚资源",
+      "api": "https://jczyapi.com/api.php/provide/vod/",
+      "detail": "https://jczyapi.com",
+      "weight": 20
+    },
+    {
+      "key": "dyzy",
+      "name": "大象资源",
+      "api": "https://dxxzyapi.com/api.php/provide/vod/",
+      "detail": "https://dxxzyapi.com",
+      "weight": 20
+    },
+    {
+      "key": "xzzy2",
+      "name": "小站资源",
+      "api": "https://api.xiaozhanzy.com/api.php/provide/vod/",
+      "detail": "https://api.xiaozhanzy.com",
+      "weight": 15
+    },
+    {
+      "key": "xfzy",
+      "name": "非凡备用",
+      "api": "https://cj.ffzyapi.com/api.php/provide/vod/",
+      "detail": "https://cj.ffzyapi.com",
+      "weight": 15
+    }
+  ],
+
+  "adult_sources": [
+    {
+      "key": "adult_69zy",
+      "name": "69美剧",
+      "api": "https://www.69mj.com/xgapp.php/v2/",
+      "detail": "https://www.69mj.com",
+      "is_adult": true,
+      "weight": 30
+    },
+    {
+      "key": "adult_xhfzy",
+      "name": "小黑方资源",
+      "api": "https://api.xhfzy.com/api.php/provide/vod/",
+      "detail": "https://api.xhfzy.com",
+      "is_adult": true,
+      "weight": 25
+    },
+    {
+      "key": "adult_bfzy4",
+      "name": "暴风成人",
+      "api": "https://bfzy4.com/api.php/provide/vod/",
+      "detail": "https://bfzy4.com",
+      "is_adult": true,
+      "weight": 25
+    },
+    {
+      "key": "adult_ffzy4",
+      "name": "非凡成人",
+      "api": "http://ffzy4.tv/api.php/provide/vod/",
+      "detail": "https://ffzy4.tv",
+      "is_adult": true,
+      "weight": 20
+    }
+  ]
+}
