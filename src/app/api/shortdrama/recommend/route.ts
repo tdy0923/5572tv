@@ -14,9 +14,22 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
+// 短剧相关的分类关键词
+const SHORT_DRAMA_KEYWORDS = [
+  '短剧',
+  '女频恋爱',
+  '反转爽剧',
+  '古装仙侠',
+  '年代穿越',
+  '脑洞悬疑',
+  '现代都市',
+  '短篇',
+  '短集',
+];
+
 // 从单个短剧源获取数据（通过分类名称查找）
 async function fetchFromShortDramaSource(api: string, size: number) {
-  // Step 1: 获取分类列表，找到"短剧"分类的ID
+  // Step 1: 获取分类列表，找到所有短剧相关分类的ID
   const listUrl = `${api}?ac=list`;
 
   const listResponse = await fetch(listUrl, {
@@ -34,38 +47,61 @@ async function fetchFromShortDramaSource(api: string, size: number) {
   const listData = await listResponse.json();
   const categories = listData.class || [];
 
-  // 查找"短剧"分类（只要包含"短剧"两个字即可）
-  const shortDramaCategory = categories.find(
-    (cat: any) => cat.type_name && cat.type_name.includes('短剧'),
+  // 查找所有短剧相关分类
+  const shortDramaCategories = categories.filter(
+    (cat: any) =>
+      cat.type_name &&
+      SHORT_DRAMA_KEYWORDS.some((kw) => cat.type_name.includes(kw)),
   );
 
-  if (!shortDramaCategory) {
+  if (shortDramaCategories.length === 0) {
     console.log(`该源没有短剧分类`);
     return [];
   }
 
-  const categoryId = shortDramaCategory.type_id;
-  console.log(`找到短剧分类ID: ${categoryId}`);
+  console.log(
+    `找到 ${shortDramaCategories.length} 个短剧分类:`,
+    shortDramaCategories
+      .map((c: any) => `${c.type_name}(${c.type_id})`)
+      .join(', '),
+  );
 
-  // Step 2: 获取该分类的短剧列表
-  const apiUrl = `${api}?ac=detail&t=${categoryId}&pg=1`;
+  // Step 2: 从所有短剧分类获取数据
+  const allItems: any[] = [];
 
-  const response = await fetch(apiUrl, {
-    headers: {
-      'User-Agent': DEFAULT_USER_AGENT,
-      Accept: 'application/json',
-    },
-    signal: AbortSignal.timeout(10000),
+  // 并发请求所有分类
+  const categoryResults = await Promise.allSettled(
+    shortDramaCategories.map(async (cat: any) => {
+      const apiUrl = `${api}?ac=detail&t=${cat.type_id}&pg=1`;
+      const response = await fetch(apiUrl, {
+        headers: {
+          'User-Agent': DEFAULT_USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.list || [];
+    }),
+  );
+
+  categoryResults.forEach((result) => {
+    if (result.status === 'fulfilled') {
+      allItems.push(...result.value);
+    }
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  // 按更新时间排序并去重
+  const uniqueItems = Array.from(
+    new Map(allItems.map((item: any) => [item.vod_name, item])).values(),
+  );
+  uniqueItems.sort(
+    (a: any, b: any) =>
+      new Date(b.vod_time || 0).getTime() - new Date(a.vod_time || 0).getTime(),
+  );
 
-  const data = await response.json();
-  const items = data.list || [];
-
-  return items.slice(0, size).map((item: any) => ({
+  return uniqueItems.slice(0, size).map((item: any) => ({
     id: item.vod_id,
     name: item.vod_name,
     cover: item.vod_pic || '',

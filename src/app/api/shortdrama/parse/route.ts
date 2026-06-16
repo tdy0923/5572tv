@@ -167,35 +167,14 @@ export async function GET(request: NextRequest) {
         currentEpisode: episodeNum,
         totalEpisodes: episodes.length || 1,
         parsedUrl: currentEpisode.url || '',
-        proxyUrl: '',
+        proxyUrl: currentEpisode.url
+          ? `/api/proxy/shortdrama?url=${encodeURIComponent(currentEpisode.url)}`
+          : '',
         cover: drama.vod_pic || '',
         description: drama.vod_content || drama.vod_blurb || '',
         episode: { index: episodeNum, url: currentEpisode.url },
       },
     };
-
-    if (result.code !== 0) {
-      const errorResponse = { error: '解析失败' };
-      const responseSize = Buffer.byteLength(
-        JSON.stringify(errorResponse),
-        'utf8',
-      );
-
-      recordRequest({
-        timestamp: startTime,
-        method: 'GET',
-        path: '/api/shortdrama/parse',
-        statusCode: 400,
-        duration: Date.now() - startTime,
-        memoryUsed:
-          (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-        dbQueries: getDbQueryCount(),
-        requestSize: 0,
-        responseSize,
-      });
-
-      return NextResponse.json(errorResponse, { status: 400 });
-    }
 
     // 返回视频URL，优先使用代理URL避免CORS问题
     const episodeData = result.data?.episode;

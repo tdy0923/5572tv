@@ -94,6 +94,12 @@ async function getShortDramaCategoriesFromSources(
             const name = String(c.type_name || '');
             return (
               name.includes('短剧') ||
+              name.includes('女频恋爱') ||
+              name.includes('反转爽剧') ||
+              name.includes('古装仙侠') ||
+              name.includes('年代穿越') ||
+              name.includes('脑洞悬疑') ||
+              name.includes('现代都市') ||
               name.includes('短篇') ||
               name.includes('短集')
             );
