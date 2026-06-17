@@ -1,285 +1,94 @@
-import * as https from 'https';
-import { NextResponse } from 'next/server';
+/* eslint-disable no-console */
 
-import { db } from '@/lib/db';
-import { getDoubanCookie } from '@/lib/douban-anti-crawler';
-import { isUrlSafe } from '@/lib/ssrf-protection';
+/**
+ * Image Proxy Endpoint
+ * Based on MoonTVPlus/DecoTV implementation
+ *
+ * Proxies images from Douban and other sources to bypass CORS
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
-const IMAGE_FAILURE_CACHE_TTL = 10 * 60;
+// Cache for images
+const imageCache = new Map<
+  string,
+  { data: ArrayBuffer; contentType: string; timestamp: number }
+>();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const MAX_CACHE_SIZE = 1000;
 
-// https agent with rejectUnauthorized: false for expired-cert image CDNs
-const insecureHttpsAgent = new https.Agent({ rejectUnauthorized: false });
-
-function buildCandidateImageUrls(imageUrl: string): string[] {
-  const candidates = new Set<string>();
-
+export async function GET(request: NextRequest) {
   try {
-    const url = new URL(imageUrl);
-    const isDoubanImage = url.hostname.includes('doubanio.com');
+    const { searchParams } = request.nextUrl;
+    const url = searchParams.get('url');
 
-    if (isDoubanImage && url.protocol === 'http:') {
-      url.protocol = 'https:';
-    }
-
-    candidates.add(url.toString());
-
-    if (isDoubanImage) {
-      const hostVariants = [
-        'img3.doubanio.com',
-        'img1.doubanio.com',
-        'img9.doubanio.com',
-      ];
-      for (const host of hostVariants) {
-        const variantUrl = new URL(url.toString());
-        variantUrl.hostname = host;
-        candidates.add(variantUrl.toString());
-      }
-    }
-  } catch {
-    candidates.add(imageUrl);
-  }
-
-  return Array.from(candidates);
-}
-
-function isValidImageContentType(contentType: string | null): boolean {
-  if (!contentType) return true;
-  return (
-    contentType.startsWith('image/') ||
-    contentType === 'application/octet-stream'
-  );
-}
-
-async function fetchWithInsecureHttps(
-  imageUrl: string,
-  fetchHeaders: HeadersInit,
-): Promise<Response> {
-  return new Promise((resolve, reject) => {
-    const urlObj = new URL(imageUrl);
-    const options = {
-      hostname: urlObj.hostname,
-      path: urlObj.pathname + urlObj.search,
-      method: 'GET',
-      agent: insecureHttpsAgent,
-      headers: fetchHeaders as Record<string, string>,
-    };
-    const req = https.request(options, (res) => {
-      const chunks: Buffer[] = [];
-      res.on('data', (chunk) => chunks.push(chunk));
-      res.on('end', () => {
-        const body = Buffer.concat(chunks);
-        resolve(
-          new Response(body, {
-            status: res.statusCode ?? 200,
-            headers: res.headers as Record<string, string>,
-          }),
-        );
-      });
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
-
-function getImageFailureCacheKey(imageUrl: string): string {
-  return `image-proxy:failure:${imageUrl}`;
-}
-
-function getPlaceholderRedirectUrl(_request: Request): URL {
-  // fix: 使用固定域名而非 request.url 避免 0.0.0.0:3000
-  return new URL('/placeholder-cover.jpg', 'https://www.5572.net');
-}
-
-// 图片代理接口 - 解决防盗链和 Mixed Content 问题
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const imageUrl = searchParams.get('url');
-
-  if (!imageUrl) {
-    return NextResponse.json({ error: 'Missing image URL' }, { status: 400 });
-  }
-
-  // URL 格式验证 + SSRF protection
-  if (!isUrlSafe(imageUrl)) {
-    return NextResponse.json(
-      { error: '禁止访问内部地址或无效URL' },
-      { status: 403 },
-    );
-  }
-
-  // 创建 AbortController 用于超时控制
-  const failureCacheKey = getImageFailureCacheKey(imageUrl);
-
-  try {
-    // 豆瓣图片不使用失败缓存，每次重试
-    const imageUrlObj = new URL(imageUrl);
-    const isDoubanImage = imageUrlObj.hostname.includes('doubanio.com');
-
-    if (!isDoubanImage) {
-      const cachedFailure = await db.getCache(failureCacheKey);
-      if (cachedFailure) {
-        return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
-      }
-    }
-
-    // 动态设置 Referer 和 Origin（根据图片源域名）
-    const sourceOrigin = isDoubanImage
-      ? 'https://movie.douban.com'
-      : `${imageUrlObj.protocol}//${imageUrlObj.host}`;
-
-    // 构建请求头
-    const fetchHeaders: HeadersInit = {
-      Referer: sourceOrigin + '/',
-      Origin: sourceOrigin,
-      'User-Agent': DEFAULT_USER_AGENT,
-      Accept:
-        'image/avif,image/webp,image/jxl,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-      'Accept-Encoding': 'gzip, deflate, br',
-      Connection: 'keep-alive',
-    };
-
-    // 豆瓣图片需要反爬 cookie
-    if (isDoubanImage) {
-      try {
-        const cookie = await getDoubanCookie(sourceOrigin);
-        if (cookie) {
-          (fetchHeaders as Record<string, string>)['Cookie'] = cookie;
-        }
-      } catch {
-        // cookie 获取失败不阻塞图片加载
-      }
-    }
-
-    const candidateUrls = buildCandidateImageUrls(imageUrl);
-    let imageResponse: Response | null = null;
-    let finalImageUrl = candidateUrls[0];
-    let lastError: Error | null = null;
-
-    // 并发请求所有候选 URL，取最快成功的响应
-    const fetchWithTimeout = async (url: string) => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
-      try {
-        let response: Response;
-        try {
-          response = await fetch(url, {
-            signal: controller.signal,
-            headers: fetchHeaders,
-          });
-        } catch (fetchError: any) {
-          if (
-            url.startsWith('https://') &&
-            (fetchError.code === 'CERT_HAS_EXPIRED' ||
-              fetchError.cause?.code === 'CERT_HAS_EXPIRED' ||
-              fetchError.message?.includes('certificate'))
-          ) {
-            response = await fetchWithInsecureHttps(url, fetchHeaders);
-          } else {
-            throw fetchError;
-          }
-        }
-        const contentType = response.headers.get('content-type');
-        if (response.ok && isValidImageContentType(contentType)) {
-          return response;
-        }
-        throw new Error(
-          `Upstream returned ${response.status} ${response.statusText || ''} (${contentType || 'unknown'})`,
-        );
-      } finally {
-        clearTimeout(timer);
-      }
-    };
-
-    const results = await Promise.allSettled(
-      candidateUrls.map((url) => fetchWithTimeout(url)),
-    );
-
-    for (const [i, result] of results.entries()) {
-      if (result.status === 'fulfilled') {
-        imageResponse = result.value;
-        finalImageUrl = candidateUrls[i];
-        break;
-      } else {
-        lastError = result.reason;
-      }
-    }
-
-    if (!imageResponse) {
-      throw lastError || new Error('No valid upstream image response');
-    }
-
-    const contentType = imageResponse.headers.get('content-type');
-
-    if (!imageResponse.body) {
+    if (!url) {
       return NextResponse.json(
-        { error: 'Image response has no body' },
-        { status: 500 },
+        { error: 'Missing url parameter' },
+        { status: 400 },
       );
     }
 
-    // 创建响应头
-    const headers = new Headers();
-    if (contentType) {
-      headers.set('Content-Type', contentType);
+    // Decode URL
+    const decodedUrl = decodeURIComponent(url);
+
+    // Check cache
+    const cached = imageCache.get(decodedUrl);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return new NextResponse(cached.data, {
+        headers: {
+          'Content-Type': cached.contentType,
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=86400, s-maxage=604800',
+        },
+      });
     }
 
-    // 传递Content-Length以支持进度显示和更好的缓存（如果上游提供）
-    const contentLength = imageResponse.headers.get('content-length');
-    if (contentLength) {
-      headers.set('Content-Length', contentLength);
-    }
-
-    // 设置缓存头 - 缓存7天（604800秒），允许重新验证
-    headers.set(
-      'Cache-Control',
-      'public, max-age=604800, stale-while-revalidate=86400',
-    );
-    headers.set('CDN-Cache-Control', 'public, s-maxage=604800');
-    headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=604800');
-    headers.set('Netlify-Vary', 'query');
-
-    // 添加 CORS 支持
-    headers.set('Access-Control-Allow-Origin', '*');
-    headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    headers.set('X-Image-Source', finalImageUrl);
-
-    // 直接返回图片流
-    return new Response(imageResponse.body, {
-      status: 200,
-      headers,
+    // Fetch image
+    const response = await fetch(decodedUrl, {
+      headers: {
+        'User-Agent': DEFAULT_USER_AGENT,
+        Referer: 'https://movie.douban.com/',
+        Accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      },
+      signal: AbortSignal.timeout(10000),
     });
-  } catch (error: any) {
-    try {
-      await db.setCache(
-        failureCacheKey,
-        { failedAt: Date.now() },
-        IMAGE_FAILURE_CACHE_TTL,
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: `Upstream error: ${response.status}` },
+        { status: response.status },
       );
-    } catch {
-      // 缓存失败不影响主流程
     }
 
-    // 错误类型判断
-    if (error.name === 'AbortError') {
-      return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
-    }
+    const contentType = response.headers.get('Content-Type') || 'image/jpeg';
+    const data = await response.arrayBuffer();
 
-    return NextResponse.redirect(getPlaceholderRedirectUrl(request), 302);
+    // Cache the image
+    if (imageCache.size >= MAX_CACHE_SIZE) {
+      // Remove oldest entry
+      const firstKey = imageCache.keys().next().value;
+      if (firstKey) imageCache.delete(firstKey);
+    }
+    imageCache.set(decodedUrl, {
+      data,
+      contentType,
+      timestamp: Date.now(),
+    });
+
+    return new NextResponse(data, {
+      headers: {
+        'Content-Type': contentType,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=86400, s-maxage=604800',
+      },
+    });
+  } catch (error) {
+    console.error('Image proxy error:', error);
+    return NextResponse.json({ error: 'Proxy failed' }, { status: 500 });
   }
-}
-
-// 处理 CORS 预检请求
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
 }

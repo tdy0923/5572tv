@@ -1,258 +1,99 @@
-import { NextResponse } from 'next/server';
+/* eslint-disable no-console */
 
-import { getCacheTime } from '@/lib/config';
-import { fetchDoubanData } from '@/lib/douban';
-import { recordRequest } from '@/lib/performance-monitor';
-import { DoubanItem, DoubanResult } from '@/lib/types';
-import { getRandomUserAgent } from '@/lib/user-agent';
+/**
+ * Douban API Endpoint
+ * Based on MoonTVPlus/DecoTV implementation
+ *
+ * Provides Douban movie/TV data with multi-provider proxy
+ */
 
-interface DoubanApiResponse {
-  subjects: Array<{
-    id: string;
-    title: string;
-    cover: string;
-    rate: string;
-  }>;
-}
+import { NextRequest, NextResponse } from 'next/server';
+
+import {
+  fetchDoubanWithProxy,
+  getDoubanImageUrl,
+  getImageProviderCandidates,
+} from '@/lib/douban-proxy';
 
 export const runtime = 'nodejs';
 
-export async function GET(request: Request) {
-  const startTime = Date.now();
-  const startMemory = process.memoryUsage().heapUsed;
+// Cache for Douban data
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-  const { searchParams } = new URL(request.url);
-
-  // 获取参数
-  const type = searchParams.get('type');
-  const tag = searchParams.get('tag');
-  const pageSize = parseInt(searchParams.get('pageSize') || '16');
-  const pageStart = parseInt(searchParams.get('pageStart') || '0');
-
-  // 验证参数
-  if (!type || !tag) {
-    const errorResponse = { error: '缺少必要参数: type 或 tag' };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 400,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorSize,
-    });
-
-    return NextResponse.json(errorResponse, { status: 400 });
+/**
+ * Get Douban data with caching
+ */
+async function getCachedDoubanData(url: string): Promise<any> {
+  const cached = cache.get(url);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
   }
 
-  if (!['tv', 'movie'].includes(type)) {
-    const errorResponse = { error: 'type 参数必须是 tv 或 movie' };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+  const { data, provider, durationMs } = await fetchDoubanWithProxy<any>(url);
 
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 400,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorSize,
-    });
+  cache.set(url, { data, timestamp: Date.now() });
 
-    return NextResponse.json(errorResponse, { status: 400 });
-  }
+  console.log(`Douban fetch: ${provider} (${durationMs}ms)`);
 
-  if (pageSize < 1 || pageSize > 100) {
-    const errorResponse = { error: 'pageSize 必须在 1-100 之间' };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 400,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorSize,
-    });
-
-    return NextResponse.json(errorResponse, { status: 400 });
-  }
-
-  if (pageStart < 0) {
-    const errorResponse = { error: 'pageStart 不能小于 0' };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 400,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorSize,
-    });
-
-    return NextResponse.json(errorResponse, { status: 400 });
-  }
-
-  if (tag === 'top250') {
-    return handleTop250(pageStart);
-  }
-
-  const target = `https://movie.douban.com/j/search_subjects?type=${type}&tag=${tag}&sort=recommend&page_limit=${pageSize}&page_start=${pageStart}`;
-
-  try {
-    // 调用豆瓣 API
-    const doubanData = await fetchDoubanData<DoubanApiResponse>(target);
-
-    // 转换数据格式
-    const list: DoubanItem[] = doubanData.subjects.map((item) => ({
-      id: item.id,
-      title: item.title,
-      poster: item.cover,
-      rate: item.rate,
-      year: '',
-    }));
-
-    const response: DoubanResult = {
-      code: 200,
-      message: '获取成功',
-      list: list,
-    };
-
-    const responseSize = Buffer.byteLength(JSON.stringify(response), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 200,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize,
-    });
-
-    const cacheTime = await getCacheTime();
-    return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-        'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-        'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-        'Netlify-Vary': 'query',
-      },
-    });
-  } catch (error) {
-    const errorResponse = {
-      error: '获取豆瓣数据失败',
-      details: (error as Error).message,
-    };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban',
-      statusCode: 500,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorSize,
-    });
-
-    return NextResponse.json(errorResponse, { status: 500 });
-  }
+  return data;
 }
 
-function handleTop250(pageStart: number) {
-  const target = `https://movie.douban.com/top250?start=${pageStart}&filter=`;
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = request.nextUrl;
+    const type = searchParams.get('type') || 'movie';
+    const tag = searchParams.get('tag') || '热门';
+    const page = parseInt(searchParams.get('page') || '0', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '16', 10);
+    const id = searchParams.get('id');
 
-  // 直接使用 fetch 获取 HTML 页面
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+    // Get subject detail
+    if (id) {
+      try {
+        const url = `https://m.douban.com/rexxar/api/v2/subject/${id}`;
+        const data = await getCachedDoubanData(url);
 
-  const fetchOptions = {
-    signal: controller.signal,
-    headers: {
-      'User-Agent': getRandomUserAgent(),
-      Referer: 'https://movie.douban.com/',
-      Accept:
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    },
-  };
+        // Process image URLs
+        if (data?.cover?.img) {
+          data.cover.candidates = getImageProviderCandidates(data.cover.img);
+        }
 
-  return fetch(target, fetchOptions)
-    .then(async (fetchResponse) => {
-      clearTimeout(timeoutId);
+        return NextResponse.json({ ok: true, data });
+      } catch (e: any) {
+        return NextResponse.json(
+          { error: e.message || 'Failed to fetch Douban data' },
+          { status: 500 },
+        );
+      }
+    }
 
-      if (!fetchResponse.ok) {
-        throw new Error(`HTTP error! Status: ${fetchResponse.status}`);
+    // Search by tag
+    try {
+      const url = `https://movie.douban.com/j/search_subjects?type=${type}&tag=${encodeURIComponent(tag)}&sort=recommend&page_limit=${pageSize}&page_start=${page * pageSize}`;
+      const data = await getCachedDoubanData(url);
+
+      // Process image URLs
+      if (data?.subjects) {
+        for (const subject of data.subjects) {
+          if (subject.cover) {
+            subject.cover = getDoubanImageUrl(subject.cover);
+          }
+        }
       }
 
-      // 获取 HTML 内容
-      const html = await fetchResponse.text();
-
-      // 通过正则同时捕获影片 id、标题、封面以及评分
-      const moviePattern =
-        /<div class="item">[\s\S]*?<a[^>]+href="https?:\/\/movie\.douban\.com\/subject\/(\d+)\/"[\s\S]*?<img[^>]+alt="([^"]+)"[^>]*src="([^"]+)"[\s\S]*?<span class="rating_num"[^>]*>([^<]*)<\/span>[\s\S]*?<\/div>/g;
-      const movies: DoubanItem[] = [];
-      let match;
-
-      while ((match = moviePattern.exec(html)) !== null) {
-        const id = match[1];
-        const title = match[2];
-        const cover = match[3];
-        const rate = match[4] || '';
-
-        // 处理图片 URL，确保使用 HTTPS
-        const processedCover = cover.replace(/^http:/, 'https:');
-
-        movies.push({
-          id: id,
-          title: title,
-          poster: processedCover,
-          rate: rate,
-          year: '',
-        });
-      }
-
-      const apiResponse: DoubanResult = {
-        code: 200,
-        message: '获取成功',
-        list: movies,
-      };
-
-      const cacheTime = await getCacheTime();
-      return NextResponse.json(apiResponse, {
-        headers: {
-          'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-          'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-          'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-          'Netlify-Vary': 'query',
-        },
-      });
-    })
-    .catch((error) => {
-      clearTimeout(timeoutId);
+      return NextResponse.json({ ok: true, data });
+    } catch (e: any) {
       return NextResponse.json(
-        {
-          error: '获取豆瓣 Top250 数据失败',
-          details: (error as Error).message,
-        },
+        { error: e.message || 'Failed to search Douban' },
         { status: 500 },
       );
-    });
+    }
+  } catch (error) {
+    console.error('Douban API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
+  }
 }
