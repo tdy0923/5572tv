@@ -174,7 +174,7 @@ export async function getMangaBzDetail(
 
     // Extract chapters
     const chapters: MangaChapter[] = [];
-    $('.detail-list-down-list a, .chapter-list a').each((_, el) => {
+    $('.detail-list-form-item a, .mh-chapter-list li a').each((_, el) => {
       const $el = $(el);
       const href = $el.attr('href') || '';
       const title = $el.text().trim();
