@@ -114,6 +114,56 @@ async function fetchListFromSource(api: string, page: number, size: number) {
   return { list: [], hasMore: false };
 }
 
+// 从指定分类获取短剧列表
+async function fetchListFromCategory(
+  api: string,
+  categoryId: number,
+  page: number,
+  size: number,
+) {
+  const apiUrl = `${api}?ac=detail&t=${categoryId}&pg=${page}`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      'User-Agent': DEFAULT_USER_AGENT,
+      Accept: 'application/json',
+    },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  if (!response.ok) {
+    return { list: [], hasMore: false };
+  }
+
+  const data = await response.json();
+  const items = data.list || [];
+
+  const limitedItems = items.slice(0, size);
+
+  const list = limitedItems.map((item: any) => ({
+    id: item.vod_id,
+    name: item.vod_name,
+    cover: item.vod_pic || '',
+    update_time: item.vod_time || new Date().toISOString(),
+    score: parseFloat(item.vod_score) || 0,
+    episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
+    description: item.vod_content || item.vod_blurb || '',
+    author: item.vod_actor || '',
+    backdrop: item.vod_pic_slide || item.vod_pic || '',
+    vote_average: parseFloat(item.vod_score) || 0,
+    vod_area: item.vod_area || '',
+    vod_year: item.vod_year || '',
+    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
+    vod_hits: parseInt(item.vod_hits || '0'),
+    vod_name: item.vod_name || '',
+  }));
+
+  return {
+    list,
+    hasMore: data.page < data.pagecount,
+  };
+}
+
 // 服务端专用函数，从所有短剧源聚合数据
 async function getShortDramaListInternal(
   category: number,
@@ -128,8 +178,76 @@ async function getShortDramaListInternal(
       (source) => source.type === 'shortdrama' && !source.disabled,
     );
 
-    // 如果没有配置短剧源，使用默认源
-    if (shortDramaSources.length === 0) {
+    // 同时检查普通源中是否有短剧分类
+    const regularSources = config.SourceConfig.filter(
+      (source) => !source.disabled && source.type !== 'shortdrama',
+    );
+
+    // 收集所有有短剧分类的源
+    const sourcesWithShortDrama: Array<{
+      api: string;
+      name: string;
+      categoryId: number;
+    }> = [];
+
+    // 并发检查普通源
+    const batchSize = 10;
+    for (let i = 0; i < regularSources.length; i += batchSize) {
+      const batch = regularSources.slice(i, i + batchSize);
+      const results = await Promise.allSettled(
+        batch.map(async (source: any) => {
+          try {
+            const response = await fetch(`${source.api}?ac=list`, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0',
+                Accept: 'application/json',
+              },
+              signal: AbortSignal.timeout(5000),
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            const classes = data.class || [];
+            const shortDramaClass = classes.find(
+              (c: any) =>
+                c.type_name &&
+                (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
+            );
+            if (shortDramaClass) {
+              return {
+                api: source.api,
+                name: source.name,
+                categoryId: shortDramaClass.type_id,
+              };
+            }
+            return null;
+          } catch {
+            return null;
+          }
+        }),
+      );
+
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          sourcesWithShortDrama.push(result.value);
+        }
+      }
+    }
+
+    // 添加配置的短剧源
+    for (const source of shortDramaSources) {
+      sourcesWithShortDrama.push({
+        api: source.api,
+        name: source.name,
+        categoryId: 0,
+      });
+    }
+
+    console.log(
+      `📺 列表API: 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源`,
+    );
+
+    // 如果没有找到有短剧内容的源，使用默认源
+    if (sourcesWithShortDrama.length === 0) {
       return await fetchListFromSource(
         'https://tyyszy.com/api.php/provide/vod',
         page,
@@ -137,9 +255,17 @@ async function getShortDramaListInternal(
       );
     }
 
-    // 有配置短剧源，聚合所有源的数据
+    // 聚合所有源的数据
     const results = await Promise.allSettled(
-      shortDramaSources.map((source) => {
+      sourcesWithShortDrama.map((source) => {
+        if (source.categoryId > 0) {
+          return fetchListFromCategory(
+            source.api,
+            source.categoryId,
+            page,
+            size,
+          );
+        }
         return fetchListFromSource(source.api, page, size);
       }),
     );
