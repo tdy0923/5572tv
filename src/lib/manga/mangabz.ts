@@ -26,7 +26,8 @@ export async function searchMangaBz(
   query: string,
   page: number = 1,
 ): Promise<{ results: MangaSearchResult[]; totalPages: number }> {
-  const url = `${BASE_URL}/search?keyword=${encodeURIComponent(query)}&page=${page}`;
+  // MangaBZ uses 'title' parameter, not 'keyword'
+  const url = `${BASE_URL}/search?title=${encodeURIComponent(query)}&page=${page}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);

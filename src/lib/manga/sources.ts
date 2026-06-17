@@ -14,13 +14,6 @@ export const MANGA_SOURCES: MangaSource[] = [
     searchPath: '/search',
     enabled: true,
   },
-  {
-    key: 'manga123',
-    name: 'Manga123',
-    baseUrl: 'https://www.manga123.com',
-    searchPath: '/search',
-    enabled: true,
-  },
 ];
 
 export function getSourceByKey(key: string): MangaSource | undefined {
