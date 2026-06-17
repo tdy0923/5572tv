@@ -47,11 +47,46 @@ async function getCategoriesFromSource(
     '资源',
   ];
 
+  // 短剧相关分类关键词
+  const shortDramaKeywords = [
+    '短剧',
+    '女频恋爱',
+    '反转爽剧',
+    '古装仙侠',
+    '年代穿越',
+    '脑洞悬疑',
+    '现代都市',
+    '短篇',
+    '短集',
+    '擦边',
+    '甜宠',
+    '虐恋',
+    '穿越',
+    '重生',
+    '总裁',
+    '豪门',
+    '逆袭',
+    '复仇',
+    '宠妻',
+    '战神',
+    '神医',
+    '赘婿',
+    '霸总',
+    '甜剧',
+    '虐剧',
+    '爽剧',
+  ];
+
   const safeCategories = categories
     .filter((cat: any) => cat.type_name)
     .filter((cat: any) => {
       const name = String(cat.type_name || '');
-      return !excludeKeywords.some((keyword) => name.includes(keyword));
+      // 排除不相关分类
+      if (excludeKeywords.some((keyword) => name.includes(keyword))) {
+        return false;
+      }
+      // 只保留短剧相关分类
+      return shortDramaKeywords.some((keyword) => name.includes(keyword));
     })
     .map((cat: any) => ({
       type_id: cat.type_id,
