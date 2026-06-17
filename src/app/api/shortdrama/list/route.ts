@@ -190,10 +190,11 @@ async function getShortDramaListInternal(
       categoryId: number;
     }> = [];
 
-    // 并发检查普通源
+    // 并发检查前20个普通源（减少检查数量以提高速度）
+    const sourcesToCheck = regularSources.slice(0, 20);
     const batchSize = 10;
-    for (let i = 0; i < regularSources.length; i += batchSize) {
-      const batch = regularSources.slice(i, i + batchSize);
+    for (let i = 0; i < sourcesToCheck.length; i += batchSize) {
+      const batch = sourcesToCheck.slice(i, i + batchSize);
       const results = await Promise.allSettled(
         batch.map(async (source: any) => {
           try {
@@ -202,7 +203,7 @@ async function getShortDramaListInternal(
                 'User-Agent': 'Mozilla/5.0',
                 Accept: 'application/json',
               },
-              signal: AbortSignal.timeout(5000),
+              signal: AbortSignal.timeout(3000),
             });
             if (!response.ok) return null;
             const data = await response.json();

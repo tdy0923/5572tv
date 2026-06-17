@@ -264,10 +264,11 @@ async function getShortDramaCategoriesInternal() {
 
   const regularCategories: { type_id: number; type_name: string }[] = [];
 
-  // 并发检查所有源（批量处理避免超时）
+  // 并发检查前20个源（减少检查数量以提高速度）
+  const sourcesToCheck = regularSources.slice(0, 20);
   const batchSize = 10;
-  for (let i = 0; i < regularSources.length; i += batchSize) {
-    const batch = regularSources.slice(i, i + batchSize);
+  for (let i = 0; i < sourcesToCheck.length; i += batchSize) {
+    const batch = sourcesToCheck.slice(i, i + batchSize);
     const results = await Promise.allSettled(
       batch.map(async (source: any) => {
         try {
@@ -276,7 +277,7 @@ async function getShortDramaCategoriesInternal() {
               'User-Agent': DEFAULT_USER_AGENT,
               Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(3000),
           });
           if (!response.ok) return [];
           const data = await response.json();
