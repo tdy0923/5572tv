@@ -174,10 +174,16 @@ export async function getMangaBzDetail(
 
     // Extract chapters
     const chapters: MangaChapter[] = [];
-    $('.detail-list-form-item a, .mh-chapter-list li a').each((_, el) => {
+    $('a.detail-list-form-item, .mh-chapter-list li a').each((_, el) => {
       const $el = $(el);
       const href = $el.attr('href') || '';
-      const title = $el.text().trim();
+      const title =
+        $el.attr('title') ||
+        $el
+          .text()
+          .trim()
+          .replace(/\(\d+P\)/, '')
+          .trim();
 
       if (href && title) {
         const fullUrl = href.startsWith('http') ? href : BASE_URL + href;
