@@ -303,12 +303,22 @@ async function getShortDramaCategoriesInternal() {
 
   if (regularCategories.length > 0) {
     console.log(`📋 从普通源找到 ${regularCategories.length} 个短剧分类`);
-    // 去重
-    const uniqueRegularCategories = Array.from(
-      new Map(
-        regularCategories.map((c) => [`${c.type_id}_${c.type_name}`, c]),
-      ).values(),
-    );
+    // 按名称合并同名分类（不同源的同名分类合并为一个）
+    const mergedCategories = new Map<
+      string,
+      { type_id: number; type_name: string }
+    >();
+
+    for (const cat of regularCategories) {
+      const name = cat.type_name;
+      if (!mergedCategories.has(name)) {
+        mergedCategories.set(name, cat);
+      }
+      // 保留第一个出现的 type_id
+    }
+
+    const uniqueRegularCategories = Array.from(mergedCategories.values());
+    console.log(`📋 合并后 ${uniqueRegularCategories.length} 个分类`);
     return uniqueRegularCategories;
   }
 
