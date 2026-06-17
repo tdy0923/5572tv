@@ -118,7 +118,8 @@ export async function getMangaBzDetail(
   if (idOrUrl.startsWith('http')) {
     url = idOrUrl;
   } else {
-    url = `${BASE_URL}/manga/${idOrUrl}/`;
+    // MangaBZ URL format: /manga/ID/ or /IDbz/
+    url = `${BASE_URL}/${idOrUrl}bz/`;
   }
 
   const controller = new AbortController();
@@ -138,59 +139,56 @@ export async function getMangaBzDetail(
     const html = await response.text();
     const $ = cheerio.load(html);
 
+    // Extract title
     const title =
-      $('h1, .detail-info h1, .book-info h1').first().text().trim() || '';
-    const cover =
-      $('img.detail-info-cover, .book-info img, .detail-info img')
-        .first()
-        .attr('src') || '';
-    const description = $(
-      '.detail-info-content, .book-info-detail .text, .detail-info-desc',
-    )
+      $('.detail-info-title').text().trim() ||
+      $('h1').first().text().trim() ||
+      '';
+
+    // Extract cover
+    const cover = $('.detail-info-cover').attr('src') || '';
+
+    // Extract description
+    const description = $('.detail-info-content')
       .text()
+      .trim()
+      .replace(/\[.*?\]/g, '') // Remove [+展開][-折疊] buttons
       .trim();
-    const author = $(
-      '.detail-info-author, .book-info .author, .detail-info span',
-    )
+
+    // Extract author
+    const author = $('.detail-info-tip span')
       .first()
       .text()
       .trim()
       .replace(/^作者[：:]\s*/, '');
-    const status = $(
-      '.detail-info-status, .book-info .status, .detail-info-right .status',
-    )
-      .first()
+
+    // Extract status
+    const status = $('.detail-info-tip span:nth-child(2)')
       .text()
-      .trim();
+      .trim()
+      .replace(/^狀態[：:]\s*/, '');
 
+    // Extract rating
+    const ratingText = $('.detail-info-stars span').text().trim();
+    const rating = parseFloat(ratingText) || 0;
+
+    // Extract chapters
     const chapters: MangaChapter[] = [];
+    $('.detail-list-down-list a, .chapter-list a').each((_, el) => {
+      const $el = $(el);
+      const href = $el.attr('href') || '';
+      const title = $el.text().trim();
 
-    const chapterListSelector = [
-      '#chapter-list-1 li a',
-      '.chapter-list-1 li a',
-      '.detail-chapter-list li a',
-      '.mh-chapter-list li a',
-      '#chapterlistbox li a',
-      '.chapter-list a',
-      '.list-chapter a',
-    ].join(', ');
-
-    $(chapterListSelector).each((_, el) => {
-      const $a = $(el);
-      const href = $a.attr('href') || '';
-      const chapterTitle = $a.text().trim();
-      if (href && chapterTitle) {
+      if (href && title) {
         const fullUrl = href.startsWith('http') ? href : BASE_URL + href;
         chapters.push({
           id: href,
-          title: chapterTitle,
+          title,
           url: fullUrl,
           source: SOURCE_KEY,
         });
       }
     });
-
-    chapters.reverse();
 
     return {
       id: idOrUrl,
@@ -199,10 +197,10 @@ export async function getMangaBzDetail(
       description,
       author: author || '未知',
       status: status || '未知',
+      chapters,
       source: SOURCE_KEY,
       sourceName: SOURCE_NAME,
       url,
-      chapters,
     };
   } catch {
     clearTimeout(timeoutId);
