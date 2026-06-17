@@ -207,6 +207,9 @@ async function getShortDramaCategoriesInternal() {
       for (const cat of uniqueCategories) {
         try {
           const testUrl = `${defaultApi}?ac=detail&t=${cat.type_id}&pg=1`;
+          console.log(
+            `  🔍 检查分类 ${cat.type_name}(ID:${cat.type_id}): ${testUrl}`,
+          );
           const testResponse = await fetch(testUrl, {
             headers: {
               'User-Agent': DEFAULT_USER_AGENT,
@@ -218,6 +221,7 @@ async function getShortDramaCategoriesInternal() {
           if (testResponse.ok) {
             const testData = await testResponse.json();
             const itemCount = testData.list?.length || testData.total || 0;
+            console.log(`  📊 分类 ${cat.type_name}: itemCount=${itemCount}`);
 
             // 只保留有内容的分类
             if (itemCount > 0) {
