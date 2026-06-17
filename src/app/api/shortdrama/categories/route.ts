@@ -198,7 +198,39 @@ async function getShortDramaCategoriesInternal() {
           allCategories.map((cat) => [`${cat.type_id}_${cat.type_name}`, cat]),
         ).values(),
       );
-      return uniqueCategories;
+
+      // 过滤掉空分类（检查每个分类是否有内容）
+      const categoriesWithContent: { type_id: number; type_name: string }[] =
+        [];
+      const defaultApi = shortDramaSources[0]?.api || DEFAULT_SHORT_DRAMA_API;
+
+      for (const cat of uniqueCategories) {
+        try {
+          const testUrl = `${defaultApi}?ac=detail&t=${cat.type_id}&pg=1`;
+          const testResponse = await fetch(testUrl, {
+            headers: {
+              'User-Agent': DEFAULT_USER_AGENT,
+              Accept: 'application/json',
+            },
+            signal: AbortSignal.timeout(5000),
+          });
+
+          if (testResponse.ok) {
+            const testData = await testResponse.json();
+            const itemCount = testData.list?.length || testData.total || 0;
+
+            // 只保留有内容的分类
+            if (itemCount > 0) {
+              categoriesWithContent.push(cat);
+            }
+          }
+        } catch {
+          // 如果检查失败，仍然保留该分类
+          categoriesWithContent.push(cat);
+        }
+      }
+
+      return categoriesWithContent;
     }
 
     // 从采集源中查找短剧分类

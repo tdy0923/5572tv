@@ -6,7 +6,6 @@ import type {
   MangaChapter,
   MangaChapterPages,
   MangaDetail,
-  MangaPage,
   MangaSearchResult,
 } from './types';
 
@@ -217,8 +216,10 @@ export async function getMangaBzDetail(
 export async function getMangaBzChapterPages(
   chapterUrl: string,
 ): Promise<MangaChapterPages | null> {
+  // MangaBZ uses heavy JavaScript anti-scraping for chapter pages
+  // Return the chapter URL and let the browser handle it
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
 
   try {
     const response = await fetch(chapterUrl, {
@@ -236,57 +237,18 @@ export async function getMangaBzChapterPages(
 
     const title = $('h1, .chapter-title, .reader-title').first().text().trim();
 
-    const pages: MangaPage[] = [];
-
-    const imgSelector = [
-      '.manga-read img.manga-img',
-      '#manga img',
-      '.reader-img img',
-      '.comic-img img',
-      '.manga img[data-src]',
-      '.chapter-content img',
-      '#viewer img',
-      '.reading img',
-    ].join(', ');
-
-    $(imgSelector).each((index, el) => {
-      const $img = $(el);
-      const src = $img.attr('src') || $img.attr('data-src') || '';
-      if (src && !src.includes('logo') && !src.includes('icon')) {
-        pages.push({
-          url: src.startsWith('http') ? src : 'https:' + src,
-          index,
-        });
-      }
-    });
-
-    let prevChapterId: string | null = null;
-    let nextChapterId: string | null = null;
-
-    const prevLink = $(
-      'a:contains("上一话"), a:contains("上一章"), .prev a, a.prev',
-    ).first();
-    const nextLink = $(
-      'a:contains("下一话"), a:contains("下一章"), .next a, a.next',
-    ).first();
-
-    if (prevLink.length) {
-      const prevHref = prevLink.attr('href') || '';
-      prevChapterId = prevHref || null;
-    }
-    if (nextLink.length) {
-      const nextHref = nextLink.attr('href') || '';
-      nextChapterId = nextHref || null;
-    }
-
+    // MangaBZ loads images via JavaScript anti-scraping
+    // Return the chapter URL for browser-side rendering
     return {
       chapterId: chapterUrl,
-      title,
-      pages,
-      prevChapterId,
-      nextChapterId,
+      title: title || '未知章节',
+      pages: [], // Empty - images loaded via JavaScript
+      prevChapterId: null,
+      nextChapterId: null,
       source: SOURCE_KEY,
-    };
+      // Add the chapter URL for browser-side rendering
+      chapterUrl: chapterUrl,
+    } as MangaChapterPages & { chapterUrl: string };
   } catch {
     clearTimeout(timeoutId);
     return null;
