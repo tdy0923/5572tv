@@ -42,9 +42,15 @@ export default function UserConfig({
   const [newGroupName, setNewGroupName] = useState('');
   const [editGroupName, setEditGroupName] = useState('');
   const [users, setUsers] = useState<any[]>([]);
+  const [sources, setSources] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditUserRolesModal, setShowEditUserRolesModal] = useState(false);
   const [editingUserTagUsers, setEditingUserTagUsers] = useState<string[]>([]);
+  const [editingGroupApis, setEditingGroupApis] = useState<string[]>([]);
+  const [editingGroupAdultContent, setEditingGroupAdultContent] =
+    useState(false);
+  const [editTab, setEditTab] = useState<'members' | 'permissions'>('members');
+  const [memberSearch, setMemberSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
 
   const userGroups = config?.UserConfig?.Tags || [];
@@ -52,6 +58,7 @@ export default function UserConfig({
   useEffect(() => {
     requestAnimationFrame(() => {
       if (config?.UserConfig?.Users) setUsers(config.UserConfig.Users);
+      if (config?.SourceConfig) setSources(config.SourceConfig);
     });
   }, [config]);
 
@@ -168,9 +175,37 @@ export default function UserConfig({
 
   const openEditGroup = (groupName: string) => {
     setEditGroupName(groupName);
+    setEditTab('members');
+    setMemberSearch('');
+
+    // Load group's current permissions
+    const group = userGroups.find((t: any) => (t.name || t) === groupName);
+    if (group) {
+      setEditingGroupApis(group.enabledApis || []);
+      setEditingGroupAdultContent(group.showAdultContent || false);
+    } else {
+      setEditingGroupApis([]);
+      setEditingGroupAdultContent(false);
+    }
+
+    // Load group's current members
     setEditingUserTagUsers([]);
     setShowEditUserRolesModal(true);
   };
+
+  const toggleGroupApi = (apiKey: string) => {
+    setEditingGroupApis((prev) =>
+      prev.includes(apiKey)
+        ? prev.filter((k) => k !== apiKey)
+        : [...prev, apiKey],
+    );
+  };
+
+  const filteredMembers = users.filter(
+    (u: any) =>
+      !memberSearch ||
+      u.username.toLowerCase().includes(memberSearch.toLowerCase()),
+  );
 
   const toggleUserTag = (username: string) => {
     setEditingUserTagUsers((prev) =>
@@ -183,10 +218,12 @@ export default function UserConfig({
   const handleEditGroup = async () => {
     await withLoading('editGroup', async () => {
       try {
+        // Save group permissions (enabledApis and showAdultContent)
         await callApi({
           action: 'update_tag',
           name: editGroupName,
-          users: editingUserTagUsers,
+          enabledApis: editingGroupApis,
+          showAdultContent: editingGroupAdultContent,
         });
         showSuccess('分组更新成功', showAlert);
         setShowEditUserRolesModal(false);
@@ -549,51 +586,179 @@ export default function UserConfig({
         </div>
       )}
 
-      {/* 编辑分组用户弹窗 */}
+      {/* 编辑分组弹窗 - 全屏大窗口 */}
       {showEditUserRolesModal && (
-        <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
-          <div className='bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 max-h-[80vh] overflow-y-auto shadow-2xl'>
-            <h3 className='text-lg font-semibold mb-1'>
-              编辑分组: {editGroupName}
-            </h3>
-            <p className='text-sm text-gray-500 dark:text-gray-400 mb-4'>
-              选择属于此分组的用户
-            </p>
-            <div className='space-y-1 max-h-[50vh] overflow-y-auto'>
-              {users.map((u: any) => (
-                <label
-                  key={u.username}
-                  className='flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors'
-                >
-                  <input
-                    type='checkbox'
-                    checked={editingUserTagUsers.includes(u.username)}
-                    onChange={() => toggleUserTag(u.username)}
-                    className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500'
-                  />
-                  <div className='flex-1'>
-                    <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                      {u.username}
-                    </span>
-                    <span
-                      className={`ml-2 text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
-                    >
-                      {getRoleLabel(u.role)}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <div className='flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700'>
+        <div className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2 sm:p-4'>
+          <div className='bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col shadow-2xl overflow-hidden'>
+            {/* 头部 */}
+            <div className='px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0'>
+              <div>
+                <h3 className='text-lg font-semibold'>
+                  🏷️ 编辑分组: {editGroupName}
+                </h3>
+                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                  管理此分组的成员和权限
+                </p>
+              </div>
               <button
                 onClick={() => setShowEditUserRolesModal(false)}
-                className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
+                className='p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-lg'
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Tab 切换 */}
+            <div className='px-6 pt-3 flex gap-1 shrink-0'>
+              <button
+                onClick={() => setEditTab('members')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  editTab === 'members'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                👥 成员管理 ({editingUserTagUsers.length})
+              </button>
+              <button
+                onClick={() => setEditTab('permissions')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  editTab === 'permissions'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                🔐 权限设置
+              </button>
+            </div>
+
+            {/* 内容区域 */}
+            <div className='flex-1 overflow-y-auto px-6 py-4'>
+              {/* 成员管理 Tab */}
+              {editTab === 'members' && (
+                <div>
+                  <div className='mb-3'>
+                    <input
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      placeholder='🔍 搜索用户...'
+                      className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-green-500'
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    {filteredMembers.map((u: any) => (
+                      <label
+                        key={u.username}
+                        className='flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors'
+                      >
+                        <input
+                          type='checkbox'
+                          checked={editingUserTagUsers.includes(u.username)}
+                          onChange={() => toggleUserTag(u.username)}
+                          className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500'
+                        />
+                        <div className='w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0'>
+                          {u.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div className='flex-1 min-w-0'>
+                          <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                            {u.username}
+                          </span>
+                        </div>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
+                        >
+                          {getRoleLabel(u.role)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 权限设置 Tab */}
+              {editTab === 'permissions' && (
+                <div className='space-y-6'>
+                  {/* 成人内容权限 */}
+                  <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
+                    <h4 className='text-sm font-semibold text-gray-900 dark:text-white mb-3'>
+                      🔞 成人内容
+                    </h4>
+                    <label className='flex items-center gap-3 cursor-pointer'>
+                      <input
+                        type='checkbox'
+                        checked={editingGroupAdultContent}
+                        onChange={(e) =>
+                          setEditingGroupAdultContent(e.target.checked)
+                        }
+                        className='w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500'
+                      />
+                      <div>
+                        <div className='text-sm font-medium text-gray-900 dark:text-white'>
+                          允许查看成人内容
+                        </div>
+                        <div className='text-xs text-gray-500 dark:text-gray-400'>
+                          开启后此分组的用户可以查看成人影片
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* 源权限 */}
+                  <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
+                    <div className='flex items-center justify-between mb-3'>
+                      <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+                        📺 视频源权限
+                      </h4>
+                      <span className='text-xs text-gray-500 dark:text-gray-400'>
+                        {editingGroupApis.length === 0
+                          ? '全部源'
+                          : `已选 ${editingGroupApis.length} 个源`}
+                      </span>
+                    </div>
+                    <p className='text-xs text-gray-500 dark:text-gray-400 mb-3'>
+                      不勾选任何源 = 可以访问全部源。勾选特定源 =
+                      仅可访问勾选的源。
+                    </p>
+                    <div className='max-h-[40vh] overflow-y-auto space-y-1'>
+                      {sources.map((s) => (
+                        <label
+                          key={s.key}
+                          className='flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors'
+                        >
+                          <input
+                            type='checkbox'
+                            checked={editingGroupApis.includes(s.key)}
+                            onChange={() => toggleGroupApi(s.key)}
+                            className='w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500'
+                          />
+                          <span className='text-sm text-gray-900 dark:text-white'>
+                            {s.name}
+                          </span>
+                          {s.is_adult && (
+                            <span className='text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'>
+                              成人
+                            </span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 底部按钮 */}
+            <div className='px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 shrink-0'>
+              <button
+                onClick={() => setShowEditUserRolesModal(false)}
+                className='px-5 py-2.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
               >
                 取消
               </button>
               <button
                 onClick={handleEditGroup}
-                className='px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors'
+                className='px-5 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors'
               >
                 💾 保存
               </button>
