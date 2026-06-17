@@ -266,11 +266,29 @@ export default function MangaReaderPage() {
         <div className='flex flex-col items-center justify-center py-20'>
           <BookOpen className='w-16 h-16 text-gray-300 dark:text-gray-600' />
           <h3 className='mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300'>
-            未找到章节内容
+            章节内容需要在源站查看
           </h3>
-          <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
-            请尝试其他章节或返回搜索
+          <p className='mt-2 text-sm text-gray-500 dark:text-gray-400 text-center max-w-md'>
+            由于源站反爬机制，此章节的图片无法直接加载。
+            <br />
+            请点击下方按钮在源站阅读。
           </p>
+          {chapterUrlDirect && (
+            <a
+              href={chapterUrlDirect}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='mt-4 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium'
+            >
+              在源站阅读
+            </a>
+          )}
+          <Link
+            href={`/manga/${encodeURIComponent(searchParams.get('id') || '')}?source=${source}`}
+            className='mt-3 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+          >
+            返回章节列表
+          </Link>
         </div>
       </PageLayout>
     );
