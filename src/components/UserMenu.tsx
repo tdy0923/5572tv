@@ -169,9 +169,13 @@ export const UserMenu: React.FC = () => {
   const { data: updateStatus = null, isLoading: isChecking } =
     useVersionCheckQuery();
 
-  // 数据查询条件
-  const dataQueryEnabled =
-    typeof window !== 'undefined' && !!authInfo?.username;
+  // 数据查询条件 - 使用 useState 避免 hydration 问题
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const dataQueryEnabled = isClient && !!authInfo?.username;
 
   // 🚀 TanStack Query - 播放记录
   const { data: playRecords = [] } = usePlayRecordsQuery({
