@@ -254,7 +254,49 @@ async function getShortDramaCategoriesInternal() {
       return uniqueSourceCategories;
     }
 
-    console.log('⚠️ 所有配置的短剧源都未返回分类，回退到默认源');
+    console.log('⚠️ 所有配置的短剧源都未返回分类，检查普通源...');
+  }
+
+  // 检查普通源是否有短剧分类
+  const regularSources = config.SourceConfig.filter(
+    (source: any) => !source.disabled && source.type !== 'shortdrama',
+  );
+
+  const regularCategories: { type_id: number; type_name: string }[] = [];
+  for (const source of regularSources.slice(0, 5)) {
+    try {
+      const response = await fetch(`${source.api}?ac=list`, {
+        headers: {
+          'User-Agent': DEFAULT_USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) continue;
+      const data = await response.json();
+      const classes = data.class || [];
+      const shortDramaClasses = classes.filter(
+        (c: any) =>
+          c.type_name &&
+          (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
+      );
+      for (const c of shortDramaClasses) {
+        regularCategories.push({ type_id: c.type_id, type_name: c.type_name });
+      }
+    } catch {
+      // skip failed sources
+    }
+  }
+
+  if (regularCategories.length > 0) {
+    console.log(`📋 从普通源找到 ${regularCategories.length} 个短剧分类`);
+    // 去重
+    const uniqueRegularCategories = Array.from(
+      new Map(
+        regularCategories.map((c) => [`${c.type_id}_${c.type_name}`, c]),
+      ).values(),
+    );
+    return uniqueRegularCategories;
   }
 
   // 没有配置短剧源或全部失败，使用默认源
