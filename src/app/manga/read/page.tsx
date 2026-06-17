@@ -105,6 +105,15 @@ export default function MangaReaderPage() {
 
   const pages = chapterData?.pages || [];
   const totalPages = pages.length;
+  const chapterUrlDirect = chapterData?.chapterUrl || '';
+
+  // If no pages but we have a chapter URL, redirect to source
+  useEffect(() => {
+    if (chapterUrl && totalPages === 0 && chapterUrlDirect && !isLoading) {
+      // Open source URL in new tab for reading
+      window.open(chapterUrlDirect, '_blank');
+    }
+  }, [chapterUrl, totalPages, chapterUrlDirect, isLoading]);
 
   // Load saved reading progress
   useEffect(() => {

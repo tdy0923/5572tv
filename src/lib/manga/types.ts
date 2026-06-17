@@ -42,4 +42,5 @@ export interface MangaChapterPages {
   prevChapterId: string | null;
   nextChapterId: string | null;
   source: string;
+  chapterUrl?: string;
 }
