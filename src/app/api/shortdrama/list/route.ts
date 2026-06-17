@@ -244,28 +244,27 @@ async function getShortDramaListInternal(
     }
 
     console.log(
-      `📺 列表API: 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源`,
+      `📺 列表API: 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源, categoryId=${category}`,
     );
 
     // 如果没有找到有短剧内容的源，使用默认源
     if (sourcesWithShortDrama.length === 0) {
-      return await fetchListFromSource(
+      // 使用请求的category作为分类ID
+      return await fetchListFromCategory(
         'https://tyyszy.com/api.php/provide/vod',
+        category,
         page,
         size,
       );
     }
 
-    // 聚合所有源的数据
+    // 聚合所有源的数据 - 使用请求的category作为分类ID
     const results = await Promise.allSettled(
       sourcesWithShortDrama.map((source) => {
-        if (source.categoryId > 0) {
-          return fetchListFromCategory(
-            source.api,
-            source.categoryId,
-            page,
-            size,
-          );
+        // 使用请求的category参数作为分类ID
+        const catId = category || source.categoryId;
+        if (catId > 0) {
+          return fetchListFromCategory(source.api, catId, page, size);
         }
         return fetchListFromSource(source.api, page, size);
       }),
