@@ -109,21 +109,99 @@ function MangaSearchContent() {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State - Show Popular Manga */}
         {!trimmedQuery && !isLoading && (
-          <div className='flex flex-col items-center justify-center py-20'>
-            <div className='relative'>
-              <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-800 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                <BookOpen className='w-12 h-12 text-gray-400 dark:text-gray-500' />
+          <div>
+            {/* Popular Manga Section */}
+            <div className='mb-8'>
+              <h2 className='text-lg font-bold text-gray-900 dark:text-white mb-4'>
+                热门漫画
+              </h2>
+              <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                {[
+                  {
+                    id: '139',
+                    title: '海贼王',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/1/139/20191203153434_180x240_26.jpg',
+                  },
+                  {
+                    id: '1',
+                    title: '一拳超人',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/1/1/20190228151547_180x240_46.jpg',
+                  },
+                  {
+                    id: '2',
+                    title: '鬼灭之刃',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/2/2/20190304183026_180x240_25.jpg',
+                  },
+                  {
+                    id: '3',
+                    title: '咒术回战',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/3/3/20190304183422_180x240_96.jpg',
+                  },
+                  {
+                    id: '4',
+                    title: '进击的巨人',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/4/4/20190228150959_180x240_68.jpg',
+                  },
+                  {
+                    id: '5',
+                    title: '我的英雄学院',
+                    source: 'mangabz',
+                    cover:
+                      'https://cover.mangabz.com/5/5/20190228151803_180x240_13.jpg',
+                  },
+                ].map((manga) => (
+                  <Link
+                    key={manga.id}
+                    href={`/manga/${manga.id}?source=${manga.source}`}
+                    className='group'
+                  >
+                    <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-gray-100 dark:border-gray-800'>
+                      <div className='aspect-[3/4] relative overflow-hidden bg-gray-100 dark:bg-gray-800'>
+                        <img
+                          src={`/api/image-proxy?url=${encodeURIComponent(manga.cover)}`}
+                          alt={manga.title}
+                          className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+                          loading='lazy'
+                        />
+                      </div>
+                      <div className='p-3'>
+                        <h3 className='text-sm font-semibold text-gray-900 dark:text-white line-clamp-1'>
+                          {manga.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <div className='absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping' />
             </div>
-            <h3 className='mt-6 text-xl font-bold text-gray-800 dark:text-gray-200'>
-              搜索你喜爱的漫画
-            </h3>
-            <p className='mt-2 text-sm text-gray-600 dark:text-gray-400 max-w-xs text-center'>
-              支持 MangaBZ、Manga123 等多个漫画源
-            </p>
+
+            {/* Search Prompt */}
+            <div className='flex flex-col items-center justify-center py-10'>
+              <div className='relative'>
+                <div className='w-20 h-20 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-800 dark:to-slate-700 flex items-center justify-center shadow-lg'>
+                  <BookOpen className='w-10 h-10 text-gray-400 dark:text-gray-500' />
+                </div>
+                <div className='absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping' />
+              </div>
+              <h3 className='mt-4 text-lg font-bold text-gray-800 dark:text-gray-200'>
+                搜索更多漫画
+              </h3>
+              <p className='mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-xs text-center'>
+                支持 MangaBZ 等多个漫画源
+              </p>
+            </div>
           </div>
         )}
 

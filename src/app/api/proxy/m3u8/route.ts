@@ -61,10 +61,46 @@ export async function GET(request: Request) {
 
   const ua = await getSourceUserAgent(source);
 
+  // 已知封锁服务器IP的CDN列表 - 直接返回原始URL
+  const BLOCKED_CDNS = [
+    'cdnlz29.com',
+    'bfllvip.com',
+    'hhuus.com',
+    'xluuss.com',
+    'gsuus.com',
+    'ppqrrs.com',
+    'bfvvs.com',
+    'huyall.com',
+    'maowushi.com',
+    'oag7h.com',
+    'zuidazym3u8.com',
+    'ffzy-online4.com',
+    'feifei-online.com',
+    'power34play.vip',
+  ];
+
+  // 检查是否为已知被封锁的CDN
+  try {
+    const checkUrl = new URL(decodedUrl);
+    const isBlocked = BLOCKED_CDNS.some((cdn) =>
+      checkUrl.hostname.includes(cdn),
+    );
+    if (isBlocked) {
+      // 直接返回原始URL，让浏览器直接访问
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: decodedUrl,
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+  } catch {}
+
   let response: Response | null = null;
   let responseUsed = false;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时（减少超时时间）
 
   try {
     // 选择合适的 agent

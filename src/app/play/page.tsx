@@ -1921,14 +1921,15 @@ function PlayPageClient() {
         !newUrl.includes(window.location.host) &&
         !isEmbySource
       ) {
+        // 尝试通过代理播放，如果代理失败则使用原始URL
         const proxiedUrl = new URL('/api/proxy/m3u8', window.location.origin);
         proxiedUrl.searchParams.set('url', newUrl);
         proxiedUrl.searchParams.set('allowCORS', 'false');
         if (detailData.source) {
           proxiedUrl.searchParams.set('5572tv-source', detailData.source);
         }
+        // 直接使用代理URL，让播放器处理错误
         newUrl = proxiedUrl.toString();
-        // // console.log(`🔄 通过代理播放 m3u8: ${newUrl}`);
       }
 
       if (newUrl !== videoUrl) {
