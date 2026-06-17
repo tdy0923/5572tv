@@ -189,58 +189,14 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
       categoryId: number;
     }> = [];
 
-    // 并发检查前20个普通源是否有短剧分类（减少检查数量以提高速度）
-    const sourcesToCheck = regularSources.slice(0, 20);
-    const batchSize = 10;
-    for (let i = 0; i < sourcesToCheck.length; i += batchSize) {
-      const batch = sourcesToCheck.slice(i, i + batchSize);
-      const results = await Promise.allSettled(
-        batch.map(async (source: any) => {
-          try {
-            const response = await fetch(`${source.api}?ac=list`, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0',
-                Accept: 'application/json',
-              },
-              signal: AbortSignal.timeout(3000),
-            });
-            if (!response.ok) return null;
-            const data = await response.json();
-            const classes = data.class || [];
-            const shortDramaClass = classes.find(
-              (c: any) =>
-                c.type_name &&
-                (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
-            );
-            if (shortDramaClass) {
-              return {
-                api: source.api,
-                name: source.name,
-                categoryId: shortDramaClass.type_id,
-              };
-            }
-            return null;
-          } catch {
-            return null;
-          }
-        }),
-      );
+    // 只使用tyyszy.com作为默认源（确保ID与parse API兼容）
+    sourcesWithShortDrama.push({
+      api: 'https://tyyszy.com/api.php/provide/vod',
+      name: 'tyyszy',
+      categoryId: 0,
+    });
 
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) {
-          sourcesWithShortDrama.push(result.value);
-        }
-      }
-    }
-
-    // 添加配置的短剧源
-    for (const source of shortDramaSources) {
-      sourcesWithShortDrama.push({
-        api: source.api,
-        name: source.name,
-        categoryId: 0, // will fetch all from this source
-      });
-    }
+    console.log(`📺 使用默认短剧源: tyyszy.com`);
 
     console.log(`📺 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源`);
 
