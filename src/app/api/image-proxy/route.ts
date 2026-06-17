@@ -59,10 +59,21 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: `Upstream error: ${response.status}` },
-        { status: response.status },
-      );
+      // Return a 1x1 transparent pixel for failed images instead of error
+      const pixel = new Uint8Array([
+        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00,
+        0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
+        0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+        0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b,
+      ]);
+      return new NextResponse(pixel, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/gif',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=300, s-maxage=300',
+        },
+      });
     }
 
     const contentType = response.headers.get('Content-Type') || 'image/jpeg';
@@ -89,6 +100,20 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Image proxy error:', error);
-    return NextResponse.json({ error: 'Proxy failed' }, { status: 500 });
+    // Return a 1x1 transparent pixel instead of 500
+    const pixel = new Uint8Array([
+      0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00,
+      0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
+      0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+      0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b,
+    ]);
+    return new NextResponse(pixel, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/gif',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=60, s-maxage=60',
+      },
+    });
   }
 }
