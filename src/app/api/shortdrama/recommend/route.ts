@@ -189,30 +189,46 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
       categoryId: number;
     }> = [];
 
-    // 先检查普通源是否有短剧分类
-    for (const source of regularSources.slice(0, 10)) {
-      try {
-        const response = await fetch(`${source.api}?ac=list`, {
-          headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (!response.ok) continue;
-        const data = await response.json();
-        const classes = data.class || [];
-        const shortDramaClass = classes.find(
-          (c: any) =>
-            c.type_name &&
-            (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
-        );
-        if (shortDramaClass) {
-          sourcesWithShortDrama.push({
-            api: source.api,
-            name: source.name,
-            categoryId: shortDramaClass.type_id,
-          });
+    // 并发检查所有普通源是否有短剧分类
+    const batchSize = 10;
+    for (let i = 0; i < regularSources.length; i += batchSize) {
+      const batch = regularSources.slice(i, i + batchSize);
+      const results = await Promise.allSettled(
+        batch.map(async (source: any) => {
+          try {
+            const response = await fetch(`${source.api}?ac=list`, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0',
+                Accept: 'application/json',
+              },
+              signal: AbortSignal.timeout(5000),
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            const classes = data.class || [];
+            const shortDramaClass = classes.find(
+              (c: any) =>
+                c.type_name &&
+                (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
+            );
+            if (shortDramaClass) {
+              return {
+                api: source.api,
+                name: source.name,
+                categoryId: shortDramaClass.type_id,
+              };
+            }
+            return null;
+          } catch {
+            return null;
+          }
+        }),
+      );
+
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value) {
+          sourcesWithShortDrama.push(result.value);
         }
-      } catch {
-        // skip failed sources
       }
     }
 
