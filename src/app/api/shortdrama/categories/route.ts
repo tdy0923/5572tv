@@ -259,7 +259,39 @@ async function getShortDramaCategoriesInternal() {
 
   // 没有配置短剧源或全部失败，使用默认源
   console.log(`📋 [CATEGORIES] 使用默认短剧源: ${DEFAULT_SHORT_DRAMA_API}`);
-  return await getCategoriesFromSource(DEFAULT_SHORT_DRAMA_API);
+  const defaultCategories = await getCategoriesFromSource(
+    DEFAULT_SHORT_DRAMA_API,
+  );
+
+  // 过滤掉空分类
+  const categoriesWithContent: { type_id: number; type_name: string }[] = [];
+  for (const cat of defaultCategories) {
+    try {
+      const testUrl = `${DEFAULT_SHORT_DRAMA_API}?ac=detail&t=${cat.type_id}&pg=1`;
+      console.log(`  🔍 检查分类 ${cat.type_name}(ID:${cat.type_id})`);
+      const testResponse = await fetch(testUrl, {
+        headers: {
+          'User-Agent': DEFAULT_USER_AGENT,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (testResponse.ok) {
+        const testData = await testResponse.json();
+        const itemCount = testData.list?.length || testData.total || 0;
+        console.log(`  📊 分类 ${cat.type_name}: itemCount=${itemCount}`);
+
+        if (itemCount > 0) {
+          categoriesWithContent.push(cat);
+        }
+      }
+    } catch {
+      categoriesWithContent.push(cat);
+    }
+  }
+
+  return categoriesWithContent;
 }
 
 export async function GET() {
