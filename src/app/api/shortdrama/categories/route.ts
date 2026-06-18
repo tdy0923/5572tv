@@ -329,7 +329,7 @@ async function getShortDramaCategoriesInternal() {
     DEFAULT_SHORT_DRAMA_API,
   );
 
-  // 过滤掉空分类
+  // 检查每个分类是否有内容，过滤掉空分类
   const categoriesWithContent: { type_id: number; type_name: string }[] = [];
   for (const cat of defaultCategories) {
     try {
