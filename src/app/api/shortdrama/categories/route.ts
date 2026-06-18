@@ -351,13 +351,53 @@ async function getShortDramaCategoriesInternal() {
 
   // 没有配置短剧源或全部失败，使用默认源
   console.log(`📋 [CATEGORIES] 使用默认短剧源: ${DEFAULT_SHORT_DRAMA_API}`);
+
+  // 先获取默认源的所有分类
   const defaultCategories = await getCategoriesFromSource(
     DEFAULT_SHORT_DRAMA_API,
   );
 
-  // 检查每个分类是否有内容，过滤掉空分类
+  // 只保留短剧相关分类
+  const shortDramaKeywords = [
+    '短剧',
+    '女频恋爱',
+    '反转爽剧',
+    '古装仙侠',
+    '年代穿越',
+    '脑洞悬疑',
+    '现代都市',
+    '短篇',
+    '短集',
+    '擦边',
+    '甜宠',
+    '虐恋',
+    '穿越',
+    '重生',
+    '总裁',
+    '豪门',
+    '逆袭',
+    '复仇',
+    '宠妻',
+    '战神',
+    '神医',
+    '赘婿',
+    '霸总',
+    '甜剧',
+    '虐剧',
+    '爽剧',
+  ];
+
+  const shortDramaCategories = defaultCategories.filter((cat: any) =>
+    shortDramaKeywords.some(
+      (kw) => cat.type_name && cat.type_name.includes(kw),
+    ),
+  );
+
+  console.log(`📋 短剧相关分类: ${shortDramaCategories.length} 个`);
+
+  // 检查每个分类是否有内容
   const categoriesWithContent: { type_id: number; type_name: string }[] = [];
-  for (const cat of defaultCategories) {
+  for (const cat of shortDramaCategories) {
     try {
       const testUrl = `${DEFAULT_SHORT_DRAMA_API}?ac=detail&t=${cat.type_id}&pg=1`;
       console.log(`  🔍 检查分类 ${cat.type_name}(ID:${cat.type_id})`);
