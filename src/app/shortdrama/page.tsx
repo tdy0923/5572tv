@@ -535,6 +535,18 @@ export default function ShortDramaPage() {
             </div>
           )}
 
+          {/* 加载更多按钮 */}
+          {hasMore && !loading && sortedDramas.length > 0 && (
+            <div className='flex justify-center mt-8'>
+              <button
+                onClick={() => setPage((prevPage) => prevPage + 1)}
+                className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
+              >
+                加载更多
+              </button>
+            </div>
+          )}
+
           {/* 加载状态 - 只在首次加载或加载更多时显示骨架屏 */}
           {loading && (isInitialLoad || page > 1) && (
             <div className='mt-8'>
