@@ -26,13 +26,21 @@ export default function UserConfig({
 }: UserConfigProps) {
   const { showAlert } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
+  const [users, setUsers] = useState<any[]>([]);
+  const [sources, setSources] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
-  const [showAddUserGroupForm, setShowAddUserGroupForm] = useState(false);
+  const [showEditGroupModal, setShowEditGroupModal] = useState(false);
+  const [editGroupName, setEditGroupName] = useState('');
+  const [editingGroupApis, setEditingGroupApis] = useState<string[]>([]);
+  const [editingGroupAdultContent, setEditingGroupAdultContent] =
+    useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
-    role: 'user' as string,
+    role: 'user',
     tags: [] as string[],
   });
   const [changePassword, setChangePassword] = useState({
@@ -40,26 +48,12 @@ export default function UserConfig({
     newPassword: '',
   });
   const [newGroupName, setNewGroupName] = useState('');
-  const [editGroupName, setEditGroupName] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
-  const [sources, setSources] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showEditUserRolesModal, setShowEditUserRolesModal] = useState(false);
-  const [editingUserTagUsers, setEditingUserTagUsers] = useState<string[]>([]);
-  const [editingGroupApis, setEditingGroupApis] = useState<string[]>([]);
-  const [editingGroupAdultContent, setEditingGroupAdultContent] =
-    useState(false);
-  const [editTab, setEditTab] = useState<'members' | 'permissions'>('members');
-  const [memberSearch, setMemberSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   const userGroups = config?.UserConfig?.Tags || [];
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      if (config?.UserConfig?.Users) setUsers(config.UserConfig.Users);
-      if (config?.SourceConfig) setSources(config.SourceConfig);
-    });
+    // Sync state with config on config changes
   }, [config]);
 
   const reload = async () => {
@@ -86,13 +80,7 @@ export default function UserConfig({
     }
     await withLoading('addUser', async () => {
       try {
-        await callApi({
-          action: 'add',
-          username: newUser.username,
-          password: newUser.password,
-          role: newUser.role,
-          tags: newUser.tags,
-        });
+        await callApi({ action: 'add', ...newUser });
         showSuccess('用户添加成功', showAlert);
         setShowAddUserForm(false);
         setNewUser({ username: '', password: '', role: 'user', tags: [] });
@@ -110,11 +98,7 @@ export default function UserConfig({
     }
     await withLoading('changePassword', async () => {
       try {
-        await callApi({
-          action: 'change_password',
-          username: changePassword.username,
-          newPassword: changePassword.newPassword,
-        });
+        await callApi({ action: 'change_password', ...changePassword });
         showSuccess('密码修改成功', showAlert);
         setShowChangePasswordForm(false);
         setChangePassword({ username: '', newPassword: '' });
@@ -125,8 +109,7 @@ export default function UserConfig({
   };
 
   const handleDeleteUser = async (username: string) => {
-    if (!confirm(`确定要删除用户 "${username}" 吗？`)) return;
-
+    if (!confirm(`确定删除用户 "${username}"？`)) return;
     await withLoading('deleteUser', async () => {
       try {
         await callApi({ action: 'delete', username });
@@ -145,12 +128,8 @@ export default function UserConfig({
     }
     await withLoading('addGroup', async () => {
       try {
-        await callApi({
-          action: 'add_tag',
-          name: newGroupName.trim(),
-        });
+        await callApi({ action: 'add_tag', name: newGroupName.trim() });
         showSuccess('分组添加成功', showAlert);
-        setShowAddUserGroupForm(false);
         setNewGroupName('');
         await reload();
       } catch (err) {
@@ -159,12 +138,11 @@ export default function UserConfig({
     });
   };
 
-  const handleDeleteGroup = async (groupName: string) => {
-    if (!confirm(`确定要删除分组 "${groupName}" 吗？`)) return;
-
+  const handleDeleteGroup = async (name: string) => {
+    if (!confirm(`确定删除分组 "${name}"？`)) return;
     await withLoading('deleteGroup', async () => {
       try {
-        await callApi({ action: 'delete_tag', name: groupName });
+        await callApi({ action: 'delete_tag', name });
         showSuccess('分组已删除', showAlert);
         await reload();
       } catch (err) {
@@ -173,24 +151,29 @@ export default function UserConfig({
     });
   };
 
-  const openEditGroup = (groupName: string) => {
-    setEditGroupName(groupName);
-    setEditTab('members');
-    setMemberSearch('');
+  const openEditGroup = (group: any) => {
+    setEditGroupName(group.name || '');
+    setEditingGroupApis(group.enabledApis || []);
+    setEditingGroupAdultContent(group.showAdultContent || false);
+    setShowEditGroupModal(true);
+  };
 
-    // Load group's current permissions
-    const group = userGroups.find((t: any) => (t.name || t) === groupName);
-    if (group) {
-      setEditingGroupApis(group.enabledApis || []);
-      setEditingGroupAdultContent(group.showAdultContent || false);
-    } else {
-      setEditingGroupApis([]);
-      setEditingGroupAdultContent(false);
-    }
-
-    // Load group's current members
-    setEditingUserTagUsers([]);
-    setShowEditUserRolesModal(true);
+  const handleEditGroup = async () => {
+    await withLoading('editGroup', async () => {
+      try {
+        await callApi({
+          action: 'update_tag',
+          name: editGroupName,
+          enabledApis: editingGroupApis,
+          showAdultContent: editingGroupAdultContent,
+        });
+        showSuccess('分组更新成功', showAlert);
+        setShowEditGroupModal(false);
+        await reload();
+      } catch (err) {
+        showError((err as Error).message, showAlert);
+      }
+    });
   };
 
   const toggleGroupApi = (apiKey: string) => {
@@ -201,80 +184,11 @@ export default function UserConfig({
     );
   };
 
-  const filteredMembers = users.filter(
-    (u: any) =>
-      !memberSearch ||
-      u.username.toLowerCase().includes(memberSearch.toLowerCase()),
-  );
-
-  const toggleUserTag = (username: string) => {
-    setEditingUserTagUsers((prev) =>
-      prev.includes(username)
-        ? prev.filter((u) => u !== username)
-        : [...prev, username],
-    );
-  };
-
-  const handleEditGroup = async () => {
-    await withLoading('editGroup', async () => {
-      try {
-        // Save group permissions (enabledApis and showAdultContent)
-        await callApi({
-          action: 'update_tag',
-          name: editGroupName,
-          enabledApis: editingGroupApis,
-          showAdultContent: editingGroupAdultContent,
-        });
-
-        // Save member assignments - update each user's tags
-        for (const username of editingUserTagUsers) {
-          const user = users.find((u: any) => u.username === username);
-          if (user) {
-            const currentTags = user.tags || [];
-            const hasTag = currentTags.includes(editGroupName);
-
-            if (!hasTag) {
-              // Add tag to user
-              await callApi({
-                action: 'userGroup',
-                username,
-                userGroup: editGroupName,
-              });
-            }
-          }
-        }
-
-        // Remove tag from users not in the list
-        for (const user of users) {
-          if (!editingUserTagUsers.includes(user.username)) {
-            const currentTags = user.tags || [];
-            if (currentTags.includes(editGroupName)) {
-              await callApi({
-                action: 'userGroup',
-                username: user.username,
-                userGroup: '', // Empty string removes the tag
-              });
-            }
-          }
-        }
-
-        showSuccess('分组更新成功', showAlert);
-        setShowEditUserRolesModal(false);
-        await reload();
-      } catch (err) {
-        showError((err as Error).message, showAlert);
-      }
-    });
-  };
-
   const filteredUsers = users.filter(
     (u: any) =>
       !searchTerm ||
       u.username.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-
-  const inp =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors';
 
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -299,60 +213,52 @@ export default function UserConfig({
   };
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4'>
       {/* Tab 切换 */}
       <div className='flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg'>
         <button
           onClick={() => setActiveTab('users')}
-          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'users'
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'users' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
         >
-          👥 用户管理 ({users.length})
+          👥 用户 ({users.length})
         </button>
         <button
           onClick={() => setActiveTab('groups')}
-          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
-            activeTab === 'groups'
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+          className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'groups' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
         >
-          🏷️ 用户分组 ({userGroups.length})
+          🏷️ 分组 ({userGroups.length})
         </button>
       </div>
 
       {/* 用户管理 */}
       {activeTab === 'users' && (
         <div className='space-y-4'>
-          {/* 操作按钮 */}
-          <div className='flex items-center justify-between'>
-            <div className='relative flex-1 max-w-xs'>
+          {/* 搜索 + 操作 */}
+          <div className='flex flex-col sm:flex-row gap-3'>
+            <div className='relative flex-1'>
               <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='🔍 搜索用户...'
-                className={`${inp} pl-10`}
+                placeholder='🔍 搜索用户名...'
+                className='w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-green-500'
               />
-              <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                <span className='text-gray-400 text-sm'>🔍</span>
-              </div>
+              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
+                🔍
+              </span>
             </div>
             {role === 'owner' && (
               <div className='flex gap-2'>
                 <button
                   onClick={() => setShowAddUserForm(true)}
-                  className='px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors'
+                  className='px-4 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600'
                 >
-                  + 添加用户
+                  + 添加
                 </button>
                 <button
                   onClick={() => setShowChangePasswordForm(true)}
-                  className='px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors'
+                  className='px-4 py-2.5 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600'
                 >
-                  🔑 修改密码
+                  🔑 改密
                 </button>
               </div>
             )}
@@ -371,7 +277,7 @@ export default function UserConfig({
                     setNewUser({ ...newUser, username: e.target.value })
                   }
                   placeholder='用户名'
-                  className={inp}
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
                 />
                 <input
                   type='password'
@@ -380,14 +286,14 @@ export default function UserConfig({
                     setNewUser({ ...newUser, password: e.target.value })
                   }
                   placeholder='密码'
-                  className={inp}
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
                 />
                 <select
                   value={newUser.role}
                   onChange={(e) =>
                     setNewUser({ ...newUser, role: e.target.value })
                   }
-                  className={inp}
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
                 >
                   <option value='user'>普通用户</option>
                   <option value='admin'>管理员</option>
@@ -397,13 +303,13 @@ export default function UserConfig({
               <div className='flex gap-2'>
                 <button
                   onClick={handleAddUser}
-                  className='px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors'
+                  className='px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600'
                 >
-                  ✅ 确认添加
+                  ✅ 确认
                 </button>
                 <button
                   onClick={() => setShowAddUserForm(false)}
-                  className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
+                  className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm'
                 >
                   取消
                 </button>
@@ -415,7 +321,7 @@ export default function UserConfig({
           {showChangePasswordForm && (
             <div className='p-4 border rounded-xl bg-yellow-50 dark:bg-yellow-900/20 space-y-3'>
               <h4 className='text-sm font-semibold text-yellow-700 dark:text-yellow-400'>
-                修改用户密码
+                修改密码
               </h4>
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
                 <select
@@ -426,7 +332,7 @@ export default function UserConfig({
                       username: e.target.value,
                     })
                   }
-                  className={inp}
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
                 >
                   <option value=''>选择用户</option>
                   {users.map((u: any) => (
@@ -445,19 +351,19 @@ export default function UserConfig({
                     })
                   }
                   placeholder='新密码'
-                  className={inp}
+                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
                 />
               </div>
               <div className='flex gap-2'>
                 <button
                   onClick={handleChangePassword}
-                  className='px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors'
+                  className='px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium hover:bg-yellow-600'
                 >
-                  🔑 确认修改
+                  🔑 确认
                 </button>
                 <button
                   onClick={() => setShowChangePasswordForm(false)}
-                  className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
+                  className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm'
                 >
                   取消
                 </button>
@@ -466,332 +372,188 @@ export default function UserConfig({
           )}
 
           {/* 用户列表 */}
-          <div className='space-y-2'>
-            <div className='text-xs text-gray-500 dark:text-gray-400'>
-              共 {filteredUsers.length} 个用户
-              {searchTerm && ` (搜索: "${searchTerm}")`}
-            </div>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
-              {filteredUsers.map((u: any) => (
-                <div
-                  key={u.username}
-                  className='flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-md transition-shadow'
-                >
-                  <div className='w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm'>
-                    {u.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <div className='text-sm font-medium text-gray-900 dark:text-white truncate'>
-                      {u.username}
-                    </div>
-                    <div className='flex items-center gap-2 mt-1'>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
-                      >
-                        {getRoleLabel(u.role)}
-                      </span>
-                      {u.tags && u.tags.length > 0 && (
-                        <span className='text-xs text-gray-500 dark:text-gray-400 truncate'>
-                          {u.tags.join(', ')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {role === 'owner' && u.role !== 'owner' && (
-                    <button
-                      onClick={() => handleDeleteUser(u.username)}
-                      className='p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors'
-                      title='删除用户'
-                    >
-                      🗑️
-                    </button>
-                  )}
+          <div className='text-xs text-gray-500 dark:text-gray-400'>
+            共 {filteredUsers.length} 个用户
+          </div>
+          <div className='max-h-[50vh] overflow-y-auto space-y-2'>
+            {filteredUsers.map((u: any) => (
+              <div
+                key={u.username}
+                className='flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-md transition-shadow'
+              >
+                <div className='w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0'>
+                  {u.username.charAt(0).toUpperCase()}
                 </div>
-              ))}
-            </div>
+                <div className='flex-1 min-w-0'>
+                  <div className='text-sm font-medium text-gray-900 dark:text-white truncate'>
+                    {u.username}
+                  </div>
+                  <div className='flex items-center gap-2 mt-0.5'>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
+                    >
+                      {getRoleLabel(u.role)}
+                    </span>
+                    {u.tags && u.tags.length > 0 && (
+                      <span className='text-xs text-gray-500 dark:text-gray-400 truncate'>
+                        {u.tags.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {role === 'owner' && u.role !== 'owner' && (
+                  <button
+                    onClick={() => handleDeleteUser(u.username)}
+                    className='p-1.5 text-red-500 hover:text-red-700 rounded-lg'
+                    title='删除'
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* 用户分组管理 */}
+      {/* 分组管理 */}
       {activeTab === 'groups' && (
         <div className='space-y-4'>
-          {/* 操作按钮 */}
-          <div className='flex items-center justify-between'>
-            <div className='text-sm text-gray-500 dark:text-gray-400'>
-              管理用户分组，控制不同分组的权限
-            </div>
-            {role === 'owner' && (
-              <button
-                onClick={() => setShowAddUserGroupForm(true)}
-                className='px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors'
-              >
-                + 添加分组
-              </button>
-            )}
-          </div>
-
-          {/* 添加分组表单 */}
-          {showAddUserGroupForm && (
-            <div className='p-4 border rounded-xl bg-blue-50 dark:bg-blue-900/20 space-y-3'>
-              <h4 className='text-sm font-semibold text-blue-700 dark:text-blue-400'>
-                添加新分组
-              </h4>
+          {role === 'owner' && (
+            <div className='flex gap-2'>
               <input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
-                placeholder='分组名称'
-                className={inp}
+                placeholder='新分组名称'
+                className='flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
               />
-              <div className='flex gap-2'>
-                <button
-                  onClick={handleAddGroup}
-                  className='px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors'
-                >
-                  ✅ 确认添加
-                </button>
-                <button
-                  onClick={() => setShowAddUserGroupForm(false)}
-                  className='px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
-                >
-                  取消
-                </button>
-              </div>
+              <button
+                onClick={handleAddGroup}
+                className='px-4 py-2.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600'
+              >
+                + 添加
+              </button>
             </div>
           )}
 
-          {/* 分组列表 */}
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3'>
-            {userGroups.map((tag: any) => (
+          <div className='space-y-3'>
+            {userGroups.map((group: any) => (
               <div
-                key={tag.name || tag}
-                className='p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-md transition-shadow'
+                key={group.name}
+                className='p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl'
               >
                 <div className='flex items-center justify-between mb-2'>
                   <div className='flex items-center gap-2'>
                     <span className='text-lg'>🏷️</span>
                     <span className='text-sm font-semibold text-gray-900 dark:text-white'>
-                      {tag.name || tag}
+                      {group.name}
                     </span>
                   </div>
                   {role === 'owner' && (
                     <div className='flex gap-1'>
                       <button
-                        onClick={() => openEditGroup(tag.name || tag)}
-                        className='p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors'
-                        title='编辑分组用户'
+                        onClick={() => openEditGroup(group)}
+                        className='px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600'
                       >
-                        ✏️
+                        编辑
                       </button>
                       <button
-                        onClick={() => handleDeleteGroup(tag.name || tag)}
-                        className='p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors'
-                        title='删除分组'
+                        onClick={() => handleDeleteGroup(group.name)}
+                        className='px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600'
                       >
-                        🗑️
+                        删除
                       </button>
                     </div>
                   )}
                 </div>
-                <div className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                  {tag.enabledApis && tag.enabledApis.length > 0 ? (
-                    <span>📺 已启用 {tag.enabledApis.length} 个源</span>
-                  ) : (
-                    <span className='text-gray-400'>全部源</span>
-                  )}
-                </div>
-                {tag.enabledApis && tag.enabledApis.length > 0 && (
-                  <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>
-                    📺 已启用 {tag.enabledApis.length} 个源
+                <div className='text-xs text-gray-500 dark:text-gray-400 space-y-1'>
+                  <div>📺 可用源: {group.enabledApis?.length || '全部'}</div>
+                  <div>
+                    🔞 成人内容: {group.showAdultContent ? '允许' : '禁止'}
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
-
-          {userGroups.length === 0 && (
-            <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
-              <div className='text-4xl mb-2'>🏷️</div>
-              <p>暂无用户分组</p>
-              <p className='text-xs mt-1'>点击上方按钮创建第一个分组</p>
-            </div>
-          )}
         </div>
       )}
 
-      {/* 编辑分组弹窗 - 全屏大窗口 */}
-      {showEditUserRolesModal && (
-        <div className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2 sm:p-4'>
-          <div className='bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl h-[90vh] flex flex-col shadow-2xl overflow-hidden'>
-            {/* 头部 */}
-            <div className='px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0'>
-              <div>
-                <h3 className='text-lg font-semibold'>
-                  🏷️ 编辑分组: {editGroupName}
-                </h3>
-                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                  管理此分组的成员和权限
-                </p>
+      {/* 编辑分组弹窗 */}
+      {showEditGroupModal && (
+        <div className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4'>
+          <div className='bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl'>
+            <div className='px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0'>
+              <h3 className='text-lg font-semibold'>
+                🏷️ 编辑分组: {editGroupName}
+              </h3>
+            </div>
+            <div className='flex-1 overflow-y-auto px-6 py-4 space-y-6'>
+              {/* 成人内容权限 */}
+              <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
+                <h4 className='text-sm font-semibold mb-3'>🔞 成人内容</h4>
+                <label className='flex items-center gap-3 cursor-pointer'>
+                  <input
+                    type='checkbox'
+                    checked={editingGroupAdultContent}
+                    onChange={(e) =>
+                      setEditingGroupAdultContent(e.target.checked)
+                    }
+                    className='w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500'
+                  />
+                  <div>
+                    <div className='text-sm font-medium'>允许查看成人内容</div>
+                    <div className='text-xs text-gray-500'>
+                      开启后此分组的用户可以查看成人影片
+                    </div>
+                  </div>
+                </label>
               </div>
-              <button
-                onClick={() => setShowEditUserRolesModal(false)}
-                className='p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-lg'
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Tab 切换 */}
-            <div className='px-6 pt-3 flex gap-1 shrink-0'>
-              <button
-                onClick={() => setEditTab('members')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  editTab === 'members'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                👥 成员管理 ({editingUserTagUsers.length})
-              </button>
-              <button
-                onClick={() => setEditTab('permissions')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  editTab === 'permissions'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                🔐 权限设置
-              </button>
-            </div>
-
-            {/* 内容区域 */}
-            <div className='flex-1 overflow-y-auto px-6 py-4'>
-              {/* 成员管理 Tab */}
-              {editTab === 'members' && (
-                <div>
-                  <div className='mb-3'>
-                    <input
-                      value={memberSearch}
-                      onChange={(e) => setMemberSearch(e.target.value)}
-                      placeholder='🔍 搜索用户...'
-                      className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-green-500'
-                    />
-                  </div>
-                  <div className='space-y-1'>
-                    {filteredMembers.map((u: any) => (
-                      <label
-                        key={u.username}
-                        className='flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer transition-colors'
-                      >
-                        <input
-                          type='checkbox'
-                          checked={editingUserTagUsers.includes(u.username)}
-                          onChange={() => toggleUserTag(u.username)}
-                          className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500'
-                        />
-                        <div className='w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0'>
-                          {u.username.charAt(0).toUpperCase()}
-                        </div>
-                        <div className='flex-1 min-w-0'>
-                          <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                            {u.username}
-                          </span>
-                        </div>
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
-                        >
-                          {getRoleLabel(u.role)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
+              {/* 源权限 */}
+              <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
+                <div className='flex items-center justify-between mb-3'>
+                  <h4 className='text-sm font-semibold'>📺 视频源权限</h4>
+                  <span className='text-xs text-gray-500'>
+                    {editingGroupApis.length === 0
+                      ? '全部源'
+                      : `已选 ${editingGroupApis.length} 个源`}
+                  </span>
                 </div>
-              )}
-
-              {/* 权限设置 Tab */}
-              {editTab === 'permissions' && (
-                <div className='space-y-6'>
-                  {/* 成人内容权限 */}
-                  <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
-                    <h4 className='text-sm font-semibold text-gray-900 dark:text-white mb-3'>
-                      🔞 成人内容
-                    </h4>
-                    <label className='flex items-center gap-3 cursor-pointer'>
+                <p className='text-xs text-gray-500 mb-3'>
+                  不勾选 = 全部源。勾选 = 仅勾选的源。
+                </p>
+                <div className='max-h-[35vh] overflow-y-auto space-y-1'>
+                  {sources.map((s: any) => (
+                    <label
+                      key={s.key}
+                      className='flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg cursor-pointer'
+                    >
                       <input
                         type='checkbox'
-                        checked={editingGroupAdultContent}
-                        onChange={(e) =>
-                          setEditingGroupAdultContent(e.target.checked)
-                        }
-                        className='w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500'
+                        checked={editingGroupApis.includes(s.key)}
+                        onChange={() => toggleGroupApi(s.key)}
+                        className='w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500'
                       />
-                      <div>
-                        <div className='text-sm font-medium text-gray-900 dark:text-white'>
-                          允许查看成人内容
-                        </div>
-                        <div className='text-xs text-gray-500 dark:text-gray-400'>
-                          开启后此分组的用户可以查看成人影片
-                        </div>
-                      </div>
+                      <span className='text-sm'>{s.name}</span>
+                      {s.is_adult && (
+                        <span className='text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'>
+                          成人
+                        </span>
+                      )}
                     </label>
-                  </div>
-
-                  {/* 源权限 */}
-                  <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
-                    <div className='flex items-center justify-between mb-3'>
-                      <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
-                        📺 视频源权限
-                      </h4>
-                      <span className='text-xs text-gray-500 dark:text-gray-400'>
-                        {editingGroupApis.length === 0
-                          ? '全部源'
-                          : `已选 ${editingGroupApis.length} 个源`}
-                      </span>
-                    </div>
-                    <p className='text-xs text-gray-500 dark:text-gray-400 mb-3'>
-                      不勾选任何源 = 可以访问全部源。勾选特定源 =
-                      仅可访问勾选的源。
-                    </p>
-                    <div className='max-h-[40vh] overflow-y-auto space-y-1'>
-                      {sources.map((s) => (
-                        <label
-                          key={s.key}
-                          className='flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg cursor-pointer transition-colors'
-                        >
-                          <input
-                            type='checkbox'
-                            checked={editingGroupApis.includes(s.key)}
-                            onChange={() => toggleGroupApi(s.key)}
-                            className='w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500'
-                          />
-                          <span className='text-sm text-gray-900 dark:text-white'>
-                            {s.name}
-                          </span>
-                          {s.is_adult && (
-                            <span className='text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'>
-                              成人
-                            </span>
-                          )}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
-
-            {/* 底部按钮 */}
             <div className='px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 shrink-0'>
               <button
-                onClick={() => setShowEditUserRolesModal(false)}
-                className='px-5 py-2.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors'
+                onClick={() => setShowEditGroupModal(false)}
+                className='px-5 py-2.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium'
               >
                 取消
               </button>
               <button
                 onClick={handleEditGroup}
-                className='px-5 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition-colors'
+                className='px-5 py-2.5 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600'
               >
                 💾 保存
               </button>
