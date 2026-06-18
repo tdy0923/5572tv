@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
 import {
   getDbQueryCount,
   recordRequest,
@@ -171,144 +170,16 @@ async function getShortDramaListInternal(
   size = 20,
 ) {
   try {
-    const config = await getConfig();
-
-    // 筛选出所有启用的短剧源
-    const shortDramaSources = config.SourceConfig.filter(
-      (source) => source.type === 'shortdrama' && !source.disabled,
+    // 只使用tyyszy.com作为默认源（确保ID与parse API兼容）
+    return await fetchListFromCategory(
+      'https://tyyszy.com/api.php/provide/vod',
+      category,
+      page,
+      size,
     );
-
-    // 同时检查普通源中是否有短剧分类
-    const regularSources = config.SourceConfig.filter(
-      (source) => !source.disabled && source.type !== 'shortdrama',
-    );
-
-    // 收集所有有短剧分类的源
-    const sourcesWithShortDrama: Array<{
-      api: string;
-      name: string;
-      categoryId: number;
-    }> = [];
-
-    // 并发检查前20个普通源（减少检查数量以提高速度）
-    const sourcesToCheck = regularSources.slice(0, 20);
-    const batchSize = 10;
-    for (let i = 0; i < sourcesToCheck.length; i += batchSize) {
-      const batch = sourcesToCheck.slice(i, i + batchSize);
-      const results = await Promise.allSettled(
-        batch.map(async (source: any) => {
-          try {
-            const response = await fetch(`${source.api}?ac=list`, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0',
-                Accept: 'application/json',
-              },
-              signal: AbortSignal.timeout(3000),
-            });
-            if (!response.ok) return null;
-            const data = await response.json();
-            const classes = data.class || [];
-            const shortDramaClass = classes.find(
-              (c: any) =>
-                c.type_name &&
-                (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
-            );
-            if (shortDramaClass) {
-              return {
-                api: source.api,
-                name: source.name,
-                categoryId: shortDramaClass.type_id,
-              };
-            }
-            return null;
-          } catch {
-            return null;
-          }
-        }),
-      );
-
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) {
-          sourcesWithShortDrama.push(result.value);
-        }
-      }
-    }
-
-    // 添加配置的短剧源
-    for (const source of shortDramaSources) {
-      sourcesWithShortDrama.push({
-        api: source.api,
-        name: source.name,
-        categoryId: 0,
-      });
-    }
-
-    console.log(
-      `📺 列表API: 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源, categoryId=${category}`,
-    );
-
-    // 如果没有找到有短剧内容的源，使用默认源
-    if (sourcesWithShortDrama.length === 0) {
-      // 使用请求的category作为分类ID
-      return await fetchListFromCategory(
-        'https://tyyszy.com/api.php/provide/vod',
-        category,
-        page,
-        size,
-      );
-    }
-
-    // 聚合所有源的数据 - 使用请求的category作为分类ID
-    const results = await Promise.allSettled(
-      sourcesWithShortDrama.map((source) => {
-        // 使用请求的category参数作为分类ID
-        const catId = category || source.categoryId;
-        if (catId > 0) {
-          return fetchListFromCategory(source.api, catId, page, size);
-        }
-        return fetchListFromSource(source.api, page, size);
-      }),
-    );
-
-    // 合并所有成功的结果
-    const allItems: any[] = [];
-    let hasMore = false;
-
-    results.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        allItems.push(...result.value.list);
-        hasMore = hasMore || result.value.hasMore;
-      }
-    });
-
-    // 去重
-    const uniqueItems = Array.from(
-      new Map(allItems.map((item) => [item.name, item])).values(),
-    );
-
-    // 按更新时间排序
-    uniqueItems.sort(
-      (a, b) =>
-        new Date(b.update_time).getTime() - new Date(a.update_time).getTime(),
-    );
-
-    return {
-      list: uniqueItems.slice(0, size),
-      hasMore,
-    };
   } catch (error) {
     console.error('获取短剧列表失败:', error);
-    // fallback到默认源
-    try {
-      return await fetchListFromSource(
-        'https://tyyszy.com/api.php/provide/vod',
-        page,
-        size,
-      );
-    } catch (fallbackError) {
-      console.error('默认源也失败:', fallbackError);
-      return { list: [], hasMore: false };
-    }
+    return { list: [], hasMore: false };
   }
 }
 
