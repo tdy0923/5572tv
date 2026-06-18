@@ -225,6 +225,39 @@ export default function UserConfig({
           enabledApis: editingGroupApis,
           showAdultContent: editingGroupAdultContent,
         });
+
+        // Save member assignments - update each user's tags
+        for (const username of editingUserTagUsers) {
+          const user = users.find((u: any) => u.username === username);
+          if (user) {
+            const currentTags = user.tags || [];
+            const hasTag = currentTags.includes(editGroupName);
+
+            if (!hasTag) {
+              // Add tag to user
+              await callApi({
+                action: 'userGroup',
+                username,
+                userGroup: editGroupName,
+              });
+            }
+          }
+        }
+
+        // Remove tag from users not in the list
+        for (const user of users) {
+          if (!editingUserTagUsers.includes(user.username)) {
+            const currentTags = user.tags || [];
+            if (currentTags.includes(editGroupName)) {
+              await callApi({
+                action: 'userGroup',
+                username: user.username,
+                userGroup: '', // Empty string removes the tag
+              });
+            }
+          }
+        }
+
         showSuccess('分组更新成功', showAlert);
         setShowEditUserRolesModal(false);
         await reload();

@@ -97,9 +97,9 @@ function SortableCategoryItem({
       </button>
       <button onClick={() => onToggle(category.id)} className='p-1'>
         {category.disabled ? (
-          <Check className='w-4 h-4 text-green-600' />
+          <X className='w-4 h-4 text-red-500' />
         ) : (
-          <X className='w-4 h-4 text-gray-400' />
+          <Check className='w-4 h-4 text-green-600' />
         )}
       </button>
       <button

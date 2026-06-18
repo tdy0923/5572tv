@@ -58,6 +58,7 @@ export default function VideoSourceConfig({
   const [sources, setSources] = useState<DataSource[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [orderChanged, setOrderChanged] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [newSource, setNewSource] = useState<DataSource>({
     name: '',
     key: '',
@@ -89,6 +90,7 @@ export default function VideoSourceConfig({
         });
         if (!resp.ok) throw new Error('保存失败');
         setOrderChanged(false);
+        setHasChanges(false);
         showSuccess('视频源配置已保存', showAlert);
         await refreshConfig();
       } catch (err) {
@@ -107,11 +109,13 @@ export default function VideoSourceConfig({
     setShowAddForm(false);
     setEditingIndex(null);
     setOrderChanged(true);
+    setHasChanges(true);
   };
 
   const handleDelete = (index: number) => {
     setSources(sources.filter((_, i) => i !== index));
     setOrderChanged(true);
+    setHasChanges(true);
   };
 
   const toggleDisabled = (index: number) => {
@@ -121,6 +125,7 @@ export default function VideoSourceConfig({
       ),
     );
     setOrderChanged(true);
+    setHasChanges(true);
   };
 
   const handleDragEnd = (event: any) => {
@@ -296,13 +301,13 @@ export default function VideoSourceConfig({
         </SortableContext>
       </DndContext>
 
-      {orderChanged && (
+      {(orderChanged || hasChanges) && (
         <button
           onClick={handleSaveAll}
           disabled={isLoading('saveSources')}
           className={`px-4 py-2 ${isLoading('saveSources') ? buttonStyles.disabled : buttonStyles.success} rounded-lg transition-colors`}
         >
-          {isLoading('saveSources') ? '保存中…' : '保存排序'}
+          {isLoading('saveSources') ? '保存中…' : '保存更改'}
         </button>
       )}
 
