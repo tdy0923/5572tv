@@ -37,6 +37,7 @@ export default function UserConfig({
   const [editingGroupApis, setEditingGroupApis] = useState<string[]>([]);
   const [editingGroupAdultContent, setEditingGroupAdultContent] =
     useState(false);
+  const [editingGroupMembers, setEditingGroupMembers] = useState<string[]>([]);
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
@@ -155,18 +156,50 @@ export default function UserConfig({
     setEditGroupName(group.name || '');
     setEditingGroupApis(group.enabledApis || []);
     setEditingGroupAdultContent(group.showAdultContent || false);
+    // Load members - find users that have this group in their tags
+    const members = users
+      .filter((u: any) => u.tags && u.tags.includes(group.name))
+      .map((u: any) => u.username);
+    setEditingGroupMembers(members);
     setShowEditGroupModal(true);
   };
 
   const handleEditGroup = async () => {
     await withLoading('editGroup', async () => {
       try {
+        // Save group permissions
         await callApi({
           action: 'update_tag',
           name: editGroupName,
           enabledApis: editingGroupApis,
           showAdultContent: editingGroupAdultContent,
         });
+
+        // Save member assignments
+        for (const username of editingGroupMembers) {
+          const user = users.find((u: any) => u.username === username);
+          if (user && !(user.tags || []).includes(editGroupName)) {
+            await callApi({
+              action: 'userGroup',
+              username,
+              userGroup: editGroupName,
+            });
+          }
+        }
+
+        // Remove tag from users not in the list
+        for (const user of users) {
+          if (!editingGroupMembers.includes(user.username)) {
+            if ((user.tags || []).includes(editGroupName)) {
+              await callApi({
+                action: 'userGroup',
+                username: user.username,
+                userGroup: '',
+              });
+            }
+          }
+        }
+
         showSuccess('分组更新成功', showAlert);
         setShowEditGroupModal(false);
         await reload();
@@ -181,6 +214,14 @@ export default function UserConfig({
       prev.includes(apiKey)
         ? prev.filter((k) => k !== apiKey)
         : [...prev, apiKey],
+    );
+  };
+
+  const toggleGroupMember = (username: string) => {
+    setEditingGroupMembers((prev) =>
+      prev.includes(username)
+        ? prev.filter((u) => u !== username)
+        : [...prev, username],
     );
   };
 
@@ -488,6 +529,63 @@ export default function UserConfig({
               </h3>
             </div>
             <div className='flex-1 overflow-y-auto px-6 py-4 space-y-6'>
+              {/* 成员管理 */}
+              <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
+                <div className='flex items-center justify-between mb-3'>
+                  <h4 className='text-sm font-semibold'>👥 成员管理</h4>
+                  <span className='text-xs text-gray-500'>
+                    {editingGroupMembers.length} 个成员
+                  </span>
+                </div>
+                <p className='text-xs text-gray-500 mb-3'>
+                  勾选用户 = 加入此分组。取消勾选 = 从分组移除。
+                </p>
+                <div className='flex gap-2 mb-3'>
+                  <button
+                    onClick={() =>
+                      setEditingGroupMembers(users.map((u: any) => u.username))
+                    }
+                    className='px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-800/30'
+                  >
+                    全选
+                  </button>
+                  <button
+                    onClick={() => setEditingGroupMembers([])}
+                    className='px-3 py-1 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-500'
+                  >
+                    全不选
+                  </button>
+                </div>
+                <div className='max-h-[30vh] overflow-y-auto space-y-1'>
+                  {users.map((u: any) => (
+                    <label
+                      key={u.username}
+                      className='flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg cursor-pointer'
+                    >
+                      <input
+                        type='checkbox'
+                        checked={editingGroupMembers.includes(u.username)}
+                        onChange={() => toggleGroupMember(u.username)}
+                        className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500'
+                      />
+                      <div className='w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0'>
+                        {u.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div className='flex-1'>
+                        <span className='text-sm font-medium'>
+                          {u.username}
+                        </span>
+                        <span
+                          className={`ml-2 text-xs px-1.5 py-0.5 rounded ${getRoleBadge(u.role)}`}
+                        >
+                          {getRoleLabel(u.role)}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* 成人内容权限 */}
               <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
                 <h4 className='text-sm font-semibold mb-3'>🔞 成人内容</h4>
