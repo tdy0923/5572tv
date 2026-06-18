@@ -6,6 +6,12 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
+import {
+  DEFAULT_SHORT_DRAMA_API,
+  mapApiItemToShortDramaItem,
+  SHORT_DRAMA_KEYWORDS,
+  SHORTDRAMA_CACHE_SECONDS,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -13,21 +19,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-// 短剧相关的分类关键词
-const SHORT_DRAMA_KEYWORDS = [
-  '短剧',
-  '女频恋爱',
-  '反转爽剧',
-  '古装仙侠',
-  '年代穿越',
-  '脑洞悬疑',
-  '现代都市',
-  '短篇',
-  '短集',
-];
-
-// 从单个短剧源获取数据（通过分类名称查找）
-async function fetchListFromSource(api: string, page: number, size: number) {
+// 从单个短剧源获取数据（通过分类名称查找）- 预留备用函数
+async function _fetchListFromSource(api: string, page: number, size: number) {
   // Step 1: 获取分类列表，找到所有短剧相关分类的ID
   const listUrl = `${api}?ac=list`;
 
@@ -86,23 +79,7 @@ async function fetchListFromSource(api: string, page: number, size: number) {
 
     const limitedItems = items.slice(0, size);
 
-    const list = limitedItems.map((item: any) => ({
-      id: item.vod_id,
-      name: item.vod_name,
-      cover: item.vod_pic || '',
-      update_time: item.vod_time || new Date().toISOString(),
-      score: parseFloat(item.vod_score) || 0,
-      episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
-      description: item.vod_content || item.vod_blurb || '',
-      author: item.vod_actor || '',
-      backdrop: item.vod_pic_slide || item.vod_pic || '',
-      vote_average: parseFloat(item.vod_score) || 0,
-      vod_area: item.vod_area || '',
-      vod_year: item.vod_year || '',
-      vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
-      vod_hits: parseInt(item.vod_hits || '0'),
-      vod_name: item.vod_name || '',
-    }));
+    const list = limitedItems.map(mapApiItemToShortDramaItem);
 
     return {
       list,
@@ -139,23 +116,7 @@ async function fetchListFromCategory(
 
   const limitedItems = items.slice(0, size);
 
-  const list = limitedItems.map((item: any) => ({
-    id: item.vod_id,
-    name: item.vod_name,
-    cover: item.vod_pic || '',
-    update_time: item.vod_time || new Date().toISOString(),
-    score: parseFloat(item.vod_score) || 0,
-    episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
-    description: item.vod_content || item.vod_blurb || '',
-    author: item.vod_actor || '',
-    backdrop: item.vod_pic_slide || item.vod_pic || '',
-    vote_average: parseFloat(item.vod_score) || 0,
-    vod_area: item.vod_area || '',
-    vod_year: item.vod_year || '',
-    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
-    vod_hits: parseInt(item.vod_hits || '0'),
-    vod_name: item.vod_name || '',
-  }));
+  const list = limitedItems.map(mapApiItemToShortDramaItem);
 
   return {
     list,
@@ -170,9 +131,9 @@ async function getShortDramaListInternal(
   size = 20,
 ) {
   try {
-    // 只使用tyyszy.com作为默认源（确保ID与parse API兼容）
+    // 只使用默认源（确保ID与parse API兼容）
     return await fetchListFromCategory(
-      'https://tyyszy.com/api.php/provide/vod',
+      DEFAULT_SHORT_DRAMA_API,
       category,
       page,
       size,
@@ -271,13 +232,11 @@ export async function GET(request: NextRequest) {
       hasMore: result.hasMore,
     });
 
-    // 设置与网页端一致的缓存策略（lists: 2小时）
+    // 设置与网页端一致的缓存策略
     const response = NextResponse.json(result);
 
-    console.log('🕐 [LIST] 设置2小时HTTP缓存 - 与网页端lists缓存一致');
-
-    // 2小时 = 7200秒（与网页端SHORTDRAMA_CACHE_EXPIRE.lists一致）
-    const cacheTime = 7200;
+    // 使用共享缓存时间配置
+    const cacheTime = SHORTDRAMA_CACHE_SECONDS.lists;
     response.headers.set(
       'Cache-Control',
       `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
@@ -287,16 +246,11 @@ export async function GET(request: NextRequest) {
       'Vercel-CDN-Cache-Control',
       `public, s-maxage=${cacheTime}`,
     );
-
-    // 调试信息
-    response.headers.set('X-Cache-Duration', '2hour');
+    response.headers.set('X-Cache-Duration', `${cacheTime}s`);
     response.headers.set(
       'X-Cache-Expires-At',
       new Date(Date.now() + cacheTime * 1000).toISOString(),
     );
-    response.headers.set('X-Debug-Timestamp', new Date().toISOString());
-
-    // Vary头确保不同设备有不同缓存
     response.headers.set('Vary', 'Accept-Encoding, User-Agent');
 
     // 记录性能指标

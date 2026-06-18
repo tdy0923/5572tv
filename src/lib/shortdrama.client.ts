@@ -8,6 +8,7 @@ import {
   setCache,
   SHORTDRAMA_CACHE_EXPIRE,
 } from './shortdrama-cache';
+import { DEFAULT_SHORT_DRAMA_API } from './shortdrama-constants';
 import {
   ShortDramaCategory,
   ShortDramaItem,
@@ -16,7 +17,7 @@ import {
 import { DEFAULT_USER_AGENT } from './user-agent';
 
 // 新的视频源 API（资源站采集接口）- 用于分类和搜索
-const SHORTDRAMA_API_BASE = 'https://tyyszy.com/api.php/provide/vod';
+const SHORTDRAMA_API_BASE = DEFAULT_SHORT_DRAMA_API;
 
 // 检测是否为移动端环境
 const isMobile = () => {
@@ -176,7 +177,15 @@ export async function searchShortDramas(
   page = 1,
   size = 20,
 ): Promise<{ list: ShortDramaItem[]; hasMore: boolean }> {
+  const cacheKey = getCacheKey('search', { query, page, size });
+
   try {
+    // 检查缓存
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     // 使用内部 API 代理
     const apiUrl = `${getApiBase()}/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`;
 
@@ -187,6 +196,12 @@ export async function searchShortDramas(
     }
 
     const result = await response.json();
+
+    // 只缓存非空结果，避免缓存错误/空数据
+    if (result.list && Array.isArray(result.list) && result.list.length > 0) {
+      await setCache(cacheKey, result, SHORTDRAMA_CACHE_EXPIRE.search);
+    }
+
     return result;
   } catch (error) {
     console.error('搜索短剧失败:', error);

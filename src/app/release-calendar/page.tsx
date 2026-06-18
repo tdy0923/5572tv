@@ -46,8 +46,13 @@ export default function ReleaseCalendarPage() {
   // 返回顶部按钮状态
   const [showBackToTop, setShowBackToTop] = useState(false);
 
+  // 当前日期（用于避免 hydration mismatch）
+  const [today, setToday] = useState<Date | null>(null);
+
   // 日历视图的当前月份
-  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
+  const [currentCalendarDate, setCurrentCalendarDate] = useState<Date | null>(
+    null,
+  );
 
   // 日历视图展开的日期
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -64,6 +69,15 @@ export default function ReleaseCalendarPage() {
       return newSet;
     });
   };
+
+  // 初始化今日日期（客户端渲染，避免 hydration mismatch）
+  useEffect(() => {
+    const now = new Date();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(now);
+
+    setCurrentCalendarDate(now);
+  }, []);
 
   // 🚀 TanStack Query - 获取发布日历数据
   // 替换手动 fetch + localStorage缓存，TanStack Query 自动管理缓存
@@ -542,11 +556,13 @@ export default function ReleaseCalendarPage() {
                     );
                     return uniqueCurrentItems;
                   })().map((item) => {
-                    const isToday =
-                      item.releaseDate ===
-                      new Date().toISOString().split('T')[0];
-                    const isUpcoming = new Date(item.releaseDate) > new Date();
-                    const isPast = new Date(item.releaseDate) < new Date();
+                    const todayStr = today
+                      ? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                      : '';
+                    const isToday = today && item.releaseDate === todayStr;
+                    const isUpcoming =
+                      today && new Date(item.releaseDate) > today;
+                    const isPast = today && new Date(item.releaseDate) < today;
 
                     return (
                       <div
@@ -663,6 +679,7 @@ export default function ReleaseCalendarPage() {
                     <div className='flex items-center justify-between mb-4'>
                       <button
                         onClick={() => {
+                          if (!currentCalendarDate) return;
                           const prevMonth = new Date(currentCalendarDate);
                           prevMonth.setMonth(prevMonth.getMonth() - 1);
                           setCurrentCalendarDate(prevMonth);
@@ -672,13 +689,16 @@ export default function ReleaseCalendarPage() {
                         ← 上个月
                       </button>
                       <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
-                        {currentCalendarDate.toLocaleDateString('zh-CN', {
-                          year: 'numeric',
-                          month: 'long',
-                        })}
+                        {currentCalendarDate
+                          ? currentCalendarDate.toLocaleDateString('zh-CN', {
+                              year: 'numeric',
+                              month: 'long',
+                            })
+                          : ''}
                       </h3>
                       <button
                         onClick={() => {
+                          if (!currentCalendarDate) return;
                           const nextMonth = new Date(currentCalendarDate);
                           nextMonth.setMonth(nextMonth.getMonth() + 1);
                           setCurrentCalendarDate(nextMonth);
@@ -708,9 +728,12 @@ export default function ReleaseCalendarPage() {
                       {/* 日历网格 */}
                       <div className='grid grid-cols-7 gap-2'>
                         {(() => {
-                          const today = new Date();
-                          const currentMonth = currentCalendarDate.getMonth();
-                          const currentYear = currentCalendarDate.getFullYear();
+                          const currentMonth = currentCalendarDate
+                            ? currentCalendarDate.getMonth()
+                            : 0;
+                          const currentYear = currentCalendarDate
+                            ? currentCalendarDate.getFullYear()
+                            : 0;
                           const firstDay = new Date(
                             currentYear,
                             currentMonth,
@@ -828,9 +851,12 @@ export default function ReleaseCalendarPage() {
                     {/* 移动端列表视图 */}
                     <div className='md:hidden space-y-3'>
                       {(() => {
-                        const today = new Date();
-                        const currentMonth = currentCalendarDate.getMonth();
-                        const currentYear = currentCalendarDate.getFullYear();
+                        const currentMonth = currentCalendarDate
+                          ? currentCalendarDate.getMonth()
+                          : 0;
+                        const currentYear = currentCalendarDate
+                          ? currentCalendarDate.getFullYear()
+                          : 0;
                         const firstDay = new Date(currentYear, currentMonth, 1);
                         const lastDay = new Date(
                           currentYear,
@@ -959,8 +985,9 @@ export default function ReleaseCalendarPage() {
 
                   {/* 今日上映详情 */}
                   {(() => {
-                    const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const todayStr = today
+                      ? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                      : '';
                     const allItems = data?.items || [];
                     const todayItems = allItems.filter(
                       (item) => item.releaseDate === todayStr,
@@ -1037,12 +1064,13 @@ export default function ReleaseCalendarPage() {
                     )
                       .sort(([a], [b]) => a.localeCompare(b))
                       .map(([date, items], index) => {
-                        const today = new Date();
                         const currentDate = new Date(date);
-                        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                        const todayStr = today
+                          ? `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+                          : '';
                         const isToday = date === todayStr;
-                        const isPast = currentDate < today && !isToday;
-                        const isUpcoming = currentDate > today;
+                        const isPast = today && currentDate < today && !isToday;
+                        const isUpcoming = today && currentDate > today;
 
                         // 去重：按title和director去重
                         const uniqueItems = items.filter(

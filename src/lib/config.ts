@@ -6,6 +6,7 @@ import { unstable_noStore } from 'next/cache';
 
 import { DEFAULT_AD_SETTINGS } from '@/lib/ad-settings';
 import { db } from '@/lib/db';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 
 import { AdminConfig } from './admin.types';
 import { DEFAULT_USER_AGENT } from './user-agent';
@@ -502,7 +503,7 @@ export async function configSelfCheck(
   // 确保短剧配置有默认值
   if (!adminConfig.ShortDramaConfig) {
     adminConfig.ShortDramaConfig = {
-      primaryApiUrl: 'https://tyyszy.com/api.php/provide/vod', // 默认主API
+      primaryApiUrl: DEFAULT_SHORT_DRAMA_API, // 默认主API
       alternativeApiUrl: '', // 默认为空，需要管理员配置
       enableAlternative: false, // 默认关闭备用API
     };

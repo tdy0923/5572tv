@@ -294,16 +294,20 @@ function HomeClient() {
   }, []);
 
   // 🎯 优化：缓存今日番剧计算
-  const todayAnimes = useMemo(() => {
-    const today = new Date();
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const currentWeekday = weekdays[today.getDay()];
+  const [currentWeekday, setCurrentWeekday] = useState<string>('');
 
+  useEffect(() => {
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    setCurrentWeekday(weekdays[new Date().getDay()]);
+  }, []);
+
+  const todayAnimes = useMemo(() => {
+    if (!currentWeekday) return [];
     return (
       bangumiCalendarData.find((item) => item.weekday.en === currentWeekday)
         ?.items || []
     );
-  }, [bangumiCalendarData]); // 依赖bangumiCalendarData，数据变化时重新计算
+  }, [bangumiCalendarData, currentWeekday]);
 
   // 🎯 优化：缓存今天的日期（用于上映日期计算）
   const [today, setToday] = useState('');

@@ -7,6 +7,7 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 标记为动态路由
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const id = searchParams.get('id');
     const episode = searchParams.get('episode');
-    const name = searchParams.get('name'); // 可选：用于备用API
+    const _name = searchParams.get('name'); // 可选：用于备用API
 
     if (!id) {
       const errorResponse = { error: '缺少必要参数: id' };
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 直接从主API获取数据（跳过getConfig以避免Cloudflare超时）
-    const primaryApi = 'https://tyyszy.com/api.php/provide/vod';
+    const primaryApi = DEFAULT_SHORT_DRAMA_API;
 
     const params = new URLSearchParams({
       ac: 'detail',

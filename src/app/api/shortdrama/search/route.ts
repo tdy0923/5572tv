@@ -7,6 +7,7 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -111,12 +112,7 @@ async function searchShortDramasInternal(query: string, page = 1, size = 20) {
 
     // 如果没有配置短剧源，使用默认源
     if (shortDramaSources.length === 0) {
-      return await searchFromSource(
-        'https://tyyszy.com/api.php/provide/vod',
-        query,
-        page,
-        size,
-      );
+      return await searchFromSource(DEFAULT_SHORT_DRAMA_API, query, page, size);
     }
 
     // 有配置短剧源，聚合所有源的搜索结果
@@ -156,12 +152,7 @@ async function searchShortDramasInternal(query: string, page = 1, size = 20) {
     console.error('搜索短剧失败:', error);
     // fallback到默认源
     try {
-      return await searchFromSource(
-        'https://tyyszy.com/api.php/provide/vod',
-        query,
-        page,
-        size,
-      );
+      return await searchFromSource(DEFAULT_SHORT_DRAMA_API, query, page, size);
     } catch (fallbackError) {
       return { list: [], hasMore: false };
     }

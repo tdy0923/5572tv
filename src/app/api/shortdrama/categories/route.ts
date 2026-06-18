@@ -2,15 +2,18 @@
 import { NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
+import {
+  DEFAULT_SHORT_DRAMA_API,
+  isExcludedCategory,
+  isShortDramaCategory,
+  SHORTDRAMA_CACHE_SECONDS,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
-
-// 默认短剧源（域名已迁移）
-const DEFAULT_SHORT_DRAMA_API = 'https://tyyszy.com/api.php/provide/vod';
 
 // 从单个源获取短剧分类
 async function getCategoriesFromSource(
@@ -31,62 +34,16 @@ async function getCategoriesFromSource(
   const data = await response.json();
   const categories = data.class || [];
 
-  const excludeKeywords = [
-    '18+',
-    '成人',
-    '伦理',
-    '禁片',
-    '成人专区',
-    '国产自拍',
-    '自拍偷拍',
-    '教程',
-    '采集',
-    '教学',
-    '软件',
-    '工具',
-    '资源',
-  ];
-
-  // 短剧相关分类关键词
-  const shortDramaKeywords = [
-    '短剧',
-    '女频恋爱',
-    '反转爽剧',
-    '古装仙侠',
-    '年代穿越',
-    '脑洞悬疑',
-    '现代都市',
-    '短篇',
-    '短集',
-    '擦边',
-    '甜宠',
-    '虐恋',
-    '穿越',
-    '重生',
-    '总裁',
-    '豪门',
-    '逆袭',
-    '复仇',
-    '宠妻',
-    '战神',
-    '神医',
-    '赘婿',
-    '霸总',
-    '甜剧',
-    '虐剧',
-    '爽剧',
-  ];
-
   const safeCategories = categories
     .filter((cat: any) => cat.type_name)
     .filter((cat: any) => {
       const name = String(cat.type_name || '');
       // 排除不相关分类
-      if (excludeKeywords.some((keyword) => name.includes(keyword))) {
+      if (isExcludedCategory(name)) {
         return false;
       }
       // 只保留短剧相关分类
-      return shortDramaKeywords.some((keyword) => name.includes(keyword));
+      return isShortDramaCategory(name);
     })
     .map((cat: any) => ({
       type_id: cat.type_id,
@@ -127,17 +84,7 @@ async function getShortDramaCategoriesFromSources(
         return classes
           .filter((c: any) => {
             const name = String(c.type_name || '');
-            return (
-              name.includes('短剧') ||
-              name.includes('女频恋爱') ||
-              name.includes('反转爽剧') ||
-              name.includes('古装仙侠') ||
-              name.includes('年代穿越') ||
-              name.includes('脑洞悬疑') ||
-              name.includes('现代都市') ||
-              name.includes('短篇') ||
-              name.includes('短集')
-            );
+            return isShortDramaCategory(name);
           })
           .map((c: any) => ({ type_id: c.type_id, type_name: c.type_name }));
       } catch {
@@ -284,9 +231,7 @@ async function getShortDramaCategoriesInternal() {
           const classes = data.class || [];
           return classes
             .filter(
-              (c: any) =>
-                c.type_name &&
-                (c.type_name.includes('短剧') || c.type_name.includes('爽文')),
+              (c: any) => c.type_name && isShortDramaCategory(c.type_name),
             )
             .map((c: any) => ({ type_id: c.type_id, type_name: c.type_name }));
         } catch {
@@ -357,41 +302,8 @@ async function getShortDramaCategoriesInternal() {
     DEFAULT_SHORT_DRAMA_API,
   );
 
-  // 只保留短剧相关分类
-  const shortDramaKeywords = [
-    '短剧',
-    '女频恋爱',
-    '反转爽剧',
-    '古装仙侠',
-    '年代穿越',
-    '脑洞悬疑',
-    '现代都市',
-    '短篇',
-    '短集',
-    '擦边',
-    '甜宠',
-    '虐恋',
-    '穿越',
-    '重生',
-    '总裁',
-    '豪门',
-    '逆袭',
-    '复仇',
-    '宠妻',
-    '战神',
-    '神医',
-    '赘婿',
-    '霸总',
-    '甜剧',
-    '虐剧',
-    '爽剧',
-  ];
-
-  const shortDramaCategories = defaultCategories.filter((cat: any) =>
-    shortDramaKeywords.some(
-      (kw) => cat.type_name && cat.type_name.includes(kw),
-    ),
-  );
+  // 只保留短剧相关分类（已通过 getCategoriesFromSource 过滤）
+  const shortDramaCategories = defaultCategories;
 
   console.log(`📋 短剧相关分类: ${shortDramaCategories.length} 个`);
 
@@ -430,15 +342,11 @@ export async function GET() {
   try {
     const categories = await getShortDramaCategoriesInternal();
 
-    // 设置与网页端一致的缓存策略（categories: 4小时）
+    // 设置与网页端一致的缓存策略
     const response = NextResponse.json(categories);
 
-    console.log(
-      '🕐 [CATEGORIES] 设置4小时HTTP缓存 - 与网页端categories缓存一致',
-    );
-
-    // 4小时 = 14400秒（与网页端SHORTDRAMA_CACHE_EXPIRE.categories一致）
-    const cacheTime = 14400;
+    // 使用共享缓存时间配置
+    const cacheTime = SHORTDRAMA_CACHE_SECONDS.categories;
     response.headers.set(
       'Cache-Control',
       `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
@@ -448,16 +356,11 @@ export async function GET() {
       'Vercel-CDN-Cache-Control',
       `public, s-maxage=${cacheTime}`,
     );
-
-    // 调试信息
-    response.headers.set('X-Cache-Duration', '4hour');
+    response.headers.set('X-Cache-Duration', `${cacheTime}s`);
     response.headers.set(
       'X-Cache-Expires-At',
       new Date(Date.now() + cacheTime * 1000).toISOString(),
     );
-    response.headers.set('X-Debug-Timestamp', new Date().toISOString());
-
-    // Vary头确保不同设备有不同缓存
     response.headers.set('Vary', 'Accept-Encoding, User-Agent');
 
     return response;
@@ -466,4 +369,3 @@ export async function GET() {
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
   }
 }
-// redeploy

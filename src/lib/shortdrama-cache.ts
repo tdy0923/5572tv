@@ -2,15 +2,13 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
 import { ClientCache } from './client-cache';
+import { SHORTDRAMA_CACHE_SECONDS } from './shortdrama-constants';
 
-// 短剧数据缓存配置（秒）
-const SHORTDRAMA_CACHE_EXPIRE = {
-  details: 4 * 60 * 60, // 详情4小时（变化较少）
-  lists: 2 * 60 * 60, // 列表2小时（更新频繁）
-  categories: 4 * 60 * 60, // 分类4小时（很少变化）
-  recommends: 1 * 60 * 60, // 推荐1小时（经常更新）
-  episodes: 24 * 60 * 60, // 集数24小时（基本不变）
-  parse: 30 * 60, // 解析结果30分钟（URL会过期）
+// 短剧数据缓存配置（秒）- 从共享常量导入（兼容旧代码使用 SHORTDRAMA_CACHE_EXPIRE）
+export const SHORTDRAMA_CACHE_EXPIRE = {
+  ...SHORTDRAMA_CACHE_SECONDS,
+  // 兼容旧代码中的 recommends 字段名
+  recommends: SHORTDRAMA_CACHE_SECONDS.recommend,
 };
 
 // 缓存工具函数
@@ -187,5 +185,4 @@ export {
   getCache,
   getCacheKey,
   setCache,
-  SHORTDRAMA_CACHE_EXPIRE,
 };

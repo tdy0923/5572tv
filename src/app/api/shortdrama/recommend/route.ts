@@ -7,25 +7,17 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
+import {
+  DEFAULT_SHORT_DRAMA_API,
+  mapApiItemToShortDramaItem,
+  SHORT_DRAMA_KEYWORDS,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
-
-// 短剧相关的分类关键词
-const SHORT_DRAMA_KEYWORDS = [
-  '短剧',
-  '女频恋爱',
-  '反转爽剧',
-  '古装仙侠',
-  '年代穿越',
-  '脑洞悬疑',
-  '现代都市',
-  '短篇',
-  '短集',
-];
 
 // 从单个短剧源获取数据（通过分类名称查找）
 async function fetchFromShortDramaSource(api: string, size: number) {
@@ -101,23 +93,7 @@ async function fetchFromShortDramaSource(api: string, size: number) {
       new Date(b.vod_time || 0).getTime() - new Date(a.vod_time || 0).getTime(),
   );
 
-  return uniqueItems.slice(0, size).map((item: any) => ({
-    id: item.vod_id,
-    name: item.vod_name,
-    cover: item.vod_pic || '',
-    update_time: item.vod_time || new Date().toISOString(),
-    score: parseFloat(item.vod_score) || 0,
-    episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
-    description: item.vod_content || item.vod_blurb || '',
-    author: item.vod_actor || '',
-    backdrop: item.vod_pic_slide || item.vod_pic || '',
-    vote_average: parseFloat(item.vod_score) || 0,
-    vod_area: item.vod_area || '',
-    vod_year: item.vod_year || '',
-    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
-    vod_hits: parseInt(item.vod_hits || '0'),
-    vod_name: item.vod_name || '',
-  }));
+  return uniqueItems.slice(0, size).map(mapApiItemToShortDramaItem);
 }
 
 // 从指定分类获取短剧数据
@@ -143,23 +119,7 @@ async function fetchFromShortDramaCategory(
   const data = await response.json();
   const items = data.list || [];
 
-  return items.slice(0, size).map((item: any) => ({
-    id: item.vod_id,
-    name: item.vod_name,
-    cover: item.vod_pic || '',
-    update_time: item.vod_time || new Date().toISOString(),
-    score: parseFloat(item.vod_score) || 0,
-    episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
-    description: item.vod_content || item.vod_blurb || '',
-    author: item.vod_actor || '',
-    backdrop: item.vod_pic_slide || item.vod_pic || '',
-    vote_average: parseFloat(item.vod_score) || 0,
-    vod_area: item.vod_area || '',
-    vod_year: item.vod_year || '',
-    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
-    vod_hits: parseInt(item.vod_hits || '0'),
-    vod_name: item.vod_name || '',
-  }));
+  return items.slice(0, size).map(mapApiItemToShortDramaItem);
 }
 
 // 服务端专用函数，从所有短剧源聚合数据
@@ -189,9 +149,9 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
       categoryId: number;
     }> = [];
 
-    // 只使用tyyszy.com作为默认源（确保ID与parse API兼容）
+    // 只使用默认源作为默认源（确保ID与parse API兼容）
     sourcesWithShortDrama.push({
-      api: 'https://tyyszy.com/api.php/provide/vod',
+      api: DEFAULT_SHORT_DRAMA_API,
       name: 'tyyszy',
       categoryId: 0,
     });
@@ -203,10 +163,7 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     // 如果没有找到有短剧内容的源，使用默认源
     if (sourcesWithShortDrama.length === 0) {
       console.log('📺 使用默认短剧源');
-      return await fetchFromShortDramaSource(
-        'https://tyyszy.com/api.php/provide/vod',
-        size,
-      );
+      return await fetchFromShortDramaSource(DEFAULT_SHORT_DRAMA_API, size);
     }
 
     // 聚合所有源的数据
@@ -263,10 +220,7 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     // 出错时fallback到默认源
     try {
       console.log('⚠️ 出错，fallback到默认源');
-      return await fetchFromShortDramaSource(
-        'https://tyyszy.com/api.php/provide/vod',
-        size,
-      );
+      return await fetchFromShortDramaSource(DEFAULT_SHORT_DRAMA_API, size);
     } catch (fallbackError) {
       console.error('默认源也失败:', fallbackError);
       return [];

@@ -143,16 +143,23 @@ function formatLoginDisplay(loginCount: number) {
 const PlayStatsPage: React.FC = () => {
   const router = useRouter();
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
-  const [authInfo] = useState<{ username?: string; role?: string } | null>(() =>
-    getAuthInfoFromBrowserCookie(),
-  );
-  const [isAdmin] = useState(() => {
-    const auth = getAuthInfoFromBrowserCookie();
-    return auth?.role === 'admin' || auth?.role === 'owner';
-  });
+  const [authInfo, setAuthInfo] = useState<{
+    username?: string;
+    role?: string;
+  } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showWatchingUpdates, setShowWatchingUpdates] = useState(false);
   const [activeTab, setActiveTab] = useState<'admin' | 'personal'>('admin'); // 新增Tab状态
+
+  // 客户端初始化认证信息（避免 hydration mismatch）
+  useEffect(() => {
+    const auth = getAuthInfoFromBrowserCookie();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAuthInfo(auth);
+
+    setIsAdmin(auth?.role === 'admin' || auth?.role === 'owner');
+  }, []);
 
   // 🚀 TanStack Query - 管理员统计数据
   const {

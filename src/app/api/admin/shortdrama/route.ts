@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 
 export const runtime = 'nodejs';
 
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       config: config.ShortDramaConfig || {
-        primaryApiUrl: 'https://tyyszy.com/api.php/provide/vod',
+        primaryApiUrl: DEFAULT_SHORT_DRAMA_API,
         alternativeApiUrl: '',
         enableAlternative: false,
       },

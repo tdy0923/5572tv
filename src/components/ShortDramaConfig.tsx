@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 
 interface ShortDramaConfigProps {
   config: AdminConfig | null;
@@ -18,7 +19,7 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
   } | null>(null);
 
   const [shortDramaSettings, setShortDramaSettings] = useState({
-    primaryApiUrl: 'https://tyyszy.com/api.php/provide/vod',
+    primaryApiUrl: DEFAULT_SHORT_DRAMA_API,
     alternativeApiUrl: '',
     enableAlternative: false,
   });
@@ -28,8 +29,7 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
     if (config?.ShortDramaConfig) {
       setShortDramaSettings({
         primaryApiUrl:
-          config.ShortDramaConfig.primaryApiUrl ||
-          'https://tyyszy.com/api.php/provide/vod',
+          config.ShortDramaConfig.primaryApiUrl || DEFAULT_SHORT_DRAMA_API,
         alternativeApiUrl: config.ShortDramaConfig.alternativeApiUrl || '',
         enableAlternative: config.ShortDramaConfig.enableAlternative ?? false,
       });
@@ -133,7 +133,7 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
               }))
             }
             className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            placeholder='https://tyyszy.com/api.php/provide/vod'
+            placeholder={DEFAULT_SHORT_DRAMA_API}
           />
           <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
             主要的短剧视频解析API地址，默认优先使用此API

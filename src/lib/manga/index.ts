@@ -1,9 +1,4 @@
 import {
-  getManga123ChapterPages,
-  getManga123Detail,
-  searchManga123,
-} from './manga123';
-import {
   getMangaBzChapterPages,
   getMangaBzDetail,
   searchMangaBz,
@@ -43,9 +38,6 @@ async function searchSingleSource(
     switch (source.key) {
       case 'mangabz':
         searchFn = searchMangaBz;
-        break;
-      case 'manga123':
-        searchFn = searchManga123;
         break;
       default:
         return [];
@@ -91,8 +83,6 @@ export async function getMangaDetail(
   switch (source) {
     case 'mangabz':
       return getMangaBzDetail(id);
-    case 'manga123':
-      return getManga123Detail(id);
     default:
       return null;
   }
@@ -105,8 +95,6 @@ export async function getChapterPages(
   switch (source) {
     case 'mangabz':
       return getMangaBzChapterPages(chapterUrl);
-    case 'manga123':
-      return getManga123ChapterPages(chapterUrl);
     default:
       return null;
   }

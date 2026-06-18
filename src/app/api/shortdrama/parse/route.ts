@@ -8,6 +8,7 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
+import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 
 // 标记为动态路由
 export const dynamic = 'force-dynamic';
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 直接从主API获取数据（跳过getConfig以避免Cloudflare超时）
-    const primaryApi = 'https://tyyszy.com/api.php/provide/vod';
+    const primaryApi = DEFAULT_SHORT_DRAMA_API;
 
     const params = new URLSearchParams({
       ac: 'detail',
