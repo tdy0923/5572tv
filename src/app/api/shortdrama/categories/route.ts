@@ -315,12 +315,38 @@ async function getShortDramaCategoriesInternal() {
       if (!mergedCategories.has(name)) {
         mergedCategories.set(name, cat);
       }
-      // 保留第一个出现的 type_id
     }
 
     const uniqueRegularCategories = Array.from(mergedCategories.values());
     console.log(`📋 合并后 ${uniqueRegularCategories.length} 个分类`);
-    return uniqueRegularCategories;
+
+    // 检查每个分类是否有内容
+    const categoriesWithContent: { type_id: number; type_name: string }[] = [];
+    for (const cat of uniqueRegularCategories) {
+      try {
+        const testUrl = `${DEFAULT_SHORT_DRAMA_API}?ac=detail&t=${cat.type_id}&pg=1`;
+        const testResponse = await fetch(testUrl, {
+          headers: {
+            'User-Agent': DEFAULT_USER_AGENT,
+            Accept: 'application/json',
+          },
+          signal: AbortSignal.timeout(5000),
+        });
+
+        if (testResponse.ok) {
+          const testData = await testResponse.json();
+          const itemCount = testData.list?.length || testData.total || 0;
+
+          if (itemCount > 0) {
+            categoriesWithContent.push(cat);
+          }
+        }
+      } catch {
+        categoriesWithContent.push(cat);
+      }
+    }
+
+    return categoriesWithContent;
   }
 
   // 没有配置短剧源或全部失败，使用默认源
