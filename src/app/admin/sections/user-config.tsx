@@ -55,6 +55,10 @@ export default function UserConfig({
 
   useEffect(() => {
     // Sync state with config on config changes
+    if (config?.UserConfig?.Users) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUsers(config.UserConfig.Users);
+    }
   }, [config]);
 
   const reload = async () => {

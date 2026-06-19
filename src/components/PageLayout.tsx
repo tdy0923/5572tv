@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
 
@@ -33,9 +33,12 @@ const PageLayout = ({
 
   // ✨ AI 推荐功能 - 全局管理
   const [showAIRecommendModal, setShowAIRecommendModal] = useState(false);
-  const [aiEnabled] = useState<boolean | null>(
-    () => !isAIRecommendFeatureDisabled(),
-  );
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAiEnabled(!isAIRecommendFeatureDisabled());
+  }, []);
 
   if (useModernNav) {
     // 2025 Modern Navigation Layout
@@ -70,7 +73,12 @@ const PageLayout = ({
           </div>
 
           {/* Main Content - 移动端44px顶部 + 底部导航栏空间，桌面端64px */}
-          <main className='w-full min-h-screen pb-16 pt-[44px] md:pb-8 md:pt-16' style={{ paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))' }}>
+          <main
+            className='w-full min-h-screen pb-16 pt-[44px] md:pb-8 md:pt-16'
+            style={{
+              paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))',
+            }}
+          >
             <div className='ui-page-frame px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
               <div className='ui-page-container px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7'>
                 {children}
