@@ -2,6 +2,7 @@
 
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
@@ -496,12 +497,12 @@ export default function UserConfig({
                   </div>
                   {role === 'owner' && (
                     <div className='flex gap-1'>
-                      <button
-                        onClick={() => openEditGroup(group)}
+                      <Link
+                        href={`/admin/users/groups/${encodeURIComponent(group.name)}`}
                         className='px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600'
                       >
                         编辑
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleDeleteGroup(group.name)}
                         className='px-3 py-1 bg-red-500 text-white rounded text-xs font-medium hover:bg-red-600'
