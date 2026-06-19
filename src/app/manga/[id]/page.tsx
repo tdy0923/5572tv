@@ -7,6 +7,8 @@ import {
   Calendar,
   ChevronRight,
   Loader2,
+  Star,
+  Tag,
   User,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -97,6 +99,19 @@ export default function MangaDetailPage() {
                   src={`/api/image-proxy?url=${encodeURIComponent(detail.cover)}`}
                   alt={detail.title}
                   className='w-full h-full object-cover'
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.fallback-icon')) {
+                      const fallback = document.createElement('div');
+                      fallback.className =
+                        'fallback-icon w-full h-full flex items-center justify-center';
+                      fallback.innerHTML =
+                        '<svg class="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
+                      parent.appendChild(fallback);
+                    }
+                  }}
                 />
               ) : (
                 <div className='flex items-center justify-center h-full'>
@@ -125,10 +140,31 @@ export default function MangaDetailPage() {
                   {detail.status}
                 </div>
               )}
+              {detail.rating && detail.rating !== '暂无评分' && (
+                <div className='flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400'>
+                  <Star className='w-4 h-4 fill-amber-400' />
+                  {detail.rating}
+                </div>
+              )}
               <div className='px-2.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium'>
                 {detail.sourceName}
               </div>
             </div>
+
+            {/* Genres */}
+            {detail.genres && detail.genres.length > 0 && (
+              <div className='flex flex-wrap gap-2 mb-4'>
+                {detail.genres.map((genre) => (
+                  <span
+                    key={genre}
+                    className='inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium'
+                  >
+                    <Tag className='w-3 h-3' />
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {detail.description && (
               <p className='text-sm leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-6 mb-4'>

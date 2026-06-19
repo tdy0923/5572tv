@@ -169,10 +169,24 @@ export async function getMangaBzDetail(
 
     // Extract rating
     const ratingText = $('.detail-info-stars span').text().trim();
-    const rating = parseFloat(ratingText) || 0;
+    const rating = ratingText || '暂无评分';
 
-    // Extract chapters
-    const chapters: MangaChapter[] = [];
+    // Extract genres
+    const genres: string[] = [];
+    $('.detail-info-tip span').each((_, el) => {
+      const text = $(el).text().trim();
+      if (text.includes('題材') || text.includes('题材')) {
+        $(el)
+          .find('.item, a')
+          .each((_, item) => {
+            const genre = $(item).text().trim();
+            if (genre) genres.push(genre);
+          });
+      }
+    });
+
+    // Extract chapters (deduplicate by href)
+    const chapterMap = new Map<string, MangaChapter>();
     $('a.detail-list-form-item, .mh-chapter-list li a').each((_, el) => {
       const $el = $(el);
       const href = $el.attr('href') || '';
@@ -184,9 +198,9 @@ export async function getMangaBzDetail(
           .replace(/\(\d+P\)/, '')
           .trim();
 
-      if (href && title) {
+      if (href && title && !chapterMap.has(href)) {
         const fullUrl = href.startsWith('http') ? href : BASE_URL + href;
-        chapters.push({
+        chapterMap.set(href, {
           id: href,
           title,
           url: fullUrl,
@@ -194,6 +208,7 @@ export async function getMangaBzDetail(
         });
       }
     });
+    const chapters = Array.from(chapterMap.values());
 
     return {
       id: idOrUrl,
@@ -202,6 +217,8 @@ export async function getMangaBzDetail(
       description,
       author: author || '未知',
       status: status || '未知',
+      genres,
+      rating,
       chapters,
       source: SOURCE_KEY,
       sourceName: SOURCE_NAME,

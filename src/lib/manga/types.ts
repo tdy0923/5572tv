@@ -17,6 +17,8 @@ export interface MangaDetail {
   description: string;
   author: string;
   status: string;
+  genres: string[];
+  rating: string;
   source: string;
   sourceName: string;
   url: string;
