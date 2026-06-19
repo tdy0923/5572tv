@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { MangaSearchResult } from '@/lib/manga';
 
@@ -135,22 +135,68 @@ function MangaSearchContent() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
+  const [allResults, setAllResults] = useState<MangaSearchResult[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
   const trimmedQuery = initialQuery.trim();
 
-  const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['manga', 'search', trimmedQuery],
-    queryFn: async () => {
+  useEffect(() => {
+    if (!trimmedQuery) {
+      setAllResults([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+      return;
+    }
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setIsLoading(true);
+    setAllResults([]);
+    setCurrentPage(1);
+    setTotalPages(1);
+
+    fetch(`/api/manga/search?q=${encodeURIComponent(trimmedQuery)}&page=1`, {
+      signal: controller.signal,
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        if (!controller.signal.aborted) {
+          setAllResults(json.results || []);
+          setTotalPages(json.totalPages || 1);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [trimmedQuery]);
+
+  const loadMore = useCallback(async () => {
+    const nextPage = currentPage + 1;
+    setIsLoadingMore(true);
+    try {
       const res = await fetch(
-        `/api/manga/search?q=${encodeURIComponent(trimmedQuery)}&page=1`,
+        `/api/manga/search?q=${encodeURIComponent(trimmedQuery)}&page=${nextPage}`,
       );
       const json = await res.json();
-      return (json.results || []) as MangaSearchResult[];
-    },
-    enabled: !!trimmedQuery,
-    staleTime: 60_000,
-  });
-
-  const results = data || [];
+      const newResults = (json.results || []) as MangaSearchResult[];
+      setAllResults((prev) => [...prev, ...newResults]);
+      setCurrentPage(nextPage);
+      if (json.totalPages) setTotalPages(json.totalPages);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [trimmedQuery, currentPage]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -249,7 +295,7 @@ function MangaSearchContent() {
         )}
 
         {/* No Results */}
-        {!isLoading && trimmedQuery && results.length === 0 && (
+        {!isLoading && trimmedQuery && allResults.length === 0 && (
           <div className='flex flex-col items-center justify-center py-20'>
             <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-800 dark:to-slate-700 flex items-center justify-center shadow-lg'>
               <Search className='w-12 h-12 text-gray-400 dark:text-gray-500' />
@@ -264,9 +310,9 @@ function MangaSearchContent() {
         )}
 
         {/* Results Grid */}
-        {!isLoading && results.length > 0 && (
+        {!isLoading && allResults.length > 0 && (
           <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-            {results.map((item, index) => (
+            {allResults.map((item, index) => (
               <Link
                 key={`${item.source}-${item.id}-${index}`}
                 href={`/manga/${encodeURIComponent(item.id)}?source=${item.source}`}
@@ -345,8 +391,28 @@ function MangaSearchContent() {
           </div>
         )}
 
+        {/* Load More Button */}
+        {!isLoading && allResults.length > 0 && currentPage < totalPages && (
+          <div className='flex justify-center mt-8'>
+            <button
+              onClick={loadMore}
+              disabled={isLoadingMore}
+              className='px-6 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              {isLoadingMore ? (
+                <span className='flex items-center gap-2'>
+                  <div className='animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-green-500 dark:border-gray-600 dark:border-t-green-400' />
+                  加载中...
+                </span>
+              ) : (
+                '加载更多'
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Loading More Indicator */}
-        {isFetching && !isLoading && (
+        {isLoadingMore && (
           <div className='flex justify-center mt-8'>
             <div className='flex items-center gap-3 px-6 py-3 bg-white/70 dark:bg-white/6 rounded-full border border-black/6 dark:border-white/8 shadow-md backdrop-blur-md'>
               <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-green-500 dark:border-gray-600 dark:border-t-green-400' />

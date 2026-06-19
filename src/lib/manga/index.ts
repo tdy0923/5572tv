@@ -24,7 +24,7 @@ async function searchSingleSource(
   source: MangaSource,
   query: string,
   page: number,
-): Promise<MangaSearchResult[]> {
+): Promise<{ results: MangaSearchResult[]; totalPages: number }> {
   try {
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('timeout')), SEARCH_TIMEOUT),
@@ -40,20 +40,23 @@ async function searchSingleSource(
         searchFn = searchMangaBz;
         break;
       default:
-        return [];
+        return { results: [], totalPages: 0 };
     }
 
-    const result = await Promise.race([searchFn(query, page), timeoutPromise]);
-    return result.results;
+    return await Promise.race([searchFn(query, page), timeoutPromise]);
   } catch {
-    return [];
+    return { results: [], totalPages: 0 };
   }
 }
 
 export async function searchManga(
   query: string,
   page: number = 1,
-): Promise<{ results: MangaSearchResult[]; totalResults: number }> {
+): Promise<{
+  results: MangaSearchResult[];
+  totalResults: number;
+  totalPages: number;
+}> {
   const sources = getEnabledSources();
 
   const results = await Promise.allSettled(
@@ -61,15 +64,20 @@ export async function searchManga(
   );
 
   const allResults: MangaSearchResult[] = [];
+  let maxPages = 1;
   results.forEach((result) => {
     if (result.status === 'fulfilled') {
-      allResults.push(...result.value);
+      allResults.push(...result.value.results);
+      if (result.value.totalPages > maxPages) {
+        maxPages = result.value.totalPages;
+      }
     }
   });
 
   return {
     results: allResults,
     totalResults: allResults.length,
+    totalPages: maxPages,
   };
 }
 

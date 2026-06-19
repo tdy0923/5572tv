@@ -13,7 +13,6 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 interface InviteCode {
   code: string;
@@ -351,91 +350,81 @@ export default function InviteCodeManager() {
         </table>
       </div>
 
-      {/* 生成邀请码模态框 */}
-      {showCreateModal &&
-        createPortal(
-          <div
-            className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'
-            onClick={() => setShowCreateModal(false)}
-          >
-            <div
-              className='bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md transform transition-all'
-              onClick={(e) => e.stopPropagation()}
+      {/* 生成邀请码内联表单 */}
+      {showCreateModal && (
+        <div className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4'>
+          <div className='flex items-center justify-between'>
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+              生成新邀请码
+            </h3>
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
             >
-              <div className='flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700'>
-                <h3 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
-                  生成新邀请码
-                </h3>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
-                >
-                  <X size={24} />
-                </button>
-              </div>
+              <X size={20} />
+            </button>
+          </div>
 
-              <div className='p-6 space-y-5'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    最大使用次数
-                  </label>
-                  <input
-                    type='number'
-                    min='1'
-                    max='1000'
-                    value={maxUses}
-                    onChange={(e) => setMaxUses(Number(e.target.value))}
-                    className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
-                  />
-                  <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
-                    每个邀请码可以被使用的次数（1-1000）
-                  </p>
-                </div>
-
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    有效期（天）
-                  </label>
-                  <input
-                    type='number'
-                    min='1'
-                    max='365'
-                    value={expiresIn}
-                    onChange={(e) => setExpiresIn(Number(e.target.value))}
-                    className='w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
-                  />
-                  <p className='mt-1.5 text-xs text-gray-500 dark:text-gray-400'>
-                    邀请码的有效期限（1-365天）
-                  </p>
-                </div>
-              </div>
-
-              <div className='flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700'>
-                <button
-                  onClick={handleCreate}
-                  disabled={loading}
-                  className={
-                    buttonStyles.success +
-                    ' flex-1 disabled:opacity-50 disabled:cursor-not-allowed'
-                  }
-                >
-                  {loading ? '生成中...' : '生成邀请码'}
-                </button>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  disabled={loading}
-                  className={
-                    buttonStyles.secondary +
-                    ' disabled:opacity-50 disabled:cursor-not-allowed'
-                  }
-                >
-                  取消
-                </button>
-              </div>
+          <div className='grid grid-cols-2 gap-4'>
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+                最大使用次数
+              </label>
+              <input
+                type='number'
+                min='1'
+                max='1000'
+                value={maxUses}
+                onChange={(e) => setMaxUses(Number(e.target.value))}
+                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                1-1000
+              </p>
             </div>
-          </div>,
-          document.body,
-        )}
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
+                有效期（天）
+              </label>
+              <input
+                type='number'
+                min='1'
+                max='365'
+                value={expiresIn}
+                onChange={(e) => setExpiresIn(Number(e.target.value))}
+                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm'
+              />
+              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                1-365天
+              </p>
+            </div>
+          </div>
+
+          <div className='flex gap-2 pt-2'>
+            <button
+              onClick={handleCreate}
+              disabled={loading}
+              className={
+                buttonStyles.success +
+                ' disabled:opacity-50 disabled:cursor-not-allowed'
+              }
+            >
+              {loading ? '生成中...' : '生成邀请码'}
+            </button>
+            <button
+              onClick={() => setShowCreateModal(false)}
+              disabled={loading}
+              className={
+                buttonStyles.secondary +
+                ' disabled:opacity-50 disabled:cursor-not-allowed'
+              }
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

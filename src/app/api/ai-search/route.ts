@@ -26,7 +26,7 @@ interface AiSearchResponse {
 /**
  * System prompt for AI assistant
  */
-const SYSTEM_PROMPT = `You are a movie/TV search assistant. Your job is to turn a user's natural-language request into concrete movie, TV series, or variety-show search candidates.
+const _SYSTEM_PROMPT = `You are a movie/TV search assistant. Your job is to turn a user's natural-language request into concrete movie, TV series, or variety-show search candidates.
 
 Rules:
 1. Must return concrete Chinese titles (not English descriptions)
@@ -38,7 +38,7 @@ Rules:
 /**
  * Build user prompt
  */
-function buildUserPrompt(query: string): string {
+function _buildUserPrompt(query: string): string {
   return `用户想找片：${query}
 
 请直接给出最可能的片名候选，优先输出具体片名，不要输出工具调用、联网验证计划或额外解释。
@@ -62,7 +62,7 @@ function buildUserPrompt(query: string): string {
 /**
  * Parse AI response
  */
-function parseAiResponse(response: string): AiSearchResponse {
+function _parseAiResponse(response: string): AiSearchResponse {
   try {
     // Try to extract JSON from response
     const jsonMatch = response.match(/\{[\s\S]*\}/);

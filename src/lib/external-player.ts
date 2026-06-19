@@ -24,7 +24,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'potplayer',
     icon: '🎬',
     platforms: ['windows'],
-    buildUrl: (url, title) => `potplayer://${encodeURIComponent(url)}`,
+    buildUrl: (url, _title) => `potplayer://${encodeURIComponent(url)}`,
   },
   {
     id: 'vlc',
@@ -32,7 +32,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'vlc',
     icon: '🟠',
     platforms: ['windows', 'macos', 'linux', 'ios', 'android'],
-    buildUrl: (url, title) => `vlc://${encodeURIComponent(url)}`,
+    buildUrl: (url, _title) => `vlc://${encodeURIComponent(url)}`,
   },
   {
     id: 'mpv',
@@ -40,7 +40,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'mpv',
     icon: '🎞️',
     platforms: ['windows', 'macos', 'linux'],
-    buildUrl: (url, title) => `mpv://${encodeURIComponent(url)}`,
+    buildUrl: (url, _title) => `mpv://${encodeURIComponent(url)}`,
   },
   {
     id: 'iina',
@@ -48,7 +48,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'iina',
     icon: '🎯',
     platforms: ['macos'],
-    buildUrl: (url, title) => `iina://weblink?url=${encodeURIComponent(url)}`,
+    buildUrl: (url, _title) => `iina://weblink?url=${encodeURIComponent(url)}`,
   },
   {
     id: 'nplayer',
@@ -56,7 +56,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'nplayer',
     icon: '📱',
     platforms: ['ios', 'android'],
-    buildUrl: (url, title) => `nplayer-${url}`,
+    buildUrl: (url, _title) => `nplayer-${url}`,
   },
   {
     id: 'mxplayer',
@@ -64,7 +64,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'intent',
     icon: '播放',
     platforms: ['android'],
-    buildUrl: (url, title) =>
+    buildUrl: (url, _title) =>
       `intent:#Intent;action=android.intent.action.VIEW;type=video/*;S.data=${encodeURIComponent(url)};end`,
   },
   {
@@ -73,7 +73,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'infuse',
     icon: '💜',
     platforms: ['ios', 'macos'],
-    buildUrl: (url, title) =>
+    buildUrl: (url, _title) =>
       `infuse://x-callback-url/play?url=${encodeURIComponent(url)}`,
   },
   {
@@ -82,7 +82,7 @@ export const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     protocol: 'fileball',
     icon: '📂',
     platforms: ['ios'],
-    buildUrl: (url, title) => `fileball://play?url=${encodeURIComponent(url)}`,
+    buildUrl: (url, _title) => `fileball://play?url=${encodeURIComponent(url)}`,
   },
 ];
 

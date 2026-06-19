@@ -199,9 +199,9 @@ export async function GET(request: Request) {
 
                 try {
                   controller.enqueue(value);
-                } catch (e) {
+                } catch {
                   if (process.env.NODE_ENV === 'development') {
-                    console.warn('Failed to enqueue chunk:', e);
+                    console.warn('Failed to enqueue chunk');
                   }
                   cleanup();
                   return;
@@ -224,7 +224,7 @@ export async function GET(request: Request) {
             if (reader) {
               try {
                 reader.releaseLock();
-              } catch (e) {
+              } catch {
                 // reader 可能已经被释放，忽略错误
               }
               reader = null;
@@ -239,7 +239,7 @@ export async function GET(request: Request) {
           if (reader) {
             try {
               reader.releaseLock();
-            } catch (e) {
+            } catch {
               // reader 可能已经被释放，忽略错误
             }
             reader = null;
@@ -248,7 +248,7 @@ export async function GET(request: Request) {
           if (response?.body) {
             try {
               response.body.cancel();
-            } catch (e) {
+            } catch {
               // 忽略取消时的错误
             }
           }
@@ -275,7 +275,7 @@ export async function GET(request: Request) {
     if (reader) {
       try {
         (reader as ReadableStreamDefaultReader<Uint8Array>).releaseLock();
-      } catch (e) {
+      } catch {
         // 忽略错误
       }
     }
@@ -283,7 +283,7 @@ export async function GET(request: Request) {
     if (response?.body) {
       try {
         response.body.cancel();
-      } catch (e) {
+      } catch {
         // 忽略错误
       }
     }
