@@ -25,6 +25,8 @@ export const SHORT_DRAMA_KEYWORDS = [
   '复仇',
   '总裁',
   '豪门',
+  '穿越重生',
+  '年代剧',
 ];
 
 // 排除的分类关键词（明确不是短剧的内容）
@@ -37,15 +39,44 @@ export const EXCLUDE_KEYWORDS = [
   '成人专区',
   '国产自拍',
   '自拍偷拍',
-  // 非短剧类型
+  // 动漫
   '动漫',
   '动画',
   '漫画',
   '番剧',
   '剧场版',
+  // 电影
   '电影',
+  '喜剧片',
+  '剧情片',
+  '动作片',
+  '恐怖片',
+  '科幻片',
+  '爱情片',
+  // 综艺/纪录片
   '综艺',
   '纪录片',
+  // 电视剧（非短剧）
+  '连续剧',
+  '国产剧',
+  '香港剧',
+  '韩国剧',
+  '欧美剧',
+  '台湾剧',
+  '日本剧',
+  '韩剧',
+  '港台剧',
+  '日剧',
+  '马泰剧',
+  '内地剧',
+  '港剧',
+  '台剧',
+  '泰剧',
+  '美国剧',
+  '大陆剧',
+  '港澳剧',
+  '美剧',
+  '泰剧',
   // 其他
   '福利',
   '写真',
@@ -135,12 +166,8 @@ export function isShortDramaCategory(categoryName: string): boolean {
   if (!categoryName) return false;
   // 先检查是否应该排除
   if (isExcludedCategory(categoryName)) return false;
-  // 必须包含"剧"字或者是明确的短剧关键词
-  const hasDramaKeyword = SHORT_DRAMA_KEYWORDS.some((keyword) =>
-    categoryName.includes(keyword),
-  );
-  const hasJuChar = categoryName.includes('剧');
-  return hasDramaKeyword || hasJuChar;
+  // 必须精确匹配短剧关键词（不再使用宽泛的"剧"字匹配）
+  return SHORT_DRAMA_KEYWORDS.some((keyword) => categoryName.includes(keyword));
 }
 
 // 检查分类是否应该被排除
