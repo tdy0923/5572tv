@@ -152,7 +152,7 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     // 只使用默认源作为默认源（确保ID与parse API兼容）
     sourcesWithShortDrama.push({
       api: DEFAULT_SHORT_DRAMA_API,
-      name: 'tyyszy',
+      name: 'hongniuzy2',
       categoryId: 0,
     });
 
