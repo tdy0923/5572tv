@@ -168,12 +168,27 @@ function MangaSearchContent() {
                     className='group'
                   >
                     <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-gray-100 dark:border-gray-800'>
-                      <div className='aspect-[3/4] relative overflow-hidden bg-gray-100 dark:bg-gray-800'>
+                      <div className='aspect-[3/4] relative min-h-[180px] overflow-hidden bg-gray-100 dark:bg-gray-800'>
                         <img
                           src={`/api/image-proxy?url=${encodeURIComponent(manga.cover)}`}
                           alt={manga.title}
                           className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
-                          loading='lazy'
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (
+                              parent &&
+                              !parent.querySelector('.fallback-icon')
+                            ) {
+                              const fallback = document.createElement('div');
+                              fallback.className =
+                                'fallback-icon w-full h-full flex items-center justify-center';
+                              fallback.innerHTML =
+                                '<svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
+                              parent.appendChild(fallback);
+                            }
+                          }}
                         />
                       </div>
                       <div className='p-3'>
@@ -231,7 +246,7 @@ function MangaSearchContent() {
               >
                 <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-gray-100 dark:border-gray-800'>
                   {/* Cover Image */}
-                  <div className='aspect-[3/4] relative overflow-hidden bg-gray-100 dark:bg-gray-800'>
+                  <div className='aspect-[3/4] relative min-h-[180px] overflow-hidden bg-gray-100 dark:bg-gray-800'>
                     {item.cover ? (
                       <img
                         src={`/api/image-proxy?url=${encodeURIComponent(item.cover)}`}

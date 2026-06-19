@@ -93,7 +93,7 @@ export default function MangaDetailPage() {
         <div className='flex flex-col sm:flex-row gap-6 mb-8'>
           {/* Cover */}
           <div className='shrink-0 w-40 sm:w-48 mx-auto sm:mx-0'>
-            <div className='aspect-[3/4] relative overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg'>
+            <div className='aspect-[3/4] relative min-h-[240px] overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 shadow-lg'>
               {detail.cover ? (
                 <img
                   src={`/api/image-proxy?url=${encodeURIComponent(detail.cover)}`}

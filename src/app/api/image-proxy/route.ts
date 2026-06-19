@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Decode URL
-    const decodedUrl = decodeURIComponent(url);
+    // Decode URL (searchParams.get already decodes once; use as-is to avoid double-decode)
+    const decodedUrl = url;
 
     // Check cache
     const cached = imageCache.get(decodedUrl);
