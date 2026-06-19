@@ -230,6 +230,84 @@ export async function getMangaBzDetail(
   }
 }
 
+// P.A.C.K.E.D. JavaScript unpacker
+// MangaBZ chapterimage.ashx returns: eval(function(p,a,c,k,e,d){...}('payload', a, c, 'dict'.split('|'), 0, {}))
+function unpackPackedResponse(js: string): string[] {
+  const urls: string[] = [];
+  try {
+    // Match the eval(function(...){...}(args)) pattern
+    const evalMatch = js.match(
+      /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?\}\s*\(\s*'([^']*)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([^']*)'\.split\s*\(\s*'\|'\s*\)/,
+    );
+    if (!evalMatch) return urls;
+
+    const payload = evalMatch[1];
+    const base = parseInt(evalMatch[2]);
+    const count = parseInt(evalMatch[3]);
+    const dictionary = evalMatch[4].split('|');
+
+    // P.A.C.K.E.D. substitution decode
+    const decoded: Record<string, string> = {};
+    const baseChars =
+      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/=';
+
+    function encode(num: number): string {
+      if (num === 0) return baseChars[0];
+      let result = '';
+      let n = num;
+      while (n > 0) {
+        result = baseChars[n % base] + result;
+        n = Math.floor(n / base);
+      }
+      return result;
+    }
+
+    // Build dictionary mapping
+    for (let i = 0; i < count; i++) {
+      const key = encode(i);
+      decoded[key] = dictionary[i] || '';
+    }
+
+    // Perform substitution on payload
+    const words = payload.split(/\b/);
+    const result = words
+      .map((word) => {
+        if (word.length > 0 && decoded[word] !== undefined) {
+          return decoded[word];
+        }
+        return word;
+      })
+      .join('');
+
+    // Extract all image URLs from decoded result
+    const urlMatches = result.matchAll(
+      /https?:\/\/image\.mangabz\.com[^"'\s\\)]+\.(jpg|png|webp|jpeg)/gi,
+    );
+    for (const match of urlMatches) {
+      urls.push(match[0]);
+    }
+
+    // Also try to find pix (base URL) and individual paths
+    const pixMatch = result.match(/pix\s*=\s*["']([^"']+)["']/);
+    if (pixMatch) {
+      const pix = pixMatch[1];
+      // Find paths like "1/139/418076/1_1743.jpg"
+      const pathMatches = result.matchAll(
+        /(\d+\/\d+\/\d+\/\d+_\d+\.(?:jpg|png|webp|jpeg))/g,
+      );
+      for (const pathMatch of pathMatches) {
+        const fullUrl = pix + pathMatch[1];
+        if (!urls.includes(fullUrl)) {
+          urls.push(fullUrl);
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return urls;
+}
+
 export async function getMangaBzChapterPages(
   chapterUrl: string,
 ): Promise<MangaChapterPages | null> {
@@ -261,7 +339,6 @@ export async function getMangaBzChapterPages(
     const imageCountMatch = html.match(/MANGABZ_IMAGE_COUNT\s*=\s*(\d+)/);
 
     if (!cidMatch || !midMatch || !signMatch || !dtMatch || !imageCountMatch) {
-      // Fallback: return chapter URL for browser-side rendering
       return {
         chapterId: chapterUrl,
         title,
@@ -291,48 +368,70 @@ export async function getMangaBzChapterPages(
     );
 
     if (prevMatch) {
-      const prevUrl = prevMatch[1].startsWith('http')
+      prevChapterId = prevMatch[1].startsWith('http')
         ? prevMatch[1]
         : BASE_URL + prevMatch[1];
-      prevChapterId = prevUrl;
     }
     if (nextMatch) {
-      const nextUrl = nextMatch[1].startsWith('http')
+      nextChapterId = nextMatch[1].startsWith('http')
         ? nextMatch[1]
         : BASE_URL + nextMatch[1];
-      nextChapterId = nextUrl;
     }
 
-    // Fetch image URLs from chapterimage.ashx for each page
-    const pages: { url: string; index: number }[] = [];
-    const batchSize = 5;
+    // Fetch all image URLs - each chapterimage.ashx call returns ~2 images
+    // We need ceil(imageCount/2) + 1 calls to get all unique images
+    const allUrls = new Map<number, string>();
+    const fetchCount = Math.ceil(imageCount / 2) + 1;
 
-    for (let i = 0; i < imageCount; i += batchSize) {
-      const batch = [];
-      for (let j = i; j < Math.min(i + batchSize, imageCount); j++) {
-        const page = j + 1;
-        const imgUrl = `${BASE_URL}/chapterimage.ashx?cid=${cid}&page=${page}&key=&_cid=${cid}&_mid=${mid}&_dt=${dt}&_sign=${sign}`;
-        batch.push(
-          fetch(imgUrl, { headers: HEADERS, signal: AbortSignal.timeout(8000) })
-            .then(async (res) => {
-              if (!res.ok) return null;
-              const js = await res.text();
-              // Unpack P.A.C.K.E.D. JavaScript to extract image URL
-              const imageUrl = unpackPacked(js);
-              return imageUrl ? { url: imageUrl, index: j } : null;
-            })
-            .catch(() => null),
-        );
-      }
+    // Fetch in parallel batches
+    const fetchPromises = [];
+    for (let page = 1; page <= fetchCount; page++) {
+      const url = `${BASE_URL}/chapterimage.ashx?cid=${cid}&page=${page}&key=&_cid=${cid}&_mid=${mid}&_dt=${dt}&_sign=${sign}`;
+      fetchPromises.push(
+        fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(8000) })
+          .then(async (res) => {
+            if (!res.ok) return;
+            const js = await res.text();
+            const urls = unpackPackedResponse(js);
+            // Each response may contain multiple image URLs, assign them to page indices
+            urls.forEach((imageUrl, offset) => {
+              const pageIndex = (page - 1) * 2 + offset;
+              if (pageIndex < imageCount && !allUrls.has(pageIndex)) {
+                allUrls.set(pageIndex, imageUrl);
+              }
+            });
+          })
+          .catch(() => {}),
+      );
+    }
 
-      const results = await Promise.all(batch);
-      for (const result of results) {
-        if (result) pages.push(result);
+    await Promise.all(fetchPromises);
+
+    // If unpacking didn't work, try fetching page by page (fallback)
+    if (allUrls.size === 0) {
+      for (let page = 1; page <= imageCount; page++) {
+        const url = `${BASE_URL}/chapterimage.ashx?cid=${cid}&page=${page}&key=&_cid=${cid}&_mid=${mid}&_dt=${dt}&_sign=${sign}`;
+        try {
+          const res = await fetch(url, {
+            headers: HEADERS,
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!res.ok) continue;
+          const js = await res.text();
+          const urls = unpackPackedResponse(js);
+          if (urls.length > 0) {
+            allUrls.set(page - 1, urls[0]);
+          }
+        } catch {
+          // skip
+        }
       }
     }
 
-    // Sort by index
-    pages.sort((a, b) => a.index - b.index);
+    // Build pages array
+    const pages = Array.from(allUrls.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([index, url]) => ({ url, index }));
 
     return {
       chapterId: chapterUrl,
@@ -345,69 +444,6 @@ export async function getMangaBzChapterPages(
     };
   } catch {
     clearTimeout(timeoutId);
-    return null;
-  }
-}
-
-// Unpack P.A.C.K.E.D. JavaScript to extract the first image URL
-function unpackPacked(packedJs: string): string | null {
-  try {
-    // P.A.C.K.E.D. format: packed=CIPHER(k,d,l,p)
-    // We need to find the base64 encoded string and decode it
-    const match = packedJs.match(/packed\s*=\s*'([^']+)'/);
-    if (!match) {
-      // Try alternative: the response might directly contain image URL
-      const urlMatch = packedJs.match(
-        /https?:\/\/image\.mangabz\.com[^"'\s)]+\.(jpg|png|webp)/i,
-      );
-      return urlMatch ? urlMatch[0] : null;
-    }
-
-    // Simple P.A.C.K.E.D. unpacker
-    const packed = match[1];
-    const unpacked = unpack(packed);
-    if (unpacked) {
-      const urlMatch = unpacked.match(
-        /https?:\/\/image\.mangabz\.com[^"'\s)]+\.(jpg|png|webp)/i,
-      );
-      return urlMatch ? urlMatch[0] : null;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-// Minimal P.A.C.K.E.D. JavaScript unpacker
-function unpack(packed: string): string | null {
-  try {
-    const parts = packed.match(/'([A-Za-z0-9+/=]+)'/);
-    if (!parts) return null;
-
-    const base64 = parts[1];
-    const decoded = atob(base64);
-
-    // Extract parameters from the packed format
-    const keyStr =
-      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/=';
-    const keyIndex: Record<string, number> = {};
-    for (let i = 0; i < keyStr.length; i++) {
-      keyIndex[keyStr[i]] = i;
-    }
-
-    // This is a simplified unpacker for the specific format used by MangaBZ
-    // The actual format is: function(p,a,c,k,e,d){...} where p is the payload
-    // For our purposes, we just need to find the image URL in the decoded output
-
-    // Try to find URL directly in decoded string
-    const urlMatch = decoded.match(/https?:\/\/[^"'\s)]+\.(jpg|png|webp)/i);
-    if (urlMatch) return urlMatch[0];
-
-    // If that fails, try to find it in the packed string itself
-    const urlMatch2 = packed.match(/https?:\/\/[^"'\s)]+\.(jpg|png|webp)/i);
-    return urlMatch2 ? urlMatch2[0] : null;
-  } catch {
     return null;
   }
 }
