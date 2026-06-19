@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // Validate the code is safe JavaScript
     try {
       new Function(code);
-    } catch (e) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JavaScript code' },
         { status: 400 },

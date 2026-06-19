@@ -169,7 +169,7 @@ export async function GET(request: NextRequest) {
 
     // 🔒 成人内容过滤
     if (shouldFilter) {
-      const beforeFilterCount = results.length;
+      const _beforeFilterCount = results.length;
 
       results = results.filter((result) => {
         const typeName = result.type_name || '';
@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
     // ⚡ 严格匹配模式 - 只返回高度相关的结果
     if (strictMode && results.length > 0) {
       const queryLower = query.toLowerCase().trim();
-      const beforeStrictCount = results.length;
+      const _beforeStrictCount = results.length;
 
       results = results.filter((result) => {
         const title = (result.title || '').toLowerCase().trim();

@@ -33,7 +33,11 @@ const EMPTY_FORM: Partial<SourceScript> = {
 };
 
 export default function SourceScripts() {
-  const { alertModal, showAlert, hideAlert } = useAlertModal();
+  const {
+    alertModal: _alertModal,
+    showAlert,
+    hideAlert: _hideAlert,
+  } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
   const [scripts, setScripts] = useState<SourceScript[]>([]);
   const [showForm, setShowForm] = useState(false);

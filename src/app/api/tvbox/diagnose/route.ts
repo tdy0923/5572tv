@@ -46,7 +46,7 @@ function isPrivateHost(urlStr: string): boolean {
   }
 }
 
-async function tryFetchHead(
+async function _tryFetchHead(
   url: string,
   timeoutMs = 3500,
 ): Promise<{ ok: boolean; status?: number; error?: string }> {

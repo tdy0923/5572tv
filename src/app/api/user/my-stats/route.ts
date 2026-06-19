@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     const currentStats = await db.getUserPlayStat(authInfo.username);
 
     // 构建更新后的统计数据
-    const updatedStats = {
+    const _updatedStats = {
       ...currentStats,
       totalWatchTime: isRecalculation
         ? watchTime

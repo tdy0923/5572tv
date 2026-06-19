@@ -77,7 +77,7 @@ function parseMovieSchedule(html: string): ReleaseItem[] {
 
     // Extract link
     const linkMatch = block.match(/<a[^>]+href="([^"]+)"/);
-    const link = linkMatch ? linkMatch[1] : '';
+    const _link = linkMatch ? linkMatch[1] : '';
 
     // Extract poster
     const posterMatch = block.match(/<img[^>]+(?:data-original|src)="([^"]+)"/);

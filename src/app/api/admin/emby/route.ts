@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const username = authInfo.username;
 
     // 获取配置
-    const adminConfig = await getConfig();
+    const _adminConfig = await getConfig();
 
     // 权限检查
     if (username !== process.env.USERNAME) {

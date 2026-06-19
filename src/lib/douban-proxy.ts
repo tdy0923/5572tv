@@ -208,7 +208,7 @@ export async function fetchDoubanWithProxy<T>(
         continue;
       }
     } catch (e: any) {
-      const durationMs = Date.now() - startTime;
+      const _durationMs = Date.now() - startTime;
       recordProviderFailure(provider);
       lastError = `${provider}: ${e.message}`;
       continue;

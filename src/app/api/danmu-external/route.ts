@@ -940,7 +940,7 @@ async function fetchDanmuFromXMLAPI(videoUrl: string): Promise<DanmuItem[]> {
       const danmakuRegex = /<d p="([^"]*)"[^>]*>([^<]*)<\/d>/g;
       const danmuList: DanmuItem[] = [];
       let match;
-      const count = 0;
+      const _count = 0;
 
       // 🚀 激进性能优化策略 - 基于ArtPlayer源码深度分析
       // 核心问题: 大量弹幕导致内存占用和计算密集
@@ -1309,7 +1309,7 @@ async function fetchDanmuByEpisodeId(
     const maxAllowedDanmu = 20000;
 
     const timeSegments: { [key: number]: DanmuItem[] } = {};
-    let totalProcessed = 0;
+    let _totalProcessed = 0;
     let batchCount = 0;
 
     for (const item of commentData.comments) {
@@ -1364,7 +1364,7 @@ async function fetchDanmuByEpisodeId(
           mode: mode === 4 ? 1 : mode === 5 ? 2 : 0,
         });
 
-        totalProcessed++;
+        _totalProcessed++;
         batchCount++;
 
         if (batchCount >= BATCH_SIZE) {

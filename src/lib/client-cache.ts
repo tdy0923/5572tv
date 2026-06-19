@@ -111,7 +111,7 @@ export class ClientCache {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } catch (error) {
+    } catch {
       // Silent - cleanup failure is non-critical
     }
   }

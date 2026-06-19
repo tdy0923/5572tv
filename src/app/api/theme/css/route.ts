@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest) {
     const customCSS = config.SiteConfig?.CustomCSS || '';
 
     return NextResponse.json({ CustomCSS: customCSS });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to get custom CSS' },
       { status: 500 },
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     clearConfigCache();
 
     return NextResponse.json({ success: true, CustomCSS: sanitized });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to save custom CSS' },
       { status: 500 },

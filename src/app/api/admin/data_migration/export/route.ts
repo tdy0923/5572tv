@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 }
 
 // 辅助函数：获取用户密码（通过数据库直接访问）
-async function getUserPassword(username: string): Promise<string | null> {
+async function _getUserPassword(username: string): Promise<string | null> {
   try {
     // 使用 Redis 存储的直接访问方法
     const storage = (db as any).storage;

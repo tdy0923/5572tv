@@ -117,7 +117,7 @@ export async function GET(request: Request) {
 
     // 重试逻辑：403/402 错误重试最多2次
     let videoResponse: Response;
-    let lastError: Error | null = null;
+    let _lastError: Error | null = null;
     const MAX_RETRIES = 2;
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -151,7 +151,7 @@ export async function GET(request: Request) {
 
         break; // 成功或不再重试
       } catch (fetchError: any) {
-        lastError = fetchError;
+        _lastError = fetchError;
         if (attempt < MAX_RETRIES && fetchError.name !== 'AbortError') {
           const delay = Math.pow(2, attempt) * 1000;
           console.warn(

@@ -17,13 +17,6 @@ import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
-interface CmsSource {
-  key: string;
-  name: string;
-  api: string;
-  detail?: string;
-}
-
 /**
  * Parse play URL string from CMS format
  * Format: "第01集$url1#第02集$url2" or "title1$url1$$$title2$url2"
