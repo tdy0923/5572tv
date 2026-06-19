@@ -62,15 +62,19 @@ export async function searchMangaBz(
         $el.find('img').first().attr('src') ||
         $el.find('img').first().attr('data-src') ||
         '';
+      // MangaBZ search results: author is not available, latest chapter is in .chapter
       const author = $el
         .find('.mh-item-detali-author, .author, .inform .author')
         .text()
         .trim()
         .replace(/^作者[：:]\s*/, '');
+      // Extract latest chapter from .chapter class or .epxs
       const latestChapter = $el
-        .find('.mh-item-detali-chapter, .chapter, .epxs')
+        .find('.chapter a, .mh-item-detali-chapter a, .epxs')
+        .first()
         .text()
-        .trim();
+        .trim()
+        .replace(/^\s*(最新|完結|完结)\s*/, '');
       const status = $el
         .find('.mh-item-detali-status, .status, .status em')
         .text()
@@ -356,26 +360,40 @@ export async function getMangaBzChapterPages(
     const dt = encodeURIComponent(dtMatch[1]);
     const imageCount = parseInt(imageCountMatch[1]);
 
-    // Extract prev/next chapter links
+    // Extract prev/next chapter links from MangaBZ's actual navigation structure
     let prevChapterId: string | null = null;
     let nextChapterId: string | null = null;
 
-    const prevMatch = html.match(
-      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*chapter-prev[^"]*"/,
-    );
-    const nextMatch = html.match(
-      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*chapter-next[^"]*"/,
-    );
+    // MangaBZ uses data attributes or specific link patterns for navigation
+    // Try multiple patterns to find prev/next chapters
+    const prevPatterns = [
+      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*mh-prevchapter[^"]*"/,
+      /<a[^>]*href="([^"]*)"[^>]*>\s*上一话/,
+      /<a[^>]*href="([^"]*)"[^>]*>\s*上一章/,
+    ];
+    const nextPatterns = [
+      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*mh-nextchapter[^"]*"/,
+      /<a[^>]*href="([^"]*)"[^>]*>\s*下一话/,
+      /<a[^>]*href="([^"]*)"[^>]*>\s*下一章/,
+    ];
 
-    if (prevMatch) {
-      prevChapterId = prevMatch[1].startsWith('http')
-        ? prevMatch[1]
-        : BASE_URL + prevMatch[1];
+    for (const pattern of prevPatterns) {
+      const match = html.match(pattern);
+      if (match) {
+        prevChapterId = match[1].startsWith('http')
+          ? match[1]
+          : BASE_URL + match[1];
+        break;
+      }
     }
-    if (nextMatch) {
-      nextChapterId = nextMatch[1].startsWith('http')
-        ? nextMatch[1]
-        : BASE_URL + nextMatch[1];
+    for (const pattern of nextPatterns) {
+      const match = html.match(pattern);
+      if (match) {
+        nextChapterId = match[1].startsWith('http')
+          ? match[1]
+          : BASE_URL + match[1];
+        break;
+      }
     }
 
     // Fetch all image URLs - each chapterimage.ashx call returns ~2 images

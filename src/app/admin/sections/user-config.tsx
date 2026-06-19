@@ -420,7 +420,7 @@ export default function UserConfig({
           <div className='text-xs text-gray-500 dark:text-gray-400'>
             共 {filteredUsers.length} 个用户
           </div>
-          <div className='max-h-[50vh] overflow-y-auto space-y-2'>
+          <div className='max-h-[70vh] overflow-y-auto space-y-2 pr-1'>
             {filteredUsers.map((u: any) => (
               <div
                 key={u.username}
@@ -481,7 +481,7 @@ export default function UserConfig({
             </div>
           )}
 
-          <div className='space-y-3'>
+          <div className='max-h-[70vh] overflow-y-auto space-y-3 pr-1'>
             {userGroups.map((group: any) => (
               <div
                 key={group.name}
@@ -560,7 +560,7 @@ export default function UserConfig({
                     全不选
                   </button>
                 </div>
-                <div className='max-h-[30vh] overflow-y-auto space-y-1'>
+                <div className='max-h-[50vh] overflow-y-auto space-y-1 pr-1'>
                   {users.map((u: any) => (
                     <label
                       key={u.username}
@@ -623,7 +623,7 @@ export default function UserConfig({
                 <p className='text-xs text-gray-500 mb-3'>
                   不勾选 = 全部源。勾选 = 仅勾选的源。
                 </p>
-                <div className='max-h-[35vh] overflow-y-auto space-y-1'>
+                <div className='max-h-[50vh] overflow-y-auto space-y-1 pr-1'>
                   {sources.map((s: any) => (
                     <label
                       key={s.key}
