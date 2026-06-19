@@ -6,26 +6,13 @@ import { NextResponse } from 'next/server';
 // 默认短剧源API（tyyszy.com）
 export const DEFAULT_SHORT_DRAMA_API = 'https://tyyszy.com/api.php/provide/vod';
 
-// 短剧分类关键词（超集 - 所有地方统一使用此列表）
+// 短剧分类关键词（精确匹配短剧，避免误匹配动漫/电影等）
 export const SHORT_DRAMA_KEYWORDS = [
   '短剧',
   '女频恋爱',
   '反转爽剧',
-  '古装仙侠',
-  '年代穿越',
-  '脑洞悬疑',
-  '现代都市',
-  '短篇',
-  '短集',
-  '擦边',
   '甜宠',
   '虐恋',
-  '穿越',
-  '重生',
-  '总裁',
-  '豪门',
-  '逆袭',
-  '复仇',
   '宠妻',
   '战神',
   '神医',
@@ -34,10 +21,15 @@ export const SHORT_DRAMA_KEYWORDS = [
   '甜剧',
   '虐剧',
   '爽剧',
+  '逆袭',
+  '复仇',
+  '总裁',
+  '豪门',
 ];
 
-// 排除的分类关键词（包含动漫、电影等非短剧内容）
+// 排除的分类关键词（明确不是短剧的内容）
 export const EXCLUDE_KEYWORDS = [
+  // 成人内容
   '18+',
   '成人',
   '伦理',
@@ -45,12 +37,7 @@ export const EXCLUDE_KEYWORDS = [
   '成人专区',
   '国产自拍',
   '自拍偷拍',
-  '教程',
-  '采集',
-  '教学',
-  '软件',
-  '工具',
-  '资源',
+  // 非短剧类型
   '动漫',
   '动画',
   '漫画',
@@ -59,6 +46,7 @@ export const EXCLUDE_KEYWORDS = [
   '电影',
   '综艺',
   '纪录片',
+  // 其他
   '福利',
   '写真',
   'coser',
