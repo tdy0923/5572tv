@@ -233,10 +233,8 @@ export async function getMangaBzDetail(
 export async function getMangaBzChapterPages(
   chapterUrl: string,
 ): Promise<MangaChapterPages | null> {
-  // MangaBZ uses heavy JavaScript anti-scraping for chapter pages
-  // Return the chapter URL and let the browser handle it
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
     const response = await fetch(chapterUrl, {
@@ -250,24 +248,166 @@ export async function getMangaBzChapterPages(
     }
 
     const html = await response.text();
-    const $ = cheerio.load(html);
 
-    const title = $('h1, .chapter-title, .reader-title').first().text().trim();
+    // Extract title
+    const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+    const title = titleMatch ? titleMatch[1].trim() : '未知章节';
 
-    // MangaBZ loads images via JavaScript anti-scraping
-    // Return the chapter URL for browser-side rendering
+    // Extract global JS variables needed for image loading
+    const cidMatch = html.match(/MANGABZ_CID\s*=\s*(\d+)/);
+    const midMatch = html.match(/MANGABZ_MID\s*=\s*(\d+)/);
+    const signMatch = html.match(/MANGABZ_VIEWSIGN\s*=\s*["']([^"']+)["']/);
+    const dtMatch = html.match(/MANGABZ_VIEWSIGN_DT\s*=\s*["']([^"']+)["']/);
+    const imageCountMatch = html.match(/MANGABZ_IMAGE_COUNT\s*=\s*(\d+)/);
+
+    if (!cidMatch || !midMatch || !signMatch || !dtMatch || !imageCountMatch) {
+      // Fallback: return chapter URL for browser-side rendering
+      return {
+        chapterId: chapterUrl,
+        title,
+        pages: [],
+        prevChapterId: null,
+        nextChapterId: null,
+        source: SOURCE_KEY,
+        chapterUrl,
+      };
+    }
+
+    const cid = cidMatch[1];
+    const mid = midMatch[1];
+    const sign = signMatch[1];
+    const dt = encodeURIComponent(dtMatch[1]);
+    const imageCount = parseInt(imageCountMatch[1]);
+
+    // Extract prev/next chapter links
+    let prevChapterId: string | null = null;
+    let nextChapterId: string | null = null;
+
+    const prevMatch = html.match(
+      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*chapter-prev[^"]*"/,
+    );
+    const nextMatch = html.match(
+      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*chapter-next[^"]*"/,
+    );
+
+    if (prevMatch) {
+      const prevUrl = prevMatch[1].startsWith('http')
+        ? prevMatch[1]
+        : BASE_URL + prevMatch[1];
+      prevChapterId = prevUrl;
+    }
+    if (nextMatch) {
+      const nextUrl = nextMatch[1].startsWith('http')
+        ? nextMatch[1]
+        : BASE_URL + nextMatch[1];
+      nextChapterId = nextUrl;
+    }
+
+    // Fetch image URLs from chapterimage.ashx for each page
+    const pages: { url: string; index: number }[] = [];
+    const batchSize = 5;
+
+    for (let i = 0; i < imageCount; i += batchSize) {
+      const batch = [];
+      for (let j = i; j < Math.min(i + batchSize, imageCount); j++) {
+        const page = j + 1;
+        const imgUrl = `${BASE_URL}/chapterimage.ashx?cid=${cid}&page=${page}&key=&_cid=${cid}&_mid=${mid}&_dt=${dt}&_sign=${sign}`;
+        batch.push(
+          fetch(imgUrl, { headers: HEADERS, signal: AbortSignal.timeout(8000) })
+            .then(async (res) => {
+              if (!res.ok) return null;
+              const js = await res.text();
+              // Unpack P.A.C.K.E.D. JavaScript to extract image URL
+              const imageUrl = unpackPacked(js);
+              return imageUrl ? { url: imageUrl, index: j } : null;
+            })
+            .catch(() => null),
+        );
+      }
+
+      const results = await Promise.all(batch);
+      for (const result of results) {
+        if (result) pages.push(result);
+      }
+    }
+
+    // Sort by index
+    pages.sort((a, b) => a.index - b.index);
+
     return {
       chapterId: chapterUrl,
-      title: title || '未知章节',
-      pages: [], // Empty - images loaded via JavaScript
-      prevChapterId: null,
-      nextChapterId: null,
+      title,
+      pages,
+      prevChapterId,
+      nextChapterId,
       source: SOURCE_KEY,
-      // Add the chapter URL for browser-side rendering
-      chapterUrl: chapterUrl,
-    } as MangaChapterPages & { chapterUrl: string };
+      chapterUrl,
+    };
   } catch {
     clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+// Unpack P.A.C.K.E.D. JavaScript to extract the first image URL
+function unpackPacked(packedJs: string): string | null {
+  try {
+    // P.A.C.K.E.D. format: packed=CIPHER(k,d,l,p)
+    // We need to find the base64 encoded string and decode it
+    const match = packedJs.match(/packed\s*=\s*'([^']+)'/);
+    if (!match) {
+      // Try alternative: the response might directly contain image URL
+      const urlMatch = packedJs.match(
+        /https?:\/\/image\.mangabz\.com[^"'\s)]+\.(jpg|png|webp)/i,
+      );
+      return urlMatch ? urlMatch[0] : null;
+    }
+
+    // Simple P.A.C.K.E.D. unpacker
+    const packed = match[1];
+    const unpacked = unpack(packed);
+    if (unpacked) {
+      const urlMatch = unpacked.match(
+        /https?:\/\/image\.mangabz\.com[^"'\s)]+\.(jpg|png|webp)/i,
+      );
+      return urlMatch ? urlMatch[0] : null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Minimal P.A.C.K.E.D. JavaScript unpacker
+function unpack(packed: string): string | null {
+  try {
+    const parts = packed.match(/'([A-Za-z0-9+/=]+)'/);
+    if (!parts) return null;
+
+    const base64 = parts[1];
+    const decoded = atob(base64);
+
+    // Extract parameters from the packed format
+    const keyStr =
+      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/=';
+    const keyIndex: Record<string, number> = {};
+    for (let i = 0; i < keyStr.length; i++) {
+      keyIndex[keyStr[i]] = i;
+    }
+
+    // This is a simplified unpacker for the specific format used by MangaBZ
+    // The actual format is: function(p,a,c,k,e,d){...} where p is the payload
+    // For our purposes, we just need to find the image URL in the decoded output
+
+    // Try to find URL directly in decoded string
+    const urlMatch = decoded.match(/https?:\/\/[^"'\s)]+\.(jpg|png|webp)/i);
+    if (urlMatch) return urlMatch[0];
+
+    // If that fails, try to find it in the packed string itself
+    const urlMatch2 = packed.match(/https?:\/\/[^"'\s)]+\.(jpg|png|webp)/i);
+    return urlMatch2 ? urlMatch2[0] : null;
+  } catch {
     return null;
   }
 }

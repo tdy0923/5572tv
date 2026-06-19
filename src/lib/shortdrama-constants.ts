@@ -36,7 +36,7 @@ export const SHORT_DRAMA_KEYWORDS = [
   '爽剧',
 ];
 
-// 排除的分类关键词
+// 排除的分类关键词（包含动漫、电影等非短剧内容）
 export const EXCLUDE_KEYWORDS = [
   '18+',
   '成人',
@@ -51,6 +51,18 @@ export const EXCLUDE_KEYWORDS = [
   '软件',
   '工具',
   '资源',
+  '动漫',
+  '动画',
+  '漫画',
+  '番剧',
+  '剧场版',
+  '电影',
+  '综艺',
+  '纪录片',
+  '福利',
+  '写真',
+  'coser',
+  'COSER',
 ];
 
 // 缓存时间配置（秒）- 单一数据源，服务端和客户端统一使用
@@ -133,7 +145,14 @@ export function mapApiItemToShortDramaItem(
 // 检查分类名称是否为短剧相关
 export function isShortDramaCategory(categoryName: string): boolean {
   if (!categoryName) return false;
-  return SHORT_DRAMA_KEYWORDS.some((keyword) => categoryName.includes(keyword));
+  // 先检查是否应该排除
+  if (isExcludedCategory(categoryName)) return false;
+  // 必须包含"剧"字或者是明确的短剧关键词
+  const hasDramaKeyword = SHORT_DRAMA_KEYWORDS.some((keyword) =>
+    categoryName.includes(keyword),
+  );
+  const hasJuChar = categoryName.includes('剧');
+  return hasDramaKeyword || hasJuChar;
 }
 
 // 检查分类是否应该被排除
