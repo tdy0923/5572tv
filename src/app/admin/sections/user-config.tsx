@@ -60,6 +60,9 @@ export default function UserConfig({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsers(config.UserConfig.Users);
     }
+    if (config?.SourceConfig) {
+      setSources(config.SourceConfig);
+    }
   }, [config]);
 
   const reload = async () => {

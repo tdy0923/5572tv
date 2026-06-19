@@ -36,20 +36,14 @@ export default function GroupEditPage() {
     queryFn: async () => {
       const res = await fetch('/api/admin/config');
       if (!res.ok) throw new Error('Failed to fetch config');
-      return (await res.json()) as AdminConfig;
+      const result = await res.json();
+      // API returns { Role, Config } - extract Config
+      return (result.Config || result) as AdminConfig;
     },
   });
 
-  // Fetch sources
-  const { data: sources = [] } = useQuery({
-    queryKey: ['admin', 'sources'],
-    queryFn: async () => {
-      const res = await fetch('/api/admin/config?action=getSources');
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.sources || [];
-    },
-  });
+  // Sources come from config
+  const sources = config?.SourceConfig || [];
 
   // Initialize state from config
   useEffect(() => {
