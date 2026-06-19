@@ -91,28 +91,10 @@ export default function ShortDramaPage() {
 
   // 监听滚动位置，控制返回顶部按钮显示
   useEffect(() => {
-    // 获取滚动位置的函数 - 专门针对 body 滚动
     const getScrollTop = () => {
       return document.body.scrollTop || 0;
     };
 
-    // 使用 requestAnimationFrame 持续检测滚动位置
-    let isRunning = false;
-    const checkScrollPosition = () => {
-      if (!isRunning) return;
-
-      const scrollTop = getScrollTop();
-      const shouldShow = scrollTop > 300;
-      setShowBackToTop(shouldShow);
-
-      requestAnimationFrame(checkScrollPosition);
-    };
-
-    // 启动持续检测
-    isRunning = true;
-    checkScrollPosition();
-
-    // 监听 body 元素的滚动事件
     const handleScroll = () => {
       const scrollTop = getScrollTop();
       setShowBackToTop(scrollTop > 300);
@@ -121,7 +103,6 @@ export default function ShortDramaPage() {
     document.body.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      isRunning = false;
       document.body.removeEventListener('scroll', handleScroll);
     };
   }, []);
@@ -205,9 +186,7 @@ export default function ShortDramaPage() {
     [searchHistory],
   );
 
-  const filteredDramas = dramas;
-
-  const sortedDramas = [...filteredDramas].sort((a, b) => {
+  const sortedDramas = [...dramas].sort((a, b) => {
     if (sortBy === 'latest') return (b.vod_time || 0) - (a.vod_time || 0);
     if (sortBy === 'popular') return (b.vod_hits || 0) - (a.vod_hits || 0);
     if (sortBy === 'name') return a.vod_name.localeCompare(b.vod_name);
@@ -434,17 +413,20 @@ export default function ShortDramaPage() {
             </div>
           )}
 
-          {/* 加载更多按钮 */}
-          {hasMore && !loading && sortedDramas.length > 0 && (
-            <div className='flex justify-center mt-8'>
-              <button
-                onClick={() => setPage((prevPage) => prevPage + 1)}
-                className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
-              >
-                加载更多
-              </button>
-            </div>
-          )}
+          {/* 加载更多按钮 - 虚拟化模式下隐藏（由滚动自动加载） */}
+          {!useVirtualization &&
+            hasMore &&
+            !loading &&
+            sortedDramas.length > 0 && (
+              <div className='flex justify-center mt-8'>
+                <button
+                  onClick={() => setPage((prevPage) => prevPage + 1)}
+                  className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
+                >
+                  加载更多
+                </button>
+              </div>
+            )}
 
           {/* 加载状态 - 只在首次加载或加载更多时显示骨架屏 */}
           {loading && (isInitialLoad || page > 1) && (

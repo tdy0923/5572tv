@@ -27,10 +27,19 @@ export async function GET() {
   // 尝试从缓存获取
   const cached = await db.getCache('trending_searches');
   if (cached) {
-    return NextResponse.json({ trending: cached });
+    const response = NextResponse.json({ trending: cached });
+    response.headers.set(
+      'Cache-Control',
+      'public, max-age=3600, s-maxage=3600',
+    );
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=3600');
+    return response;
   }
 
   // 缓存1小时
   await db.setCache('trending_searches', TRENDING_SEARCHES, 3600);
-  return NextResponse.json({ trending: TRENDING_SEARCHES });
+  const response = NextResponse.json({ trending: TRENDING_SEARCHES });
+  response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+  response.headers.set('CDN-Cache-Control', 'public, s-maxage=3600');
+  return response;
 }
