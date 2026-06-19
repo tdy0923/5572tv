@@ -203,14 +203,12 @@ export async function POST(request: NextRequest) {
       totalMovies: currentStats.totalMovies || currentStats.totalPlays || 1,
     };
 
-    // 更新统计数据（这里需要扩展存储层支持）
     // TODO: 需要在存储层添加 updateUserStats 方法
-    console.log('更新用户统计数据:', updatedStats);
-
-    return NextResponse.json({
-      success: true,
-      userStats: updatedStats,
-    });
+    // 目前服务端存储不支持更新，返回 501
+    return NextResponse.json(
+      { error: '服务端暂不支持统计数据更新，请使用本地存储模式' },
+      { status: 501 },
+    );
   } catch (error) {
     console.error('POST /api/user/my-stats - 详细错误信息:', error);
     return NextResponse.json(
@@ -367,9 +365,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // TODO: 需要在存储层添加清除用户统计数据的方法
-    console.log('清除用户统计数据:', authInfo.username);
-
-    return NextResponse.json({ success: true });
+    // 目前服务端存储不支持清除，返回 501
+    return NextResponse.json(
+      { error: '服务端暂不支持清除统计数据，请使用本地存储模式' },
+      { status: 501 },
+    );
   } catch (error) {
     console.error('清除用户统计数据失败:', error);
     return NextResponse.json(

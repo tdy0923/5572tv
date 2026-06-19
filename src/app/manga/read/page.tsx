@@ -491,6 +491,19 @@ export default function MangaReaderPage() {
                   className={`w-full object-contain rounded-lg ${imagesLoaded.has(currentPage) ? '' : 'hidden'}`}
                   loading='eager'
                   onLoad={() => handleImageLoad(currentPage)}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.classList.add('hidden');
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.error-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className =
+                        'error-fallback w-full aspect-[2/3] flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-500 dark:text-gray-400';
+                      fallback.innerHTML =
+                        '<svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">图片加载失败</span>';
+                      parent.appendChild(fallback);
+                    }
+                  }}
                 />
               </>
             )}
