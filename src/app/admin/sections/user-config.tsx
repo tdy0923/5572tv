@@ -107,7 +107,11 @@ export default function UserConfig({
     }
     await withLoading('changePassword', async () => {
       try {
-        await callApi({ action: 'change_password', ...changePassword });
+        await callApi({
+          action: 'changePassword',
+          targetUsername: changePassword.username,
+          targetPassword: changePassword.newPassword,
+        });
         showSuccess('密码修改成功', showAlert);
         setShowChangePasswordForm(false);
         setChangePassword({ username: '', newPassword: '' });
@@ -121,8 +125,34 @@ export default function UserConfig({
     if (!confirm(`确定删除用户 "${username}"？`)) return;
     await withLoading('deleteUser', async () => {
       try {
-        await callApi({ action: 'delete', username });
+        await callApi({ action: 'deleteUser', targetUsername: username });
         showSuccess('用户已删除', showAlert);
+        await reload();
+      } catch (err) {
+        showError((err as Error).message, showAlert);
+      }
+    });
+  };
+
+  const handleBanUser = async (username: string, banned: boolean) => {
+    const action = banned ? 'unban' : 'ban';
+    await withLoading('banUser', async () => {
+      try {
+        await callApi({ action, targetUsername: username });
+        showSuccess(banned ? '已解除封禁' : '已封禁用户', showAlert);
+        await reload();
+      } catch (err) {
+        showError((err as Error).message, showAlert);
+      }
+    });
+  };
+
+  const handleSetAdmin = async (username: string, makeAdmin: boolean) => {
+    const action = makeAdmin ? 'setAdmin' : 'cancelAdmin';
+    await withLoading('setAdmin', async () => {
+      try {
+        await callApi({ action, targetUsername: username });
+        showSuccess(makeAdmin ? '已设为管理员' : '已取消管理员', showAlert);
         await reload();
       } catch (err) {
         showError((err as Error).message, showAlert);
@@ -137,7 +167,11 @@ export default function UserConfig({
     }
     await withLoading('addGroup', async () => {
       try {
-        await callApi({ action: 'add_tag', name: newGroupName.trim() });
+        await callApi({
+          action: 'userGroup',
+          groupAction: 'add',
+          name: newGroupName.trim(),
+        });
         showSuccess('分组添加成功', showAlert);
         setNewGroupName('');
         await reload();
@@ -151,7 +185,7 @@ export default function UserConfig({
     if (!confirm(`确定删除分组 "${name}"？`)) return;
     await withLoading('deleteGroup', async () => {
       try {
-        await callApi({ action: 'delete_tag', name });
+        await callApi({ action: 'userGroup', groupAction: 'delete', name });
         showSuccess('分组已删除', showAlert);
         await reload();
       } catch (err) {
@@ -443,6 +477,11 @@ export default function UserConfig({
                     >
                       {getRoleLabel(u.role)}
                     </span>
+                    {u.banned && (
+                      <span className='text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'>
+                        已封禁
+                      </span>
+                    )}
                     {u.tags && u.tags.length > 0 && (
                       <span className='text-xs text-gray-500 dark:text-gray-400 truncate'>
                         {u.tags.join(', ')}
@@ -451,13 +490,42 @@ export default function UserConfig({
                   </div>
                 </div>
                 {role === 'owner' && u.role !== 'owner' && (
-                  <button
-                    onClick={() => handleDeleteUser(u.username)}
-                    className='p-1.5 text-red-500 hover:text-red-700 rounded-lg'
-                    title='删除'
-                  >
-                    🗑️
-                  </button>
+                  <div className='flex items-center gap-1'>
+                    {/* 封禁/解封 */}
+                    <button
+                      onClick={() => handleBanUser(u.username, !!u.banned)}
+                      className={`px-2 py-1 text-xs rounded-lg ${u.banned ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400'}`}
+                      title={u.banned ? '解封' : '封禁'}
+                    >
+                      {u.banned ? '解封' : '封禁'}
+                    </button>
+                    {/* 管理员权限 */}
+                    {u.role === 'admin' ? (
+                      <button
+                        onClick={() => handleSetAdmin(u.username, false)}
+                        className='px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg'
+                        title='取消管理员'
+                      >
+                        取消管理
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleSetAdmin(u.username, true)}
+                        className='px-2 py-1 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 rounded-lg'
+                        title='设为管理员'
+                      >
+                        设为管理
+                      </button>
+                    )}
+                    {/* 删除 */}
+                    <button
+                      onClick={() => handleDeleteUser(u.username)}
+                      className='px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 rounded-lg'
+                      title='删除'
+                    >
+                      删除
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
