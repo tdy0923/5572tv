@@ -1,13 +1,16 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCacheTime } from '@/lib/config';
 import {
   getDbQueryCount,
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
-import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
+import {
+  applyShortDramaCacheHeaders,
+  DEFAULT_SHORT_DRAMA_API,
+  SHORTDRAMA_CACHE_SECONDS,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 标记为动态路由
@@ -152,21 +155,9 @@ export async function GET(request: NextRequest) {
       drama_name: drama.vod_name || '',
     };
 
-    // 设置与豆瓣一致的缓存策略
-    const cacheTime = await getCacheTime();
+    // 设置缓存策略
     const finalResponse = NextResponse.json(response);
-    finalResponse.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-    );
-    finalResponse.headers.set(
-      'CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
-    finalResponse.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
+    applyShortDramaCacheHeaders(finalResponse, SHORTDRAMA_CACHE_SECONDS.detail);
     finalResponse.headers.set('Netlify-Vary', 'query');
 
     // 记录性能指标

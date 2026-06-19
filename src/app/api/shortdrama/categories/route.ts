@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
 import {
+  applyShortDramaCacheHeaders,
   DEFAULT_SHORT_DRAMA_API,
   isExcludedCategory,
   isShortDramaCategory,
@@ -14,6 +15,52 @@ import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
+
+// 并行验证分类是否有内容（带并发限制）
+async function validateCategoriesHasContent(
+  categories: { type_id: number; type_name: string }[],
+  api: string,
+  concurrency = 5,
+): Promise<{ type_id: number; type_name: string }[]> {
+  const results: { type_id: number; type_name: string }[] = [];
+
+  // 分批并行处理，每批 concurrency 个
+  for (let i = 0; i < categories.length; i += concurrency) {
+    const batch = categories.slice(i, i + concurrency);
+    const batchResults = await Promise.allSettled(
+      batch.map(async (cat) => {
+        try {
+          const testUrl = `${api}?ac=detail&t=${cat.type_id}&pg=1`;
+          const testResponse = await fetch(testUrl, {
+            headers: {
+              'User-Agent': DEFAULT_USER_AGENT,
+              Accept: 'application/json',
+            },
+            signal: AbortSignal.timeout(5000),
+          });
+
+          if (testResponse.ok) {
+            const testData = await testResponse.json();
+            const itemCount = testData.list?.length || testData.total || 0;
+            return itemCount > 0 ? cat : null;
+          }
+          return null;
+        } catch {
+          // 如果检查失败，仍然保留该分类
+          return cat;
+        }
+      }),
+    );
+
+    batchResults.forEach((result) => {
+      if (result.status === 'fulfilled' && result.value) {
+        results.push(result.value);
+      }
+    });
+  }
+
+  return results;
+}
 
 // 从单个源获取短剧分类
 async function getCategoriesFromSource(
@@ -146,42 +193,9 @@ async function getShortDramaCategoriesInternal() {
         ).values(),
       );
 
-      // 过滤掉空分类（检查每个分类是否有内容）
-      const categoriesWithContent: { type_id: number; type_name: string }[] =
-        [];
+      // 并行过滤掉空分类（检查每个分类是否有内容）
       const defaultApi = shortDramaSources[0]?.api || DEFAULT_SHORT_DRAMA_API;
-
-      for (const cat of uniqueCategories) {
-        try {
-          const testUrl = `${defaultApi}?ac=detail&t=${cat.type_id}&pg=1`;
-          console.log(
-            `  🔍 检查分类 ${cat.type_name}(ID:${cat.type_id}): ${testUrl}`,
-          );
-          const testResponse = await fetch(testUrl, {
-            headers: {
-              'User-Agent': DEFAULT_USER_AGENT,
-              Accept: 'application/json',
-            },
-            signal: AbortSignal.timeout(5000),
-          });
-
-          if (testResponse.ok) {
-            const testData = await testResponse.json();
-            const itemCount = testData.list?.length || testData.total || 0;
-            console.log(`  📊 分类 ${cat.type_name}: itemCount=${itemCount}`);
-
-            // 只保留有内容的分类
-            if (itemCount > 0) {
-              categoriesWithContent.push(cat);
-            }
-          }
-        } catch {
-          // 如果检查失败，仍然保留该分类
-          categoriesWithContent.push(cat);
-        }
-      }
-
-      return categoriesWithContent;
+      return await validateCategoriesHasContent(uniqueCategories, defaultApi);
     }
 
     // 从采集源中查找短剧分类
@@ -265,33 +279,11 @@ async function getShortDramaCategoriesInternal() {
     const uniqueRegularCategories = Array.from(mergedCategories.values());
     console.log(`📋 合并后 ${uniqueRegularCategories.length} 个分类`);
 
-    // 检查每个分类是否有内容
-    const categoriesWithContent: { type_id: number; type_name: string }[] = [];
-    for (const cat of uniqueRegularCategories) {
-      try {
-        const testUrl = `${DEFAULT_SHORT_DRAMA_API}?ac=detail&t=${cat.type_id}&pg=1`;
-        const testResponse = await fetch(testUrl, {
-          headers: {
-            'User-Agent': DEFAULT_USER_AGENT,
-            Accept: 'application/json',
-          },
-          signal: AbortSignal.timeout(5000),
-        });
-
-        if (testResponse.ok) {
-          const testData = await testResponse.json();
-          const itemCount = testData.list?.length || testData.total || 0;
-
-          if (itemCount > 0) {
-            categoriesWithContent.push(cat);
-          }
-        }
-      } catch {
-        categoriesWithContent.push(cat);
-      }
-    }
-
-    return categoriesWithContent;
+    // 并行检查每个分类是否有内容
+    return await validateCategoriesHasContent(
+      uniqueRegularCategories,
+      DEFAULT_SHORT_DRAMA_API,
+    );
   }
 
   // 没有配置短剧源或全部失败，使用默认源
@@ -307,63 +299,22 @@ async function getShortDramaCategoriesInternal() {
 
   console.log(`📋 短剧相关分类: ${shortDramaCategories.length} 个`);
 
-  // 检查每个分类是否有内容
-  const categoriesWithContent: { type_id: number; type_name: string }[] = [];
-  for (const cat of shortDramaCategories) {
-    try {
-      const testUrl = `${DEFAULT_SHORT_DRAMA_API}?ac=detail&t=${cat.type_id}&pg=1`;
-      console.log(`  🔍 检查分类 ${cat.type_name}(ID:${cat.type_id})`);
-      const testResponse = await fetch(testUrl, {
-        headers: {
-          'User-Agent': DEFAULT_USER_AGENT,
-          Accept: 'application/json',
-        },
-        signal: AbortSignal.timeout(5000),
-      });
-
-      if (testResponse.ok) {
-        const testData = await testResponse.json();
-        const itemCount = testData.list?.length || testData.total || 0;
-        console.log(`  📊 分类 ${cat.type_name}: itemCount=${itemCount}`);
-
-        if (itemCount > 0) {
-          categoriesWithContent.push(cat);
-        }
-      }
-    } catch {
-      categoriesWithContent.push(cat);
-    }
-  }
-
-  return categoriesWithContent;
+  // 并行检查每个分类是否有内容
+  return await validateCategoriesHasContent(
+    shortDramaCategories,
+    DEFAULT_SHORT_DRAMA_API,
+  );
 }
 
 export async function GET() {
   try {
     const categories = await getShortDramaCategoriesInternal();
 
-    // 设置与网页端一致的缓存策略
     const response = NextResponse.json(categories);
-
-    // 使用共享缓存时间配置
-    const cacheTime = SHORTDRAMA_CACHE_SECONDS.categories;
-    response.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+    return applyShortDramaCacheHeaders(
+      response,
+      SHORTDRAMA_CACHE_SECONDS.categories,
     );
-    response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    response.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
-    response.headers.set('X-Cache-Duration', `${cacheTime}s`);
-    response.headers.set(
-      'X-Cache-Expires-At',
-      new Date(Date.now() + cacheTime * 1000).toISOString(),
-    );
-    response.headers.set('Vary', 'Accept-Encoding, User-Agent');
-
-    return response;
   } catch (error) {
     console.error('获取短剧分类失败:', error);
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });

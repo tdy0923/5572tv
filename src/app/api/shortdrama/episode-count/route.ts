@@ -2,7 +2,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCacheTime, getConfig } from '@/lib/config';
+import { getConfig } from '@/lib/config';
+import {
+  applyShortDramaCacheHeaders,
+  SHORTDRAMA_CACHE_SECONDS,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 标记为动态路由
@@ -86,19 +90,10 @@ export async function GET(request: NextRequest) {
       };
 
       // 设置缓存
-      const cacheTime = await getCacheTime();
       const finalResponse = NextResponse.json(response);
-      finalResponse.headers.set(
-        'Cache-Control',
-        `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-      );
-      finalResponse.headers.set(
-        'CDN-Cache-Control',
-        `public, s-maxage=${cacheTime}`,
-      );
-      finalResponse.headers.set(
-        'Vercel-CDN-Cache-Control',
-        `public, s-maxage=${cacheTime}`,
+      applyShortDramaCacheHeaders(
+        finalResponse,
+        SHORTDRAMA_CACHE_SECONDS.episodes,
       );
 
       return finalResponse;
@@ -124,19 +119,10 @@ export async function GET(request: NextRequest) {
     };
 
     // 设置缓存
-    const cacheTime = await getCacheTime();
     const finalResponse = NextResponse.json(response);
-    finalResponse.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-    );
-    finalResponse.headers.set(
-      'CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
-    finalResponse.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
+    applyShortDramaCacheHeaders(
+      finalResponse,
+      SHORTDRAMA_CACHE_SECONDS.episodes,
     );
 
     return finalResponse;
