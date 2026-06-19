@@ -1,7 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ChevronUp, Search, Star, X } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  ChevronUp,
+  Search,
+  Star,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -10,6 +17,115 @@ import type { MangaSearchResult } from '@/lib/manga';
 
 import PageLayout from '@/components/PageLayout';
 import { PanelField } from '@/components/ui-surface';
+
+interface GenreManga {
+  id: string;
+  title: string;
+  cover: string;
+  latestChapter: string;
+  url: string;
+}
+
+interface GenreGroup {
+  id: string;
+  name: string;
+  manga: GenreManga[];
+}
+
+function GenreBrowser() {
+  const { data: genreData, isLoading } = useQuery({
+    queryKey: ['manga', 'genres'],
+    queryFn: async () => {
+      const res = await fetch('/api/manga/genres');
+      const json = await res.json();
+      return (json.genres || []) as GenreGroup[];
+    },
+    staleTime: 3600_000,
+    gcTime: 3600_000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className='mb-8'>
+        <div className='animate-pulse space-y-6'>
+          {[1, 2, 3].map((i) => (
+            <div key={i}>
+              <div className='h-5 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3' />
+              <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                {[1, 2, 3, 4, 5].map((j) => (
+                  <div
+                    key={j}
+                    className='aspect-[3/4] bg-gray-200 dark:bg-gray-700 rounded-2xl'
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!genreData || genreData.length === 0) return null;
+
+  return (
+    <div className='mb-8 space-y-8'>
+      {genreData
+        .filter((g) => g.manga.length > 0)
+        .map((genre) => (
+          <div key={genre.id}>
+            <div className='flex items-center justify-between mb-3'>
+              <h2 className='text-lg font-bold text-gray-900 dark:text-white'>
+                {genre.name}
+              </h2>
+              <ChevronRight className='w-4 h-4 text-gray-400' />
+            </div>
+            <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+              {genre.manga.map((manga) => (
+                <Link
+                  key={`${genre.id}-${manga.id}`}
+                  href={`/manga/${manga.id}?source=mangabz`}
+                  className='group'
+                >
+                  <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-gray-100 dark:border-gray-800'>
+                    <div className='aspect-[3/4] relative min-h-[160px] overflow-hidden bg-gray-100 dark:bg-gray-800'>
+                      <img
+                        src={`/api/image-proxy?url=${encodeURIComponent(manga.cover)}`}
+                        alt={manga.title}
+                        className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+                        loading='lazy'
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (
+                            parent &&
+                            !parent.querySelector('.fallback-icon')
+                          ) {
+                            const fallback = document.createElement('div');
+                            fallback.className =
+                              'fallback-icon w-full h-full flex items-center justify-center';
+                            fallback.innerHTML =
+                              '<svg class="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className='p-2.5'>
+                      <h3 className='text-xs sm:text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors'>
+                        {manga.title}
+                      </h3>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+    </div>
+  );
+}
 
 function MangaSearchContent() {
   const router = useRouter();
@@ -109,98 +225,10 @@ function MangaSearchContent() {
           </div>
         )}
 
-        {/* Empty State - Show Popular Manga */}
+        {/* Empty State - Show Genre Browsing */}
         {!trimmedQuery && !isLoading && (
           <div>
-            {/* Popular Manga Section */}
-            <div className='mb-8'>
-              <h2 className='text-lg font-bold text-gray-900 dark:text-white mb-4'>
-                热门漫画
-              </h2>
-              <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-                {[
-                  {
-                    id: '139',
-                    title: '海贼王',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/1/139/20191203153434_180x240_26.jpg',
-                  },
-                  {
-                    id: '1',
-                    title: '一拳超人',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/1/1/20190228151547_180x240_46.jpg',
-                  },
-                  {
-                    id: '2',
-                    title: '鬼灭之刃',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/2/2/20190304183026_180x240_25.jpg',
-                  },
-                  {
-                    id: '3',
-                    title: '咒术回战',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/3/3/20190304183422_180x240_96.jpg',
-                  },
-                  {
-                    id: '4',
-                    title: '进击的巨人',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/4/4/20190228150959_180x240_68.jpg',
-                  },
-                  {
-                    id: '5',
-                    title: '我的英雄学院',
-                    source: 'mangabz',
-                    cover:
-                      'https://cover.mangabz.com/5/5/20190228151803_180x240_13.jpg',
-                  },
-                ].map((manga) => (
-                  <Link
-                    key={manga.id}
-                    href={`/manga/${manga.id}?source=${manga.source}`}
-                    className='group'
-                  >
-                    <div className='relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] border border-gray-100 dark:border-gray-800'>
-                      <div className='aspect-[3/4] relative min-h-[180px] overflow-hidden bg-gray-100 dark:bg-gray-800'>
-                        <img
-                          src={`/api/image-proxy?url=${encodeURIComponent(manga.cover)}`}
-                          alt={manga.title}
-                          className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (
-                              parent &&
-                              !parent.querySelector('.fallback-icon')
-                            ) {
-                              const fallback = document.createElement('div');
-                              fallback.className =
-                                'fallback-icon w-full h-full flex items-center justify-center';
-                              fallback.innerHTML =
-                                '<svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
-                              parent.appendChild(fallback);
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className='p-3'>
-                        <h3 className='text-sm font-semibold text-gray-900 dark:text-white line-clamp-1'>
-                          {manga.title}
-                        </h3>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <GenreBrowser />
 
             {/* Search Prompt */}
             <div className='flex flex-col items-center justify-center py-10'>
