@@ -3,30 +3,36 @@
 
 import { NextResponse } from 'next/server';
 
-// 默认短剧源API（tyyszy.com）
-export const DEFAULT_SHORT_DRAMA_API = 'https://tyyszy.com/api.php/provide/vod';
+// 默认短剧源API（hongniuzy2.com - 34000+短剧）
+export const DEFAULT_SHORT_DRAMA_API =
+  'https://www.hongniuzy2.com/api.php/provide/vod';
 
-// 短剧分类关键词（精确匹配短剧，避免误匹配动漫/电影等）
+// 短剧分类关键词（匹配实际短剧源的分类）
 export const SHORT_DRAMA_KEYWORDS = [
   '短剧',
   '女频恋爱',
   '反转爽剧',
+  '古装仙侠',
+  '年代穿越',
+  '脑洞悬疑',
+  '现代都市',
+  '战神',
+  '豪门',
+  '宫斗',
   '甜宠',
   '虐恋',
-  '宠妻',
-  '战神',
-  '神医',
-  '赘婿',
-  '霸总',
-  '甜剧',
-  '虐剧',
-  '爽剧',
   '逆袭',
   '复仇',
   '总裁',
-  '豪门',
-  '穿越重生',
-  '年代剧',
+  '赘婿',
+  '霸总',
+  '神医',
+  '宠妻',
+  '穿越',
+  '重生',
+  '悬疑',
+  '玄幻',
+  '爱情',
 ];
 
 // 排除的分类关键词（明确不是短剧的内容）

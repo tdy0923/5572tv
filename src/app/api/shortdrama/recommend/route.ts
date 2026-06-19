@@ -156,7 +156,7 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
       categoryId: 0,
     });
 
-    console.log(`📺 使用默认短剧源: tyyszy.com`);
+    console.log(`📺 使用默认短剧源: hongniuzy2.com`);
 
     console.log(`📺 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源`);
 
