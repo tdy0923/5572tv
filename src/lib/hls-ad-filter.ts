@@ -60,11 +60,6 @@ function isAdDomain(url: string): boolean {
   }
 }
 
-function isCommentOrTag(line: string): boolean {
-  const trimmed = line.trim();
-  return trimmed === '' || trimmed.startsWith('#');
-}
-
 /**
  * Detect ad segments using duration matching
  */

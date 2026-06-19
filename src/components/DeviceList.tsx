@@ -19,9 +19,8 @@ interface DeviceListResponse {
   currentDeviceId: string;
 }
 
-function formatTime(timestamp: number): string {
+function formatTime(timestamp: number, now: Date): string {
   const date = new Date(timestamp);
-  const now = new Date();
   const diff = now.getTime() - date.getTime();
 
   if (diff < 60000) {
@@ -60,6 +59,13 @@ export function DeviceList() {
   const [currentDeviceId, setCurrentDeviceId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchDevices = useCallback(async () => {
     try {
@@ -69,8 +75,8 @@ export function DeviceList() {
         setDevices(data.devices);
         setCurrentDeviceId(data.currentDeviceId);
       }
-    } catch (error) {
-      console.error('获取设备列表失败:', error);
+    } catch {
+      // silently handle error
     } finally {
       setLoading(false);
     }
@@ -168,7 +174,8 @@ export function DeviceList() {
                   ·
                 </span>
                 <span className='text-xs text-gray-500 dark:text-gray-400'>
-                  最后活跃: {formatTime(device.lastSeen)}
+                  最后活跃:{' '}
+                  {now ? formatTime(device.lastSeen, now) : '加载中...'}
                 </span>
               </div>
             </div>

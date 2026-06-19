@@ -69,7 +69,7 @@ const PLAYERS: PlayerConfig[] = [
 
 const ExternalPlayerButton = memo(function ExternalPlayerButton({
   videoUrl,
-  videoTitle,
+  videoTitle: _videoTitle,
   enabled,
 }: ExternalPlayerButtonProps) {
   const [isOpen, setIsOpen] = useState(false);

@@ -40,8 +40,6 @@ interface DownloadTask {
 
 // In-memory task storage
 const tasks = new Map<string, DownloadTask>();
-const MAX_CONCURRENT_DOWNLOADS = 6;
-
 /**
  * Parse M3U8 playlist
  */
