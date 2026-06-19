@@ -106,6 +106,7 @@ export function DeviceList() {
         alert(data.error || '撤销失败');
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('撤销设备失败:', error);
       alert('撤销失败');
     } finally {

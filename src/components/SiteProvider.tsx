@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -50,7 +51,20 @@ export function SiteProvider({
     adSettings,
   });
 
+  const initialPropsRef = useRef({
+    siteName,
+    announcementTitle,
+    announcement,
+    adSettings,
+  });
+
   useEffect(() => {
+    const {
+      siteName: initialSiteName,
+      announcementTitle: initialAnnouncementTitle,
+      announcement: initialAnnouncement,
+      adSettings: initialAdSettings,
+    } = initialPropsRef.current;
     let cancelled = false;
 
     const loadPublicSiteConfig = async () => {
@@ -125,16 +139,16 @@ export function SiteProvider({
             JSON.stringify({
               timestamp: Date.now(),
               data: {
-                siteName: data.SiteName || siteName,
+                siteName: data.SiteName || initialSiteName,
                 announcementTitle:
                   data.AnnouncementTitle !== undefined
                     ? data.AnnouncementTitle
-                    : announcementTitle,
+                    : initialAnnouncementTitle,
                 announcement:
                   data.Announcement !== undefined
                     ? data.Announcement
-                    : announcement,
-                adSettings: data.AdSettings ?? adSettings,
+                    : initialAnnouncement,
+                adSettings: data.AdSettings ?? initialAdSettings,
               },
             }),
           );

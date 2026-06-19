@@ -204,6 +204,10 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const startTaskRef = useRef<
+    (taskId: string, taskSnapshot?: M3U8DownloadTask) => Promise<void>
+  >(() => Promise.resolve());
+
   const createTask = useCallback(
     async (
       url: string,
@@ -240,7 +244,7 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
 
         // 自动开始下载（传递 task snapshot 避免 stale closure）
         //         console.log('[DownloadContext] 开始自动下载...');
-        await startTask(taskId, newTask);
+        await startTaskRef.current(taskId, newTask);
         //         console.log('[DownloadContext] startTask 调用完成');
 
         // 注意：不在这里自动打开下载面板，由调用方控制
@@ -323,6 +327,10 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
     },
     [updateTask, settings],
   );
+
+  useEffect(() => {
+    startTaskRef.current = startTask;
+  }, [startTask]);
 
   const pauseTask = useCallback(
     async (taskId: string) => {

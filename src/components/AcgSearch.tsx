@@ -46,69 +46,72 @@ export default function AcgSearch({
   const isLoadingMoreRef = useRef(false);
 
   // 执行搜索
-  const performSearch = async (page: number, isLoadMore = false) => {
-    if (isLoadingMoreRef.current) return;
-    // Mikan 和 DMHY 不支持分页，page > 1 时直接返回
-    if (source === 'mikan' && page > 1) return;
-    if (source === 'dmhy' && page > 1) return;
+  const performSearch = useCallback(
+    async (page: number, isLoadMore = false) => {
+      if (isLoadingMoreRef.current) return;
+      // Mikan 和 DMHY 不支持分页，page > 1 时直接返回
+      if (source === 'mikan' && page > 1) return;
+      if (source === 'dmhy' && page > 1) return;
 
-    isLoadingMoreRef.current = true;
-    setLoading(true);
-    setError(null);
+      isLoadingMoreRef.current = true;
+      setLoading(true);
+      setError(null);
 
-    try {
-      // 根据选择的源确定 API 路径
-      const apiUrl =
-        source === 'mikan'
-          ? '/api/acg/mikan'
-          : source === 'dmhy'
-            ? '/api/acg/dmhy'
-            : '/api/acg/acgrip';
+      try {
+        // 根据选择的源确定 API 路径
+        const apiUrl =
+          source === 'mikan'
+            ? '/api/acg/mikan'
+            : source === 'dmhy'
+              ? '/api/acg/dmhy'
+              : '/api/acg/acgrip';
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          keyword: keyword.trim(),
-          page,
-        }),
-      });
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            keyword: keyword.trim(),
+            page,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '搜索失败');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '搜索失败');
+        }
+
+        const data: AcgSearchResult = await response.json();
+
+        if (isLoadMore) {
+          // 追加新数据
+          setAllItems((prev) => [...prev, ...data.items]);
+          // 如果当前页没有结果，说明没有更多了
+          setHasMore(
+            source !== 'mikan' && source !== 'dmhy' && data.items.length > 0,
+          );
+        } else {
+          // 新搜索，重置数据
+          setAllItems(data.items);
+          // 如果第一页有结果，假设可能还有更多
+          setHasMore(
+            source !== 'mikan' && source !== 'dmhy' && data.items.length > 0,
+          );
+        }
+
+        setCurrentPage(page);
+      } catch (err: any) {
+        const errorMsg = err.message || '搜索失败，请稍后重试';
+        setError(errorMsg);
+        onError?.(errorMsg);
+      } finally {
+        setLoading(false);
+        isLoadingMoreRef.current = false;
       }
-
-      const data: AcgSearchResult = await response.json();
-
-      if (isLoadMore) {
-        // 追加新数据
-        setAllItems((prev) => [...prev, ...data.items]);
-        // 如果当前页没有结果，说明没有更多了
-        setHasMore(
-          source !== 'mikan' && source !== 'dmhy' && data.items.length > 0,
-        );
-      } else {
-        // 新搜索，重置数据
-        setAllItems(data.items);
-        // 如果第一页有结果，假设可能还有更多
-        setHasMore(
-          source !== 'mikan' && source !== 'dmhy' && data.items.length > 0,
-        );
-      }
-
-      setCurrentPage(page);
-    } catch (err: any) {
-      const errorMsg = err.message || '搜索失败，请稍后重试';
-      setError(errorMsg);
-      onError?.(errorMsg);
-    } finally {
-      setLoading(false);
-      isLoadingMoreRef.current = false;
-    }
-  };
+    },
+    [source, keyword, onError],
+  );
 
   useEffect(() => {
     if (triggerSearch === undefined) {
@@ -125,7 +128,7 @@ export default function AcgSearch({
     setCurrentPage(1);
     setHasMore(true);
     performSearch(1, false);
-  }, [triggerSearch]);
+  }, [triggerSearch, keyword, performSearch]);
 
   // 切换源时重新搜索
   useEffect(() => {
@@ -143,7 +146,7 @@ export default function AcgSearch({
     setCurrentPage(1);
     setHasMore(source === 'acgrip'); // Mikan 和 DMHY 不支持分页
     performSearch(1, false);
-  }, [source]);
+  }, [source, keyword, performSearch, triggerSearch]);
 
   // 加载更多数据
   const loadMore = useCallback(() => {
@@ -152,7 +155,7 @@ export default function AcgSearch({
     if (!loading && hasMore && !isLoadingMoreRef.current) {
       performSearch(currentPage + 1, true);
     }
-  }, [loading, hasMore, currentPage, source]);
+  }, [loading, hasMore, currentPage, source, performSearch]);
 
   // 使用 Intersection Observer 监听滚动到底部
   useEffect(() => {
