@@ -4,7 +4,7 @@
  * Image Proxy Endpoint
  * Based on MoonTVPlus/DecoTV implementation
  *
- * Proxies images from Douban and other sources to bypass CORS
+ * Proxies images from Douban, MangaBZ, Manmankan and other sources to bypass CORS
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -20,6 +20,31 @@ const imageCache = new Map<
 >();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_CACHE_SIZE = 1000;
+
+// 根据图片URL域名动态设置Referer
+function getRefererForUrl(imageUrl: string): string {
+  try {
+    const url = new URL(imageUrl);
+    const host = url.hostname;
+
+    // 豆瓣图片
+    if (host.includes('doubanio.com') || host.includes('douban.com')) {
+      return 'https://movie.douban.com/';
+    }
+    // MangaBZ图片
+    if (host.includes('mangabz.com')) {
+      return 'https://www.mangabz.com/';
+    }
+    // Manmankan图片（发布日历）
+    if (host.includes('manmankan.com')) {
+      return 'https://www.manmankan.com/';
+    }
+    // 通用：使用图片所在域名
+    return `${url.protocol}//${host}/`;
+  } catch {
+    return 'https://movie.douban.com/';
+  }
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,11 +73,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // 动态设置Referer
+    const referer = getRefererForUrl(decodedUrl);
+
     // Fetch image
     const response = await fetch(decodedUrl, {
       headers: {
         'User-Agent': DEFAULT_USER_AGENT,
-        Referer: 'https://movie.douban.com/',
+        Referer: referer,
         Accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       },
       signal: AbortSignal.timeout(10000),

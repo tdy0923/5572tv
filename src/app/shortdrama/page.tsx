@@ -37,11 +37,6 @@ export default function ShortDramaPage() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   // 虚拟化开关状态
   const [useVirtualization, setUseVirtualization] = useState(true);
-  const [virtualCategories, setVirtualCategories] = useState<
-    { type_id: number; type_name: string }[]
-  >([]);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'name'>('latest');
 
   const observer = useRef<IntersectionObserver | undefined>(undefined);
@@ -134,21 +129,7 @@ export default function ShortDramaPage() {
   // 加载短剧列表
   const loadDramas = useCallback(
     async (pageNum: number, reset = false) => {
-      // 虚拟分类模式：从已加载数据中筛选，不需要API调用
-      if (
-        (selectedRegion || selectedYear) &&
-        dramas.length > 0 &&
-        !isSearchMode
-      ) {
-        return;
-      }
-      if (
-        !selectedCategory &&
-        !isSearchMode &&
-        !selectedRegion &&
-        !selectedYear
-      )
-        return;
+      if (!selectedCategory && !isSearchMode) return;
 
       setLoading(true);
       try {
@@ -169,63 +150,23 @@ export default function ShortDramaPage() {
           setDramas((prev) => [...prev, ...result.list]);
         }
         setHasMore(result.hasMore);
-
-        if (result.list.length > 0 && virtualCategories.length === 0) {
-          const regionMap = new Map<string, number>();
-          const yearMap = new Map<string, number>();
-          result.list.forEach((item) => {
-            if (item.vod_area)
-              regionMap.set(
-                item.vod_area,
-                (regionMap.get(item.vod_area) || 0) + 1,
-              );
-            if (item.vod_year)
-              yearMap.set(item.vod_year, (yearMap.get(item.vod_year) || 0) + 1);
-          });
-          const virtuals: { type_id: number; type_name: string }[] = [];
-          let tid = 9000;
-          regionMap.forEach((count, name) => {
-            if (count >= 2 && !['其他', '未知'].includes(name)) {
-              virtuals.push({ type_id: tid++, type_name: `📍 ${name}` });
-            }
-          });
-          yearMap.forEach((count, year) => {
-            if (count >= 2)
-              virtuals.push({ type_id: tid++, type_name: `📅 ${year}` });
-          });
-          setVirtualCategories(virtuals);
-        }
       } catch (error) {
         console.error('加载短剧失败:', error);
       } finally {
         setLoading(false);
       }
     },
-    [
-      selectedCategory,
-      searchQuery,
-      isSearchMode,
-      selectedRegion,
-      selectedYear,
-      dramas.length,
-      virtualCategories.length,
-    ],
+    [selectedCategory, searchQuery, isSearchMode],
   );
 
   // 当分类变化时重新加载
   useEffect(() => {
-    if (selectedCategory && !isSearchMode && !selectedRegion && !selectedYear) {
+    if (selectedCategory && !isSearchMode) {
       setPage(1);
       setHasMore(true);
       loadDramas(1, true);
     }
-  }, [
-    selectedCategory,
-    isSearchMode,
-    selectedRegion,
-    selectedYear,
-    loadDramas,
-  ]);
+  }, [selectedCategory, isSearchMode, loadDramas]);
 
   // 当页码变化时加载更多
   useEffect(() => {
@@ -264,13 +205,7 @@ export default function ShortDramaPage() {
     [searchHistory],
   );
 
-  const allCategories = [...categories, ...virtualCategories];
-
-  const filteredDramas = dramas.filter((d) => {
-    if (selectedRegion) return d.vod_area === selectedRegion.replace('📍 ', '');
-    if (selectedYear) return d.vod_year === selectedYear.replace('📅 ', '');
-    return true;
-  });
+  const filteredDramas = dramas;
 
   const sortedDramas = [...filteredDramas].sort((a, b) => {
     if (sortBy === 'latest') return (b.vod_time || 0) - (a.vod_time || 0);
@@ -278,25 +213,6 @@ export default function ShortDramaPage() {
     if (sortBy === 'name') return a.vod_name.localeCompare(b.vod_name);
     return 0;
   });
-
-  const handleVirtualCategoryClick = (cat: {
-    type_id: number;
-    type_name: string;
-  }) => {
-    if (cat.type_name.startsWith('📍 ')) {
-      setSelectedRegion((prev) =>
-        prev === cat.type_name ? null : cat.type_name,
-      );
-      setSelectedYear(null);
-      setSelectedCategory(null);
-    } else if (cat.type_name.startsWith('📅 ')) {
-      setSelectedYear((prev) =>
-        prev === cat.type_name ? null : cat.type_name,
-      );
-      setSelectedRegion(null);
-      setSelectedCategory(null);
-    }
-  };
 
   // 返回顶部功能
   const scrollToTop = () => {
@@ -398,7 +314,7 @@ export default function ShortDramaPage() {
           </div>
 
           {/* 分类筛选 */}
-          {!isSearchMode && allCategories.length > 0 && (
+          {!isSearchMode && categories.length > 0 && (
             <div className='mb-6'>
               <div className='mb-4 flex items-center justify-between gap-4'>
                 <div className='flex items-center gap-2'>
@@ -408,32 +324,17 @@ export default function ShortDramaPage() {
                   </span>
                 </div>
                 <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 font-medium'>
-                  {allCategories.length}
+                  {categories.length}
                 </span>
               </div>
               <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
-                {allCategories.map((category, index) => (
+                {categories.map((category, index) => (
                   <PillButton
                     key={category.type_id}
                     onClick={() => {
-                      if (
-                        category.type_name.startsWith('📍 ') ||
-                        category.type_name.startsWith('📅 ')
-                      ) {
-                        handleVirtualCategoryClick(category);
-                      } else {
-                        setSelectedCategory(category.type_id);
-                        setSelectedRegion(null);
-                        setSelectedYear(null);
-                      }
+                      setSelectedCategory(category.type_id);
                     }}
-                    active={
-                      category.type_name.startsWith('📍 ')
-                        ? selectedRegion === category.type_name
-                        : category.type_name.startsWith('📅 ')
-                          ? selectedYear === category.type_name
-                          : selectedCategory === category.type_id
-                    }
+                    active={selectedCategory === category.type_id}
                     className='px-4 py-2 duration-300'
                     style={{
                       animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
@@ -507,7 +408,7 @@ export default function ShortDramaPage() {
               rowGapClass='pb-4'
               estimateRowHeight={280}
               endReached={() => {
-                if (hasMore && !loading && !selectedRegion && !selectedYear) {
+                if (hasMore && !loading) {
                   setPage((prevPage) => prevPage + 1);
                 }
               }}
@@ -522,9 +423,7 @@ export default function ShortDramaPage() {
                 <div
                   key={`${drama.id}-${index}`}
                   ref={
-                    index === sortedDramas.length - 1 &&
-                    !selectedRegion &&
-                    !selectedYear
+                    index === sortedDramas.length - 1
                       ? lastDramaElementRef
                       : null
                   }
@@ -577,113 +476,106 @@ export default function ShortDramaPage() {
           )}
 
           {/* 无更多数据提示 */}
-          {!loading &&
-            !hasMore &&
-            sortedDramas.length > 0 &&
-            (selectedRegion || selectedYear || !hasMore) && (
-              <div className='flex justify-center mt-12 py-8'>
-                <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-white/6 border border-black/6 dark:border-white/8 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-hidden'>
-                  <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
+          {!loading && !hasMore && sortedDramas.length > 0 && (
+            <div className='flex justify-center mt-12 py-8'>
+              <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-white/6 border border-black/6 dark:border-white/8 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl overflow-hidden'>
+                <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
 
-                  {/* 内容 */}
-                  <div className='relative flex flex-col items-center gap-2'>
-                    {/* 完成图标 */}
-                    <div className='relative'>
-                      <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
-                        <svg
-                          className='w-7 h-7 text-white'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2.5'
-                            d='M5 13l4 4L19 7'
-                          ></path>
-                        </svg>
-                      </div>
-                      {/* 光圈效果 */}
-                      <div className='absolute inset-0 rounded-full bg-purple-400/30 animate-ping'></div>
+                {/* 内容 */}
+                <div className='relative flex flex-col items-center gap-2'>
+                  {/* 完成图标 */}
+                  <div className='relative'>
+                    <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
+                      <svg
+                        className='w-7 h-7 text-white'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='2.5'
+                          d='M5 13l4 4L19 7'
+                        ></path>
+                      </svg>
                     </div>
+                    {/* 光圈效果 */}
+                    <div className='absolute inset-0 rounded-full bg-purple-400/30 animate-ping'></div>
+                  </div>
 
-                    {/* 文字 */}
-                    <div className='text-center'>
-                      <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
-                        已经到底了～
-                      </p>
-                      <p className='text-xs text-gray-600 dark:text-gray-400'>
-                        共 {sortedDramas.length} 部短剧
-                      </p>
-                    </div>
+                  {/* 文字 */}
+                  <div className='text-center'>
+                    <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
+                      已经到底了～
+                    </p>
+                    <p className='text-xs text-gray-600 dark:text-gray-400'>
+                      共 {sortedDramas.length} 部短剧
+                    </p>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
           {/* 无搜索结果 */}
-          {!loading &&
-            sortedDramas.length === 0 &&
-            (isSearchMode || selectedRegion || selectedYear) && (
-              <div className='flex justify-center py-16'>
-                <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-                  {/* 装饰性元素 */}
-                  <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl'></div>
-                  <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
+          {!loading && sortedDramas.length === 0 && isSearchMode && (
+            <div className='flex justify-center py-16'>
+              <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
+                {/* 装饰性元素 */}
+                <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl'></div>
+                <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
 
-                  {/* 内容 */}
-                  <div className='relative flex flex-col items-center gap-4'>
-                    {/* 搜索图标 */}
-                    <div className='relative'>
-                      <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                        <svg
-                          className='w-12 h-12 text-gray-400 dark:text-gray-500'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='1.5'
-                            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-                          ></path>
-                        </svg>
-                      </div>
-                      {/* 浮动小点装饰 */}
-                      <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
-                      <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-pulse'></div>
+                {/* 内容 */}
+                <div className='relative flex flex-col items-center gap-4'>
+                  {/* 搜索图标 */}
+                  <div className='relative'>
+                    <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
+                      <svg
+                        className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                        fill='none'
+                        stroke='currentColor'
+                        viewBox='0 0 24 24'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          strokeWidth='1.5'
+                          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                        ></path>
+                      </svg>
                     </div>
-
-                    {/* 文字内容 */}
-                    <div className='text-center space-y-2'>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                        没有找到相关短剧
-                      </h3>
-                      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
-                        换个关键词试试，或者浏览其他分类
-                      </p>
-                    </div>
-
-                    {/* 按钮 */}
-                    <button
-                      onClick={() => {
-                        handleSearch('');
-                        setSelectedRegion(null);
-                        setSelectedYear(null);
-                      }}
-                      className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
-                    >
-                      清除搜索条件
-                    </button>
-
-                    {/* 装饰线 */}
-                    <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
+                    {/* 浮动小点装饰 */}
+                    <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
+                    <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-pulse'></div>
                   </div>
+
+                  {/* 文字内容 */}
+                  <div className='text-center space-y-2'>
+                    <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+                      没有找到相关短剧
+                    </h3>
+                    <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
+                      换个关键词试试，或者浏览其他分类
+                    </p>
+                  </div>
+
+                  {/* 按钮 */}
+                  <button
+                    onClick={() => {
+                      handleSearch('');
+                    }}
+                    className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
+                  >
+                    清除搜索条件
+                  </button>
+
+                  {/* 装饰线 */}
+                  <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
         </div>
       </div>
 

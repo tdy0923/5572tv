@@ -7,7 +7,10 @@ import {
   recordRequest,
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
-import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
+import {
+  DEFAULT_SHORT_DRAMA_API,
+  mapApiItemToShortDramaItem,
+} from '@/lib/shortdrama-constants';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -76,23 +79,7 @@ async function searchFromSource(
   );
   const limitedItems = shortDramaItems.slice(0, size);
 
-  const list = limitedItems.map((item: any) => ({
-    id: item.vod_id,
-    name: item.vod_name,
-    cover: item.vod_pic || '',
-    update_time: item.vod_time || new Date().toISOString(),
-    score: parseFloat(item.vod_score) || 0,
-    episode_count: parseInt(item.vod_remarks?.replace(/[^\d]/g, '') || '1'),
-    description: item.vod_content || item.vod_blurb || '',
-    author: item.vod_actor || '',
-    backdrop: item.vod_pic_slide || item.vod_pic || '',
-    vote_average: parseFloat(item.vod_score) || 0,
-    vod_area: item.vod_area || '',
-    vod_year: item.vod_year || '',
-    vod_time: item.vod_time ? new Date(item.vod_time).getTime() / 1000 : 0,
-    vod_hits: parseInt(item.vod_hits || '0'),
-    vod_name: item.vod_name || '',
-  }));
+  const list = limitedItems.map(mapApiItemToShortDramaItem);
 
   return {
     list,

@@ -588,8 +588,44 @@ export default function ReleaseCalendarPage() {
                           )}
                         </div>
 
+                        {/* 海报图片 */}
+                        <div className='aspect-[2/3] overflow-hidden bg-gray-100 dark:bg-gray-700'>
+                          {item.cover ? (
+                            <img
+                              src={`/api/image-proxy?url=${encodeURIComponent(item.cover)}`}
+                              alt={item.title}
+                              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                              loading='lazy'
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  const fallback =
+                                    document.createElement('div');
+                                  fallback.className =
+                                    'w-full h-full flex items-center justify-center';
+                                  fallback.innerHTML =
+                                    item.type === 'movie'
+                                      ? '<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>'
+                                      : '<svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+                                  parent.appendChild(fallback);
+                                }
+                              }}
+                            />
+                          ) : (
+                            <div className='w-full h-full flex items-center justify-center'>
+                              {item.type === 'movie' ? (
+                                <Film className='w-12 h-12 text-gray-300 dark:text-gray-600' />
+                              ) : (
+                                <Tv className='w-12 h-12 text-gray-300 dark:text-gray-600' />
+                              )}
+                            </div>
+                          )}
+                        </div>
+
                         {/* 内容区域 */}
-                        <div className='p-6'>
+                        <div className='p-4'>
                           {/* 头部信息 */}
                           <div className='flex items-start justify-between mb-4'>
                             <div className='flex items-center gap-2'>
