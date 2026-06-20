@@ -1,7 +1,6 @@
 /* eslint-disable no-console, unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
 import {
   getDbQueryCount,
   recordRequest,
@@ -11,6 +10,7 @@ import {
   DEFAULT_SHORT_DRAMA_API,
   mapApiItemToShortDramaItem,
 } from '@/lib/shortdrama-constants';
+import { getEnabledSources } from '@/lib/shortdrama-sources';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -90,21 +90,34 @@ async function searchFromSource(
 // 服务端专用函数，从所有短剧源聚合搜索结果
 async function searchShortDramasInternal(query: string, page = 1, size = 20) {
   try {
-    const config = await getConfig();
+    // 从多源配置获取所有启用的短剧源
+    const enabledSources = getEnabledSources();
 
-    // 筛选出所有启用的短剧源
-    const shortDramaSources = config.SourceConfig.filter(
-      (source) => source.type === 'shortdrama' && !source.disabled,
-    );
+    // 构建源列表：先加默认源，再加其他启用的源
+    const sourcesToSearch: Array<{ api: string; name: string }> = [];
 
-    // 如果没有配置短剧源，使用默认源
-    if (shortDramaSources.length === 0) {
+    sourcesToSearch.push({
+      api: DEFAULT_SHORT_DRAMA_API,
+      name: 'hongniuzy2',
+    });
+
+    for (const source of enabledSources) {
+      if (source.api !== DEFAULT_SHORT_DRAMA_API) {
+        sourcesToSearch.push({
+          api: source.api,
+          name: source.name,
+        });
+      }
+    }
+
+    // 如果没有启用的源，使用默认源
+    if (sourcesToSearch.length === 0) {
       return await searchFromSource(DEFAULT_SHORT_DRAMA_API, query, page, size);
     }
 
     // 有配置短剧源，聚合所有源的搜索结果
     const results = await Promise.allSettled(
-      shortDramaSources.map((source) =>
+      sourcesToSearch.map((source) =>
         searchFromSource(source.api, query, page, size),
       ),
     );

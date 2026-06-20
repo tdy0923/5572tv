@@ -3,7 +3,11 @@ import {
   getMangaBzDetail,
   searchMangaBz,
 } from './mangabz';
-import { getMangadexDetail, searchMangadex } from './mangadex';
+import {
+  getMangadexChapterPages,
+  getMangadexDetail,
+  searchMangadex,
+} from './mangadex';
 import { getEnabledSources, type MangaSource } from './sources';
 import type {
   MangaChapterPages,
@@ -106,6 +110,8 @@ export async function getChapterPages(
   switch (source) {
     case 'mangabz':
       return getMangaBzChapterPages(chapterUrl);
+    case 'mangadex':
+      return getMangadexChapterPages(chapterUrl);
     default:
       return null;
   }

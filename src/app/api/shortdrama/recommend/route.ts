@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
 import {
   getDbQueryCount,
   recordRequest,
@@ -12,6 +11,7 @@ import {
   mapApiItemToShortDramaItem,
   SHORT_DRAMA_KEYWORDS,
 } from '@/lib/shortdrama-constants';
+import { getEnabledSources } from '@/lib/shortdrama-sources';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -125,40 +125,35 @@ async function fetchFromShortDramaCategory(
 // 服务端专用函数，从所有短剧源聚合数据
 async function getRecommendedShortDramasInternal(category?: number, size = 10) {
   try {
-    // 获取配置
-    const config = await getConfig();
+    // 从多源配置获取所有启用的短剧源
+    const enabledSources = getEnabledSources();
 
-    // 筛选出所有启用的短剧源（type === 'shortdrama'）
-    const shortDramaSources = config.SourceConfig.filter(
-      (source) => source.type === 'shortdrama' && !source.disabled,
-    );
-
-    // 同时检查普通源中是否有短剧分类
-    const regularSources = config.SourceConfig.filter(
-      (source) => !source.disabled && source.type !== 'shortdrama',
-    );
-
-    console.log(
-      `📺 找到 ${shortDramaSources.length} 个短剧源, ${regularSources.length} 个普通源`,
-    );
-
-    // 收集所有有短剧分类的源
+    // 构建源列表：先加默认源，再加其他启用的源
     const sourcesWithShortDrama: Array<{
       api: string;
       name: string;
       categoryId: number;
     }> = [];
 
-    // 只使用默认源作为默认源（确保ID与parse API兼容）
+    // 默认源（hongniuzy2.com）
     sourcesWithShortDrama.push({
       api: DEFAULT_SHORT_DRAMA_API,
       name: 'hongniuzy2',
       categoryId: 0,
     });
 
-    console.log(`📺 使用默认短剧源: hongniuzy2.com`);
+    // 从多源配置添加其他源
+    for (const source of enabledSources) {
+      if (source.api !== DEFAULT_SHORT_DRAMA_API) {
+        sourcesWithShortDrama.push({
+          api: source.api,
+          name: source.name,
+          categoryId: source.categories[0]?.id || 0,
+        });
+      }
+    }
 
-    console.log(`📺 找到 ${sourcesWithShortDrama.length} 个有短剧内容的源`);
+    console.log(`📺 找到 ${sourcesWithShortDrama.length} 个短剧源`);
 
     // 如果没有找到有短剧内容的源，使用默认源
     if (sourcesWithShortDrama.length === 0) {
