@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
 import {
   applyShortDramaCacheHeaders,
   DEFAULT_SHORT_DRAMA_API,
@@ -149,159 +148,18 @@ async function getShortDramaCategoriesFromSources(
 
 // 从配置的短剧源获取分类
 async function getShortDramaCategoriesInternal() {
-  const config = await getConfig();
-
-  // 筛选出所有启用的短剧源
-  const shortDramaSources = config.SourceConfig.filter(
-    (source) => source.type === 'shortdrama' && !source.disabled,
-  );
-
-  // 如果有配置短剧源，从配置的源获取分类
-  if (shortDramaSources.length > 0) {
-    console.log(
-      `📋 [CATEGORIES] 从 ${shortDramaSources.length} 个配置的短剧源获取分类`,
-    );
-
-    const results = await Promise.allSettled(
-      shortDramaSources.map((source) => {
-        console.log(`  → 尝试源: ${source.name} (${source.api})`);
-        return getCategoriesFromSource(source.api);
-      }),
-    );
-
-    // 合并所有成功的结果并去重
-    const allCategories: { type_id: number; type_name: string }[] = [];
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value.length > 0) {
-        console.log(
-          `  ✅ 源 ${shortDramaSources[index].name} 返回 ${result.value.length} 个分类`,
-        );
-        allCategories.push(...result.value);
-      } else if (result.status === 'rejected') {
-        console.log(
-          `  ❌ 源 ${shortDramaSources[index].name} 失败:`,
-          result.reason?.message,
-        );
-      }
-    });
-
-    if (allCategories.length > 0) {
-      // 按 type_id 去重
-      const uniqueCategories = Array.from(
-        new Map(
-          allCategories.map((cat) => [`${cat.type_id}_${cat.type_name}`, cat]),
-        ).values(),
-      );
-
-      // 并行过滤掉空分类（检查每个分类是否有内容）
-      const defaultApi = shortDramaSources[0]?.api || DEFAULT_SHORT_DRAMA_API;
-      return await validateCategoriesHasContent(uniqueCategories, defaultApi);
-    }
-
-    // 从采集源中查找短剧分类
-    console.log('📋 [CATEGORIES] 从采集源中查找短剧分类...');
-    const sourceCategories = await getShortDramaCategoriesFromSources(config);
-    if (sourceCategories.length > 0) {
-      console.log(`  ✅ 从采集源找到 ${sourceCategories.length} 个短剧分类`);
-      // 按 type_id 去重并转换格式
-      const uniqueSourceCategories = Array.from(
-        new Map(
-          sourceCategories.map((c) => [
-            `${c.type_id}_${c.type_name}`,
-            { type_id: c.type_id, type_name: c.type_name },
-          ]),
-        ).values(),
-      );
-      return uniqueSourceCategories;
-    }
-
-    console.log('⚠️ 所有配置的短剧源都未返回分类，检查普通源...');
-  }
-
-  // 检查普通源是否有短剧分类
-  const regularSources = config.SourceConfig.filter(
-    (source: any) => !source.disabled && source.type !== 'shortdrama',
-  );
-
-  const regularCategories: { type_id: number; type_name: string }[] = [];
-
-  // 并发检查前20个源（减少检查数量以提高速度）
-  const sourcesToCheck = regularSources.slice(0, 20);
-  const batchSize = 10;
-  for (let i = 0; i < sourcesToCheck.length; i += batchSize) {
-    const batch = sourcesToCheck.slice(i, i + batchSize);
-    const results = await Promise.allSettled(
-      batch.map(async (source: any) => {
-        try {
-          const response = await fetch(`${source.api}?ac=list`, {
-            headers: {
-              'User-Agent': DEFAULT_USER_AGENT,
-              Accept: 'application/json',
-            },
-            signal: AbortSignal.timeout(3000),
-          });
-          if (!response.ok) return [];
-          const data = await response.json();
-          const classes = data.class || [];
-          return classes
-            .filter(
-              (c: any) => c.type_name && isShortDramaCategory(c.type_name),
-            )
-            .map((c: any) => ({ type_id: c.type_id, type_name: c.type_name }));
-        } catch {
-          return [];
-        }
-      }),
-    );
-
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        regularCategories.push(...result.value);
-      }
-    }
-  }
-
-  if (regularCategories.length > 0) {
-    console.log(`📋 从普通源找到 ${regularCategories.length} 个短剧分类`);
-    // 按名称合并同名分类（不同源的同名分类合并为一个）
-    const mergedCategories = new Map<
-      string,
-      { type_id: number; type_name: string }
-    >();
-
-    for (const cat of regularCategories) {
-      const name = cat.type_name;
-      if (!mergedCategories.has(name)) {
-        mergedCategories.set(name, cat);
-      }
-    }
-
-    const uniqueRegularCategories = Array.from(mergedCategories.values());
-    console.log(`📋 合并后 ${uniqueRegularCategories.length} 个分类`);
-
-    // 并行检查每个分类是否有内容
-    return await validateCategoriesHasContent(
-      uniqueRegularCategories,
-      DEFAULT_SHORT_DRAMA_API,
-    );
-  }
-
-  // 没有配置短剧源或全部失败，使用默认源
+  // 直接使用默认短剧源获取分类
   console.log(`📋 [CATEGORIES] 使用默认短剧源: ${DEFAULT_SHORT_DRAMA_API}`);
 
-  // 先获取默认源的所有分类
   const defaultCategories = await getCategoriesFromSource(
     DEFAULT_SHORT_DRAMA_API,
   );
 
-  // 只保留短剧相关分类（已通过 getCategoriesFromSource 过滤）
-  const shortDramaCategories = defaultCategories;
-
-  console.log(`📋 短剧相关分类: ${shortDramaCategories.length} 个`);
+  console.log(`📋 短剧相关分类: ${defaultCategories.length} 个`);
 
   // 并行检查每个分类是否有内容
   return await validateCategoriesHasContent(
-    shortDramaCategories,
+    defaultCategories,
     DEFAULT_SHORT_DRAMA_API,
   );
 }
