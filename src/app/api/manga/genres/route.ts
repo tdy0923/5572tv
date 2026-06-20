@@ -6,22 +6,20 @@ export const dynamic = 'force-dynamic';
 
 const BASE_URL = 'https://www.mangabz.com';
 
-// MangaBZ 漫画分类
+// MangaBZ 漫画分类 - 使用正确的 URL 格式 /manga-list-{genre}-{status}-{page}/
 const MANGA_GENRES = [
   { id: 'hot', name: '热门漫画', path: '/manga-list/' },
-  { id: 'new', name: '最新更新', path: '/manga-list/?sort=1' },
-  { id: 'finish', name: '已完结', path: '/manga-list/?status=1' },
-  { id: 'action', name: '热血动作', path: '/manga-list/?teg=1' },
-  { id: 'adventure', name: '冒险穿越', path: '/manga-list/?teg=2' },
-  { id: 'comedy', name: '搞笑幽默', path: '/manga-list/?teg=3' },
-  { id: 'fantasy', name: '玄幻奇幻', path: '/manga-list/?teg=4' },
-  { id: 'romance', name: '恋爱日常', path: '/manga-list/?teg=5' },
-  { id: 'scifi', name: '科幻机甲', path: '/manga-list/?teg=6' },
-  { id: 'suspense', name: '悬疑惊悚', path: '/manga-list/?teg=7' },
-  { id: 'martial', name: '武侠仙侠', path: '/manga-list/?teg=8' },
-  { id: 'campus', name: '校园青春', path: '/manga-list/?teg=9' },
-  { id: 'classical', name: '经典漫画', path: '/manga-list/?teg=10' },
-  { id: 'other', name: '其他漫画', path: '/manga-list/?teg=11' },
+  { id: 'new', name: '最新更新', path: '/manga-list-0-0-2/' },
+  { id: 'finish', name: '已完结', path: '/manga-list-0-2-10/' },
+  { id: 'action', name: '热血动作', path: '/manga-list-31-0-10/' },
+  { id: 'romance', name: '恋爱日常', path: '/manga-list-26-0-10/' },
+  { id: 'campus', name: '校园青春', path: '/manga-list-1-0-10/' },
+  { id: 'adventure', name: '冒险穿越', path: '/manga-list-2-0-10/' },
+  { id: 'scifi', name: '科幻机甲', path: '/manga-list-25-0-10/' },
+  { id: 'life', name: '生活日常', path: '/manga-list-11-0-10/' },
+  { id: 'suspense', name: '悬疑惊悚', path: '/manga-list-17-0-10/' },
+  { id: 'fantasy', name: '魔法奇幻', path: '/manga-list-15-0-10/' },
+  { id: 'sports', name: '运动竞技', path: '/manga-list-34-0-10/' },
 ];
 
 interface GenreManga {
