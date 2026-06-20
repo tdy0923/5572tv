@@ -50,12 +50,22 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
+    // 构建防盗链绕过 headers
+    let targetOrigin = '';
+    try {
+      const targetUrlObj = new URL(decodedUrl);
+      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+    } catch {}
+
     const headers: Record<string, string> = {
       'User-Agent': DEFAULT_USER_AGENT,
       Accept: '*/*',
       'Accept-Encoding': 'identity',
       Connection: 'keep-alive',
       Range: request.headers.get('range') || '',
+      // 防盗链绕过
+      ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
+      ...(targetOrigin ? { Origin: targetOrigin } : {}),
     };
 
     // 移除空的 Range header

@@ -147,13 +147,13 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // 返回视频URL，优先使用代理URL避免CORS问题
+    // 返回视频URL，优先使用原始URL让客户端直接获取（绕过CDN防盗链）
     const episodeData = result.data?.episode;
     const parsedUrl = episodeData?.url || result.data!.parsedUrl || '';
     const proxyUrl = result.data!.proxyUrl || '';
 
     const apiResponse = {
-      url: proxyUrl || parsedUrl, // 优先使用代理URL
+      url: parsedUrl || proxyUrl, // 优先使用原始URL
       originalUrl: parsedUrl,
       proxyUrl: proxyUrl,
       title: result.data!.videoName || '',

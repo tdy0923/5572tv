@@ -1914,22 +1914,16 @@ function PlayPageClient() {
         // // console.log('🎵 换集时应用音轨参数:', currentAudioTrackRef.current);
       }
 
-      // 🛡️ 自动代理外部 CDN 的 m3u8 链接，解决 CORS/403 问题
+      // 🛡️ 外部 CDN 的 m3u8 链接 - 优先让客户端直接获取（绕过CDN防盗链）
       if (
         newUrl &&
         newUrl.includes('.m3u8') &&
         !newUrl.includes(window.location.host) &&
         !isEmbySource
       ) {
-        // 尝试通过代理播放，如果代理失败则使用原始URL
-        const proxiedUrl = new URL('/api/proxy/m3u8', window.location.origin);
-        proxiedUrl.searchParams.set('url', newUrl);
-        proxiedUrl.searchParams.set('allowCORS', 'false');
-        if (detailData.source) {
-          proxiedUrl.searchParams.set('5572tv-source', detailData.source);
-        }
-        // 直接使用代理URL，让播放器处理错误
-        newUrl = proxiedUrl.toString();
+        // 优先使用原始URL让客户端直接获取（CDN防盗链通常只拦截服务器IP）
+        // 如果客户端获取失败，hls.js会自动重试或显示错误
+        // 不再强制使用代理，因为代理会被CDN服务器封锁
       }
 
       if (newUrl !== videoUrl) {

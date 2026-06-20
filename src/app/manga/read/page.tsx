@@ -86,9 +86,12 @@ export default function MangaReaderPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
+  const [showControls, setShowControls] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
 
   const { data: chapterData, isLoading } = useQuery({
     queryKey: ['manga', 'chapter', chapterUrl, source],
@@ -147,9 +150,11 @@ export default function MangaReaderPage() {
                 (containerRef.current?.scrollHeight || 1)) *
                 totalPages,
             );
-      saveReadingProgress(chapterUrl, progress);
+      if (progress >= 0) {
+        saveReadingProgress(chapterUrl, progress);
+      }
     }
-  }, [currentPage, chapterUrl, totalPages, readMode]);
+  }, [chapterUrl, currentPage, readMode, totalPages]);
 
   // Add to history
   useEffect(() => {
@@ -158,36 +163,17 @@ export default function MangaReaderPage() {
     }
   }, [chapterData?.title, mangaTitle, pages]);
 
-  // Vertical scroll progress tracking
-  useEffect(() => {
-    if (readMode !== 'vertical' || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const handleScroll = () => {
-      const progress = Math.floor(
-        (container.scrollTop /
-          (container.scrollHeight - container.clientHeight)) *
-          totalPages,
-      );
-      const clampedProgress = Math.max(0, Math.min(progress, totalPages - 1));
-      saveReadingProgress(chapterUrl, clampedProgress);
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [readMode, chapterUrl, totalPages]);
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (readMode !== 'horizontal') return;
 
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
+      if (e.key === 'ArrowLeft' || e.key === 'a') {
         setCurrentPage((p) => Math.max(0, p - 1));
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
+      } else if (e.key === 'ArrowRight' || e.key === 'd') {
         setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
+      } else if (e.key === 'Escape') {
+        setShowSettings(false);
       }
     };
 
@@ -195,53 +181,63 @@ export default function MangaReaderPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [readMode, totalPages]);
 
-  // Touch swipe for horizontal mode
-  const touchStartX = useRef(0);
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+  // Touch handlers for swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
-  }, []);
+    touchStartY.current = e.touches[0].clientY;
+  };
 
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (readMode !== 'horizontal') return;
-      const diff = touchStartX.current - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
-        } else {
-          setCurrentPage((p) => Math.max(0, p - 1));
-        }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (readMode !== 'horizontal') return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaX = touchEndX - touchStartX.current;
+    const deltaY = touchEndY - touchStartY.current;
+
+    // Only handle horizontal swipes (ignore vertical)
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Swipe right - previous page
+        setCurrentPage((p) => Math.max(0, p - 1));
+      } else {
+        // Swipe left - next page
+        setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
       }
-    },
-    [readMode, totalPages],
-  );
+    }
+  };
 
+  // Toggle controls visibility
+  const toggleControls = () => {
+    setShowControls((prev) => !prev);
+  };
+
+  // Image load handler
   const handleImageLoad = useCallback((index: number) => {
     setImagesLoaded((prev) => new Set(prev).add(index));
   }, []);
 
+  // Fullscreen toggle
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
+      document.documentElement.requestFullscreen();
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen?.();
+      document.exitFullscreen();
       setIsFullscreen(false);
     }
   }, []);
 
-  if (!chapterUrl) {
-    return (
-      <PageLayout activePath='/manga'>
-        <div className='flex flex-col items-center justify-center py-20'>
-          <BookOpen className='w-16 h-16 text-gray-300 dark:text-gray-600' />
-          <h3 className='mt-4 text-lg font-semibold text-gray-700 dark:text-gray-300'>
-            未指定章节
-          </h3>
-        </div>
-      </PageLayout>
-    );
-  }
+  // Auto-hide controls after 3 seconds
+  useEffect(() => {
+    if (readMode !== 'horizontal' || !showControls) return;
+
+    const timer = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [readMode, showControls, currentPage]);
 
   if (isLoading) {
     return (
@@ -294,8 +290,14 @@ export default function MangaReaderPage() {
 
   return (
     <PageLayout activePath='/manga'>
-      {/* Top Bar */}
-      <div className='sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50 -mx-3 sm:-mx-5 md:-mx-6 lg:-mx-8 px-3 sm:px-5 md:px-6 lg:px-8 py-3'>
+      {/* Top Bar - Auto-hide in horizontal mode */}
+      <div
+        className={`sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200/50 dark:border-gray-700/50 -mx-3 sm:-mx-5 md:-mx-6 lg:-mx-8 px-3 sm:px-5 md:px-6 lg:px-8 py-3 transition-all duration-300 ${
+          readMode === 'horizontal' && !showControls
+            ? '-translate-y-full opacity-0'
+            : ''
+        }`}
+      >
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3 min-w-0'>
             <Link
@@ -405,7 +407,7 @@ export default function MangaReaderPage() {
                 <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                   阅读模式
                 </label>
-                <div className='mt-2 flex gap-2'>
+                <div className='flex gap-2 mt-2'>
                   <button
                     onClick={() => setReadMode('vertical')}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -493,6 +495,7 @@ export default function MangaReaderPage() {
           className='flex flex-col items-center justify-center min-h-[70vh] py-4 -mx-3 sm:-mx-5 md:-mx-6 lg:-mx-8'
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          onClick={toggleControls}
         >
           <div className='relative w-full max-w-[800px]'>
             {pages[currentPage] && (
@@ -525,28 +528,32 @@ export default function MangaReaderPage() {
               </>
             )}
 
-            {/* Navigation Areas */}
+            {/* Always-visible Navigation Areas */}
             {currentPage > 0 && (
               <button
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                className='absolute left-0 top-0 bottom-0 w-1/4 flex items-center justify-start pl-4 opacity-0 hover:opacity-100 transition-opacity'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentPage((p) => Math.max(0, p - 1));
+                }}
+                className='absolute left-0 top-0 bottom-0 w-1/3 flex items-center justify-start pl-4 z-10'
                 aria-label='上一页'
               >
-                <div className='p-2 rounded-full bg-black/30 backdrop-blur-sm'>
-                  <ChevronLeft className='w-6 h-6 text-white' />
+                <div className='p-3 rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors'>
+                  <ChevronLeft className='w-8 h-8 text-white' />
                 </div>
               </button>
             )}
             {currentPage < totalPages - 1 && (
               <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages - 1, p + 1))
-                }
-                className='absolute right-0 top-0 bottom-0 w-1/4 flex items-center justify-end pr-4 opacity-0 hover:opacity-100 transition-opacity'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
+                }}
+                className='absolute right-0 top-0 bottom-0 w-1/3 flex items-center justify-end pr-4 z-10'
                 aria-label='下一页'
               >
-                <div className='p-2 rounded-full bg-black/30 backdrop-blur-sm'>
-                  <ChevronRight className='w-6 h-6 text-white' />
+                <div className='p-3 rounded-full bg-black/20 backdrop-blur-sm hover:bg-black/40 transition-colors'>
+                  <ChevronRight className='w-8 h-8 text-white' />
                 </div>
               </button>
             )}
