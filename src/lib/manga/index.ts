@@ -3,7 +3,8 @@ import {
   getMangaBzDetail,
   searchMangaBz,
 } from './mangabz';
-import { getEnabledSources, getSourceByKey, type MangaSource } from './sources';
+import { getMangadexDetail, searchMangadex } from './mangadex';
+import { getEnabledSources, type MangaSource } from './sources';
 import type {
   MangaChapterPages,
   MangaDetail,
@@ -38,6 +39,9 @@ async function searchSingleSource(
     switch (source.key) {
       case 'mangabz':
         searchFn = searchMangaBz;
+        break;
+      case 'mangadex':
+        searchFn = searchMangadex;
         break;
       default:
         return { results: [], totalPages: 0 };
@@ -85,12 +89,11 @@ export async function getMangaDetail(
   id: string,
   source: string,
 ): Promise<MangaDetail | null> {
-  const mangaSource = getSourceByKey(source);
-  if (!mangaSource) return null;
-
   switch (source) {
     case 'mangabz':
       return getMangaBzDetail(id);
+    case 'mangadex':
+      return getMangadexDetail(id);
     default:
       return null;
   }

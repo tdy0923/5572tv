@@ -14,6 +14,13 @@ export const MANGA_SOURCES: MangaSource[] = [
     searchPath: '/search',
     enabled: true,
   },
+  {
+    key: 'mangadex',
+    name: 'MangaDex',
+    baseUrl: 'https://mangadex.org',
+    searchPath: '/title',
+    enabled: true,
+  },
 ];
 
 export function getSourceByKey(key: string): MangaSource | undefined {
