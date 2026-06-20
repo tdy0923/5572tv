@@ -2,6 +2,7 @@
 
 'use client';
 
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -30,6 +31,8 @@ export default function UserConfig({
   const [users, setUsers] = useState<any[]>([]);
   const [sources, setSources] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [activeTab, setActiveTab] = useState<'users' | 'groups'>('users');
   const [showAddUserForm, setShowAddUserForm] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
@@ -269,8 +272,12 @@ export default function UserConfig({
 
   const filteredUsers = users.filter(
     (u: any) =>
-      !searchTerm ||
-      u.username.toLowerCase().includes(searchTerm.toLowerCase()),
+      (!searchTerm ||
+        u.username.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!filterRole || u.role === filterRole) &&
+      (filterStatus === '' ||
+        (filterStatus === 'banned' && u.banned) ||
+        (filterStatus === 'active' && !u.banned)),
   );
 
   const getRoleBadge = (role: string) => {
@@ -454,81 +461,156 @@ export default function UserConfig({
             </div>
           )}
 
-          {/* 用户列表 */}
-          <div className='text-xs text-gray-500 dark:text-gray-400'>
-            共 {filteredUsers.length} 个用户
-          </div>
-          <div className='max-h-[70vh] overflow-y-auto space-y-2 pr-1'>
-            {filteredUsers.map((u: any) => (
-              <div
-                key={u.username}
-                className='flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-md transition-shadow'
-              >
-                <div className='w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0'>
-                  {u.username.charAt(0).toUpperCase()}
-                </div>
-                <div className='flex-1 min-w-0'>
-                  <div className='text-sm font-medium text-gray-900 dark:text-white truncate'>
-                    {u.username}
-                  </div>
-                  <div className='flex items-center gap-2 mt-0.5'>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
-                    >
-                      {getRoleLabel(u.role)}
-                    </span>
-                    {u.banned && (
-                      <span className='text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'>
-                        已封禁
-                      </span>
-                    )}
-                    {u.tags && u.tags.length > 0 && (
-                      <span className='text-xs text-gray-500 dark:text-gray-400 truncate'>
-                        {u.tags.join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {role === 'owner' && u.role !== 'owner' && (
-                  <div className='flex items-center gap-1'>
-                    {/* 封禁/解封 */}
-                    <button
-                      onClick={() => handleBanUser(u.username, !!u.banned)}
-                      className={`px-2 py-1 text-xs rounded-lg ${u.banned ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400'}`}
-                      title={u.banned ? '解封' : '封禁'}
-                    >
-                      {u.banned ? '解封' : '封禁'}
-                    </button>
-                    {/* 管理员权限 */}
-                    {u.role === 'admin' ? (
-                      <button
-                        onClick={() => handleSetAdmin(u.username, false)}
-                        className='px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg'
-                        title='取消管理员'
-                      >
-                        取消管理
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleSetAdmin(u.username, true)}
-                        className='px-2 py-1 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 rounded-lg'
-                        title='设为管理员'
-                      >
-                        设为管理
-                      </button>
-                    )}
-                    {/* 删除 */}
-                    <button
-                      onClick={() => handleDeleteUser(u.username)}
-                      className='px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 rounded-lg'
-                      title='删除'
-                    >
-                      删除
-                    </button>
-                  </div>
-                )}
+          {/* 用户列表 - 数据表格 */}
+          <div className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden'>
+            {/* 表格工具栏 */}
+            <div className='flex items-center gap-3 p-4 border-b border-gray-200 dark:border-gray-700'>
+              <div className='flex-1 relative'>
+                <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400' />
+                <input
+                  type='text'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder='搜索用户名...'
+                  className='w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
+                />
               </div>
-            ))}
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
+              >
+                <option value=''>全部角色</option>
+                <option value='owner'>站长</option>
+                <option value='admin'>管理员</option>
+                <option value='user'>普通用户</option>
+              </select>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm'
+              >
+                <option value=''>全部状态</option>
+                <option value='active'>正常</option>
+                <option value='banned'>已封禁</option>
+              </select>
+              <span className='text-sm text-gray-500 dark:text-gray-400'>
+                {filteredUsers.length} / {users.length} 个用户
+              </span>
+            </div>
+
+            {/* 数据表格 */}
+            <div className='overflow-x-auto'>
+              <table className='w-full text-sm'>
+                <thead>
+                  <tr className='bg-gray-50 dark:bg-gray-700/50 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider'>
+                    <th className='px-4 py-3'>用户</th>
+                    <th className='px-4 py-3'>角色</th>
+                    <th className='px-4 py-3'>分组</th>
+                    <th className='px-4 py-3'>状态</th>
+                    <th className='px-4 py-3 text-right'>操作</th>
+                  </tr>
+                </thead>
+                <tbody className='divide-y divide-gray-200 dark:divide-gray-700'>
+                  {filteredUsers.map((u: any) => (
+                    <tr
+                      key={u.username}
+                      className='hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors'
+                    >
+                      <td className='px-4 py-3'>
+                        <div className='flex items-center gap-3'>
+                          <div className='w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-xs shrink-0'>
+                            {u.username.charAt(0).toUpperCase()}
+                          </div>
+                          <span className='font-medium text-gray-900 dark:text-white'>
+                            {u.username}
+                          </span>
+                        </div>
+                      </td>
+                      <td className='px-4 py-3'>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getRoleBadge(u.role)}`}
+                        >
+                          {getRoleLabel(u.role)}
+                        </span>
+                      </td>
+                      <td className='px-4 py-3'>
+                        {u.tags && u.tags.length > 0 ? (
+                          <div className='flex flex-wrap gap-1'>
+                            {u.tags.map((tag: string) => (
+                              <span
+                                key={tag}
+                                className='text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full'
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className='text-gray-400'>-</span>
+                        )}
+                      </td>
+                      <td className='px-4 py-3'>
+                        {u.banned ? (
+                          <span className='inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'>
+                            <span className='w-1.5 h-1.5 rounded-full bg-red-500'></span>
+                            封禁
+                          </span>
+                        ) : (
+                          <span className='inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'>
+                            <span className='w-1.5 h-1.5 rounded-full bg-green-500'></span>
+                            正常
+                          </span>
+                        )}
+                      </td>
+                      <td className='px-4 py-3'>
+                        {role === 'owner' && u.role !== 'owner' && (
+                          <div className='flex items-center justify-end gap-1'>
+                            <button
+                              onClick={() =>
+                                handleBanUser(u.username, !!u.banned)
+                              }
+                              className={`px-2 py-1 text-xs rounded-lg ${u.banned ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400'}`}
+                            >
+                              {u.banned ? '解封' : '封禁'}
+                            </button>
+                            {u.role === 'admin' ? (
+                              <button
+                                onClick={() =>
+                                  handleSetAdmin(u.username, false)
+                                }
+                                className='px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg'
+                              >
+                                取消管理
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleSetAdmin(u.username, true)}
+                                className='px-2 py-1 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 rounded-lg'
+                              >
+                                设为管理
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteUser(u.username)}
+                              className='px-2 py-1 text-xs bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 rounded-lg'
+                            >
+                              删除
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredUsers.length === 0 && (
+              <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
+                没有找到匹配的用户
+              </div>
+            )}
           </div>
         </div>
       )}
