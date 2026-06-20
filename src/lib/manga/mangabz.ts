@@ -283,27 +283,31 @@ function unpackPackedResponse(js: string): string[] {
       })
       .join('');
 
-    // Extract all image URLs from decoded result
-    const urlMatches = result.matchAll(
-      /https?:\/\/image\.mangabz\.com[^"'\s\\)]+\.(jpg|png|webp|jpeg)/gi,
-    );
-    for (const match of urlMatches) {
-      urls.push(match[0]);
-    }
-
-    // Also try to find pix (base URL) and individual paths
+    // Try to extract pix (base URL) and pvalue (paths) from decoded result
     const pixMatch = result.match(/pix\s*=\s*["']([^"']+)["']/);
-    if (pixMatch) {
+    const pvalueMatch = result.match(/pvalue\s*=\s*\[([^\]]+)\]/);
+
+    if (pixMatch && pvalueMatch) {
       const pix = pixMatch[1];
-      // Find paths like "1/139/418076/1_1743.jpg"
-      const pathMatches = result.matchAll(
-        /(\d+\/\d+\/\d+\/\d+_\d+\.(?:jpg|png|webp|jpeg))/g,
-      );
+      const pathsStr = pvalueMatch[1];
+      // Extract paths from the array string
+      const pathMatches = pathsStr.matchAll(/["']([^"']+)["']/g);
       for (const pathMatch of pathMatches) {
-        const fullUrl = pix + pathMatch[1];
-        if (!urls.includes(fullUrl)) {
+        const path = pathMatch[1];
+        if (path.startsWith('/')) {
+          const fullUrl = pix + path;
           urls.push(fullUrl);
         }
+      }
+    }
+
+    // Fallback: try to find URLs directly in decoded result
+    if (urls.length === 0) {
+      const urlMatches = result.matchAll(
+        /https?:\/\/image\.mangabz\.com[^"'\s\\)]+\.(jpg|png|webp|jpeg)/gi,
+      );
+      for (const match of urlMatches) {
+        urls.push(match[0]);
       }
     }
   } catch {
