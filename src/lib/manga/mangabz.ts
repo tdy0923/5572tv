@@ -239,16 +239,16 @@ export async function getMangaBzDetail(
 function unpackPackedResponse(js: string): string[] {
   const urls: string[] = [];
   try {
-    // Match the eval(function(...){...}(args)) pattern
-    const evalMatch = js.match(
-      /eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*d\s*\)\s*\{[\s\S]*?\}\s*\(\s*'([^']*)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([^']*)'\.split\s*\(\s*'\|'\s*\)/,
+    // Simple regex to extract payload, base, count, dictionary
+    const match = js.match(
+      /\('([\s\S]*?)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'([\s\S]*?)'\.split/,
     );
-    if (!evalMatch) return urls;
+    if (!match) return urls;
 
-    const payload = evalMatch[1];
-    const base = parseInt(evalMatch[2]);
-    const count = parseInt(evalMatch[3]);
-    const dictionary = evalMatch[4].split('|');
+    const payload = match[1];
+    const base = parseInt(match[2]);
+    const count = parseInt(match[3]);
+    const dictionary = match[4].split('|');
 
     // P.A.C.K.E.D. substitution decode
     const decoded: Record<string, string> = {};
@@ -288,7 +288,21 @@ function unpackPackedResponse(js: string): string[] {
     const pvalueMatch = result.match(/pvalue\s*=\s*\[([^\]]+)\]/);
 
     if (pixMatch && pvalueMatch) {
-      const pix = pixMatch[1];
+      let pix = pixMatch[1];
+      // Fix URL format - ensure proper https:// prefix
+      if (pix.startsWith('//')) {
+        pix = 'https:' + pix;
+      } else if (!pix.startsWith('http')) {
+        pix = 'https://' + pix;
+      }
+      // Fix double slashes only in the path part (not after protocol)
+      const protocolEnd = pix.indexOf('://');
+      if (protocolEnd !== -1) {
+        const protocol = pix.substring(0, protocolEnd + 3);
+        const path = pix.substring(protocolEnd + 3).replace(/\/+/g, '/');
+        pix = protocol + path;
+      }
+
       const pathsStr = pvalueMatch[1];
       // Extract paths from the array string
       const pathMatches = pathsStr.matchAll(/["']([^"']+)["']/g);
