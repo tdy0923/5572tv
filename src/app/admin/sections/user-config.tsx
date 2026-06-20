@@ -197,6 +197,28 @@ export default function UserConfig({
     });
   };
 
+  const handleToggleUserGroup = async (username: string, groupName: string) => {
+    const user = users.find((u: any) => u.username === username);
+    if (!user) return;
+    const currentTags = user.tags || [];
+    const newTags = currentTags.includes(groupName)
+      ? currentTags.filter((t: string) => t !== groupName)
+      : [...currentTags, groupName];
+    await withLoading('toggleUserGroup', async () => {
+      try {
+        await callApi({
+          action: 'updateUserGroups',
+          targetUsername: username,
+          userGroups: newTags,
+        });
+        showSuccess('分组已更新', showAlert);
+        await reload();
+      } catch (err) {
+        showError((err as Error).message, showAlert);
+      }
+    });
+  };
+
   const openEditGroup = (group: any) => {
     setEditGroupName(group.name || '');
     setEditingGroupApis(group.enabledApis || []);
@@ -535,19 +557,76 @@ export default function UserConfig({
                         </span>
                       </td>
                       <td className='px-4 py-3'>
-                        {u.tags && u.tags.length > 0 ? (
-                          <div className='flex flex-wrap gap-1'>
-                            {u.tags.map((tag: string) => (
-                              <span
-                                key={tag}
-                                className='text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full'
+                        {role === 'owner' ? (
+                          <div className='relative group'>
+                            <button className='flex items-center gap-1 text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'>
+                              {u.tags && u.tags.length > 0 ? (
+                                <div className='flex flex-wrap gap-1'>
+                                  {u.tags.map((tag: string) => (
+                                    <span
+                                      key={tag}
+                                      className='px-1.5 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded'
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className='text-gray-500'>无分组</span>
+                              )}
+                              <svg
+                                className='w-3 h-3 text-gray-400'
+                                fill='none'
+                                viewBox='0 0 24 24'
+                                stroke='currentColor'
                               >
-                                {tag}
-                              </span>
-                            ))}
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth='2'
+                                  d='M19 9l-7 7-7-7'
+                                />
+                              </svg>
+                            </button>
+                            <div className='absolute left-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 hidden group-hover:block'>
+                              <div className='p-2 max-h-48 overflow-y-auto'>
+                                {userGroups.map((g: any) => (
+                                  <label
+                                    key={g.name}
+                                    className='flex items-center gap-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer'
+                                  >
+                                    <input
+                                      type='checkbox'
+                                      checked={(u.tags || []).includes(g.name)}
+                                      onChange={() =>
+                                        handleToggleUserGroup(
+                                          u.username,
+                                          g.name,
+                                        )
+                                      }
+                                      className='w-3 h-3 rounded border-gray-300 text-blue-500'
+                                    />
+                                    <span className='text-xs'>{g.name}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         ) : (
-                          <span className='text-gray-400'>-</span>
+                          <div className='flex flex-wrap gap-1'>
+                            {u.tags && u.tags.length > 0 ? (
+                              u.tags.map((tag: string) => (
+                                <span
+                                  key={tag}
+                                  className='text-xs px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full'
+                                >
+                                  {tag}
+                                </span>
+                              ))
+                            ) : (
+                              <span className='text-gray-400'>-</span>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td className='px-4 py-3'>
