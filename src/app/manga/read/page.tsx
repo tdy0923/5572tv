@@ -43,6 +43,25 @@ function saveReadingProgress(chapterUrl: string, index: number): void {
   }
 }
 
+function getSavedReadMode(): ReadMode {
+  if (typeof window === 'undefined') return 'vertical';
+  try {
+    const saved = localStorage.getItem('manga-read-mode');
+    if (saved === 'horizontal' || saved === 'vertical') return saved;
+  } catch {
+    // ignore
+  }
+  return 'vertical';
+}
+
+function saveReadMode(mode: ReadMode): void {
+  try {
+    localStorage.setItem('manga-read-mode', mode);
+  } catch {
+    // ignore
+  }
+}
+
 function addToMangaHistory(
   title: string,
   chapter: string,
@@ -81,7 +100,7 @@ export default function MangaReaderPage() {
   const source = searchParams.get('source') || 'mangabz';
   const mangaTitle = searchParams.get('title') || '未知漫画';
 
-  const [readMode, setReadMode] = useState<ReadMode>('vertical');
+  const [readMode, setReadMode] = useState<ReadMode>(getSavedReadMode);
   const [currentPage, setCurrentPage] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -115,6 +134,11 @@ export default function MangaReaderPage() {
     setImagesLoaded(new Set());
     setCurrentPage(0);
   }, [chapterUrl]);
+
+  // Save reading mode preference
+  useEffect(() => {
+    saveReadMode(readMode);
+  }, [readMode]);
 
   // Load saved reading progress
   useEffect(() => {
@@ -301,7 +325,11 @@ export default function MangaReaderPage() {
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3 min-w-0'>
             <Link
-              href='/manga'
+              href={
+                searchParams.get('id')
+                  ? `/manga/${encodeURIComponent(searchParams.get('id')!)}?source=${source}`
+                  : '/manga'
+              }
               className='shrink-0 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
             >
               <ArrowLeft className='w-5 h-5 text-gray-600 dark:text-gray-400' />

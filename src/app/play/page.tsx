@@ -737,10 +737,10 @@ function PlayPageClient() {
     titleLayer.innerHTML = `
       <div class="fullscreen-title-container">
         <div class="fullscreen-title-content">
-          <h1 class="fullscreen-title-text">${detail?.title || ''}</h1>
+          <h1 class="fullscreen-title-text">${escapeAudioTrackHtml(detail?.title || '')}</h1>
           ${
             hasEpisodes && episodeName
-              ? `<span class="fullscreen-episode-text">${episodeName}</span>`
+              ? `<span class="fullscreen-episode-text">${escapeAudioTrackHtml(episodeName)}</span>`
               : hasEpisodes
                 ? `<span class="fullscreen-episode-text">第 ${currentEpisodeIndex + 1} 集</span>`
                 : ''

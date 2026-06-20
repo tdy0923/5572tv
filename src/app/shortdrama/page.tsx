@@ -30,6 +30,7 @@ export default function ShortDramaPage() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   // 返回顶部按钮显示状态
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -242,6 +243,10 @@ export default function ShortDramaPage() {
                 placeholder='搜索短剧名称...'
                 className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
                 value={searchQuery}
+                onFocus={() => setIsSearchInputFocused(true)}
+                onBlur={() =>
+                  setTimeout(() => setIsSearchInputFocused(false), 200)
+                }
                 onChange={(e) => {
                   const value = e.target.value;
                   setSearchQuery(value);
@@ -258,38 +263,40 @@ export default function ShortDramaPage() {
               />
             </div>
             {/* 搜索历史 */}
-            {isSearchMode && !searchQuery && searchHistory.length > 0 && (
-              <div className='mt-3'>
-                <div className='flex items-center justify-between mb-2'>
-                  <span className='text-xs text-gray-500 dark:text-gray-400'>
-                    搜索历史
-                  </span>
-                  <button
-                    onClick={() => {
-                      setSearchHistory([]);
-                      localStorage.removeItem('shortdrama-search-history');
-                    }}
-                    className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                  >
-                    清除
-                  </button>
-                </div>
-                <div className='flex flex-wrap gap-2'>
-                  {searchHistory.map((item, index) => (
+            {isSearchInputFocused &&
+              !searchQuery &&
+              searchHistory.length > 0 && (
+                <div className='mt-3'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <span className='text-xs text-gray-500 dark:text-gray-400'>
+                      搜索历史
+                    </span>
                     <button
-                      key={index}
                       onClick={() => {
-                        setSearchQuery(item);
-                        handleSearch(item);
+                        setSearchHistory([]);
+                        localStorage.removeItem('shortdrama-search-history');
                       }}
-                      className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+                      className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                     >
-                      {item}
+                      清除
                     </button>
-                  ))}
+                  </div>
+                  <div className='flex flex-wrap gap-2'>
+                    {searchHistory.map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setSearchQuery(item);
+                          handleSearch(item);
+                        }}
+                        className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
 
           {/* 分类筛选 */}

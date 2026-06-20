@@ -345,19 +345,8 @@ export default function UserConfig({
       {/* 用户管理 */}
       {activeTab === 'users' && (
         <div className='space-y-4'>
-          {/* 搜索 + 操作 */}
+          {/* 操作按钮 */}
           <div className='flex flex-col sm:flex-row gap-3'>
-            <div className='relative flex-1'>
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder='🔍 搜索用户名...'
-                className='w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-green-500'
-              />
-              <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
-                🔍
-              </span>
-            </div>
             {role === 'owner' && (
               <div className='flex gap-2'>
                 <button
