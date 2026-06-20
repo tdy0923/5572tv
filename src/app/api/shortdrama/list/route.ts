@@ -7,88 +7,16 @@ import {
   resetDbQueryCount,
 } from '@/lib/performance-monitor';
 import {
-  DEFAULT_SHORT_DRAMA_API,
   mapApiItemToShortDramaItem,
-  SHORT_DRAMA_KEYWORDS,
   SHORTDRAMA_CACHE_SECONDS,
 } from '@/lib/shortdrama-constants';
+import { SHORT_DRAMA_SOURCES } from '@/lib/shortdrama-sources';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
-
-// 从单个短剧源获取数据（通过分类名称查找）- 预留备用函数
-async function _fetchListFromSource(api: string, page: number, size: number) {
-  // Step 1: 获取分类列表，找到所有短剧相关分类的ID
-  const listUrl = `${api}?ac=list`;
-
-  const listResponse = await fetch(listUrl, {
-    headers: {
-      'User-Agent': DEFAULT_USER_AGENT,
-      Accept: 'application/json',
-    },
-    signal: AbortSignal.timeout(10000),
-  });
-
-  if (!listResponse.ok) {
-    throw new Error(`HTTP error! status: ${listResponse.status}`);
-  }
-
-  const listData = await listResponse.json();
-  const categories = listData.class || [];
-
-  // 查找所有短剧相关分类
-  const shortDramaCategories = categories.filter(
-    (cat: any) =>
-      cat.type_name &&
-      SHORT_DRAMA_KEYWORDS.some((kw) => cat.type_name.includes(kw)),
-  );
-
-  if (shortDramaCategories.length === 0) {
-    console.log(`该源没有短剧分类`);
-    return { list: [], hasMore: false };
-  }
-
-  console.log(
-    `找到 ${shortDramaCategories.length} 个短剧分类:`,
-    shortDramaCategories
-      .map((c: any) => `${c.type_name}(${c.type_id})`)
-      .join(', '),
-  );
-
-  // Step 2: 从所有短剧分类获取数据（取第一个有数据的分类）
-  for (const cat of shortDramaCategories) {
-    const apiUrl = `${api}?ac=detail&t=${cat.type_id}&pg=${page}`;
-
-    const response = await fetch(apiUrl, {
-      headers: {
-        'User-Agent': DEFAULT_USER_AGENT,
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) continue;
-
-    const data = await response.json();
-    const items = data.list || [];
-
-    if (items.length === 0) continue;
-
-    const limitedItems = items.slice(0, size);
-
-    const list = limitedItems.map(mapApiItemToShortDramaItem);
-
-    return {
-      list,
-      hasMore: data.page < data.pagecount,
-    };
-  }
-
-  return { list: [], hasMore: false };
-}
 
 // 从指定分类获取短剧列表
 async function fetchListFromCategory(
@@ -124,20 +52,56 @@ async function fetchListFromCategory(
   };
 }
 
-// 服务端专用函数，从所有短剧源聚合数据
+// 服务端专用函数，从多个源聚合数据
 async function getShortDramaListInternal(
   category: number,
   page = 1,
   size = 20,
 ) {
   try {
-    // 只使用默认源（确保ID与parse API兼容）
-    return await fetchListFromCategory(
-      DEFAULT_SHORT_DRAMA_API,
-      category,
-      page,
-      size,
+    // 找到包含此分类的所有源
+    const sourcesWithCategory = SHORT_DRAMA_SOURCES.filter(
+      (source) =>
+        source.enabled && source.categories.some((c) => c.id === category),
     );
+
+    // 如果没有找到匹配的源，使用所有启用的源
+    const sourcesToQuery =
+      sourcesWithCategory.length > 0
+        ? sourcesWithCategory
+        : SHORT_DRAMA_SOURCES.filter((s) => s.enabled);
+
+    // 并行从所有源获取数据
+    const results = await Promise.allSettled(
+      sourcesToQuery.map((source) =>
+        fetchListFromCategory(source.api, category, page, size),
+      ),
+    );
+
+    // 合并所有成功的结果
+    const allItems: any[] = [];
+    let hasMore = false;
+
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        allItems.push(...result.value.list);
+        if (result.value.hasMore) hasMore = true;
+      }
+    });
+
+    // 按更新时间排序并去重
+    const uniqueItems = Array.from(
+      new Map(allItems.map((item) => [item.id, item])).values(),
+    );
+    uniqueItems.sort(
+      (a, b) =>
+        new Date(b.update_time).getTime() - new Date(a.update_time).getTime(),
+    );
+
+    return {
+      list: uniqueItems.slice(0, size),
+      hasMore,
+    };
   } catch (error) {
     console.error('获取短剧列表失败:', error);
     return { list: [], hasMore: false };
