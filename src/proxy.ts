@@ -456,6 +456,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/api/manga', // 漫画 API（公共数据，无需认证）
     '/manga', // 漫画页面（公共访问）
+    '/shortdrama', // 短剧页面（公共访问）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
