@@ -55,9 +55,17 @@ async function fetchGenreManga(
 
     const results: GenreManga[] = [];
 
-    // Parse manga list items
+    // MangaBZ list page structure:
+    // <div class="mh-item">
+    //   <a href="/139bz/">
+    //     <img class="mh-cover" src="https://cover.mangabz.com/...">
+    //   </a>
+    //   <div class="mh-item-detali">
+    //     <h2 class="title"><a href="/139bz/" title="海賊王">海賊王</a></h2>
+    //   </div>
+    // </div>
     const itemRegex =
-      /<a[^>]*href="([^"]*)"[^>]*class="[^"]*(?:mh-item|bs|bsx)[^"]*"[\s\S]*?<img[^>]*src="([^"]*)"[^>]*>[\s\S]*?<(?:h2|div)[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)/g;
+      /<div class="mh-item">\s*<a href="([^"]+)">\s*<img[^>]*src="([^"]+)"[^>]*>[\s\S]*?<h2 class="title">\s*<a[^>]*>([^<]+)<\/a>/g;
 
     let match;
     while ((match = itemRegex.exec(html)) !== null && results.length < limit) {
@@ -81,7 +89,7 @@ async function fetchGenreManga(
     // Fallback: try simpler parser
     if (results.length === 0) {
       const simpleRegex =
-        /<div class="mh-item">[\s\S]*?<a href="([^"]*)">[\s\S]*?<img[^>]*src="([^"]*)"[^>]*>[\s\S]*?<h2[^>]*>([^<]+)<\/h2>/g;
+        /<div class="mh-item">\s*<a href="([^"]+)">\s*<img[^>]*src="([^"]+)"[\s\S]*?<a[^>]*title="([^"]+)"/g;
       while (
         (match = simpleRegex.exec(html)) !== null &&
         results.length < limit
