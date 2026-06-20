@@ -314,7 +314,14 @@ export default function MangaReaderPage() {
             </div>
           </div>
 
-          <div className='flex items-center gap-1'>
+          <div className='flex items-center gap-2'>
+            {/* Page Progress */}
+            <span className='text-xs text-gray-500 dark:text-gray-400 hidden sm:inline'>
+              {readMode === 'horizontal'
+                ? `${currentPage + 1}/${totalPages}`
+                : `${imagesLoaded.size}/${totalPages} 已加载`}
+            </span>
+
             {/* Read Mode Toggle */}
             <button
               onClick={() =>
@@ -347,6 +354,16 @@ export default function MangaReaderPage() {
               <Settings className='w-5 h-5 text-gray-600 dark:text-gray-400' />
             </button>
           </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className='mt-2 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+          <div
+            className='h-full bg-green-500 transition-all duration-300'
+            style={{
+              width: `${totalPages > 0 ? (readMode === 'horizontal' ? ((currentPage + 1) / totalPages) * 100 : (imagesLoaded.size / totalPages) * 100) : 0}%`,
+            }}
+          />
         </div>
 
         {/* Horizontal Mode: Page Slider */}
