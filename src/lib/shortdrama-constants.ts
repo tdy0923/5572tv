@@ -3,36 +3,30 @@
 
 import { NextResponse } from 'next/server';
 
-// 默认短剧源API（hongniuzy2.com - 34000+短剧）
+// 默认短剧源API（1080zyku - 95000+短剧，正确分集）
 export const DEFAULT_SHORT_DRAMA_API =
-  'https://www.hongniuzy2.com/api.php/provide/vod';
+  'https://api.1080zyku.com/inc/apijson.php';
 
-// 短剧分类关键词（匹配实际短剧源的分类）
+// 短剧分类关键词（匹配1080zyku的实际分类）
 export const SHORT_DRAMA_KEYWORDS = [
   '短剧',
-  '女频恋爱',
-  '反转爽剧',
-  '古装仙侠',
-  '年代穿越',
-  '脑洞悬疑',
-  '现代都市',
+  '短剧大全',
   '战神',
   '豪门',
   '宫斗',
-  '甜宠',
-  '虐恋',
+  '脑洞',
+  '仙侠',
   '逆袭',
   '复仇',
+  '甜宠',
+  '虐恋',
+  '穿越',
+  '重生',
   '总裁',
   '赘婿',
   '霸总',
   '神医',
   '宠妻',
-  '穿越',
-  '重生',
-  '悬疑',
-  '玄幻',
-  '爱情',
 ];
 
 // 排除的分类关键词（明确不是短剧的内容）
