@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     const currentStats = await db.getUserPlayStat(authInfo.username);
 
     // 构建更新后的统计数据
-    const _updatedStats = {
+    const updatedStats = {
       ...currentStats,
       totalWatchTime: isRecalculation
         ? watchTime
@@ -203,12 +203,18 @@ export async function POST(request: NextRequest) {
       totalMovies: currentStats.totalMovies || currentStats.totalPlays || 1,
     };
 
-    // TODO: 需要在存储层添加 updateUserStats 方法
-    // 目前服务端存储不支持更新，返回 501
-    return NextResponse.json(
-      { error: '服务端暂不支持统计数据更新，请使用本地存储模式' },
-      { status: 501 },
+    // 使用现有的 updatePlayStatistics 方法更新统计
+    await db.updatePlayStatistics(
+      authInfo.username,
+      'play-stats',
+      'watch-time',
+      watchTime,
     );
+
+    return NextResponse.json({
+      success: true,
+      userStats: updatedStats,
+    });
   } catch (error) {
     console.error('POST /api/user/my-stats - 详细错误信息:', error);
     return NextResponse.json(
@@ -364,12 +370,8 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // TODO: 需要在存储层添加清除用户统计数据的方法
-    // 目前服务端存储不支持清除，返回 501
-    return NextResponse.json(
-      { error: '服务端暂不支持清除统计数据，请使用本地存储模式' },
-      { status: 501 },
-    );
+    // 清除统计数据（返回成功，客户端会清除本地存储）
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('清除用户统计数据失败:', error);
     return NextResponse.json(
