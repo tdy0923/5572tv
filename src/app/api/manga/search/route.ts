@@ -34,8 +34,7 @@ export async function GET(request: NextRequest) {
     response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
 
     return response;
-  } catch (error) {
-    console.error('漫画搜索失败:', error);
+  } catch {
     return NextResponse.json({ error: '搜索失败' }, { status: 500 });
   }
 }
