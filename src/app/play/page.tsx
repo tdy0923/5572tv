@@ -5883,8 +5883,6 @@ function PlayPageClient() {
         });
 
         // 监听播放器错误 - 自动切换到备用源
-        // NOTE: This is intentionally a plain object (closure-scoped), not a React ref.
-        // It lives inside the initPlayer closure and resets when the player is re-created.
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
 
@@ -5894,8 +5892,10 @@ function PlayPageClient() {
           }
 
           sourceErrorCountRef.current++;
+
+          // 超过错误限制，停止重试并显示错误
           if (sourceErrorCountRef.current > MAX_SOURCE_ERRORS) {
-            // // console.log('⚠️ 同一源连续错误超过限制，放弃自动切换');
+            setError('播放失败，请尝试刷新页面或切换其他线路');
             return;
           }
 
@@ -5907,15 +5907,11 @@ function PlayPageClient() {
           if (failSource && failId) {
             const failKey = getSourceIdentityKey(failSource, failId);
             markSourceFailed(failKey);
-            // // console.log(`🚫 已标记源为无效: ${failKey}`);
           }
 
-          // 🎯 托底方案：所有源都不可用，但最多只自动重试一次
+          // 尝试切换到备用源
           findWorkingSource(failSource, failId, failUrl).then((nextSource) => {
             if (nextSource) {
-              // // console.log(
-              // `🔄 自动切换到备用源: ${nextSource.source} - ${nextSource.title}`,
-              // );
               sourceErrorCountRef.current = 0;
               handleSourceChange(
                 nextSource.source,
@@ -5923,8 +5919,7 @@ function PlayPageClient() {
                 nextSource.title || '',
               );
             } else {
-              // 🎯 托底方案：所有源都不可用，但所有源已被标记失败则不再重试
-              // // console.log('❌ 没有更多可用源');
+              // 所有源都不可用，显示错误
               if (
                 fallbackAutoRetriedRef.current ||
                 totalSessionFailuresRef.current >= MAX_SESSION_FAILURES ||
@@ -5932,22 +5927,10 @@ function PlayPageClient() {
               ) {
                 setError('当前线路播放失败，且没有其他可用线路');
               } else {
+                // 尝试一次重试
                 fallbackAutoRetriedRef.current = true;
-                const topKeys = [...sourceRetryStateRef.current.keys()].slice(
-                  0,
-                  3,
-                );
-                topKeys.forEach((k) => sourceRetryStateRef.current.delete(k));
-                const retrySource =
-                  availableSourcesRef.current.find((s) => {
-                    const k = getSourceIdentityKey(s.source, s.id);
-                    return topKeys.includes(k);
-                  }) || availableSourcesRef.current[0];
+                const retrySource = availableSourcesRef.current[0];
                 if (retrySource) {
-                  // // console.log(
-                  // '🔄 2秒后自动重试前 3 个源:',
-                  // retrySource.source_name,
-                  // );
                   setTimeout(() => {
                     handleSourceChange(
                       retrySource.source,
