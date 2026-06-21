@@ -38,11 +38,11 @@ const nextConfig = {
       source: '/(.*)',
       headers: [
         {
-          key: 'Content-Security-Policy',
+          key: 'Content-Security-Policy-Report-Only',
           value: [
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.5572.net https://cdn-cgi.challenge-platform.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.5572.net https://cdn-cgi.challenge-platform.com https://static.cloudflareinsights.com https://tg.yunku.de",
             "worker-src 'self' blob: https://www.5572.net",
-            "connect-src 'self' https://www.5572.net https://cdn-cgi.challenge-platform.com https://cdn-cgi.rum",
+            "connect-src 'self' https://www.5572.net https://cdn-cgi.challenge-platform.com https://cdn-cgi.rum https://static.cloudflareinsights.com",
           ].join('; '),
         },
       ],
