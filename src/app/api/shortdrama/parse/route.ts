@@ -12,6 +12,7 @@ import {
   DEFAULT_SHORT_DRAMA_API,
   SHORTDRAMA_CACHE_SECONDS,
 } from '@/lib/shortdrama-constants';
+import { getEnabledSources } from '@/lib/shortdrama-sources';
 
 // 标记为动态路由
 export const dynamic = 'force-dynamic';
@@ -76,8 +77,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // 直接从主API获取数据（跳过getConfig以避免Cloudflare超时）
-    const primaryApi = DEFAULT_SHORT_DRAMA_API;
+    // Build all source APIs to try (primary + enabled multi-sources)
+    const enabledSources = getEnabledSources();
+    const allApis = [DEFAULT_SHORT_DRAMA_API];
+    for (const source of enabledSources) {
+      if (source.api !== DEFAULT_SHORT_DRAMA_API) {
+        allApis.push(source.api);
+      }
+    }
 
     const params = new URLSearchParams({
       ac: 'detail',
@@ -87,26 +94,31 @@ export async function GET(request: NextRequest) {
     let data: any = null;
     let lastError: string = '';
 
-    // 尝试主API
-    try {
-      const response = await fetch(`${primaryApi}?${params.toString()}`, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          Accept: 'application/json',
-        },
-        signal: AbortSignal.timeout(15000),
-      });
-      if (response.ok) {
-        data = await response.json();
-      } else {
-        lastError = `主API HTTP ${response.status}`;
-      }
-    } catch (e) {
-      lastError = `主API请求失败: ${e}`;
-    }
+    // Try all sources in parallel, use first successful result
+    const results = await Promise.allSettled(
+      allApis.map(async (api) => {
+        const response = await fetch(`${api}?${params.toString()}`, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            Accept: 'application/json',
+          },
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        if (!json.list || json.list.length === 0) throw new Error('empty');
+        return json;
+      }),
+    );
 
-    // 主API失败时，不再尝试备用API（避免超时）
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        data = result.value;
+        break;
+      }
+      lastError = result.reason?.message || 'unknown';
+    }
 
     if (!data) {
       return NextResponse.json(
