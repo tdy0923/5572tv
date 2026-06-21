@@ -242,30 +242,39 @@ export default function UserConfig({
           showAdultContent: editingGroupAdultContent,
         });
 
-        // Save member assignments
+        // Save member assignments in parallel
+        const addPromises: Promise<any>[] = [];
         for (const username of editingGroupMembers) {
           const user = users.find((u: any) => u.username === username);
           if (user && !(user.tags || []).includes(editGroupName)) {
-            await callApi({
-              action: 'userGroup',
-              username,
-              userGroup: editGroupName,
-            });
+            addPromises.push(
+              callApi({
+                action: 'userGroup',
+                username,
+                userGroup: editGroupName,
+              }),
+            );
           }
         }
 
-        // Remove tag from users not in the list
+        // Remove tag from users not in the list in parallel
+        const removePromises: Promise<any>[] = [];
         for (const user of users) {
           if (!editingGroupMembers.includes(user.username)) {
             if ((user.tags || []).includes(editGroupName)) {
-              await callApi({
-                action: 'userGroup',
-                username: user.username,
-                userGroup: '',
-              });
+              removePromises.push(
+                callApi({
+                  action: 'userGroup',
+                  username: user.username,
+                  userGroup: '',
+                }),
+              );
             }
           }
         }
+
+        // Execute all updates in parallel
+        await Promise.all([...addPromises, ...removePromises]);
 
         showSuccess('分组更新成功', showAlert);
         setShowEditGroupModal(false);

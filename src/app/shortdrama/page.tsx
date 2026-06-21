@@ -1,7 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-console */
-
-/* eslint-disable unused-imports/no-unused-vars */
-
 'use client';
 
 import { ChevronUp, Filter, Search } from 'lucide-react';

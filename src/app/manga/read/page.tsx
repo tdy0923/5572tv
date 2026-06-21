@@ -585,6 +585,19 @@ export default function MangaReaderPage() {
                 </div>
               </button>
             )}
+
+            {/* Last page prompt - show next chapter button */}
+            {currentPage === totalPages - 1 && chapterData.nextChapterId && (
+              <div className='absolute bottom-20 left-1/2 -translate-x-1/2 z-20'>
+                <Link
+                  href={`/manga/read?url=${encodeURIComponent(chapterData.nextChapterId)}&source=${source}&title=${encodeURIComponent(mangaTitle)}`}
+                  className='flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500 text-white hover:bg-green-600 transition-colors text-sm font-medium shadow-lg'
+                >
+                  下一章
+                  <ArrowRight className='w-4 h-4' />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

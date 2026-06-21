@@ -56,6 +56,12 @@ function executeScript(
   context: Record<string, any>,
   timeoutMs = 5000,
 ): any {
+  // Code size limit: 100KB
+  const MAX_CODE_SIZE = 100 * 1024;
+  if (scriptCode.length > MAX_CODE_SIZE) {
+    return Promise.reject(new Error('脚本代码超过大小限制'));
+  }
+
   const wrappedCode = `
     "use strict";
     ${BLOCKED_GLOBALS.map((g) => `var ${g} = undefined;`).join('\n')}

@@ -365,7 +365,6 @@ function PlayPageClient() {
   const [manualDanmuOverrides, setManualDanmuOverrides] = useState<
     Record<string, DanmuManualSelection>
   >({});
-  const [, setDanmuSettingsVersion] = useState(0);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
     null,
   );
@@ -404,8 +403,6 @@ function PlayPageClient() {
 
   // 自定义去广告代码
   const [customAdFilterCode, setCustomAdFilterCode] = useState<string>('');
-  const [_customAdFilterVersion, setCustomAdFilterVersion] =
-    useState<number>(1);
   const customAdFilterCodeRef = useRef(customAdFilterCode);
 
   // WebSR超分相关状态
@@ -618,7 +615,6 @@ function PlayPageClient() {
       setError(null);
       setLoading(true);
       setNeedPrefer(false);
-      setPlayerReady(false);
 
       // 触发重新加载（通过更新 reloadTrigger 来触发 initAll 重新执行）
       setReloadTrigger((prev) => prev + 1);
@@ -761,7 +757,6 @@ function PlayPageClient() {
 
         if (cachedCode && cachedVersion) {
           setCustomAdFilterCode(cachedCode);
-          setCustomAdFilterVersion(parseInt(cachedVersion));
           // // console.log('使用缓存的去广告代码');
         }
 
@@ -774,7 +769,6 @@ function PlayPageClient() {
           localStorage.removeItem('customAdFilterCode');
           localStorage.removeItem('customAdFilterVersion');
           setCustomAdFilterCode('');
-          setCustomAdFilterVersion(0);
           return;
         }
 
@@ -800,7 +794,6 @@ function PlayPageClient() {
             String(newVersion || 0),
           );
           setCustomAdFilterCode(code || '');
-          setCustomAdFilterVersion(newVersion || 0);
 
           // // console.log('去广告代码已更新到版本 ' + newVersion);
         }
@@ -965,12 +958,6 @@ function PlayPageClient() {
     loadShortdramaDetails();
   }, [shortdramaId, loadingShortdramaDetails, shortdramaDetails]);
 
-  // 自动网盘搜索：当有视频标题时可以随时搜索
-  useEffect(() => {
-    // 移除自动搜索，改为用户点击按钮时触发
-    // 这样可以避免不必要的API调用
-  }, []);
-
   // 视频播放地址
   const [videoUrl, setVideoUrl] = useState('');
 
@@ -1079,9 +1066,6 @@ function PlayPageClient() {
     lastDanmuLoadKeyRef,
     danmuLoadingRef,
   });
-
-  // 播放器就绪状态
-  const [_playerReady, setPlayerReady] = useState(false);
 
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -2110,7 +2094,6 @@ function PlayPageClient() {
         // 1. 先销毁 ArtPlayer，停止所有控制
         artPlayerRef.current.destroy(false);
         artPlayerRef.current = null;
-        setPlayerReady(false);
         // // console.log('[Cleanup] ArtPlayer已销毁');
 
         // 2. 然后清理 video 和 HLS
@@ -2141,7 +2124,6 @@ function PlayPageClient() {
       } catch (err) {
         console.warn('清理播放器资源时出错:', err);
         artPlayerRef.current = null;
-        setPlayerReady(false);
       }
     }
   };
@@ -2456,6 +2438,25 @@ function PlayPageClient() {
         if (jsCode.length > MAX_CODE_SIZE) {
           console.warn('自定义去广告代码超过 50KB 限制，跳过');
           return null;
+        }
+        // 检查代码是否包含危险函数
+        const dangerousPatterns = [
+          /\beval\b/,
+          /\bnew\s+Function\b/,
+          /\brequire\b/,
+          /\bprocess\b/,
+          /\bchild_process\b/,
+          /\bfs\b/,
+          /\bhttp\b/,
+          /\bhttps\b/,
+          /\bfetch\b/,
+          /\bXMLHttpRequest\b/,
+        ];
+        for (const pattern of dangerousPatterns) {
+          if (pattern.test(jsCode)) {
+            console.warn('自定义去广告代码包含危险模式，跳过');
+            return null;
+          }
         }
         const customFunction = new Function(
           'type',
@@ -4870,7 +4871,6 @@ function PlayPageClient() {
         // 监听播放器事件
         artPlayerRef.current.on('ready', async () => {
           setError(null);
-          setPlayerReady(true); // 标记播放器已就绪，启用观影室同步
 
           // 使用ArtPlayer layers API添加分辨率徽章（带渐变和发光效果）
           const video = artPlayerRef.current.video as HTMLVideoElement;
@@ -6652,7 +6652,6 @@ function PlayPageClient() {
                     }
 
                     // 触发面板重新读取设置（通过 key 变化）
-                    setDanmuSettingsVersion((v) => v + 1);
                   }}
                   danmuCount={danmuList.length} // 使用state而不是ref，确保React能追踪变化
                   loading={danmuLoading}
