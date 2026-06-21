@@ -106,6 +106,7 @@ export async function GET(request: NextRequest) {
     if (error instanceof Error && error.name === 'AbortError') {
       return NextResponse.json({ error: '请求超时' }, { status: 408 });
     }
+    console.error('[SourceBrowser] 搜索失败:', error);
     return NextResponse.json({ error: '搜索失败' }, { status: 500 });
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -20,6 +19,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ sources });
   } catch (error) {
+    console.error('[SourceBrowser] 获取源列表失败:', error);
     return NextResponse.json({ error: '获取源列表失败' }, { status: 500 });
   }
 }

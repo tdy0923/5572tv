@@ -217,6 +217,7 @@ export async function GET(request: NextRequest) {
 
     const errorResponse = { error: '获取列表失败' };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
+    console.error('[SourceBrowser] 获取列表失败:', error);
 
     recordRequest({
       timestamp: startTime,
