@@ -192,13 +192,15 @@ export function processImageUrl(originalUrl: string): string {
 
   const isRemoteHttpUrl = /^https?:\/\//i.test(normalizedUrl);
 
-  if (isRemoteHttpUrl && !normalizedUrl.includes('doubanio.com')) {
-    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
-  }
-
-  // 处理 manmankan 图片防盗链
-  if (normalizedUrl.includes('manmankan.com')) {
-    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
+  // Only proxy images that need Referer bypass (doubanio, manmankan)
+  // All other CDNs load directly for better performance
+  if (normalizedUrl.includes('doubanio.com')) {
+    // Douban images need Referer bypass
+  } else if (normalizedUrl.includes('manmankan.com')) {
+    // manmankan needs Referer bypass
+  } else if (isRemoteHttpUrl) {
+    // All other remote images load directly (no proxy needed)
+    return normalizedUrl;
   }
 
   // 仅处理豆瓣图片代理
