@@ -300,19 +300,6 @@ export function useSourceSearch(params: {
           return yearMatch && typeMatch;
         };
 
-        // 🛡️ 成人内容关键词过滤 - 匹配标题、分类、类型名称
-        const ADULT_KEYWORDS =
-          /^(AV-|成人|伦理|福利|里番|R18|色情|情色|三级|性感|裸|性爱|艳情|18禁)/i;
-        const _isAdultContent = (result: SearchResult): boolean => {
-          if (ADULT_KEYWORDS.test(result.title)) return true;
-          if (result.class && ADULT_KEYWORDS.test(result.class)) return true;
-          if (result.type_name && ADULT_KEYWORDS.test(result.type_name))
-            return true;
-          if (result.source_name && ADULT_KEYWORDS.test(result.source_name))
-            return true;
-          return false;
-        };
-
         for (const variant of searchVariants) {
           const response = await fetch(
             `/api/search?q=${encodeURIComponent(variant)}`,

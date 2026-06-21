@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
-import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import { EmbyClient } from '@/lib/emby.client';
 import { clearEmbyCache } from '@/lib/emby-cache';
@@ -34,9 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const username = authInfo.username;
-
-    // 获取配置
-    const _adminConfig = await getConfig();
 
     // 权限检查
     if (username !== process.env.USERNAME) {

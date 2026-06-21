@@ -1,5 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
-
 import { useCallback, useRef, useState } from 'react';
 
 interface DragState {
