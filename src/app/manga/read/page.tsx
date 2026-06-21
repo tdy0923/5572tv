@@ -105,6 +105,7 @@ export default function MangaReaderPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
+  const [imagesFailed, setImagesFailed] = useState<Set<number>>(new Set());
   const [showControls, setShowControls] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -132,6 +133,7 @@ export default function MangaReaderPage() {
   // Reset imagesLoaded when chapter changes
   useEffect(() => {
     setImagesLoaded(new Set());
+    setImagesFailed(new Set());
     setCurrentPage(0);
   }, [chapterUrl]);
 
@@ -239,6 +241,11 @@ export default function MangaReaderPage() {
   // Image load handler
   const handleImageLoad = useCallback((index: number) => {
     setImagesLoaded((prev) => new Set(prev).add(index));
+  }, []);
+
+  // Image error handler
+  const handleImageError = useCallback((index: number) => {
+    setImagesFailed((prev) => new Set(prev).add(index));
   }, []);
 
   // Fullscreen toggle
@@ -499,20 +506,26 @@ export default function MangaReaderPage() {
                 className={`w-full max-w-[800px] object-contain ${imagesLoaded.has(index) ? '' : 'hidden'}`}
                 loading={index < 3 ? 'eager' : 'lazy'}
                 onLoad={() => handleImageLoad(index)}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.classList.add('hidden');
-                  const parent = target.parentElement;
-                  if (parent && !parent.querySelector('.error-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className =
-                      'error-fallback w-full max-w-[800px] aspect-[2/3] flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400';
-                    fallback.innerHTML =
-                      '<svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">图片加载失败</span>';
-                    parent.appendChild(fallback);
-                  }
-                }}
+                onError={() => handleImageError(index)}
               />
+              {imagesFailed.has(index) && (
+                <div className='w-full max-w-[800px] aspect-[2/3] flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400'>
+                  <svg
+                    className='w-12 h-12 mb-2'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth='2'
+                      d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                    />
+                  </svg>
+                  <span className='text-sm'>图片加载失败</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -539,20 +552,26 @@ export default function MangaReaderPage() {
                   className={`w-full object-contain rounded-lg ${imagesLoaded.has(currentPage) ? '' : 'hidden'}`}
                   loading='eager'
                   onLoad={() => handleImageLoad(currentPage)}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.classList.add('hidden');
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.error-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className =
-                        'error-fallback w-full aspect-[2/3] flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-500 dark:text-gray-400';
-                      fallback.innerHTML =
-                        '<svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="text-sm">图片加载失败</span>';
-                      parent.appendChild(fallback);
-                    }
-                  }}
+                  onError={() => handleImageError(currentPage)}
                 />
+                {imagesFailed.has(currentPage) && (
+                  <div className='w-full aspect-[2/3] flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg text-gray-500 dark:text-gray-400'>
+                    <svg
+                      className='w-12 h-12 mb-2'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth='2'
+                        d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                      />
+                    </svg>
+                    <span className='text-sm'>图片加载失败</span>
+                  </div>
+                )}
               </>
             )}
 
