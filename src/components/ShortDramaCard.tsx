@@ -44,6 +44,7 @@ interface ShortDramaCardProps {
   className?: string;
   aiEnabled?: boolean; // AI功能是否启用
   priority?: boolean; // 图片加载优先级（用于首屏可见图片）
+  disableEpisodeFetch?: boolean; // 禁止获取真实集数（首页可禁用以提升性能）
 }
 
 function ShortDramaCard({
@@ -52,6 +53,7 @@ function ShortDramaCard({
   className = '',
   aiEnabled: aiEnabledProp,
   priority = false,
+  disableEpisodeFetch = false,
 }: ShortDramaCardProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -212,8 +214,8 @@ function ShortDramaCard({
       }
     };
 
-    // 只有当前集数为1（默认值）时才尝试获取真实集数
-    if (drama.episode_count === 1) {
+    // 只有当前集数为1（默认值）且允许获取时才尝试获取真实集数
+    if (!disableEpisodeFetch && drama.episode_count === 1) {
       fetchEpisodeCount();
     }
   }, [drama.id, drama.episode_count, drama.name]);

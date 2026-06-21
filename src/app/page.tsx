@@ -540,9 +540,10 @@ function HomeClient() {
     };
   }, []);
 
-  // 加载收藏分组
+  // 加载收藏分组（仅在收藏tab激活时加载）
 
   useEffect(() => {
+    if (activeTab !== 'favorites') return;
     const loadGroups = async () => {
       try {
         const res = await fetch('/api/favorites/groups');
@@ -553,16 +554,17 @@ function HomeClient() {
       } catch {}
     };
     loadGroups();
-  }, []);
+  }, [activeTab]);
 
-  // 加载收藏更新数
+  // 加载收藏更新数（仅在收藏tab激活时加载）
 
   useEffect(() => {
+    if (activeTab !== 'favorites') return;
     fetch('/api/favorites/updates')
       .then((r) => r.json())
       .then((data) => setUpdateCount(data.count || 0))
       .catch(() => {});
-  }, []);
+  }, [activeTab]);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
   // Only refetch once, not repeatedly - track if we've already tried
@@ -1962,6 +1964,7 @@ function HomeClient() {
                           key={index}
                           drama={drama}
                           className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                          disableEpisodeFetch
                         />
                       ))}
                 </ScrollableRow>

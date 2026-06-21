@@ -13,13 +13,13 @@ import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
-// Cache for images
+// Cache for images (LRU eviction)
 const imageCache = new Map<
   string,
   { data: ArrayBuffer; contentType: string; timestamp: number }
 >();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_CACHE_SIZE = 1000;
+const MAX_CACHE_SIZE = 5000;
 
 // 根据图片URL域名动态设置Referer
 function getRefererForUrl(imageUrl: string): string {
@@ -61,9 +61,11 @@ export async function GET(request: NextRequest) {
     // Decode URL (searchParams.get already decodes once; use as-is to avoid double-decode)
     const decodedUrl = url;
 
-    // Check cache
+    // Check cache (refresh timestamp for LRU)
     const cached = imageCache.get(decodedUrl);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      // Refresh timestamp for LRU eviction
+      cached.timestamp = Date.now();
       return new NextResponse(cached.data, {
         headers: {
           'Content-Type': cached.contentType,
@@ -107,11 +109,18 @@ export async function GET(request: NextRequest) {
     const contentType = response.headers.get('Content-Type') || 'image/jpeg';
     const data = await response.arrayBuffer();
 
-    // Cache the image
+    // Cache the image (LRU eviction)
     if (imageCache.size >= MAX_CACHE_SIZE) {
-      // Remove oldest entry
-      const firstKey = imageCache.keys().next().value;
-      if (firstKey) imageCache.delete(firstKey);
+      // Remove least recently used entry (oldest timestamp)
+      let oldestKey: string | null = null;
+      let oldestTime = Infinity;
+      for (const [key, entry] of imageCache) {
+        if (entry.timestamp < oldestTime) {
+          oldestTime = entry.timestamp;
+          oldestKey = key;
+        }
+      }
+      if (oldestKey) imageCache.delete(oldestKey);
     }
     imageCache.set(decodedUrl, {
       data,
