@@ -2,8 +2,6 @@
 // 毛玻璃效果控制栏插件
 // 样式已提取到 src/styles/artplayer-liquid-glass.css
 
-/* eslint-disable unused-imports/no-unused-vars */
-
 export default function artplayerPluginLiquidGlass(option = {}) {
   return (art) => {
     const { constructor } = art;

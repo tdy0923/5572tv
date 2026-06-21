@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-console */
-
 /// <reference types="@webgpu/types" />
 
 /* eslint-disable unused-imports/no-unused-vars */
@@ -329,8 +327,6 @@ function PlayPageClient() {
 
   // 短剧详情状态（用于显示简介等信息）
   const [shortdramaDetails, setShortdramaDetails] = useState<any>(null);
-  const [loadingShortdramaDetails, setLoadingShortdramaDetails] =
-    useState(false);
   const loadingShortdramaRef = useRef(false);
 
   // 网盘搜索状态
@@ -927,7 +923,6 @@ function PlayPageClient() {
     if (loadingShortdramaRef.current) return;
     loadingShortdramaRef.current = true;
 
-    setLoadingShortdramaDetails(true);
     const dramaTitle = searchParams.get('title') || videoTitleRef.current || '';
     const titleParam = dramaTitle
       ? `&name=${encodeURIComponent(dramaTitle)}`
@@ -944,7 +939,6 @@ function PlayPageClient() {
         console.error('Failed to load shortdrama details:', error);
       })
       .finally(() => {
-        setLoadingShortdramaDetails(false);
         loadingShortdramaRef.current = false;
       });
   }, [shortdramaId, shortdramaDetails]);
