@@ -32,23 +32,6 @@ const nextConfig = {
     ],
   },
 
-  // CSP headers — allow Cloudflare challenge platform and RUM
-  headers: async () => [
-    {
-      source: '/(.*)',
-      headers: [
-        {
-          key: 'Content-Security-Policy-Report-Only',
-          value: [
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.5572.net https://cdn-cgi.challenge-platform.com https://static.cloudflareinsights.com https://tg.yunku.de",
-            "worker-src 'self' blob: https://www.5572.net",
-            "connect-src 'self' https://www.5572.net https://cdn-cgi.challenge-platform.com https://cdn-cgi.rum https://static.cloudflareinsights.com",
-          ].join('; '),
-        },
-      ],
-    },
-  ],
-
   // 图片优化配置
   images: {
     // 代理图片不兼容 Next.js 优化管道，保持原图输出
