@@ -325,11 +325,13 @@ function PlayPageClient() {
   // bangumi详情状态
   const [bangumiDetails, setBangumiDetails] = useState<any>(null);
   const [loadingBangumiDetails, setLoadingBangumiDetails] = useState(false);
+  const loadingBangumiRef = useRef(false);
 
   // 短剧详情状态（用于显示简介等信息）
   const [shortdramaDetails, setShortdramaDetails] = useState<any>(null);
   const [loadingShortdramaDetails, setLoadingShortdramaDetails] =
     useState(false);
+  const loadingShortdramaRef = useRef(false);
 
   // 网盘搜索状态
   const [netdiskResults, setNetdiskResults] = useState<{
@@ -889,74 +891,63 @@ function PlayPageClient() {
   // 加载详情（豆瓣或bangumi）
 
   useEffect(() => {
-    const loadMovieDetails = async () => {
-      if (
-        !videoDoubanId ||
-        videoDoubanId === 0 ||
-        detail?.source === 'shortdrama'
-      ) {
-        return;
-      }
+    if (
+      !videoDoubanId ||
+      videoDoubanId === 0 ||
+      detail?.source === 'shortdrama'
+    ) {
+      return;
+    }
 
-      // 检测是否为bangumi ID
-      if (isBangumiId(videoDoubanId)) {
-        // 加载bangumi详情
-        if (loadingBangumiDetails || bangumiDetails) {
-          return;
-        }
+    if (!isBangumiId(videoDoubanId)) return;
+    if (bangumiDetails) return;
+    if (loadingBangumiRef.current) return;
+    loadingBangumiRef.current = true;
 
-        setLoadingBangumiDetails(true);
-        try {
-          const bangumiData = await fetchBangumiDetails(videoDoubanId);
-          if (bangumiData) {
-            setBangumiDetails(bangumiData);
-          }
-        } catch (error) {
-          console.error('Failed to load bangumi details:', error);
-        } finally {
-          setLoadingBangumiDetails(false);
-        }
-      }
-      // 🚀 TanStack Query 会自动加载豆瓣详情和评论，无需手动 useEffect
-    };
-
-    loadMovieDetails();
-  }, [videoDoubanId, loadingBangumiDetails, bangumiDetails]);
+    setLoadingBangumiDetails(true);
+    fetchBangumiDetails(videoDoubanId)
+      .then((data) => {
+        if (data) setBangumiDetails(data);
+      })
+      .catch((error) => {
+        console.error('Failed to load bangumi details:', error);
+      })
+      .finally(() => {
+        setLoadingBangumiDetails(false);
+        loadingBangumiRef.current = false;
+      });
+  }, [videoDoubanId, bangumiDetails]);
 
   // 🚀 豆瓣评论由 useDoubanCommentsQuery 自动加载，无需手动 useEffect
 
   // 加载短剧详情（仅用于显示简介等信息，不影响源搜索）
 
   useEffect(() => {
-    const loadShortdramaDetails = async () => {
-      if (!shortdramaId || loadingShortdramaDetails || shortdramaDetails) {
-        return;
-      }
+    if (!shortdramaId || shortdramaDetails) return;
+    if (loadingShortdramaRef.current) return;
+    loadingShortdramaRef.current = true;
 
-      setLoadingShortdramaDetails(true);
-      try {
-        // 传递 name 参数以支持备用API fallback
-        const dramaTitle =
-          searchParams.get('title') || videoTitleRef.current || '';
-        const titleParam = dramaTitle
-          ? `&name=${encodeURIComponent(dramaTitle)}`
-          : '';
-        const response = await fetch(
-          `/api/shortdrama/detail?id=${shortdramaId}&episode=1${titleParam}`,
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setShortdramaDetails(data);
-        }
-      } catch (error) {
+    setLoadingShortdramaDetails(true);
+    const dramaTitle = searchParams.get('title') || videoTitleRef.current || '';
+    const titleParam = dramaTitle
+      ? `&name=${encodeURIComponent(dramaTitle)}`
+      : '';
+    fetch(`/api/shortdrama/detail?id=${shortdramaId}&episode=1${titleParam}`)
+      .then((response) => {
+        if (response.ok) return response.json();
+        throw new Error(`HTTP ${response.status}`);
+      })
+      .then((data) => {
+        setShortdramaDetails(data);
+      })
+      .catch((error) => {
         console.error('Failed to load shortdrama details:', error);
-      } finally {
+      })
+      .finally(() => {
         setLoadingShortdramaDetails(false);
-      }
-    };
-
-    loadShortdramaDetails();
-  }, [shortdramaId, loadingShortdramaDetails, shortdramaDetails]);
+        loadingShortdramaRef.current = false;
+      });
+  }, [shortdramaId, shortdramaDetails]);
 
   // 视频播放地址
   const [videoUrl, setVideoUrl] = useState('');
