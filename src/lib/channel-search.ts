@@ -1,7 +1,6 @@
 // 智能频道搜索相关的工具函数和类型定义
 
 // 直播频道接口
-/* eslint-disable unused-imports/no-unused-vars */
 
 export interface LiveChannel {
   id: string;

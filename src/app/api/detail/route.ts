@@ -120,14 +120,9 @@ export async function GET(request: NextRequest) {
       // 获取音轨信息（不影响主流程）
       let audioStreams: any[] = [];
       try {
-        console.log('========== [/api/detail] 开始获取音轨，itemId:', id);
         audioStreams = await client.getAudioStreams(id);
-        console.log('========== [/api/detail] 获取到音轨数据:', audioStreams);
       } catch (error) {
-        console.error(
-          '========== [/api/detail] 获取音轨失败（不影响播放）:',
-          error,
-        );
+        // 音轨获取失败不影响播放
       }
 
       // 🎵 自动选择浏览器兼容的音轨（AAC 优先）

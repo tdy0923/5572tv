@@ -12,8 +12,6 @@
  * - 智能容量管理
  */
 
-/* eslint-disable unused-imports/no-unused-vars */
-
 interface CacheEntry<T> {
   data: T;
   expiresAt: number;

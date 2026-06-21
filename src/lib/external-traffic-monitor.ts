@@ -6,8 +6,6 @@
  * 不再持久化到 Kvrocks，以防止 WAL 爆满和浪费 Upstash 命令
  */
 
-/* eslint-disable unused-imports/no-unused-vars */
-
 interface ExternalTrafficMetrics {
   timestamp: number;
   url: string;

@@ -294,7 +294,7 @@ async function cronJob() {
   // 🚀 阶段4优化：并行执行互不依赖的任务组
   // 第一组：用户清理、配置刷新、视频缓存任务（并行执行）
   console.log('🔄 开始执行第一组并行任务...');
-  const [_cleanupResult, , ,] = await Promise.allSettled([
+  await Promise.allSettled([
     // 用户清理任务
     (async () => {
       try {
@@ -380,7 +380,7 @@ async function cronJob() {
 
   // 第二组：直播频道刷新 + 播放记录和收藏刷新（并行执行）
   console.log('🔄 开始执行第二组并行任务...');
-  const [_liveResult, _recordsResult] = await Promise.allSettled([
+  await Promise.allSettled([
     // 直播频道刷新
     (async () => {
       try {

@@ -5,7 +5,6 @@
  */
 
 // 扩展 Window 类型以包含 safari 属性
-/* eslint-disable unused-imports/no-unused-vars */
 
 declare global {
   interface Window {

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-/* eslint-disable unused-imports/no-unused-vars */
 
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
