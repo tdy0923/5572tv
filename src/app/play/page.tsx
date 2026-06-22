@@ -21,7 +21,12 @@ import { toast } from 'sonner';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { ClientCache } from '@/lib/client-cache';
-import { generateStorageKey, subscribeToDataUpdates } from '@/lib/db.client';
+import {
+  generateStorageKey,
+  getAllFavorites,
+  getAllPlayRecords,
+  subscribeToDataUpdates,
+} from '@/lib/db.client';
 
 // Cached versions to avoid repeated IndexedDB reads (5-second TTL)
 let _playRecordsCache: any = null;
@@ -35,7 +40,7 @@ async function cachedGetAllPlayRecords() {
   if (_playRecordsCache && now - _playRecordsCacheTime < CACHE_TTL) {
     return _playRecordsCache;
   }
-  const data = await cachedGetAllPlayRecords();
+  const data = await getAllPlayRecords();
   _playRecordsCache = data;
   _playRecordsCacheTime = now;
   return data;
@@ -46,7 +51,7 @@ async function cachedGetAllFavorites() {
   if (_favoritesCache && now - _favoritesCacheTime < CACHE_TTL) {
     return _favoritesCache;
   }
-  const data = await cachedGetAllFavorites();
+  const data = await getAllFavorites();
   _favoritesCache = data;
   _favoritesCacheTime = now;
   return data;
