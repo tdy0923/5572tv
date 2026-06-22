@@ -31,7 +31,7 @@ import {
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
-import { useDanmu } from '@/hooks/useDanmu';
+import { deduplicateDanmaku, useDanmu } from '@/hooks/useDanmu';
 
 import AcgSearch from '@/components/AcgSearch';
 import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
@@ -2623,14 +2623,7 @@ function PlayPageClient() {
             const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
 
             if (result.count > 0) {
-              // Client-side dedup before loading into plugin
-              const seen = new Set<string>();
-              const deduped = result.data.filter((d: any) => {
-                const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-              });
+              const deduped = deduplicateDanmaku(result.data);
               plugin.load();
               plugin.load(deduped);
 
@@ -5599,10 +5592,6 @@ function PlayPageClient() {
           }
         });
 
-        artPlayerRef.current.on('video:ended', () => {
-          releaseWakeLock();
-        });
-
         // 如果播放器初始化时已经在播放状态，则请求 Wake Lock
         if (artPlayerRef.current && !artPlayerRef.current.paused) {
           requestWakeLock();
@@ -5901,6 +5890,7 @@ function PlayPageClient() {
 
         // 监听视频播放结束事件，自动播放下一集
         artPlayerRef.current.on('video:ended', () => {
+          releaseWakeLock();
           const idx = currentEpisodeIndexRef.current;
 
           // 🔥 关键修复：首先检查这个 video:ended 事件是否已经被处理过
@@ -5973,18 +5963,6 @@ function PlayPageClient() {
           if (saveNow - lastSaveTimeRef.current > interval && !isNearEnd) {
             saveCurrentPlayProgress();
             lastSaveTimeRef.current = saveNow;
-          }
-        });
-
-        artPlayerRef.current.on('pause', () => {
-          // 🔥 关键修复：暂停时也检查是否在片尾，避免保存错误的进度
-          const currentTime = artPlayerRef.current?.currentTime || 0;
-          const duration = artPlayerRef.current?.duration || 0;
-          const remainingTime = duration - currentTime;
-          const isNearEnd = duration > 0 && remainingTime < 180; // 最后3分钟
-
-          if (!isNearEnd) {
-            saveCurrentPlayProgress();
           }
         });
 

@@ -74,6 +74,19 @@ export interface UseDanmuReturn {
   danmuLoadLockRef: React.MutableRefObject<boolean>;
 }
 
+// ==================== 工具函数 ====================
+
+// Client-side danmaku deduplication (by time + text + color)
+export function deduplicateDanmaku(data: any[]): any[] {
+  const seen = new Set<string>();
+  return data.filter((d: any) => {
+    const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // ==================== 常量 ====================
 
 const DANMU_CACHE_DURATION = 30 * 60; // 30分钟缓存（秒）
@@ -452,14 +465,7 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
           artPlayerRef.current?.plugins?.artplayerPluginDanmuku
         ) {
           const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
-          // Client-side dedup before loading into plugin
-          const seen = new Set<string>();
-          const deduped = result.data.filter((d: any) => {
-            const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          });
+          const deduped = deduplicateDanmaku(result.data);
           plugin.load();
           plugin.load(deduped);
           danmuLoadedAtRef.current = Date.now();
@@ -530,14 +536,7 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
                 externalDanmuEnabledRef.current &&
                 artPlayerRef.current?.plugins?.artplayerPluginDanmuku
               ) {
-                // Client-side dedup before loading into plugin
-                const seen = new Set<string>();
-                const deduped = result.data.filter((d: any) => {
-                  const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
-                  if (seen.has(key)) return false;
-                  seen.add(key);
-                  return true;
-                });
+                const deduped = deduplicateDanmaku(result.data);
                 plugin.load();
                 plugin.load(deduped);
                 plugin.show();

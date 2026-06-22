@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import { deletePlayRecord } from '@/lib/db.client';
 import type { SearchResult } from '@/lib/types';
 import { resolveCardPosterUrl } from '@/lib/utils';
+import { deduplicateDanmaku } from '@/hooks/useDanmu';
 
 const RETRY_BACKOFFS = [30_000, 120_000, 300_000, 600_000] as const;
 const MAX_RETRIES = RETRY_BACKOFFS.length;
@@ -365,14 +366,7 @@ export function useSourceSwitching(params: {
                   );
                 });
               } else {
-                // Client-side dedup before loading into plugin
-                const seen = new Set<string>();
-                const deduped = result.data.filter((d: any) => {
-                  const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
-                  if (seen.has(key)) return false;
-                  seen.add(key);
-                  return true;
-                });
+                const deduped = deduplicateDanmaku(result.data);
                 plugin.load(deduped);
               }
             }
