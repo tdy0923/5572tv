@@ -22,12 +22,46 @@ import { toast } from 'sonner';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { ClientCache } from '@/lib/client-cache';
-import {
-  generateStorageKey,
-  getAllFavorites,
-  getAllPlayRecords,
-  subscribeToDataUpdates,
-} from '@/lib/db.client';
+import { generateStorageKey, subscribeToDataUpdates } from '@/lib/db.client';
+
+// Cached versions to avoid repeated IndexedDB reads (5-second TTL)
+let _playRecordsCache: any = null;
+let _playRecordsCacheTime = 0;
+let _favoritesCache: any = null;
+let _favoritesCacheTime = 0;
+const CACHE_TTL = 5000;
+
+async function cachedGetAllPlayRecords() {
+  const now = Date.now();
+  if (_playRecordsCache && now - _playRecordsCacheTime < CACHE_TTL) {
+    return _playRecordsCache;
+  }
+  const data = await cachedGetAllPlayRecords();
+  _playRecordsCache = data;
+  _playRecordsCacheTime = now;
+  return data;
+}
+
+async function cachedGetAllFavorites() {
+  const now = Date.now();
+  if (_favoritesCache && now - _favoritesCacheTime < CACHE_TTL) {
+    return _favoritesCache;
+  }
+  const data = await cachedGetAllFavorites();
+  _favoritesCache = data;
+  _favoritesCacheTime = now;
+  return data;
+}
+
+function invalidatePlayRecordsCache() {
+  _playRecordsCache = null;
+  _playRecordsCacheTime = 0;
+}
+
+function invalidateFavoritesCache() {
+  _favoritesCache = null;
+  _favoritesCacheTime = 0;
+}
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
@@ -1056,6 +1090,7 @@ function PlayPageClient() {
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const danmakuConfigCleanupRef = useRef<(() => void) | null>(null);
+  const globalCleanupFnsRef = useRef<(() => void)[]>([]);
 
   // 观影室同步
   const {
@@ -2043,6 +2078,14 @@ function PlayPageClient() {
       danmakuConfigCleanupRef.current = null;
     }
 
+    // 清理全局 document/window 事件监听器
+    for (const fn of globalCleanupFnsRef.current) {
+      try {
+        fn();
+      } catch {}
+    }
+    globalCleanupFnsRef.current = [];
+
     // 先清理WebSR，避免GPU纹理错误
     await destroyWebSR();
 
@@ -2769,8 +2812,8 @@ function PlayPageClient() {
       if (currentSource && currentId && !searchTitle && !videoTitle) {
         try {
           const [allRecords, favorites] = await Promise.all([
-            getAllPlayRecords().catch(() => ({})),
-            getAllFavorites().catch(() => ({})),
+            cachedGetAllPlayRecords().catch(() => ({})),
+            cachedGetAllFavorites().catch(() => ({})),
           ]);
           const currentKey = generateStorageKey(currentSource, currentId);
           const matchedRecord = allRecords[currentKey];
@@ -3116,7 +3159,7 @@ function PlayPageClient() {
       }
 
       try {
-        const allRecords = await getAllPlayRecords();
+        const allRecords = await cachedGetAllPlayRecords();
         const key = generateStorageKey(currentSource, currentId);
         const record = allRecords[key];
 
@@ -3187,7 +3230,7 @@ function PlayPageClient() {
 
       // 🔥 优化：检查目标集数是否有历史播放记录
       try {
-        const allRecords = await getAllPlayRecords();
+        const allRecords = await cachedGetAllPlayRecords();
         const key = generateStorageKey(
           currentSourceRef.current,
           currentIdRef.current,
@@ -3369,7 +3412,7 @@ function PlayPageClient() {
 
     try {
       // 获取现有播放记录以保持原始集数
-      const existingRecord = await getAllPlayRecords()
+      const existingRecord = await cachedGetAllPlayRecords()
         .then((records) => {
           const key = generateStorageKey(
             currentSourceRef.current,
@@ -3509,7 +3552,7 @@ function PlayPageClient() {
     if (!currentSource || !currentId) return;
     (async () => {
       try {
-        const favorites = await getAllFavorites();
+        const favorites = await cachedGetAllFavorites();
 
         const matchedKey = findMatchedFavoriteKey(favorites);
         favoritedKeyRef.current = matchedKey;
@@ -3588,7 +3631,7 @@ function PlayPageClient() {
     const updateFavoriteData = async () => {
       try {
         const realEpisodes = detail.episodes.length || 1;
-        const favorites = await getAllFavorites();
+        const favorites = await cachedGetAllFavorites();
 
         const favoriteKey = findMatchedFavoriteKey(favorites);
         if (!favoriteKey) return;
@@ -5220,6 +5263,13 @@ function PlayPageClient() {
               );
               document.addEventListener('mousemove', handleDocumentMouseMove);
               document.addEventListener('mouseup', handleDocumentMouseUp);
+              globalCleanupFnsRef.current.push(() => {
+                document.removeEventListener(
+                  'mousemove',
+                  handleDocumentMouseMove,
+                );
+                document.removeEventListener('mouseup', handleDocumentMouseUp);
+              });
 
               // 应用CSS
               addPrecisionCSS();
