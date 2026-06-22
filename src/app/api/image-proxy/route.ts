@@ -4,7 +4,7 @@
  * Image Proxy Endpoint
  * Based on MoonTVPlus/DecoTV implementation
  *
- * Proxies images from Douban, MangaBZ, Manmankan and other sources to bypass CORS
+ * Proxies images from Douban, Manmankan and other sources to bypass CORS
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -30,10 +30,6 @@ function getRefererForUrl(imageUrl: string): string {
     // 豆瓣图片
     if (host.includes('doubanio.com') || host.includes('douban.com')) {
       return 'https://movie.douban.com/';
-    }
-    // MangaBZ图片
-    if (host.includes('mangabz.com')) {
-      return 'https://www.mangabz.com/';
     }
     // Manmankan图片（发布日历）
     if (host.includes('manmankan.com')) {

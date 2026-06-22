@@ -196,8 +196,7 @@ export function processImageUrl(originalUrl: string): string {
   // All other CDNs load directly for better performance
   if (
     normalizedUrl.includes('doubanio.com') ||
-    normalizedUrl.includes('manmankan.com') ||
-    normalizedUrl.includes('mangabz.com')
+    normalizedUrl.includes('manmankan.com')
   ) {
     // These CDNs have Referer restrictions, need proxy
   } else if (isRemoteHttpUrl) {
@@ -207,7 +206,7 @@ export function processImageUrl(originalUrl: string): string {
 
   // Only process doubanio.com images through proxy config
   if (!normalizedUrl.includes('doubanio.com')) {
-    // For manmankan and mangabz, use server proxy directly
+    // For manmankan, use server proxy directly
     return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
   }
 

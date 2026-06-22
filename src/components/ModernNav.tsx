@@ -2,7 +2,6 @@
 
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import {
-  BookOpen,
   Cat,
   Clover,
   Film,
@@ -104,11 +103,6 @@ export default function ModernNav({
         icon: PlaySquare,
         label: '短剧',
         href: '/shortdrama',
-      },
-      {
-        icon: BookOpen,
-        label: '漫画',
-        href: '/manga',
       },
       {
         icon: Cat,

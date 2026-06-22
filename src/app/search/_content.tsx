@@ -457,7 +457,7 @@ function SearchPageClient() {
 
   // 网盘搜索相关状态
   const [searchType, setSearchType] = useState<
-    'video' | 'netdisk' | 'tmdb-actor' | 'manga'
+    'video' | 'netdisk' | 'tmdb-actor'
   >('video');
   const [netdiskResourceType, setNetdiskResourceType] = useState<
     'netdisk' | 'acg'
@@ -1367,26 +1367,6 @@ function SearchPageClient() {
                   >
                     TMDB演员
                   </PillButton>
-                  <PillButton
-                    type='button'
-                    onClick={() => {
-                      setSearchType('manga');
-                      // Navigate to manga search page
-                      const currentQuery =
-                        searchQuery.trim() || searchParams?.get('q');
-                      if (currentQuery) {
-                        router.push(
-                          `/manga?q=${encodeURIComponent(currentQuery)}`,
-                        );
-                      } else {
-                        router.push('/manga');
-                      }
-                    }}
-                    active={searchType === 'manga'}
-                    className='min-w-[110px] flex-shrink-0 whitespace-nowrap px-4 py-2.5 font-semibold sm:min-w-0 sm:px-6 sm:text-base'
-                  >
-                    漫画
-                  </PillButton>
                 </PillGroup>
               </div>
 
@@ -1405,9 +1385,7 @@ function SearchPageClient() {
                         ? '搜索电影、电视剧...'
                         : searchType === 'netdisk'
                           ? '搜索网盘资源...'
-                          : searchType === 'manga'
-                            ? '搜索漫画名称...'
-                            : '搜索演员姓名...'
+                          : '搜索演员姓名...'
                     }
                     autoComplete='off'
                     className='h-12 py-3 pl-12 pr-14 text-sm sm:text-base'
