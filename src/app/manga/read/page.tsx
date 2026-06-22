@@ -501,10 +501,11 @@ export default function MangaReaderPage() {
                 </div>
               )}
               <img
-                src={`/api/image-proxy?url=${encodeURIComponent(page.url)}`}
+                src={page.url}
                 alt={`Page ${index + 1}`}
                 className={`w-full max-w-[800px] object-contain ${imagesLoaded.has(index) ? '' : 'hidden'}`}
                 loading={index < 3 ? 'eager' : 'lazy'}
+                referrerPolicy='no-referrer'
                 onLoad={() => handleImageLoad(index)}
                 onError={() => handleImageError(index)}
               />
@@ -547,10 +548,11 @@ export default function MangaReaderPage() {
                   </div>
                 )}
                 <img
-                  src={`/api/image-proxy?url=${encodeURIComponent(pages[currentPage].url)}`}
+                  src={pages[currentPage].url}
                   alt={`Page ${currentPage + 1}`}
                   className={`w-full object-contain rounded-lg ${imagesLoaded.has(currentPage) ? '' : 'hidden'}`}
                   loading='eager'
+                  referrerPolicy='no-referrer'
                   onLoad={() => handleImageLoad(currentPage)}
                   onError={() => handleImageError(currentPage)}
                 />
