@@ -4,7 +4,6 @@
 
 'use client';
 
-import Hls from 'hls.js';
 import { X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -324,6 +323,23 @@ interface WakeLockSentinel {
   release(): Promise<void>;
   addEventListener(type: 'release', listener: () => void): void;
   removeEventListener(type: 'release', listener: () => void): void;
+}
+
+// Lazy-load hls.js (~600KB) - only loaded when HLS video is detected
+let _hlsModule: any = null;
+let _hlsLoading = false;
+let _hlsLoadPromise: Promise<any> | null = null;
+
+async function getHlsModule(): Promise<any> {
+  if (_hlsModule) return _hlsModule;
+  if (_hlsLoadPromise) return _hlsLoadPromise;
+  _hlsLoading = true;
+  _hlsLoadPromise = import('hls.js').then((mod) => {
+    _hlsModule = mod.default || mod;
+    _hlsLoading = false;
+    return _hlsModule;
+  });
+  return _hlsLoadPromise;
 }
 
 function PlayPageClient() {
@@ -1356,19 +1372,25 @@ function PlayPageClient() {
     }
   };
 
-  // 获取源权重映射
+  // 获取源权重映射（缓存30秒避免重复请求）
+  let _sourceWeightsCache: Record<string, number> | null = null;
+  let _sourceWeightsCacheTime = 0;
   const fetchSourceWeights = async (): Promise<Record<string, number>> => {
+    const now = Date.now();
+    if (_sourceWeightsCache && now - _sourceWeightsCacheTime < 30000) {
+      return _sourceWeightsCache;
+    }
     try {
       const response = await fetch('/api/source-weights');
       if (!response.ok) {
-        console.warn('获取源权重失败，使用默认权重');
-        return {};
+        return _sourceWeightsCache || {};
       }
       const data = await response.json();
-      return data.weights || {};
+      _sourceWeightsCache = data.weights || {};
+      _sourceWeightsCacheTime = now;
+      return _sourceWeightsCache;
     } catch (error) {
-      console.warn('获取源权重失败:', error);
-      return {};
+      return _sourceWeightsCache || {};
     }
   };
 
@@ -2573,36 +2595,6 @@ function PlayPageClient() {
     }
   };
 
-  class CustomHlsJsLoader extends Hls.DefaultConfig.loader {
-    constructor(config: any) {
-      super(config);
-      const load = this.load.bind(this);
-      this.load = function (context: any, config: any, callbacks: any) {
-        // 拦截manifest和level请求
-        if (
-          (context as any).type === 'manifest' ||
-          (context as any).type === 'level'
-        ) {
-          const onSuccess = callbacks.onSuccess;
-          callbacks.onSuccess = function (
-            response: any,
-            stats: any,
-            context: any,
-          ) {
-            // 如果是m3u8文件，处理内容以移除广告分段
-            if (response.data && typeof response.data === 'string') {
-              // 过滤掉广告段 - 实现更精确的广告过滤逻辑
-              response.data = filterAdsFromM3U8(response.data);
-            }
-            return onSuccess(response, stats, context, null);
-          };
-        }
-        // 执行原始load方法
-        load(context, config, callbacks);
-      };
-    }
-  }
-
   // 🚀 优化的集数变化处理（防抖 + 状态保护）
   useEffect(() => {
     // 🔥 标记正在切换集数（只在非换源时）
@@ -3770,7 +3762,6 @@ function PlayPageClient() {
     // 异步初始化播放器，避免SSR问题
     const initPlayer = async () => {
       if (
-        !Hls ||
         !videoUrl ||
         loading ||
         currentEpisodeIndex === null ||
@@ -4005,7 +3996,7 @@ function PlayPageClient() {
           },
           // HLS 支持配置
           customType: {
-            m3u8: function (video: HTMLVideoElement, url: string) {
+            m3u8: async function (video: HTMLVideoElement, url: string) {
               const canUseNativeHls =
                 typeof video.canPlayType === 'function' &&
                 video.canPlayType('application/vnd.apple.mpegurl') !== '';
@@ -4016,7 +4007,8 @@ function PlayPageClient() {
                 return;
               }
 
-              if (!Hls || !Hls.isSupported()) {
+              const HlsModule = await getHlsModule();
+              if (!HlsModule || !HlsModule.isSupported()) {
                 console.error('当前浏览器不支持 HLS 播放');
                 return;
               }
@@ -4031,8 +4023,42 @@ function PlayPageClient() {
               // 获取用户的缓冲模式配置
               const bufferConfig = getHlsBufferConfig();
 
+              // CustomHlsJsLoader - 拦截manifest请求以过滤广告
+              class CustomHlsJsLoader extends HlsModule.DefaultConfig.loader {
+                constructor(config: any) {
+                  super(config);
+                  const load = this.load.bind(this);
+                  this.load = function (
+                    context: any,
+                    config: any,
+                    callbacks: any,
+                  ) {
+                    if (
+                      (context as any).type === 'manifest' ||
+                      (context as any).type === 'level'
+                    ) {
+                      const onSuccess = callbacks.onSuccess;
+                      callbacks.onSuccess = function (
+                        response: any,
+                        stats: any,
+                        ctx: any,
+                      ) {
+                        if (
+                          response.data &&
+                          typeof response.data === 'string'
+                        ) {
+                          response.data = filterAdsFromM3U8(response.data);
+                        }
+                        return onSuccess(response, stats, ctx, null);
+                      };
+                    }
+                    load(context, config, callbacks);
+                  };
+                }
+              }
+
               // 🚀 根据 HLS.js 官方源码的最佳实践配置
-              const hls = new Hls({
+              const hls = new HlsModule({
                 debug: false,
                 enableWorker: true,
                 // 参考 HLS.js config.ts：移动设备关闭低延迟模式以节省资源
@@ -4106,7 +4132,7 @@ function PlayPageClient() {
                 /* 自定义loader */
                 loader: blockAdEnabledRef.current
                   ? CustomHlsJsLoader
-                  : Hls.DefaultConfig.loader,
+                  : HlsModule.DefaultConfig.loader,
               });
 
               hls.loadSource(url);
@@ -4117,7 +4143,7 @@ function PlayPageClient() {
 
               // HLS音轨事件监听
               hls.on(
-                Hls.Events.AUDIO_TRACKS_UPDATED,
+                HlsModule.Events.AUDIO_TRACKS_UPDATED,
                 (_event: any, data: any) => {
                   const nextTracks = (
                     Array.isArray(data?.audioTracks)
@@ -4177,7 +4203,7 @@ function PlayPageClient() {
               );
 
               hls.on(
-                Hls.Events.AUDIO_TRACK_SWITCHED,
+                HlsModule.Events.AUDIO_TRACK_SWITCHED,
                 (_event: any, data: any) => {
                   const switchedIndex =
                     typeof data?.id === 'number' && data.id >= 0
@@ -4192,12 +4218,14 @@ function PlayPageClient() {
                 },
               );
 
-              hls.on(Hls.Events.ERROR, function (event: any, data: any) {
+              hls.on(HlsModule.Events.ERROR, function (event: any, data: any) {
                 console.error('HLS Error:', event, data);
 
                 // v1.6.15 改进：优化了播放列表末尾空片段/间隙处理，改进了音频TS片段duration处理
                 // v1.6.13 增强：处理片段解析错误（针对initPTS修复）
-                if (data.details === Hls.ErrorDetails.FRAG_PARSING_ERROR) {
+                if (
+                  data.details === HlsModule.ErrorDetails.FRAG_PARSING_ERROR
+                ) {
                   // // console.log('片段解析错误，尝试重新加载...');
                   // 重新开始加载，利用v1.6.13的initPTS修复
                   hls.startLoad();
@@ -4206,7 +4234,7 @@ function PlayPageClient() {
 
                 // v1.6.13 增强：处理时间戳相关错误（直播回搜修复）
                 if (
-                  data.details === Hls.ErrorDetails.BUFFER_APPEND_ERROR &&
+                  data.details === HlsModule.ErrorDetails.BUFFER_APPEND_ERROR &&
                   data.err &&
                   data.err.message &&
                   data.err.message.includes('timestamp')
@@ -4215,7 +4243,7 @@ function PlayPageClient() {
                   try {
                     // 清理缓冲区后重新开始，利用v1.6.13的时间戳包装修复
                     const currentTime = video.currentTime;
-                    hls.trigger(Hls.Events.BUFFER_RESET, undefined);
+                    hls.trigger(HlsModule.Events.BUFFER_RESET, undefined);
                     hls.startLoad(currentTime);
                   } catch (e) {
                     console.warn('缓冲区重置失败:', e);
@@ -4226,11 +4254,11 @@ function PlayPageClient() {
 
                 if (data.fatal) {
                   switch (data.type) {
-                    case Hls.ErrorTypes.NETWORK_ERROR:
+                    case HlsModule.ErrorTypes.NETWORK_ERROR:
                       // // console.log('网络错误，尝试恢复...');
                       hls.startLoad();
                       break;
-                    case Hls.ErrorTypes.MEDIA_ERROR:
+                    case HlsModule.ErrorTypes.MEDIA_ERROR:
                       // // console.log('媒体错误，尝试恢复...');
                       hls.recoverMediaError();
                       break;
@@ -6101,7 +6129,7 @@ function PlayPageClient() {
     };
 
     loadAndInit();
-  }, [Hls, videoUrl, loading, blockAdEnabled]);
+  }, [videoUrl, loading, blockAdEnabled]);
 
   // 动态更新音轨控制按钮
   useEffect(() => {
