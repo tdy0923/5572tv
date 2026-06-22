@@ -192,20 +192,23 @@ export function processImageUrl(originalUrl: string): string {
 
   const isRemoteHttpUrl = /^https?:\/\//i.test(normalizedUrl);
 
-  // Only proxy images that need Referer bypass (doubanio, manmankan)
+  // Only proxy images that need Referer bypass
   // All other CDNs load directly for better performance
-  if (normalizedUrl.includes('doubanio.com')) {
-    // Douban images need Referer bypass
-  } else if (normalizedUrl.includes('manmankan.com')) {
-    // manmankan needs Referer bypass
+  if (
+    normalizedUrl.includes('doubanio.com') ||
+    normalizedUrl.includes('manmankan.com') ||
+    normalizedUrl.includes('mangabz.com')
+  ) {
+    // These CDNs have Referer restrictions, need proxy
   } else if (isRemoteHttpUrl) {
     // All other remote images load directly (no proxy needed)
     return normalizedUrl;
   }
 
-  // 仅处理豆瓣图片代理
+  // Only process doubanio.com images through proxy config
   if (!normalizedUrl.includes('doubanio.com')) {
-    return normalizedUrl;
+    // For manmankan and mangabz, use server proxy directly
+    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
   }
 
   const { proxyType, proxyUrl } = getDoubanImageProxyConfig();
