@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: '网盘搜索功能未启用' }, { status: 400 });
   }
 
-  if (!netDiskConfig?.pansouUrl) {
+  if (!netDiskConfig?.pansouUrl || !netDiskConfig.pansouUrl.trim()) {
     return NextResponse.json(
-      { error: 'PanSou服务地址未配置' },
+      { error: 'PanSou服务地址未配置，请在管理后台设置' },
       { status: 400 },
     );
   }
