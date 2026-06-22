@@ -71,6 +71,7 @@ export interface UseDanmuReturn {
   lastDanmuLoadKeyRef: React.MutableRefObject<string>;
   danmuPluginStateRef: React.MutableRefObject<any>;
   danmuLoadedAtRef: React.MutableRefObject<number>;
+  danmuLoadLockRef: React.MutableRefObject<boolean>;
 }
 
 // ==================== 常量 ====================
@@ -222,6 +223,7 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
   const danmuPluginStateRef = useRef<any>(null);
   const autoRetryDanmuScopeRef = useRef<string>('');
   const danmuLoadedAtRef = useRef<number>(0);
+  const danmuLoadLockRef = useRef(false);
   // 共享加载Promise：避免并发请求竞态，后到的请求等待先到的请求完成
   const loadingPromiseRef = useRef<Promise<{
     count: number;
@@ -440,11 +442,9 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
 
     const timer = setTimeout(async () => {
       if (danmuLoadingRef.current?.loading) return;
-      if (danmuLoadedAtRef.current > 0) {
-        // console.log('弹幕已在别处加载，跳过自动重试');
-        return;
-      }
-      // console.log('🔄 弹幕首次为空，自动重试...');
+      if (danmuLoadedAtRef.current > 0) return;
+      if (danmuLoadLockRef.current) return;
+      danmuLoadLockRef.current = true;
       try {
         const result = await loadExternalDanmu({ force: true });
         if (
@@ -452,13 +452,23 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
           artPlayerRef.current?.plugins?.artplayerPluginDanmuku
         ) {
           const plugin = artPlayerRef.current.plugins.artplayerPluginDanmuku;
-          plugin.load(); // 清空已有弹幕
-          plugin.load(result.data); // 加载新弹幕
+          // Client-side dedup before loading into plugin
+          const seen = new Set<string>();
+          const deduped = result.data.filter((d: any) => {
+            const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          plugin.load();
+          plugin.load(deduped);
           danmuLoadedAtRef.current = Date.now();
-          artPlayerRef.current.notice.show = `已自动重试并加载 ${result.count} 条弹幕`;
+          artPlayerRef.current.notice.show = `已自动重试并加载 ${deduped.length} 条弹幕`;
         }
       } catch {
         // 忽略自动重试错误
+      } finally {
+        danmuLoadLockRef.current = false;
       }
     }, 900);
 
@@ -520,13 +530,21 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
                 externalDanmuEnabledRef.current &&
                 artPlayerRef.current?.plugins?.artplayerPluginDanmuku
               ) {
-                plugin.load(); // 清空已有弹幕
-                plugin.load(result.data); // 加载新弹幕
+                // Client-side dedup before loading into plugin
+                const seen = new Set<string>();
+                const deduped = result.data.filter((d: any) => {
+                  const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
+                  if (seen.has(key)) return false;
+                  seen.add(key);
+                  return true;
+                });
+                plugin.load();
+                plugin.load(deduped);
                 plugin.show();
                 // console.log('✅ 外部弹幕已优化加载:', result.count, '条');
 
-                if (artPlayerRef.current && result.count > 0) {
-                  artPlayerRef.current.notice.show = `已加载 ${result.count} 条弹幕`;
+                if (artPlayerRef.current && deduped.length > 0) {
+                  artPlayerRef.current.notice.show = `已加载 ${deduped.length} 条弹幕`;
                 }
               }
             } else {
@@ -565,5 +583,6 @@ export function useDanmu(options: UseDanmuOptions): UseDanmuReturn {
     lastDanmuLoadKeyRef,
     danmuPluginStateRef,
     danmuLoadedAtRef,
+    danmuLoadLockRef,
   };
 }

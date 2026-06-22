@@ -365,7 +365,15 @@ export function useSourceSwitching(params: {
                   );
                 });
               } else {
-                plugin.load(result.data);
+                // Client-side dedup before loading into plugin
+                const seen = new Set<string>();
+                const deduped = result.data.filter((d: any) => {
+                  const key = `${Math.round(d.time * 100) / 100}_${(d.text || '').trim().toLowerCase()}_${d.color || 'default'}`;
+                  if (seen.has(key)) return false;
+                  seen.add(key);
+                  return true;
+                });
+                plugin.load(deduped);
               }
             }
           } catch (error) {
