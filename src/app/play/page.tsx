@@ -5996,27 +5996,44 @@ function PlayPageClient() {
             videoEndedHandledRef.current = true;
             const nextIndex = idx + 1;
             const nextEp = d.episodes[nextIndex];
+            const isShortDrama = currentSourceRef.current === 'shortdrama';
 
-            // Show notification
-            const notice = document.createElement('div');
-            notice.textContent = `${nextEp || `第 ${nextIndex + 1} 集`} - 3秒后自动播放`;
-            notice.style.cssText =
-              'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;background:rgba(0,0,0,0.8);color:white;font-size:14px;z-index:999;backdrop-filter:blur(10px);white-space:nowrap;';
-            artPlayerRef.current?.container?.appendChild(notice);
-
-            // Auto-navigate after 3 seconds
-            const autoPlayTimer = setTimeout(() => {
-              if (notice.parentNode) notice.remove();
+            if (isShortDrama) {
+              // 短剧模式：无等待立即连播（类似抖音/红果体验）
+              const toast = document.createElement('div');
+              toast.textContent = `▶ ${d.episodes_titles?.[nextIndex] || `第 ${nextIndex + 1} 集`}`;
+              toast.style.cssText =
+                'position:absolute;bottom:80px;left:50%;transform:translateX(-50%);padding:6px 16px;border-radius:20px;background:rgba(0,0,0,0.7);color:white;font-size:12px;z-index:999;backdrop-filter:blur(10px);white-space:nowrap;transition:opacity 0.3s;';
+              artPlayerRef.current?.container?.appendChild(toast);
+              setTimeout(() => {
+                if (toast.parentNode) {
+                  toast.style.opacity = '0';
+                  setTimeout(() => toast.remove(), 300);
+                }
+              }, 800);
+              // 立即跳转下一集
               replacePlaybackUrlParams({ index: String(nextIndex) });
               setCurrentEpisodeIndex(nextIndex);
-            }, 3000);
+            } else {
+              // 普通模式：3秒倒计时
+              const notice = document.createElement('div');
+              notice.textContent = `${nextEp || `第 ${nextIndex + 1} 集`} - 3秒后自动播放`;
+              notice.style.cssText =
+                'position:absolute;bottom:60px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;background:rgba(0,0,0,0.8);color:white;font-size:14px;z-index:999;backdrop-filter:blur(10px);white-space:nowrap;';
+              artPlayerRef.current?.container?.appendChild(notice);
 
-            // Allow cancel by tapping
-            notice.addEventListener('click', () => {
-              if (notice.parentNode) notice.remove();
-              clearTimeout(autoPlayTimer);
-              videoEndedHandledRef.current = false;
-            });
+              const autoPlayTimer = setTimeout(() => {
+                if (notice.parentNode) notice.remove();
+                replacePlaybackUrlParams({ index: String(nextIndex) });
+                setCurrentEpisodeIndex(nextIndex);
+              }, 3000);
+
+              notice.addEventListener('click', () => {
+                if (notice.parentNode) notice.remove();
+                clearTimeout(autoPlayTimer);
+                videoEndedHandledRef.current = false;
+              });
+            }
           }
         });
 
