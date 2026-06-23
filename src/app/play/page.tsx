@@ -117,6 +117,7 @@ const WebSRSettingsPanel = dynamic(
   () => import('@/components/play/WebSRSettingsPanel'),
   { ssr: false },
 );
+import PlaylistManager from '@/components/PlaylistManager';
 import ReviewSection from '@/components/ReviewSection';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
@@ -395,6 +396,7 @@ function PlayPageClient() {
   const [netdiskTotal, setNetdiskTotal] = useState(0);
   const [showNetdiskModal, setShowNetdiskModal] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [showPlaylistManager, setShowPlaylistManager] = useState(false);
   const [aiSummary, setAiSummary] = useState<{
     summary: string;
     highlights: string[];
@@ -7425,6 +7427,22 @@ function PlayPageClient() {
           </div>
         </div>
       )}
+
+      {/* 片单管理器 */}
+      <PlaylistManager
+        isOpen={showPlaylistManager}
+        onClose={() => setShowPlaylistManager(false)}
+        currentVideo={
+          currentId && currentSource && videoTitle
+            ? {
+                id: currentId,
+                title: videoTitle,
+                cover: videoCover,
+                source: currentSource,
+              }
+            : undefined
+        }
+      />
     </>
   );
 }
