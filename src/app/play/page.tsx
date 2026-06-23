@@ -393,6 +393,7 @@ function PlayPageClient() {
   const [netdiskError, setNetdiskError] = useState<string | null>(null);
   const [netdiskTotal, setNetdiskTotal] = useState(0);
   const [showNetdiskModal, setShowNetdiskModal] = useState(false);
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [netdiskResourceType, setNetdiskResourceType] = useState<
     'netdisk' | 'acg'
   >('netdisk'); // 资源类型
@@ -3379,6 +3380,18 @@ function PlayPageClient() {
         artPlayerRef.current.fullscreen = !artPlayerRef.current.fullscreen;
         e.preventDefault();
       }
+    }
+
+    // ? 键 = 显示快捷键帮助
+    if (e.key === '?') {
+      setShowShortcutsHelp(true);
+      e.preventDefault();
+    }
+
+    // Escape 键 = 关闭快捷键帮助
+    if (e.key === 'Escape' && showShortcutsHelp) {
+      setShowShortcutsHelp(false);
+      e.preventDefault();
     }
   };
 
@@ -7282,6 +7295,55 @@ function PlayPageClient() {
           }
         }}
       />
+
+      {/* 键盘快捷键帮助面板 */}
+      {showShortcutsHelp && (
+        <div
+          className='fixed inset-0 z-9999 flex items-center justify-center bg-black/55 backdrop-blur-sm'
+          onClick={() => setShowShortcutsHelp(false)}
+        >
+          <div
+            className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='flex items-center justify-between mb-4'>
+              <h3 className='text-lg font-bold text-gray-900 dark:text-white'>
+                键盘快捷键
+              </h3>
+              <button
+                onClick={() => setShowShortcutsHelp(false)}
+                className='p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800'
+              >
+                ✕
+              </button>
+            </div>
+            <div className='space-y-2 text-sm'>
+              {[
+                ['Space', '播放 / 暂停'],
+                ['← →', '快退 / 快进 10秒'],
+                ['↑ ↓', '音量 +10% / -10%'],
+                ['F', '切换全屏'],
+                ['Alt + ←', '上一集'],
+                ['Alt + →', '下一集'],
+                ['?', '显示此帮助'],
+                ['Esc', '关闭帮助'],
+              ].map(([key, desc]) => (
+                <div
+                  key={key}
+                  className='flex items-center justify-between py-1.5 border-b border-gray-100 dark:border-gray-800 last:border-0'
+                >
+                  <kbd className='px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono text-gray-700 dark:text-gray-300'>
+                    {key}
+                  </kbd>
+                  <span className='text-gray-600 dark:text-gray-400'>
+                    {desc}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
