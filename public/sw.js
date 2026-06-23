@@ -1,10 +1,22 @@
-const CACHE_NAME = '5572tv-v1';
+const CACHE_NAME = '5572tv-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
+
+// 缓存策略配置
+const CACHE_STRATEGIES = {
+  // 静态资源：Cache First
+  static: ['/icons/', '/screenshots/', '/assets/'],
+  // API 请求：Network First，失败时用缓存
+  api: ['/api/'],
+  // 图片：Cache First，失败时用网络
+  images: ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'],
+  // 页面：Network First
+  pages: ['/search', '/shortdrama', '/download'],
+};
 
 const urlDataMap = new Map();
 
@@ -23,19 +35,24 @@ function createStream(port) {
       };
     },
     cancel(reason) {
-      console.log('user aborted', reason);
       port.postMessage({ abort: true });
     },
   });
 }
 
+// 安装事件 - 预缓存关键资源
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)),
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('Failed to cache static assets:', err);
+      });
+    }),
   );
   self.skipWaiting();
 });
 
+// 激活事件 - 清理旧缓存
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
@@ -51,11 +68,18 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// 消息处理
 self.addEventListener('message', (event) => {
   const data = event.data;
   const port = event.ports[0];
 
   if (data === 'ping') return;
+
+  // 跳过缓存
+  if (data === 'skipWaiting') {
+    self.skipWaiting();
+    return;
+  }
 
   const filename = data.pathname
     ? data.pathname.split('/').pop() || 'download'
@@ -83,58 +107,122 @@ self.addEventListener('message', (event) => {
   port.postMessage({ download: downloadUrl });
 });
 
+// Fetch 事件处理
 self.addEventListener('fetch', (event) => {
   var url = new URL(event.request.url);
 
+  // 处理下载请求
   if (url.pathname.startsWith('/download/')) {
-    event.respondWith(
-      (async () => {
-        var parts = url.pathname.split('/');
-        var token = parts[2];
-        if (!token) {
-          return new Response('Download not found', { status: 404 });
-        }
-        var payload = urlDataMap.get(token);
-        if (!payload) {
-          return new Response('Download not found', { status: 404 });
-        }
-        urlDataMap.delete(token);
-
-        var storedData = payload[1];
-        var storedPort = payload[2];
-
-        var filename = parts.slice(3).join('/') || 'download';
-        var contentType = 'application/octet-stream';
-
-        if (storedData && storedData.headers) {
-          if (storedData.headers['Content-Type']) {
-            contentType = storedData.headers['Content-Type'];
-          }
-          var disposition = storedData.headers['Content-Disposition'];
-          if (disposition) {
-            var match = disposition.match(/filename\*?=UTF-8''(.+)/);
-            if (match) {
-              filename = decodeURIComponent(match[1]);
-            }
-          }
-        }
-
-        var stream = payload[0];
-        if (typeof stream === 'undefined') {
-          stream = createStream(storedPort);
-        }
-
-        var responseHeaders = new Headers({
-          'Content-Type': contentType,
-          'Content-Disposition': 'attachment; filename="' + filename + '"',
-          'Content-Transfer-Encoding': 'binary',
-        });
-
-        return new Response(stream, { headers: responseHeaders });
-      })(),
-    );
+    event.respondWith(handleDownload(url));
     return;
   }
 
-  return;
+  // 只处理 GET 请求
+  if (event.request.method !== 'GET') return;
+
+  // 根据资源类型选择缓存策略
+  if (isStaticAsset(url.pathname)) {
+    event.respondWith(cacheFirst(event.request));
+  } else if (isApiRequest(url.pathname)) {
+    event.respondWith(networkFirst(event.request));
+  } else if (isImageRequest(url.pathname)) {
+    event.respondWith(cacheFirst(event.request));
+  }
 });
+
+// 缓存优先策略（静态资源、图片）
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+// 网络优先策略（API、页面）
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (err) {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    return new Response('Offline', { status: 503 });
+  }
+}
+
+// 判断是否为静态资源
+function isStaticAsset(pathname) {
+  return (
+    CACHE_STRATEGIES.static.some((pattern) => pathname.startsWith(pattern)) ||
+    pathname.includes('/_next/static/')
+  );
+}
+
+// 判断是否为 API 请求
+function isApiRequest(pathname) {
+  return pathname.startsWith('/api/');
+}
+
+// 判断是否为图片请求
+function isImageRequest(pathname) {
+  return CACHE_STRATEGIES.images.some((ext) => pathname.endsWith(ext));
+}
+
+// 处理下载请求
+async function handleDownload(url) {
+  var parts = url.pathname.split('/');
+  var token = parts[2];
+  if (!token) {
+    return new Response('Download not found', { status: 404 });
+  }
+  var payload = urlDataMap.get(token);
+  if (!payload) {
+    return new Response('Download not found', { status: 404 });
+  }
+  urlDataMap.delete(token);
+
+  var storedData = payload[1];
+  var storedPort = payload[2];
+
+  var filename = parts.slice(3).join('/') || 'download';
+  var contentType = 'application/octet-stream';
+
+  if (storedData && storedData.headers) {
+    if (storedData.headers['Content-Type']) {
+      contentType = storedData.headers['Content-Type'];
+    }
+    var disposition = storedData.headers['Content-Disposition'];
+    if (disposition) {
+      var match = disposition.match(/filename\*?=UTF-8''(.+)/);
+      if (match) {
+        filename = decodeURIComponent(match[1]);
+      }
+    }
+  }
+
+  var stream = payload[0];
+  if (typeof stream === 'undefined') {
+    stream = createStream(storedPort);
+  }
+
+  var responseHeaders = new Headers({
+    'Content-Type': contentType,
+    'Content-Disposition': 'attachment; filename="' + filename + '"',
+    'Content-Transfer-Encoding': 'binary',
+  });
+
+  return new Response(stream, { headers: responseHeaders });
+}

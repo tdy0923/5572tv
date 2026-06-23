@@ -4,6 +4,7 @@ import { queryOptions, useQuery } from '@tanstack/react-query';
 import {
   Cat,
   Clover,
+  Download,
   Film,
   FolderOpen,
   Globe,
@@ -113,6 +114,11 @@ export default function ModernNav({
         icon: Clover,
         label: '综艺',
         href: '/douban?type=show',
+      },
+      {
+        icon: Download,
+        label: '下载App',
+        href: '/download',
       },
     ],
     [],

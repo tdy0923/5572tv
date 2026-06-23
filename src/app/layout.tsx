@@ -22,21 +22,44 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   return {
     title: siteName,
-    description: '5572影视 - 影视聚合与在线播放',
+    description: '5572影视 - 智能影视播放平台，海量资源，AI搜索，弹幕互动',
     manifest: '/manifest.json',
     icons: {
       icon: [
         { url: '/favicon.ico' },
         { url: '/icon-5.svg', type: 'image/svg+xml' },
+        { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+        { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
       ],
-      apple: '/icons/icon-192x192.png',
+      apple: [
+        { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      ],
       shortcut: '/favicon.ico',
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: siteName,
+    },
+    formatDetection: {
+      telephone: false,
+    },
+    openGraph: {
+      title: siteName,
+      description: '5572影视 - 智能影视播放平台',
+      type: 'website',
+      siteName: siteName,
     },
   };
 }
 
 export const viewport: Viewport = {
   viewportFit: 'cover',
+  themeColor: '#22c55e',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default async function RootLayout({
