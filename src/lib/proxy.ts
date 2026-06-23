@@ -15,7 +15,7 @@ const cdnStrategy = new BoundedMap<
   }
 >(500);
 
-export function getCdnDomain(url: string): string {
+function getCdnDomain(url: string): string {
   try {
     return new URL(url).hostname;
   } catch {
@@ -23,7 +23,7 @@ export function getCdnDomain(url: string): string {
   }
 }
 
-export function reportCdnResult(
+function reportCdnResult(
   domain: string,
   ok: boolean,
   via: 'direct' | 'ua_rotate' | 'proxy',
@@ -46,7 +46,7 @@ export function reportCdnResult(
   }
 }
 
-export function getCdnStrategy(
+function getCdnStrategy(
   domain: string,
 ): 'direct' | 'ua_rotate' | 'proxy' | 'blocked' {
   const entry = cdnStrategy.get(domain);
