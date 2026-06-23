@@ -117,6 +117,7 @@ const WebSRSettingsPanel = dynamic(
   () => import('@/components/play/WebSRSettingsPanel'),
   { ssr: false },
 );
+import ReviewSection from '@/components/ReviewSection';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
@@ -6697,6 +6698,16 @@ function PlayPageClient() {
                 videoDoubanId={videoDoubanId}
               />
             </div>
+
+            {/* 用户评价 */}
+            {currentId && currentSource && (
+              <div className='mt-4'>
+                <ReviewSection
+                  videoId={currentId}
+                  videoSource={currentSource}
+                />
+              </div>
+            )}
           </div>
 
           {/* 返回顶部悬浮按钮 - 使用独立组件优化性能 */}
