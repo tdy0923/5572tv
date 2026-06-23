@@ -205,6 +205,7 @@ function HomeClient() {
   const { activeTab, upcomingReleases, username, showAnnouncement } = state;
 
   const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
+  const [showContinueWatching, setShowContinueWatching] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && announcement) {
@@ -213,6 +214,16 @@ function HomeClient() {
       );
     }
   }, [announcement, showAnnouncement]);
+
+  // 滚动检测 - 显示"继续观看"浮动按钮
+  useEffect(() => {
+    const handleScroll = () => {
+      // 当滚动超过 Hero Banner 高度（约 50vh）时显示按钮
+      setShowContinueWatching(window.scrollY > window.innerHeight * 0.5);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
@@ -1586,7 +1597,7 @@ function HomeClient() {
                 )}
 
               {/* 继续观看 */}
-              <div className='relative mb-6 sm:mb-10'>
+              <div className='relative mb-6 sm:mb-10' id='continue-watching'>
                 <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
                 <ContinueWatching className='mb-0' />
               </div>
@@ -2029,6 +2040,21 @@ function HomeClient() {
           </div>,
           document.body,
         )}
+
+      {/* "继续观看"浮动按钮 */}
+      {showContinueWatching && activeTab === 'home' && (
+        <button
+          onClick={() => {
+            document
+              .getElementById('continue-watching')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className='fixed bottom-20 md:bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
+        >
+          <span className='text-sm font-medium'>继续观看</span>
+          <span className='text-xs'>↓</span>
+        </button>
+      )}
     </PageLayout>
   );
 }
