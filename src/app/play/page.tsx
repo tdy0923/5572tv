@@ -1058,7 +1058,6 @@ function PlayPageClient() {
 
   // 🚀 新增：连续切换源防抖和资源管理
   const sourceSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingSwitchRef = useRef<any>(null); // 保存待处理的切换请求
   const switchPromiseRef = useRef<Promise<void> | null>(null); // 当前切换的Promise
 
   const {
@@ -3210,7 +3209,6 @@ function PlayPageClient() {
       // 重置状态
       isSourceChangingRef.current = false;
       switchPromiseRef.current = null;
-      pendingSwitchRef.current = null;
     };
   }, []);
 

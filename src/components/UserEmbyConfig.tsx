@@ -1,9 +1,7 @@
-/* eslint-disable unused-imports/no-unused-imports */
-
 'use client';
 
 import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Globe, Plus, X } from 'lucide-react';
+import { Globe, Plus, X } from 'lucide-react';
 import { memo, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
