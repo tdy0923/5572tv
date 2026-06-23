@@ -10,7 +10,14 @@ import {
 } from '@tanstack/react-query';
 import { ChevronUp, Grid2x2, List, Play, Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { isAdSettingRenderable } from '@/lib/ad-settings';
 import {
@@ -455,10 +462,30 @@ function SearchPageClient() {
   // 精确搜索开关
   const [exactSearch, setExactSearch] = useState(true);
 
-  // 网盘搜索相关状态
+  // 网盘搜索相关状态 - 从 URL 参数初始化
   const [searchType, setSearchType] = useState<
     'video' | 'netdisk' | 'tmdb-actor'
-  >('video');
+  >(() => {
+    const typeParam = searchParams.get('type');
+    if (typeParam === 'netdisk' || typeParam === 'tmdb-actor') return typeParam;
+    return 'video';
+  });
+
+  // 切换搜索类型并更新 URL
+  const switchSearchType = useCallback(
+    (newType: 'video' | 'netdisk' | 'tmdb-actor') => {
+      setSearchType(newType);
+      // 更新 URL 参数
+      const params = new URLSearchParams(searchParams.toString());
+      if (newType === 'video') {
+        params.delete('type');
+      } else {
+        params.set('type', newType);
+      }
+      router.replace(`/search?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, router],
+  );
   const [netdiskResourceType, setNetdiskResourceType] = useState<
     'netdisk' | 'acg'
   >('netdisk'); // 网盘资源类型：普通网盘或动漫磁力
@@ -1299,7 +1326,7 @@ function SearchPageClient() {
                   <PillButton
                     type='button'
                     onClick={() => {
-                      setSearchType('video');
+                      switchSearchType('video');
                       // 切换到影视搜索时，清除网盘和TMDB演员搜索状态
                       setNetdiskResults(null);
                       setNetdiskError(null);
@@ -1323,7 +1350,7 @@ function SearchPageClient() {
                   <PillButton
                     type='button'
                     onClick={() => {
-                      setSearchType('netdisk');
+                      switchSearchType('netdisk');
                       // 清除之前的网盘搜索状态，确保重新开始
                       setNetdiskError(null);
                       setNetdiskResults(null);
@@ -1344,7 +1371,7 @@ function SearchPageClient() {
                   <PillButton
                     type='button'
                     onClick={() => {
-                      setSearchType('tmdb-actor');
+                      switchSearchType('tmdb-actor');
                       // 清除之前的搜索状态
                       setTmdbActorError(null);
                       setTmdbActorResults(null);
