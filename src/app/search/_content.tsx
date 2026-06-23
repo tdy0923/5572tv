@@ -486,6 +486,33 @@ function SearchPageClient() {
     },
     [searchParams, router],
   );
+
+  // AI 智能搜索
+  const [aiSearchLoading, setAiSearchLoading] = useState(false);
+  const [aiSearchResults, setAiSearchResults] = useState<any[]>([]);
+  const [aiSearchParsed, setAiSearchParsed] = useState<any>(null);
+
+  const handleAiSearch = useCallback(async (query: string) => {
+    if (!query.trim()) return;
+    setAiSearchLoading(true);
+    setAiSearchResults([]);
+    setAiSearchParsed(null);
+    try {
+      const response = await fetch(
+        `/api/ai-search?q=${encodeURIComponent(query)}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAiSearchResults(data.results || []);
+        setAiSearchParsed(data.parsed);
+        setShowResults(true);
+      }
+    } catch (error) {
+      console.error('AI search failed:', error);
+    } finally {
+      setAiSearchLoading(false);
+    }
+  }, []);
   const [netdiskResourceType, setNetdiskResourceType] = useState<
     'netdisk' | 'acg'
   >('netdisk'); // 网盘资源类型：普通网盘或动漫磁力
@@ -1394,6 +1421,20 @@ function SearchPageClient() {
                   >
                     TMDB演员
                   </PillButton>
+                  <PillButton
+                    type='button'
+                    onClick={() => {
+                      const currentQuery =
+                        searchQuery.trim() || searchParams?.get('q');
+                      if (currentQuery) {
+                        handleAiSearch(currentQuery);
+                      }
+                    }}
+                    active={aiSearchResults.length > 0}
+                    className='min-w-[110px] flex-shrink-0 whitespace-nowrap px-4 py-2.5 font-semibold sm:min-w-0 sm:px-6 sm:text-base bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:from-purple-600 hover:to-blue-600'
+                  >
+                    {aiSearchLoading ? 'AI分析中...' : 'AI智能搜索'}
+                  </PillButton>
                 </PillGroup>
               </div>
 
@@ -1669,6 +1710,66 @@ function SearchPageClient() {
                         重试
                       </button>
                     </div>
+                  ) : aiSearchResults.length > 0 ? (
+                    <>
+                      {/* AI 解析结果提示 */}
+                      {aiSearchParsed && (
+                        <div className='mb-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-4'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <span className='text-sm font-medium text-purple-600 dark:text-purple-400'>
+                              🤖 AI 理解
+                            </span>
+                          </div>
+                          <div className='flex flex-wrap gap-2'>
+                            {aiSearchParsed.keywords?.map(
+                              (kw: string, i: number) => (
+                                <span
+                                  key={i}
+                                  className='px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs'
+                                >
+                                  {kw}
+                                </span>
+                              ),
+                            )}
+                            {aiSearchParsed.genre?.map(
+                              (g: string, i: number) => (
+                                <span
+                                  key={i}
+                                  className='px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs'
+                                >
+                                  {g}
+                                </span>
+                              ),
+                            )}
+                            {aiSearchParsed.mood?.map(
+                              (m: string, i: number) => (
+                                <span
+                                  key={i}
+                                  className='px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs'
+                                >
+                                  {m}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {/* AI 搜索结果 */}
+                      <div className='grid grid-cols-[repeat(auto-fill,_minmax(9.5rem,_1fr))] gap-x-3 gap-y-12 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8 sm:gap-y-20'>
+                        {aiSearchResults.map((item: any, index: number) => (
+                          <div key={item.id || index} className='w-full'>
+                            <VideoCard
+                              title={item.title}
+                              poster={item.poster}
+                              year={item.year}
+                              rate={item.rate}
+                              from='douban'
+                              type={item.type || 'movie'}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   ) : tmdbActorResults && tmdbActorResults.length > 0 ? (
                     <div className='grid grid-cols-[repeat(auto-fill,_minmax(9.5rem,_1fr))] gap-x-3 gap-y-12 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8 sm:gap-y-20'>
                       {tmdbActorResults.map((item, index) => (
