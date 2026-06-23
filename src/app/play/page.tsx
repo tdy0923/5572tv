@@ -3930,7 +3930,10 @@ function PlayPageClient() {
           // 切换后立即恢复播放速率，防止被重置
           if (artPlayerRef.current) {
             artPlayerRef.current.playbackRate = savedPlaybackRate;
-            // // console.log(`✅ 恢复播放速率: ${savedPlaybackRate}x`);
+            // 恢复倍速时显示提示
+            if (savedPlaybackRate !== 1.0 && artPlayerRef.current.notice) {
+              artPlayerRef.current.notice.show = `已恢复 ${savedPlaybackRate}x 倍速`;
+            }
           }
 
           if (artPlayerRef.current?.video) {
