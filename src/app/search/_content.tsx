@@ -1705,6 +1705,11 @@ function SearchPageClient() {
                           <div className='min-w-0 flex-1'>
                             <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                               搜索结果
+                              {searchResults.length > 0 && (
+                                <span className='ml-2 text-sm font-normal text-gray-500 dark:text-gray-400'>
+                                  ({searchResults.length}个)
+                                </span>
+                              )}
                               {totalSources > 0 && useFluidSearch && (
                                 <span className='ml-2 text-sm font-normal text-gray-500 dark:text-gray-400'>
                                   {completedSources}/{totalSources}
