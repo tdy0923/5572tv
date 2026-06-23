@@ -394,6 +394,12 @@ function PlayPageClient() {
   const [netdiskTotal, setNetdiskTotal] = useState(0);
   const [showNetdiskModal, setShowNetdiskModal] = useState(false);
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [aiSummary, setAiSummary] = useState<{
+    summary: string;
+    highlights: string[];
+    review: string;
+  } | null>(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [netdiskResourceType, setNetdiskResourceType] = useState<
     'netdisk' | 'acg'
   >('netdisk'); // 资源类型
@@ -6621,6 +6627,67 @@ function PlayPageClient() {
                 }}
                 processImageUrl={processImageUrl}
               />
+
+              {/* AI 影片摘要 */}
+              <div className='md:col-span-3'>
+                <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
+                  <div className='flex items-center justify-between mb-3'>
+                    <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
+                      <span className='text-purple-500'>🤖</span> AI 摘要
+                    </h3>
+                    {!aiSummary && !aiSummaryLoading && (
+                      <button
+                        onClick={async () => {
+                          setAiSummaryLoading(true);
+                          try {
+                            const res = await fetch(
+                              `/api/ai-summary?title=${encodeURIComponent(videoTitle || '')}&description=${encodeURIComponent(detail?.desc || '')}&year=${encodeURIComponent(videoYear || '')}`,
+                            );
+                            if (res.ok) {
+                              const data = await res.json();
+                              setAiSummary(data);
+                            }
+                          } catch {}
+                          setAiSummaryLoading(false);
+                        }}
+                        className='text-xs text-purple-500 hover:text-purple-600 dark:text-purple-400'
+                      >
+                        生成摘要
+                      </button>
+                    )}
+                  </div>
+                  {aiSummaryLoading && (
+                    <div className='space-y-2'>
+                      <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-full' />
+                      <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4' />
+                    </div>
+                  )}
+                  {aiSummary && (
+                    <div className='space-y-3'>
+                      <p className='text-sm text-gray-600 dark:text-gray-400'>
+                        {aiSummary.summary}
+                      </p>
+                      {aiSummary.highlights.length > 0 && (
+                        <div className='flex flex-wrap gap-1.5'>
+                          {aiSummary.highlights.map((h, i) => (
+                            <span
+                              key={i}
+                              className='px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs'
+                            >
+                              {h}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {aiSummary.review && (
+                        <p className='text-xs text-gray-500 dark:text-gray-400 italic'>
+                          「{aiSummary.review}」
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* 封面展示 */}
               <VideoCoverDisplay
