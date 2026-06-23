@@ -225,6 +225,27 @@ function HomeClient() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // AI 个性化推荐
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
+  const [aiRecommendLoading, setAiRecommendLoading] = useState(false);
+
+  useEffect(() => {
+    // 登录用户才加载推荐
+    if (!username) return;
+    const loadRecommendations = async () => {
+      setAiRecommendLoading(true);
+      try {
+        const res = await fetch('/api/ai-recommend/personalized');
+        if (res.ok) {
+          const data = await res.json();
+          setAiRecommendations(data.recommendations || []);
+        }
+      } catch {}
+      setAiRecommendLoading(false);
+    };
+    loadRecommendations();
+  }, [username]);
+
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
     const cached = homeData?.hotMovies || [];
@@ -1601,6 +1622,61 @@ function HomeClient() {
                 <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
                 <ContinueWatching className='mb-0' />
               </div>
+
+              {/* AI 猜你想看 */}
+              {username && aiRecommendations.length > 0 && (
+                <section className='mb-8 md:mb-10'>
+                  <div className='mb-4 flex items-center justify-between'>
+                    <SectionTitle
+                      title='猜你想看'
+                      icon={Sparkles}
+                      iconColor='text-purple-500'
+                    />
+                    <span className='text-xs text-gray-400 dark:text-gray-500'>
+                      AI 推荐
+                    </span>
+                  </div>
+                  <ScrollableRow>
+                    {aiRecommendations.map((item: any, index: number) => (
+                      <div
+                        key={index}
+                        className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                      >
+                        <VideoCard
+                          title={item.title || item}
+                          poster={item.poster || ''}
+                          year={item.year || ''}
+                          rate={item.rate || ''}
+                          from='douban'
+                          type={item.type || 'movie'}
+                        />
+                      </div>
+                    ))}
+                  </ScrollableRow>
+                </section>
+              )}
+              {username && aiRecommendLoading && (
+                <section className='mb-8 md:mb-10'>
+                  <div className='mb-4'>
+                    <SectionTitle
+                      title='猜你想看'
+                      icon={Sparkles}
+                      iconColor='text-purple-500'
+                    />
+                  </div>
+                  <div className='flex gap-4 overflow-hidden'>
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                      >
+                        <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
+                        <div className='mt-2 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4' />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* 即将上映 */}
               {!loading && upcomingReleases.length > 0 && (
