@@ -1545,77 +1545,76 @@ function HomeClient() {
           ) : (
             // 首页视图
             <>
-              {/* Hero Banner 轮播 */}
-              {!loading &&
-                (hotMovies.length > 0 ||
-                  hotTvShows.length > 0 ||
-                  hotVarietyShows.length > 0 ||
-                  hotShortDramas.length > 0) && (
-                  <section className='mb-8 md:mb-10'>
-                    <HeroBanner
-                      items={[
-                        // 豆瓣电影
-                        ...hotMovies.slice(0, 2).map((movie) => ({
-                          id: movie.id,
-                          title: movie.title,
-                          poster: resolveCardPosterUrl(movie.poster),
-                          backdrop: movie.backdrop,
-                          trailerUrl: movie.trailerUrl,
-                          description: movie.plot_summary,
-                          year: movie.year,
-                          rate: movie.rate,
-                          douban_id: Number(movie.id),
-                          type: 'movie',
-                        })),
-                        // 豆瓣电视剧
-                        ...hotTvShows.slice(0, 2).map((show) => ({
-                          id: show.id,
-                          title: show.title,
-                          poster: resolveCardPosterUrl(show.poster),
-                          backdrop: show.backdrop,
-                          trailerUrl: show.trailerUrl,
-                          description: show.plot_summary,
-                          year: show.year,
-                          rate: show.rate,
-                          douban_id: Number(show.id),
-                          type: 'tv',
-                        })),
-                        // 豆瓣综艺
-                        ...hotVarietyShows.slice(0, 1).map((show) => ({
-                          id: show.id,
-                          title: show.title,
-                          poster: resolveCardPosterUrl(show.poster),
-                          backdrop: show.backdrop,
-                          trailerUrl: show.trailerUrl,
-                          description: show.plot_summary,
-                          year: show.year,
-                          rate: show.rate,
-                          douban_id: Number(show.id),
-                          type: 'variety',
-                        })),
-                        // 豆瓣动漫
-                        ...hotAnime.slice(0, 1).map((anime) => ({
-                          id: anime.id,
-                          title: anime.title,
-                          poster: resolveCardPosterUrl(anime.poster),
-                          backdrop: anime.backdrop,
-                          trailerUrl: anime.trailerUrl,
-                          description: anime.plot_summary,
-                          year: anime.year,
-                          rate: anime.rate,
-                          douban_id: Number(anime.id),
-                          type: 'anime',
-                        })),
-                      ]}
-                      autoPlayInterval={8000}
-                      showControls={true}
-                      showIndicators={true}
-                      enableVideo={
-                        !(window as any).RUNTIME_CONFIG?.DISABLE_HERO_TRAILER
-                      }
-                    />
-                  </section>
-                )}
+              {/* Hero Banner 轮播 - 只要有数据就渲染 */}
+              {(hotMovies.length > 0 ||
+                hotTvShows.length > 0 ||
+                hotVarietyShows.length > 0 ||
+                hotShortDramas.length > 0) && (
+                <section className='mb-8 md:mb-10'>
+                  <HeroBanner
+                    items={[
+                      // 豆瓣电影
+                      ...hotMovies.slice(0, 2).map((movie) => ({
+                        id: movie.id,
+                        title: movie.title,
+                        poster: resolveCardPosterUrl(movie.poster),
+                        backdrop: movie.backdrop,
+                        trailerUrl: movie.trailerUrl,
+                        description: movie.plot_summary,
+                        year: movie.year,
+                        rate: movie.rate,
+                        douban_id: Number(movie.id),
+                        type: 'movie',
+                      })),
+                      // 豆瓣电视剧
+                      ...hotTvShows.slice(0, 2).map((show) => ({
+                        id: show.id,
+                        title: show.title,
+                        poster: resolveCardPosterUrl(show.poster),
+                        backdrop: show.backdrop,
+                        trailerUrl: show.trailerUrl,
+                        description: show.plot_summary,
+                        year: show.year,
+                        rate: show.rate,
+                        douban_id: Number(show.id),
+                        type: 'tv',
+                      })),
+                      // 豆瓣综艺
+                      ...hotVarietyShows.slice(0, 1).map((show) => ({
+                        id: show.id,
+                        title: show.title,
+                        poster: resolveCardPosterUrl(show.poster),
+                        backdrop: show.backdrop,
+                        trailerUrl: show.trailerUrl,
+                        description: show.plot_summary,
+                        year: show.year,
+                        rate: show.rate,
+                        douban_id: Number(show.id),
+                        type: 'variety',
+                      })),
+                      // 豆瓣动漫
+                      ...hotAnime.slice(0, 1).map((anime) => ({
+                        id: anime.id,
+                        title: anime.title,
+                        poster: resolveCardPosterUrl(anime.poster),
+                        backdrop: anime.backdrop,
+                        trailerUrl: anime.trailerUrl,
+                        description: anime.plot_summary,
+                        year: anime.year,
+                        rate: anime.rate,
+                        douban_id: Number(anime.id),
+                        type: 'anime',
+                      })),
+                    ]}
+                    autoPlayInterval={8000}
+                    showControls={true}
+                    showIndicators={true}
+                    enableVideo={
+                      !(window as any).RUNTIME_CONFIG?.DISABLE_HERO_TRAILER
+                    }
+                  />
+                </section>
+              )}
 
               {/* 继续观看 */}
               <div className='relative mb-6 sm:mb-10' id='continue-watching'>
@@ -1678,8 +1677,8 @@ function HomeClient() {
                 </section>
               )}
 
-              {/* 即将上映 */}
-              {!loading && upcomingReleases.length > 0 && (
+              {/* 即将上映 - 只要有数据就渲染 */}
+              {upcomingReleases.length > 0 && (
                 <section className='mb-8 md:mb-10'>
                   <div className='mb-4 flex items-center justify-between'>
                     <SectionTitle

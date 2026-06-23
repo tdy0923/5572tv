@@ -1,10 +1,6 @@
-/* eslint-disable no-console */
-
 /**
  * Image Proxy Endpoint
- * Based on MoonTVPlus/DecoTV implementation
- *
- * Proxies images from Douban, Manmankan and other sources to bypass CORS
+ * Optimized for fast poster loading with request deduplication
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,29 +9,21 @@ import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
 
-// Cache for images (LRU eviction)
-const imageCache = new Map<
-  string,
-  { data: ArrayBuffer; contentType: string; timestamp: number }
->();
+// Request deduplication - prevent multiple concurrent requests for same image
+const pendingRequests = new Map<string, Promise<ArrayBuffer>>();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_CACHE_SIZE = 5000;
 
 // 根据图片URL域名动态设置Referer
 function getRefererForUrl(imageUrl: string): string {
   try {
     const url = new URL(imageUrl);
     const host = url.hostname;
-
-    // 豆瓣图片
     if (host.includes('doubanio.com') || host.includes('douban.com')) {
       return 'https://movie.douban.com/';
     }
-    // Manmankan图片（发布日历）
     if (host.includes('manmankan.com')) {
       return 'https://www.manmankan.com/';
     }
-    // 通用：使用图片所在域名
     return `${url.protocol}//${host}/`;
   } catch {
     return 'https://movie.douban.com/';
@@ -54,86 +42,39 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Decode URL (searchParams.get already decodes once; use as-is to avoid double-decode)
     const decodedUrl = url;
 
-    // Check cache (refresh timestamp for LRU)
-    const cached = imageCache.get(decodedUrl);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      // Refresh timestamp for LRU eviction
-      cached.timestamp = Date.now();
-      return new NextResponse(cached.data, {
+    // Check if there's already a pending request for this URL (deduplication)
+    if (pendingRequests.has(decodedUrl)) {
+      const cachedData = await pendingRequests.get(decodedUrl)!;
+      return new NextResponse(cachedData, {
         headers: {
-          'Content-Type': cached.contentType,
+          'Content-Type': 'image/jpeg',
           'Access-Control-Allow-Origin': '*',
           'Cache-Control': 'public, max-age=86400, s-maxage=604800',
         },
       });
     }
 
-    // 动态设置Referer
-    const referer = getRefererForUrl(decodedUrl);
+    // Create and cache the fetch promise
+    const fetchPromise = fetchImage(decodedUrl);
+    pendingRequests.set(decodedUrl, fetchPromise);
 
-    // Fetch image
-    const response = await fetch(decodedUrl, {
-      headers: {
-        'User-Agent': DEFAULT_USER_AGENT,
-        Referer: referer,
-        Accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      // Return a 1x1 transparent pixel for failed images instead of error
-      const pixel = new Uint8Array([
-        0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00,
-        0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
-        0x00, 0x01, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
-        0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b,
-      ]);
-      return new NextResponse(pixel, {
-        status: 200,
+    try {
+      const data = await fetchPromise;
+      return new NextResponse(data, {
         headers: {
-          'Content-Type': 'image/gif',
+          'Content-Type': 'image/jpeg',
           'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'public, max-age=300, s-maxage=300',
+          'Cache-Control': 'public, max-age=86400, s-maxage=604800',
         },
       });
+    } finally {
+      // Clean up pending request after a short delay (for concurrent requests)
+      setTimeout(() => pendingRequests.delete(decodedUrl), 100);
     }
-
-    const contentType = response.headers.get('Content-Type') || 'image/jpeg';
-    const data = await response.arrayBuffer();
-
-    // Cache the image (LRU eviction)
-    if (imageCache.size >= MAX_CACHE_SIZE) {
-      // Remove least recently used entry (oldest timestamp)
-      let oldestKey: string | null = null;
-      let oldestTime = Infinity;
-      for (const [key, entry] of imageCache) {
-        if (entry.timestamp < oldestTime) {
-          oldestTime = entry.timestamp;
-          oldestKey = key;
-        }
-      }
-      if (oldestKey) imageCache.delete(oldestKey);
-    }
-    imageCache.set(decodedUrl, {
-      data,
-      contentType,
-      timestamp: Date.now(),
-    });
-
-    return new NextResponse(data, {
-      headers: {
-        'Content-Type': contentType,
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=86400, s-maxage=604800',
-      },
-    });
   } catch (error) {
-    console.error('Image proxy error:', error);
-    // Return a 1x1 transparent pixel instead of 500
+    // Return 1x1 transparent pixel on error
     const pixel = new Uint8Array([
       0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00,
       0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x01, 0x00,
@@ -144,9 +85,27 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'image/gif',
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=60, s-maxage=60',
+        'Cache-Control': 'public, max-age=300',
       },
     });
   }
+}
+
+async function fetchImage(decodedUrl: string): Promise<ArrayBuffer> {
+  const referer = getRefererForUrl(decodedUrl);
+
+  const response = await fetch(decodedUrl, {
+    headers: {
+      'User-Agent': DEFAULT_USER_AGENT,
+      Referer: referer,
+      Accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+    },
+    signal: AbortSignal.timeout(5000), // Reduced from 10s to 5s
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return response.arrayBuffer();
 }

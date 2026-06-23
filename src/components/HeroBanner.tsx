@@ -253,7 +253,7 @@ function HeroBanner({
                 fill
                 className='object-cover object-center'
                 priority={index === 0}
-                quality={100}
+                quality={80}
                 sizes='100vw'
                 unoptimized={
                   item.backdrop?.includes('/l/') ||
