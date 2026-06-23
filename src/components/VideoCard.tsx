@@ -1159,7 +1159,7 @@ function VideoCard({
             from !== 'favorite' && (
               <div
                 data-button='true'
-                className='absolute bottom-3 right-3 flex gap-3 opacity-0 translate-y-2 transition-all duration-300 ease-in-out sm:group-hover:opacity-100 sm:group-hover:translate-y-0'
+                className='absolute bottom-3 right-3 flex gap-3 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0'
                 style={
                   {
                     WebkitUserSelect: 'none',

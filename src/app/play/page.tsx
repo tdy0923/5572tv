@@ -6494,6 +6494,26 @@ function PlayPageClient() {
                   sourceSearchError={sourceSearchError}
                   precomputedVideoInfo={precomputedVideoInfo}
                 />
+
+                {/* 上一集/下一集按钮 - 移动端友好 */}
+                {totalEpisodes > 1 && (
+                  <div className='flex gap-2 mt-3'>
+                    <button
+                      onClick={handlePreviousEpisode}
+                      disabled={currentEpisodeIndex <= 0}
+                      className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                    >
+                      <span>◀</span> 上一集
+                    </button>
+                    <button
+                      onClick={handleNextEpisode}
+                      disabled={currentEpisodeIndex >= totalEpisodes - 1}
+                      className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                    >
+                      下一集 <span>▶</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -56,10 +56,14 @@ const PageLayout = ({
           {/* 移动端头部 - Logo和用户菜单 */}
           <div className='ui-nav-surface md:hidden fixed top-0 left-0 right-0 z-40'>
             <div className='flex items-center justify-between h-11 px-4'>
-              {/* Logo */}
-              <div className='text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
-                {siteName}
-              </div>
+              {/* 返回按钮 或 Logo */}
+              {['/play', '/live'].includes(activePath) ? (
+                <BackButton />
+              ) : (
+                <div className='text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
+                  {siteName}
+                </div>
+              )}
 
               {/* 右侧操作区 */}
               <NavActionCluster
