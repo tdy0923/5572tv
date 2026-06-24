@@ -17,8 +17,8 @@
   }
 }
 
-/* ===== Small Screen (Mobile Portrait) ===== */
-@media (max-width: 380px) {
+/* ===== Mobile Screen (all phones) ===== */
+@media (max-width: 768px) {
   /* 控制按钮至少44px触控目标 (Apple HIG) */
   .art-controls button,
   .art-control {

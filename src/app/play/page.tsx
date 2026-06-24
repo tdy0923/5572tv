@@ -6427,7 +6427,7 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[260px] sm:h-[360px] md:h-[420px] lg:h-full'>
+                  <div className='relative w-full h-[50vh] min-h-[280px] sm:h-[360px] md:h-[420px] lg:h-full'>
                     <div
                       ref={artRef}
                       className='bg-black w-full h-full rounded-xl overflow-hidden shadow-lg'
@@ -6519,12 +6519,12 @@ function PlayPageClient() {
                   </div>
                 </div>
 
-                {/* 选集和换源 - 在移动端始终显示，在 lg 及以上可折叠 */}
+                {/* 选集和换源 - 移动端可折叠以腾出播放器空间 */}
                 <div
-                  className={`max-h-[35vh] md:max-h-[280px] lg:max-h-none lg:h-full md:overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`md:overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
-                      ? 'md:col-span-1 lg:hidden lg:opacity-0 lg:scale-95'
-                      : 'md:col-span-1 lg:opacity-100 lg:scale-100'
+                      ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 md:col-span-1'
+                      : 'max-h-[40vh] md:max-h-[280px] lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
                   }`}
                 >
                   <EpisodeSelector

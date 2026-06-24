@@ -271,20 +271,6 @@ html:not(.dark) body {
   );
 }
 
-/* 隐藏移动端（<768px）垂直滚动条 */
-@media (max-width: 767px) {
-  html,
-  body {
-    -ms-overflow-style: none; /* IE & Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar {
-    display: none; /* Chrome Safari */
-  }
-}
-
 /* 平板断点 (768-1080px) */
 @media (min-width: 768px) and (max-width: 1080px) {
   /* 平板布局优化 */
