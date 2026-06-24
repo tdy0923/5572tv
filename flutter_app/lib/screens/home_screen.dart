@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/video_provider.dart';
+import '../services/download_manager.dart';
 import '../widgets/video_card.dart';
-import '../widgets/scrollable_row.dart';
 import 'search_screen.dart';
 import 'player_screen.dart';
 

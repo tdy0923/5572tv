@@ -57,6 +57,24 @@ class VideoProvider with ChangeNotifier {
     return await ApiService.getVideoDetail(source, id);
   }
   
+  Future<List<dynamic>> getShortDramaCategories() async {
+    try {
+      return await ApiService.getShortDramaCategories();
+    } catch (e) {
+      debugPrint('Failed to load short drama categories: $e');
+      return [];
+    }
+  }
+
+  Future<Map<String, dynamic>> getShortDramaList(int categoryId) async {
+    try {
+      return await ApiService.getShortDramaList(categoryId);
+    } catch (e) {
+      debugPrint('Failed to load short drama list: $e');
+      return {'list': []};
+    }
+  }
+
   void clearSearch() {
     _searchResults = [];
     notifyListeners();

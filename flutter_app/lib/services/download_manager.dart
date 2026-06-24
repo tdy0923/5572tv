@@ -32,14 +32,12 @@ class DownloadManager extends ChangeNotifier {
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   bool get isDownloading => _isDownloading;
 
-  // 添加下载任务
   Future<void> addTask({
     required String id,
     required String title,
     required String url,
     String? cover,
   }) async {
-    // 检查是否已存在
     if (_tasks.any((t) => t.id == id)) return;
 
     final task = DownloadTask(
@@ -51,16 +49,12 @@ class DownloadManager extends ChangeNotifier {
 
     _tasks.add(task);
     notifyListeners();
-
-    // 开始下载
     _startDownload(task);
   }
 
-  // 删除下载任务
   Future<void> removeTask(String id) async {
     final task = _tasks.firstWhere((t) => t.id == id);
-    
-    // 删除文件
+
     if (task.filePath != null) {
       try {
         final file = File(task.filePath!);
@@ -76,36 +70,29 @@ class DownloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 开始下载
   Future<void> _startDownload(DownloadTask task) async {
-    setState(() {
-      task.status = 'downloading';
-    });
+    task.status = 'downloading';
+    notifyListeners();
 
     try {
       final directory = await getApplicationDocumentsDirectory();
       final filePath = '${directory.path}/downloads/${task.id}.mp4';
-      
-      // 创建下载目录
+
       final downloadDir = Directory('${directory.path}/downloads');
       if (!await downloadDir.exists()) {
         await downloadDir.create(recursive: true);
       }
 
-      // 下载文件
       final response = await http.send(
         http.Request('GET', Uri.parse(task.url)),
       );
 
-      // 获取文件大小
       final contentLength = response.contentLength;
       if (contentLength != null) {
-        setState(() {
-          task.fileSize = contentLength;
-        });
+        task.fileSize = contentLength;
+        notifyListeners();
       }
 
-      // 写入文件
       final file = File(filePath);
       final sink = file.openWrite();
       int bytesReceived = 0;
@@ -115,35 +102,27 @@ class DownloadManager extends ChangeNotifier {
         bytesReceived += chunk.length;
 
         if (contentLength != null) {
-          setState(() {
-            task.progress = bytesReceived / contentLength;
-          });
+          task.progress = bytesReceived / contentLength;
         }
       }
 
       await sink.close();
 
-      setState(() {
-        task.status = 'completed';
-        task.progress = 1.0;
-        task.filePath = filePath;
-      });
-
+      task.status = 'completed';
+      task.progress = 1.0;
+      task.filePath = filePath;
       notifyListeners();
     } catch (e) {
-      setState(() {
-        task.status = 'failed';
-      });
+      task.status = 'failed';
+      notifyListeners();
       debugPrint('Download failed: $e');
     }
   }
 
-  // 获取已下载的文件列表
   Future<List<DownloadTask>> getCompletedTasks() async {
     return _tasks.where((t) => t.status == 'completed').toList();
   }
 
-  // 获取总下载大小
   Future<int> getTotalSize() async {
     int total = 0;
     for (final task in _tasks) {
@@ -161,7 +140,6 @@ class DownloadManager extends ChangeNotifier {
     return total;
   }
 
-  // 清理所有下载
   Future<void> clearAll() async {
     for (final task in List.from(_tasks)) {
       await removeTask(task.id);
