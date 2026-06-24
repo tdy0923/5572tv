@@ -14,6 +14,7 @@ import {
   Trash2,
   Tv,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
   Suspense,
@@ -48,18 +49,33 @@ import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import ContinueWatching from '@/components/ContinueWatching';
 import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
-import ShortDramaCard from '@/components/ShortDramaCard';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import { useSite } from '@/components/SiteProvider';
 import SkeletonCard from '@/components/SkeletonCard';
-import { TelegramWelcomeModal } from '@/components/TelegramWelcomeModal';
-import VideoCard from '@/components/VideoCard';
+
+const VideoCard = dynamic(() => import('@/components/VideoCard'), {
+  ssr: false,
+  loading: () => <SkeletonCard />,
+});
+const ShortDramaCard = dynamic(() => import('@/components/ShortDramaCard'), {
+  ssr: false,
+  loading: () => <SkeletonCard />,
+});
+const ConfirmDialog = dynamic(() =>
+  import('@/components/ConfirmDialog').then((m) => ({
+    default: m.ConfirmDialog,
+  })),
+);
+const TelegramWelcomeModal = dynamic(() =>
+  import('@/components/TelegramWelcomeModal').then((m) => ({
+    default: m.TelegramWelcomeModal,
+  })),
+);
 
 // 🎯 优化：合并状态管理 - 使用 useReducer 减少重渲染
 interface HomeState {
