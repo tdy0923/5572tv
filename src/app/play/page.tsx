@@ -21,51 +21,7 @@ import { toast } from 'sonner';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { ClientCache } from '@/lib/client-cache';
-import {
-  generateStorageKey,
-  getAllFavorites,
-  getAllPlayRecords,
-  subscribeToDataUpdates,
-} from '@/lib/db.client';
-
-// Cached versions to avoid repeated IndexedDB reads (5-second TTL)
-let _playRecordsCache: any = null;
-let _playRecordsCacheTime = 0;
-let _favoritesCache: any = null;
-let _favoritesCacheTime = 0;
-const CACHE_TTL = 5000;
-
-async function cachedGetAllPlayRecords() {
-  const now = Date.now();
-  if (_playRecordsCache && now - _playRecordsCacheTime < CACHE_TTL) {
-    return _playRecordsCache;
-  }
-  const data = await getAllPlayRecords();
-  _playRecordsCache = data;
-  _playRecordsCacheTime = now;
-  return data;
-}
-
-async function cachedGetAllFavorites() {
-  const now = Date.now();
-  if (_favoritesCache && now - _favoritesCacheTime < CACHE_TTL) {
-    return _favoritesCache;
-  }
-  const data = await getAllFavorites();
-  _favoritesCache = data;
-  _favoritesCacheTime = now;
-  return data;
-}
-
-function invalidatePlayRecordsCache() {
-  _playRecordsCache = null;
-  _playRecordsCacheTime = 0;
-}
-
-function invalidateFavoritesCache() {
-  _favoritesCache = null;
-  _favoritesCacheTime = 0;
-}
+import { generateStorageKey, subscribeToDataUpdates } from '@/lib/db.client';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
@@ -76,6 +32,23 @@ import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
 
 import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
+import type { WakeLockSentinel } from './utils';
+import {
+  appendAudioStreamIndex,
+  cachedGetAllFavorites,
+  cachedGetAllPlayRecords,
+  escapeAudioTrackHtml,
+  getHlsModule,
+  loadPlaybackRate,
+  loadPreferredAudioLang,
+  normalizeAudioLang,
+  parseAudioStreamIndexFromUrl,
+  parseStorageKey,
+  replacePlaybackUrlParams,
+  resolveAudioTrackName,
+  sanitizePlaybackRate,
+  savePreferredAudioLang,
+} from './utils';
 const DanmuManualMatchModal = dynamic(
   () => import('@/components/DanmuManualMatchModal'),
   { ssr: false },
@@ -138,217 +111,7 @@ import {
 import { useSourceSearch } from './hooks/useSourceSearch';
 import { useTrailerFallback } from './hooks/useTrailerFallback';
 
-// 播放速率持久化
 const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
-const LEGACY_PLAYER_PLAYBACK_RATE_KEY = 'moontv_player_playback_rate';
-const PREFERRED_AUDIO_LANG_KEY = 'preferred_audio_lang';
-
-function sanitizePlaybackRate(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return 1.0;
-  const allowedRates = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
-  return allowedRates.includes(value) ? value : 1.0;
-}
-
-function loadPlaybackRate(): number {
-  if (typeof window === 'undefined') return 1.0;
-  try {
-    const raw =
-      localStorage.getItem(PLAYER_PLAYBACK_RATE_KEY) ||
-      localStorage.getItem(LEGACY_PLAYER_PLAYBACK_RATE_KEY);
-    if (!raw) return 1.0;
-    return sanitizePlaybackRate(Number(raw));
-  } catch {
-    return 1.0;
-  }
-}
-
-function parseStorageKey(key: string) {
-  const separatorIndex = key.indexOf('+');
-  if (separatorIndex === -1) {
-    return { source: '', id: key };
-  }
-
-  return {
-    source: key.slice(0, separatorIndex),
-    id: key.slice(separatorIndex + 1),
-  };
-}
-
-function replacePlaybackUrlParams(updates: Record<string, string | null>) {
-  const newUrl = new URL(window.location.href);
-
-  Object.entries(updates).forEach(([key, value]) => {
-    if (!value) {
-      newUrl.searchParams.delete(key);
-    } else {
-      newUrl.searchParams.set(key, value);
-    }
-  });
-
-  // Fix: Use __NA flag to bypass Next.js router interception (prevents infinite remount loop)
-  window.history.replaceState({ __NA: true }, '', newUrl.toString());
-}
-
-// 音轨辅助函数
-function normalizeAudioLang(rawLang?: string): string {
-  if (!rawLang) return '';
-  return rawLang.trim().toLowerCase();
-}
-
-function mapAudioLanguageLabel(rawLang?: string): string {
-  const lang = normalizeAudioLang(rawLang);
-  if (!lang) return '';
-
-  if (
-    lang === 'zh-cn' ||
-    lang === 'cmn' ||
-    lang === 'zh-hans' ||
-    lang === 'chi' ||
-    lang === 'zho'
-  ) {
-    return '中文';
-  }
-  if (
-    lang === 'zh-tw' ||
-    lang === 'zh-hk' ||
-    lang === 'yue' ||
-    lang === 'zh-hant'
-  ) {
-    return '粤语';
-  }
-  if (lang === 'en' || lang === 'eng') {
-    return 'English';
-  }
-  if (lang === 'ja' || lang === 'jpn') {
-    return '日语';
-  }
-  if (lang === 'ko' || lang === 'kor') {
-    return '韩语';
-  }
-  return rawLang || lang;
-}
-
-function resolveAudioTrackName(
-  rawName: string | undefined,
-  rawLang: string | undefined,
-  index: number,
-): string {
-  if (
-    rawName &&
-    rawName.trim() &&
-    !/^\d+$/.test(rawName.trim()) &&
-    !/^audio\s*\d+$/i.test(rawName.trim())
-  ) {
-    return rawName.trim();
-  }
-  const mappedLanguage = mapAudioLanguageLabel(rawLang);
-  if (mappedLanguage) return mappedLanguage;
-  return `音轨 ${index + 1}`;
-}
-
-function loadPreferredAudioLang(): string {
-  if (typeof window === 'undefined') return '';
-  try {
-    return normalizeAudioLang(
-      localStorage.getItem(PREFERRED_AUDIO_LANG_KEY) || '',
-    );
-  } catch {
-    return '';
-  }
-}
-
-function savePreferredAudioLang(rawLang?: string) {
-  if (typeof window === 'undefined') return;
-  const normalized = normalizeAudioLang(rawLang);
-  if (!normalized) return;
-  try {
-    localStorage.setItem(PREFERRED_AUDIO_LANG_KEY, normalized);
-  } catch {
-    // ignore
-  }
-}
-
-function escapeAudioTrackHtml(rawValue: string): string {
-  return rawValue
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function appendAudioStreamIndex(url: string, audioStreamIndex: number): string {
-  if (!url) return url;
-
-  try {
-    const base =
-      typeof window !== 'undefined'
-        ? window.location.origin
-        : 'http://localhost';
-    const parsed = new URL(url, base);
-    parsed.searchParams.set('AudioStreamIndex', String(audioStreamIndex));
-
-    if (/^https?:\/\//i.test(url)) {
-      return parsed.toString();
-    }
-
-    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
-  } catch {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}AudioStreamIndex=${encodeURIComponent(String(audioStreamIndex))}`;
-  }
-}
-
-function parseAudioStreamIndexFromUrl(url: string): number {
-  if (!url) return -1;
-
-  try {
-    const base =
-      typeof window !== 'undefined'
-        ? window.location.origin
-        : 'http://localhost';
-    const parsed = new URL(url, base);
-    const rawValue = parsed.searchParams.get('AudioStreamIndex');
-    if (!rawValue || !/^\d+$/.test(rawValue)) {
-      return -1;
-    }
-    return Number(rawValue);
-  } catch {
-    return -1;
-  }
-}
-
-// 扩展 HTMLVideoElement 类型以支持 hls 属性
-declare global {
-  interface HTMLVideoElement {
-    hls?: any;
-  }
-}
-
-// Wake Lock API 类型声明
-interface WakeLockSentinel {
-  released: boolean;
-  release(): Promise<void>;
-  addEventListener(type: 'release', listener: () => void): void;
-  removeEventListener(type: 'release', listener: () => void): void;
-}
-
-// Lazy-load hls.js (~600KB) - only loaded when HLS video is detected
-let _hlsModule: any = null;
-let _hlsLoading = false;
-let _hlsLoadPromise: Promise<any> | null = null;
-
-async function getHlsModule(): Promise<any> {
-  if (_hlsModule) return _hlsModule;
-  if (_hlsLoadPromise) return _hlsLoadPromise;
-  _hlsLoading = true;
-  _hlsLoadPromise = import('hls.js').then((mod) => {
-    _hlsModule = mod.default || mod;
-    _hlsLoading = false;
-    return _hlsModule;
-  });
-  return _hlsLoadPromise;
-}
 
 function PlayPageClient() {
   const searchParams = useSearchParams();
