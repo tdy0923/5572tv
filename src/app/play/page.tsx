@@ -5476,8 +5476,28 @@ function PlayPageClient() {
                 // 额外监听屏幕方向变化事件，确保完全自动适配
                 const handleOrientationChange = () => {
                   if (isConfigVisible) {
-                    // // console.log('检测到屏幕方向变化，重新调整弹幕面板位置');
-                    setTimeout(adjustPanelPosition, 100); // 稍长延迟等待方向变化完成
+                    setTimeout(adjustPanelPosition, 100);
+                  }
+                  // 手机横屏自动进入全屏，退出横屏自动退出全屏
+                  const isLandscape = window.matchMedia(
+                    '(orientation: landscape)',
+                  ).matches;
+                  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(
+                    navigator.userAgent,
+                  );
+                  if (isMobileDevice && artPlayerRef.current) {
+                    if (isLandscape && !artPlayerRef.current.fullscreen) {
+                      try {
+                        artPlayerRef.current.fullscreen = true;
+                      } catch {}
+                    } else if (
+                      !isLandscape &&
+                      artPlayerRef.current.fullscreen
+                    ) {
+                      try {
+                        artPlayerRef.current.fullscreen = false;
+                      } catch {}
+                    }
                   }
                 };
 
