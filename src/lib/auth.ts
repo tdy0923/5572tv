@@ -59,8 +59,22 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
   }
 
   try {
-    const decoded = decodeURIComponent(authCookie.value);
-    const authData = JSON.parse(decoded);
+    let authData: any;
+    try {
+      // New format: cookie value is single-encoded (JSON.stringify only)
+      // Next.js cookies.get() returns the decoded value directly
+      authData = JSON.parse(authCookie.value);
+    } catch {
+      // Old format: cookie value was encodeURIComponent'd, causing double-encoding
+      // First decodeURIComponent gives us the single-encoded string, second gives JSON
+      const decoded = decodeURIComponent(authCookie.value);
+      try {
+        authData = JSON.parse(decoded);
+      } catch {
+        // Triple-encoded fallback (very old cookies)
+        authData = JSON.parse(decodeURIComponent(decoded));
+      }
+    }
 
     // Verify HMAC signature is present (required for forgery protection)
     if (!authData.signature || !authData.username) {

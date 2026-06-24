@@ -71,7 +71,7 @@ async function generateAuthCookie(
     authData.loginTime = Date.now(); // 添加登入时间记录
   }
 
-  return encodeURIComponent(JSON.stringify(authData));
+  return JSON.stringify(authData);
 }
 
 // 记录设备信息
