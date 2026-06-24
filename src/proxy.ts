@@ -455,6 +455,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/ai/', // AI 功能端点（公共数据，无需认证）
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/shortdrama', // 短剧页面（公共访问）
+    '/download', // 下载页面（公共访问）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
@@ -463,6 +464,6 @@ function shouldSkipAuth(pathname: string): boolean {
 // 配置middleware匹配规则
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|login|register|oidc-register|warning|api/login|api/register|api/logout|api/cron|api/server-config|api/tvbox|api/live/merged|api/parse|api/bing-wallpaper|api/proxy/|api/telegram/|api/auth/oidc/|api/watch-room/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|login|register|oidc-register|warning|download|api/login|api/register|api/logout|api/cron|api/server-config|api/tvbox|api/live/merged|api/parse|api/bing-wallpaper|api/proxy/|api/telegram/|api/auth/oidc/|api/watch-room/).*)',
   ],
 };
