@@ -513,11 +513,12 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
 
       // 监听HLS错误 - v1.6.13增强处理
       hls.on(Hls.Events.ERROR, (event: any, data: any) => {
-        console.warn('HLS测速错误:', data);
-
-        // v1.6.13 特殊处理：片段解析错误不应该导致测速失败
-        if (data.details === Hls.ErrorDetails.FRAG_PARSING_ERROR) {
-          //           console.log('测速中遇到片段解析错误，v1.6.13已修复，继续测速');
+        // 预期的网络错误（源站失效/限流）不输出日志
+        if (
+          data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR ||
+          data.details === Hls.ErrorDetails.LEVEL_LOAD_ERROR ||
+          data.details === Hls.ErrorDetails.FRAG_LOAD_ERROR
+        ) {
           return;
         }
 

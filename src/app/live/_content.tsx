@@ -1663,6 +1663,14 @@ function LivePageClient() {
     video.hls = hls;
 
     hls.on(Hls.Events.ERROR, function (event: any, data: any) {
+      // 非致命网络错误不输出日志
+      if (
+        data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR ||
+        data.details === Hls.ErrorDetails.LEVEL_LOAD_ERROR ||
+        data.details === Hls.ErrorDetails.FRAG_LOAD_ERROR
+      ) {
+        return;
+      }
       console.error('HLS Error:', event, data);
 
       // 使用最新版本的错误详情类型

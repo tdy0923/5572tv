@@ -761,7 +761,7 @@ export async function getDoubanDetails(id: string): Promise<{
         DOUBAN_CACHE_EXPIRE.details,
       );
     } else if (result.code === 200 && !result.data?.title) {
-      console.warn(`⚠️ 豆瓣详情数据无效（缺少标题），不缓存: ${id}`);
+      // 豆瓣详情缺少标题属正常情况，部分条目无完整数据
     }
 
     return result;
