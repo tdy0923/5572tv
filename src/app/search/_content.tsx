@@ -2088,7 +2088,7 @@ function SearchPageClient() {
             <>
               {/* 搜索历史 - 优先显示 */}
               {searchHistory.length > 0 && (
-                <section className='mb-12 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+                <section className='mb-12 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
                   <div className='mb-4 flex items-center justify-between'>
                     <h2 className='text-xl font-bold text-gray-800 text-left dark:text-gray-200'>
                       搜索历史
@@ -2137,7 +2137,7 @@ function SearchPageClient() {
               )}
 
               {searchHistory.length === 0 && (
-                <section className='mb-12 rounded-[30px] border border-dashed border-black/10 bg-black/[0.02] p-8 text-center dark:border-white/10 dark:bg-white/[0.03]'>
+                <section className='mb-12 rounded-2xl sm:rounded-[30px] border border-dashed border-black/10 bg-black/[0.02] p-8 text-center dark:border-white/10 dark:bg-white/[0.03]'>
                   <h2 className='text-xl font-semibold text-gray-700 dark:text-gray-300'>
                     还没有搜索历史
                   </h2>

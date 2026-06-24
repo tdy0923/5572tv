@@ -391,7 +391,7 @@ export default function ModernNav({
 
       {/* Spacer for fixed navigation */}
       <div className='hidden md:block h-16' />
-      <div className='md:hidden h-20' />
+      <div className='md:hidden h-16' />
     </>
   );
 }

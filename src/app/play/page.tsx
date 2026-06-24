@@ -6427,7 +6427,7 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[220px] sm:h-[280px] lg:h-full'>
+                  <div className='relative w-full h-[260px] sm:h-[360px] md:h-[420px] lg:h-full'>
                     <div
                       ref={artRef}
                       className='bg-black w-full h-full rounded-xl overflow-hidden shadow-lg'
@@ -6521,7 +6521,7 @@ function PlayPageClient() {
 
                 {/* 选集和换源 - 在移动端始终显示，在 lg 及以上可折叠 */}
                 <div
-                  className={`max-h-[280px] lg:max-h-none lg:h-full md:overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`max-h-[35vh] md:max-h-[280px] lg:max-h-none lg:h-full md:overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
                       ? 'md:col-span-1 lg:hidden lg:opacity-0 lg:scale-95'
                       : 'md:col-span-1 lg:opacity-100 lg:scale-100'
@@ -6579,14 +6579,14 @@ function PlayPageClient() {
                       <button
                         onClick={handlePreviousEpisode}
                         disabled={currentEpisodeIndex <= 0}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
                       >
                         <span>◀</span> 上一集
                       </button>
                       <button
                         onClick={handleNextEpisode}
                         disabled={currentEpisodeIndex >= totalEpisodes - 1}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
                       >
                         下一集 <span>▶</span>
                       </button>
@@ -6633,7 +6633,7 @@ function PlayPageClient() {
 
               {/* AI 影片摘要 */}
               <div className='md:col-span-3'>
-                <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
+                <div className='rounded-xl sm:rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
                   <div className='flex items-center justify-between mb-3'>
                     <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
                       <span className='text-purple-500'>🤖</span> AI 摘要

@@ -87,7 +87,7 @@
   }
 
   .ui-page-container {
-    @apply relative overflow-hidden rounded-[30px] border border-black/6 bg-white/72 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0d1016]/72 dark:shadow-[0_30px_90px_rgba(0,0,0,0.34)];
+    @apply relative overflow-hidden rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/72 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/8 dark:bg-[#0d1016]/72 dark:shadow-[0_30px_90px_rgba(0,0,0,0.34)];
   }
 
   .ui-page-container::after {

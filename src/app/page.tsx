@@ -856,7 +856,7 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-2 pb-32 md:mt-0 md:pb-safe-bottom'>
+      <div className='overflow-visible -mt-2 pb-20 md:mt-0 md:pb-safe-bottom'>
         <div className='mb-8 space-y-4'>
           <SiteAdSlot position='home_hero' />
           {/* 欢迎横幅 - 现代化精简设计 */}
@@ -909,7 +909,7 @@ function HomeClient() {
         >
           {activeTab === 'reminders' ? (
             // 想看视图
-            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -983,7 +983,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {(() => {
                   // 筛选
                   let filtered = reminderItems;
@@ -1128,7 +1128,7 @@ function HomeClient() {
             </section>
           ) : activeTab === 'favorites' ? (
             // 收藏夹视图
-            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   我的收藏
@@ -1490,7 +1490,7 @@ function HomeClient() {
             </section>
           ) : activeTab === 'history' ? (
             // 播放历史时间线
-            <section className='mb-8 rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   观看历史
@@ -2124,7 +2124,7 @@ function HomeClient() {
               .getElementById('continue-watching')
               ?.scrollIntoView({ behavior: 'smooth' });
           }}
-          className='fixed bottom-20 md:bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
+          className='fixed bottom-24 md:bottom-6 right-6 z-[600] flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
         >
           <span className='text-sm font-medium'>继续观看</span>
           <span className='text-xs'>↓</span>
