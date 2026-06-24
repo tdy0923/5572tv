@@ -69,26 +69,27 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
 
     // Verify HMAC signature (support both old and new formats)
     const secret = getPasswordSecret();
-    if (!secret) {
-      return null;
-    }
 
     // New format: sign(username:role)
     const newSignData = `${authData.username}:${authData.role || 'user'}`;
-    let isValid = await verifySignature(
-      newSignData,
-      authData.signature,
-      secret,
-    );
+    let isValid = false;
 
-    // Backward compatibility: old format sign(username)
-    if (!isValid) {
-      isValid = await verifySignature(
-        authData.username,
-        authData.signature,
-        secret,
-      );
+    if (secret) {
+      isValid = await verifySignature(newSignData, authData.signature, secret);
+
+      // Backward compatibility: old format sign(username)
+      if (!isValid) {
+        isValid = await verifySignature(
+          authData.username,
+          authData.signature,
+          secret,
+        );
+      }
+    } else {
+      // No PASSWORD set — skip signature verification (legacy mode)
+      isValid = true;
     }
+
     if (!isValid) {
       console.warn(
         '[Auth] Cookie signature verification failed:',

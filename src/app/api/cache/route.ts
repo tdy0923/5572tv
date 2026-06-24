@@ -6,7 +6,8 @@ import { db } from '@/lib/db';
 
 async function requireAuth(request: NextRequest): Promise<boolean> {
   const auth = await getAuthInfoFromCookie(request);
-  return auth?.role === 'owner' || auth?.role === 'admin';
+  // 允许所有已登录用户访问cache API
+  return !!auth;
 }
 
 export async function GET(request: NextRequest) {
