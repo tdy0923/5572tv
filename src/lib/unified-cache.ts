@@ -230,6 +230,8 @@ class UnifiedCache {
    */
   private startAutoCleanup(): void {
     if (typeof window === 'undefined') return;
+    // 防止重复启动
+    if (this.cleanupInterval) return;
 
     // 每1小时清理一次
     this.cleanupInterval = setInterval(

@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
   try {
     // Rate limiting: max 5 registrations per IP per 10 minutes
     const ip =
-      req.headers.get('x-forwarded-for') ||
+      req.headers.get('cf-connecting-ip') ||
       req.headers.get('x-real-ip') ||
       'unknown';
     const rateLimitKey = `register:${ip}`;
@@ -266,7 +266,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: false,
+        secure: true,
       });
 
       return response;

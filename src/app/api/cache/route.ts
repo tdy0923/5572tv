@@ -1,9 +1,18 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAuthInfoFromCookie } from '@/lib/auth';
 import { db } from '@/lib/db';
 
+async function requireAuth(request: NextRequest): Promise<boolean> {
+  const auth = await getAuthInfoFromCookie(request);
+  return auth?.role === 'owner' || auth?.role === 'admin';
+}
+
 export async function GET(request: NextRequest) {
+  if (!(await requireAuth(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get('key');
@@ -23,16 +32,14 @@ export async function GET(request: NextRequest) {
       `❌ API缓存错误 (key: ${request.nextUrl.searchParams.get('key')}):`,
       error,
     );
-    console.error('错误详情:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
-    });
-    return NextResponse.json({ data: null }, { status: 200 }); // 确保返回 200 而不是 500
+    return NextResponse.json({ data: null }, { status: 200 });
   }
 }
 
 export async function POST(request: NextRequest) {
+  if (!(await requireAuth(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { key, data, expireSeconds } = body;
@@ -59,6 +66,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!(await requireAuth(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get('key');

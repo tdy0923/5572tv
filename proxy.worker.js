@@ -115,7 +115,17 @@ async function handleM3U8Proxy(request, url) {
   var respHeaders = new Headers();
   respHeaders.set('Content-Type', 'application/vnd.apple.mpegurl');
   respHeaders.set('Access-Control-Allow-Origin', '*');
-  respHeaders.set('Cache-Control', 'public, max-age=10');
+  respHeaders.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  respHeaders.set(
+    'Access-Control-Allow-Headers',
+    'Range, Accept, Content-Type',
+  );
+  respHeaders.set('Access-Control-Max-Age', '86400');
+  respHeaders.set(
+    'Cache-Control',
+    'public, max-age=5, stale-while-revalidate=10, must-revalidate',
+  );
+  respHeaders.set('Vary', 'Accept, Origin');
   return new Response(rewritten, { status: 200, headers: respHeaders });
 }
 
@@ -181,7 +191,10 @@ async function handleMediaProxy(request, url) {
 
   var respHeaders = new Headers(response.headers);
   setCorsHeaders(respHeaders);
-  respHeaders.set('Cache-Control', 'public, max-age=1800');
+  respHeaders.set(
+    'Cache-Control',
+    'public, max-age=300, stale-while-revalidate=60',
+  );
 
   return new Response(response.body, {
     status: response.status,
@@ -367,11 +380,10 @@ function setNoCacheHeaders(headers) {
 
 function setCorsHeaders(headers) {
   headers.set('Access-Control-Allow-Origin', '*');
-  headers.set(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS',
-  );
-  headers.set('Access-Control-Allow-Headers', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Range, Accept, Content-Type');
+  headers.set('Access-Control-Max-Age', '86400');
+  headers.set('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
 }
 
 function getRootHtml() {

@@ -214,8 +214,7 @@ export async function GET(request: NextRequest) {
     console.error('源测试API错误:', error);
     return NextResponse.json(
       {
-        error: `服务器内部错误: ${error.message}`,
-        sourceError: error.message,
+        error: '服务器内部错误',
       },
       { status: 500 },
     );

@@ -15,6 +15,7 @@ import {
   UserPlayStat,
 } from './types';
 import { UpstashRedisStorage } from './upstash.db';
+import { generateStorageKey } from './utils';
 
 // storage type 常量: 'localstorage' | 'redis' | 'upstash'，默认 'localstorage'
 // 🛡️ 优先使用 KVROCKS_URL 环境变量判断，避免 NEXT_PUBLIC_ 前缀在构建时被内联
@@ -53,10 +54,8 @@ function getStorage(): IStorage {
   return storageInstance;
 }
 
-// 工具函数：生成存储key
-export function generateStorageKey(source: string, id: string): string {
-  return `${source}+${id}`;
-}
+// 工具函数：生成存储key（统一从utils导出）
+export { generateStorageKey } from '@/lib/utils';
 
 // 导出便捷方法
 export class DbManager {

@@ -7,6 +7,13 @@ import Hls from 'hls.js';
 import { twMerge } from 'tailwind-merge';
 
 /**
+ * 生成统一的存储键
+ */
+export function generateStorageKey(source: string, id: string): string {
+  return `${source}+${id}`;
+}
+
+/**
  * Utility function for merging Tailwind CSS classes
  * Combines clsx and tailwind-merge for optimal class handling
  *

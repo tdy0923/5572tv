@@ -20,6 +20,7 @@ import { getAuthInfoFromBrowserCookie } from './auth';
 import { BoundedMap } from './bounded-map';
 import type { PlayRecord } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
+import { generateStorageKey } from './utils';
 // watching-updates 已移除，保留空函数以避免编译错误
 const forceClearWatchingUpdatesCache = () => {};
 
@@ -756,11 +757,9 @@ async function fetchFromApi<T>(path: string, retries = 2): Promise<T> {
 }
 
 /**
- * 生成存储key
+ * 生成存储key（统一从utils导出）
  */
-export function generateStorageKey(source: string, id: string): string {
-  return `${source}+${id}`;
-}
+export { generateStorageKey } from '@/lib/utils';
 
 /**
  * 检查是否应该更新原始集数

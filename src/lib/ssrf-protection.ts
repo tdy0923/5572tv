@@ -11,6 +11,16 @@ function isPrivateIP(hostname: string): boolean {
   ) {
     return true;
   }
+  // IPv4 benchmark/test ranges (198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24)
+  if (/^198\.1[89]\./.test(hostname)) {
+    return true;
+  }
+  if (/^198\.51\.100\./.test(hostname)) {
+    return true;
+  }
+  if (/^203\.0\.113\./.test(hostname)) {
+    return true;
+  }
   // IPv6 private ranges
   if (/^(fc|fd|fe80|::1|::)/i.test(hostname)) {
     return true;

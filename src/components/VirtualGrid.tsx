@@ -38,6 +38,7 @@ export default function VirtualGrid<T>({
 }: VirtualGridProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState(3);
+  const columnsRef = useRef(3);
 
   // Detect column count from a hidden probe row that shares the same grid CSS
   const probeRef = useRef<HTMLDivElement>(null);
@@ -46,8 +47,11 @@ export default function VirtualGrid<T>({
     if (!probeRef.current) return;
     const style = window.getComputedStyle(probeRef.current);
     const cols = style.gridTemplateColumns.split(' ').length;
-    if (cols > 0 && cols !== columns) setColumns(cols);
-  }, [columns]);
+    if (cols > 0 && cols !== columnsRef.current) {
+      columnsRef.current = cols;
+      setColumns(cols);
+    }
+  }, []);
 
   useEffect(() => {
     detectColumns();
@@ -77,11 +81,15 @@ export default function VirtualGrid<T>({
 
     // Calculate dynamic threshold based on viewport height and row height
     // Mobile devices need earlier triggering due to smaller screens
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const viewportHeight =
+      typeof window !== 'undefined' ? window.innerHeight : 800;
     const visibleRows = Math.ceil(viewportHeight / estimateRowHeight);
     // Trigger when remaining rows <= visible rows + threshold
     // This ensures data loads before user sees the end
-    const dynamicThreshold = Math.max(visibleRows + endReachedThreshold, endReachedThreshold);
+    const dynamicThreshold = Math.max(
+      visibleRows + endReachedThreshold,
+      endReachedThreshold,
+    );
 
     // Trigger endReached when we're within dynamic threshold rows of the end
     // and we haven't triggered for this position yet
@@ -92,7 +100,13 @@ export default function VirtualGrid<T>({
       lastVirtualRowRef.current = lastRowIndex;
       endReached();
     }
-  }, [virtualRows, rowCount, endReached, endReachedThreshold, estimateRowHeight]);
+  }, [
+    virtualRows,
+    rowCount,
+    endReached,
+    endReachedThreshold,
+    estimateRowHeight,
+  ]);
 
   return (
     <>

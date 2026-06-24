@@ -36,70 +36,76 @@ function ScrollableRow({
   // 使用 useMemo 缓存 children 数量，减少不必要的 effect 触发
   const childrenCount = useMemo(() => Children.count(children), [children]);
 
+  const rafRef = useRef<number | null>(null);
+
   const checkScroll = useCallback(() => {
-    if (containerRef.current) {
-      const { scrollWidth, clientWidth, scrollLeft } = containerRef.current;
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (containerRef.current) {
+        const { scrollWidth, clientWidth, scrollLeft } = containerRef.current;
 
-      // 计算是否需要左右滚动按钮
-      const threshold = 1; // 容差值，避免浮点误差
-      const canScrollRight =
-        scrollWidth - (scrollLeft + clientWidth) > threshold;
-      const canScrollLeft = scrollLeft > threshold;
+        // 计算是否需要左右滚动按钮
+        const threshold = 1;
+        const canScrollRight =
+          scrollWidth - (scrollLeft + clientWidth) > threshold;
+        const canScrollLeft = scrollLeft > threshold;
 
-      setShowRightScroll((prev) =>
-        prev !== canScrollRight ? canScrollRight : prev,
-      );
-      setShowLeftScroll((prev) =>
-        prev !== canScrollLeft ? canScrollLeft : prev,
-      );
+        setShowRightScroll((prev) =>
+          prev !== canScrollRight ? canScrollRight : prev,
+        );
+        setShowLeftScroll((prev) =>
+          prev !== canScrollLeft ? canScrollLeft : prev,
+        );
 
-      // 虚拟化：精确计算可见范围（参考 react-window 实现）
-      if (enableVirtualization && containerRef.current.children.length > 0) {
-        const overscan = 2;
-        const viewportStart = scrollLeft;
-        const viewportEnd = scrollLeft + clientWidth;
+        // 虚拟化：精确计算可见范围
+        if (enableVirtualization && containerRef.current.children.length > 0) {
+          const overscan = 2;
+          const viewportStart = scrollLeft;
+          const viewportEnd = scrollLeft + clientWidth;
 
-        let startIndexVisible = 0;
-        let stopIndexVisible = childrenCount - 1;
+          let startIndexVisible = 0;
+          let stopIndexVisible = childrenCount - 1;
 
-        // 查找第一个可见元素
-        for (let i = 0; i < containerRef.current.children.length; i++) {
-          const child = containerRef.current.children[i] as HTMLElement;
-          const offsetLeft = child.offsetLeft;
-          const offsetWidth = child.offsetWidth;
+          // 查找第一个可见元素
+          for (let i = 0; i < containerRef.current.children.length; i++) {
+            const child = containerRef.current.children[i] as HTMLElement;
+            const offsetLeft = child.offsetLeft;
+            const offsetWidth = child.offsetWidth;
 
-          if (offsetLeft + offsetWidth > viewportStart) {
-            startIndexVisible = i;
-            break;
+            if (offsetLeft + offsetWidth > viewportStart) {
+              startIndexVisible = i;
+              break;
+            }
           }
+
+          // 查找最后一个可见元素
+          for (
+            let i = startIndexVisible;
+            i < containerRef.current.children.length;
+            i++
+          ) {
+            const child = containerRef.current.children[i] as HTMLElement;
+            const offsetLeft = child.offsetLeft;
+
+            if (offsetLeft >= viewportEnd) {
+              stopIndexVisible = i - 1;
+              break;
+            }
+          }
+
+          const start = Math.max(0, startIndexVisible - overscan);
+          const end = Math.min(childrenCount, stopIndexVisible + overscan + 1);
+
+          setVisibleRange((prev) => {
+            if (prev.start !== start || prev.end !== end) {
+              return { start, end };
+            }
+            return prev;
+          });
         }
-
-        // 查找最后一个可见元素
-        for (
-          let i = startIndexVisible;
-          i < containerRef.current.children.length;
-          i++
-        ) {
-          const child = containerRef.current.children[i] as HTMLElement;
-          const offsetLeft = child.offsetLeft;
-
-          if (offsetLeft >= viewportEnd) {
-            stopIndexVisible = i - 1;
-            break;
-          }
-        }
-
-        const start = Math.max(0, startIndexVisible - overscan);
-        const end = Math.min(childrenCount, stopIndexVisible + overscan + 1);
-
-        setVisibleRange((prev) => {
-          if (prev.start !== start || prev.end !== end) {
-            return { start, end };
-          }
-          return prev;
-        });
       }
-    }
+    });
   }, [enableVirtualization, childrenCount]);
 
   // 虚拟化：只渲染可见范围内的子元素
@@ -158,6 +164,9 @@ function ScrollableRow({
       }
       if (checkScrollTimeoutRef.current) {
         clearTimeout(checkScrollTimeoutRef.current);
+      }
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
     };
   }, [childrenCount, checkScroll]);

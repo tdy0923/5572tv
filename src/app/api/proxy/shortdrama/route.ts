@@ -129,7 +129,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(
-      { error: `Proxy error: ${error.message}` },
+      { error: 'Proxy request failed' },
       { status: 500 },
     );
   }

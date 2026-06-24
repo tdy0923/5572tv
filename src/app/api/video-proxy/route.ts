@@ -331,7 +331,7 @@ export async function GET(request: Request) {
 
     console.warn('[Video Proxy] Error fetching video:', error.message);
     return NextResponse.json(
-      { error: 'Upstream fetch error', details: error.message, upstream: true },
+      { error: 'Upstream fetch error', upstream: true },
       { status: 502 },
     );
   }

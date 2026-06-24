@@ -238,7 +238,10 @@ export async function GET(request: Request) {
         'Access-Control-Expose-Headers',
         'Content-Length, Content-Range, Content-Type',
       );
-      headers.set('Content-Length', modifiedContent.length.toString());
+      headers.set(
+        'Content-Length',
+        Buffer.byteLength(modifiedContent, 'utf8').toString(),
+      );
 
       // 更新性能统计
       const responseTime = Date.now() - startTime;

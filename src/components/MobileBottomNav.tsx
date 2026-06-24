@@ -208,9 +208,9 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       aria-label='主导航'
       className={cn(
         'md:hidden fixed left-0 right-0 z-600',
-        'bg-[#171717]/92 dark:bg-[#0b0b0b]/96',
+        'bg-white/92 dark:bg-[#0b0b0b]/96',
         'backdrop-blur-lg',
-        'border-t border-white/8 shadow-[0_-20px_40px_rgba(0,0,0,0.22)]',
+        'border-t border-black/5 dark:border-white/8 shadow-[0_-20px_40px_rgba(0,0,0,0.22)]',
       )}
       style={{
         // 贴底，使用 safe area insets

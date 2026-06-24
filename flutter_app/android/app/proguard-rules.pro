@@ -1,117 +1,34 @@
-# =========================
-# Flutter Core (最小化保留)
-# =========================
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.common.** { *; }
--keep class io.flutter.embedding.engine.FlutterEngine { *; }
--keep class io.flutter.embedding.android.FlutterActivity { *; }
--keep class io.flutter.view.FlutterMain { *; }
+# Flutter-specific ProGuard rules
+-keep class io.flutter.** { *; }
+-keep class io.flutter.plugins.** { *; }
+-keep class io.flutter.embedding.** { *; }
 
-# =========================
-# Native Methods (必须保留)
-# =========================
--keepclasseswithmembernames class * {
+# MediaKit
+-keep class com.media3.** { *; }
+-keep class androidx.media3.** { *; }
+
+# Keep annotations
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes InnerClasses
+-keepattributes EnclosingMethod
+
+# Keep native methods
+-keepclassmembers class * {
     native <methods>;
 }
 
-# =========================
-# Project Specific
-# =========================
--keep class com.example.media_5572.MainActivity { *; }
-
-# Play Core (needed for Flutter deferred components even if not used)
--dontwarn com.google.android.play.core.**
--keep class com.google.android.play.core.** { *; }
-
-# =========================
-# 关键属性 (用于调试)
-# =========================
--keepattributes SourceFile,LineNumberTable
--keepattributes Signature
--keepattributes Exceptions
--renamesourcefileattribute SourceFile
-
-# =========================
-# Kotlin (最小化)
-# =========================
--keep class kotlin.Metadata { *; }
--dontwarn kotlin.**
-
-# Kotlin 反射 (按需保留)
--keepclassmembers class kotlin.Metadata {
-    public <methods>;
+# Keep enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
 }
 
-# =========================
-# Video Players (只保留必要的)
-# =========================
-# Media Kit - 只保留公共 API
--keep class com.alexmercerind.**.MediaKitPlugin { *; }
--dontwarn com.alexmercerind.**
-
-# =========================
-# Network (最小化)
-# =========================
-# OkHttp - 只保留必要的
--dontwarn okhttp3.**
--dontwarn okio.**
-
-# =========================
-# Flutter Plugins (通用规则)
-# =========================
-# 保留所有 Plugin 注册类
--keep class * implements io.flutter.plugin.common.PluginRegistry$Registrar {
-    public <init>();
-}
--keep class * implements io.flutter.embedding.engine.plugins.FlutterPlugin {
-    public <init>();
+# Keep Parcelable
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
 }
 
-# =========================
-# Serialization (最小化)
-# =========================
--keepclassmembers class * implements java.io.Serializable {
-    static final long serialVersionUID;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-}
-
-# =========================
-# R8 完全优化
-# =========================
-# 移除所有日志
--assumenosideeffects class android.util.Log {
-    public static *** d(...);
-    public static *** v(...);
-    public static *** i(...);
-    public static *** w(...);
-    public static *** e(...);
-}
-
-# 移除调试代码
--assumenosideeffects class java.lang.Throwable {
-    public void printStackTrace();
-}
-
-# 移除 Kotlin 断言
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    static void check*(...);
-    static void throw*(...);
-}
-
-# =========================
-# 允许激进优化
-# =========================
-# 允许访问修饰符优化
--allowaccessmodification
-
-# 允许重新打包类
--repackageclasses
-
-# =========================
-# Warnings to Ignore
-# =========================
+# Keep R8 warnings
+-dontwarn io.flutter.**
 -dontwarn javax.annotation.**
--dontwarn org.conscrypt.**
--dontwarn org.bouncycastle.**
--dontwarn org.openjsse.**

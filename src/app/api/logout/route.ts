@@ -9,9 +9,9 @@ export async function POST() {
   response.cookies.set('user_auth', '', {
     path: '/',
     expires: new Date(0),
-    sameSite: 'lax', // 改为 lax 以支持 PWA
-    httpOnly: false, // PWA 需要客户端可访问
-    secure: false, // 根据协议自动设置
+    sameSite: 'lax',
+    httpOnly: false,
+    secure: true,
   });
 
   // 同时清除旧的认证cookie (auth) 以保持兼容性
@@ -20,7 +20,7 @@ export async function POST() {
     expires: new Date(0),
     sameSite: 'lax',
     httpOnly: false,
-    secure: false,
+    secure: true,
   });
 
   return response;

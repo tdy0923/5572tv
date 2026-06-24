@@ -63,8 +63,9 @@ async function generateAuthCookie(
 
   if (username && process.env.PASSWORD) {
     authData.username = username;
-    // 使用密码作为密钥对用户名进行签名
-    const signature = await generateSignature(username, process.env.PASSWORD);
+    // 签名包含username和role，防止role篡改
+    const signData = `${username}:${role || 'user'}`;
+    const signature = await generateSignature(signData, process.env.PASSWORD);
     authData.signature = signature;
     authData.timestamp = Date.now(); // 添加时间戳防重放攻击
     authData.loginTime = Date.now(); // 添加登入时间记录
@@ -156,7 +157,7 @@ export async function POST(req: NextRequest) {
   try {
     // Basic rate limiting using in-memory store
     const ip =
-      req.headers.get('x-forwarded-for') ||
+      req.headers.get('cf-connecting-ip') ||
       req.headers.get('x-real-ip') ||
       'unknown';
     const rateLimitKey = `login:${ip}`;
@@ -210,9 +211,9 @@ export async function POST(req: NextRequest) {
         response.cookies.set('user_auth', '', {
           path: '/',
           expires: new Date(0),
-          sameSite: 'lax', // 改为 lax 以支持 PWA
-          httpOnly: false, // PWA 需要客户端可访问
-          secure: false, // 根据协议自动设置
+          sameSite: 'lax',
+          httpOnly: false,
+          secure: true,
         });
 
         return response;
@@ -250,9 +251,9 @@ export async function POST(req: NextRequest) {
       response.cookies.set('user_auth', cookieValue, {
         path: '/',
         expires,
-        sameSite: 'lax', // 改为 lax 以支持 PWA
-        httpOnly: false, // PWA 需要客户端可访问
-        secure: false, // 根据协议自动设置
+        sameSite: 'lax',
+        httpOnly: false,
+        secure: true,
       });
 
       return response;
@@ -291,9 +292,9 @@ export async function POST(req: NextRequest) {
       response.cookies.set('user_auth', cookieValue, {
         path: '/',
         expires,
-        sameSite: 'lax', // 改为 lax 以支持 PWA
-        httpOnly: false, // PWA 需要客户端可访问
-        secure: false, // 根据协议自动设置
+        sameSite: 'lax',
+        httpOnly: false,
+        secure: true,
       });
 
       recordSuccessfulLogin(ip);
@@ -352,7 +353,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: false,
+        secure: true,
       });
 
       return response;

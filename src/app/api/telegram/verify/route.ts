@@ -386,7 +386,7 @@ export async function GET(request: Request) {
       path: '/',
       expires: expires,
       sameSite: 'lax',
-      secure: isSecure,
+      secure: true,
       httpOnly: false,
     });
 

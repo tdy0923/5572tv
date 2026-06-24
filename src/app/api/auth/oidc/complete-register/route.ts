@@ -214,7 +214,7 @@ export async function POST(request: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: false,
+        secure: true,
       });
 
       // 清除OIDC session

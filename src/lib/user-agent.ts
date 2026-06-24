@@ -7,42 +7,58 @@
 export const LATEST_USER_AGENTS = {
   // Chrome 144 (2026-01-21发布)
   chrome: {
-    windows: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
-    macos: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
-    linux: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    windows:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    macos:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    linux:
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+    android:
+      'Mozilla/5.0 (Linux; Android 14; Pixel 9 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Mobile Safari/537.36',
+    ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/144.0.0.0 Mobile/15E148 Safari/604.1',
   },
   // Firefox 147 (2026-01-16发布)
   firefox: {
-    windows: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
-    macos: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0',
-    linux: 'Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0',
+    windows:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0',
+    macos:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0',
+    linux:
+      'Mozilla/5.0 (X11; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0',
+    android:
+      'Mozilla/5.0 (Android 14; Mobile; rv:147.0) Gecko/147.0 Firefox/147.0',
   },
   // Safari 26 (2025-09-15发布 - macOS版本冻结在10_15_7)
   safari: {
-    macos: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+    macos:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
+    ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1',
   },
   // Edge 144 (2026-01-16发布)
   edge: {
-    windows: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
-    macos: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
+    windows:
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
+    macos:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
   },
 };
 
-// User-Agent池（用于轮换）
+// User-Agent池（用于轮换，包含桌面端和移动端）
 export const USER_AGENT_POOL = [
-  // Chrome 144
+  // 桌面端
   LATEST_USER_AGENTS.chrome.windows,
   LATEST_USER_AGENTS.chrome.macos,
   LATEST_USER_AGENTS.chrome.linux,
-  // Firefox 147
   LATEST_USER_AGENTS.firefox.windows,
   LATEST_USER_AGENTS.firefox.macos,
-  LATEST_USER_AGENTS.firefox.linux,
-  // Safari 26
   LATEST_USER_AGENTS.safari.macos,
-  // Edge 144
   LATEST_USER_AGENTS.edge.windows,
   LATEST_USER_AGENTS.edge.macos,
+  // 移动端
+  LATEST_USER_AGENTS.chrome.android,
+  LATEST_USER_AGENTS.chrome.ios,
+  LATEST_USER_AGENTS.firefox.android,
+  LATEST_USER_AGENTS.safari.ios,
 ];
 
 /**
@@ -89,16 +105,21 @@ export function getRandomUserAgentWithInfo(): {
 /**
  * 生成Sec-CH-UA客户端提示头（Chrome/Edge专用）
  */
-export function getSecChUaHeaders(browser: 'chrome' | 'firefox' | 'safari' | 'edge', platform: string): Record<string, string> {
+export function getSecChUaHeaders(
+  browser: 'chrome' | 'firefox' | 'safari' | 'edge',
+  platform: string,
+): Record<string, string> {
   if (browser === 'chrome') {
     return {
-      'Sec-CH-UA': '"Google Chrome";v="144", "Chromium";v="144", "Not(A:Brand";v="99"',
+      'Sec-CH-UA':
+        '"Google Chrome";v="144", "Chromium";v="144", "Not(A:Brand";v="99"',
       'Sec-CH-UA-Mobile': '?0',
       'Sec-CH-UA-Platform': `"${platform}"`,
     };
   } else if (browser === 'edge') {
     return {
-      'Sec-CH-UA': '"Microsoft Edge";v="144", "Chromium";v="144", "Not(A:Brand";v="99"',
+      'Sec-CH-UA':
+        '"Microsoft Edge";v="144", "Chromium";v="144", "Not(A:Brand";v="99"',
       'Sec-CH-UA-Mobile': '?0',
       'Sec-CH-UA-Platform': `"${platform}"`,
     };

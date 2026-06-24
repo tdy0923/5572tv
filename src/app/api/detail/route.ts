@@ -183,14 +183,13 @@ export async function GET(request: NextRequest) {
           })),
         };
       } else if (item.Type === 'Series') {
-        // 剧集 - 获取所有季和集
+        // 剧集 - 获取所有季和集（并行获取各季）
         const seasons = await client.getSeasons(item.Id);
-        const allEpisodes: any[] = [];
-
-        for (const season of seasons) {
-          const episodes = await client.getEpisodes(item.Id, season.Id);
-          allEpisodes.push(...episodes);
-        }
+        const seasonPromises = seasons.map((season: any) =>
+          client.getEpisodes(item.Id, season.Id),
+        );
+        const seasonEpisodes = await Promise.all(seasonPromises);
+        const allEpisodes = seasonEpisodes.flat();
 
         // 按季和集排序
         allEpisodes.sort((a, b) => {
@@ -200,35 +199,30 @@ export async function GET(request: NextRequest) {
           return (a.IndexNumber || 0) - (b.IndexNumber || 0);
         });
 
-        // 为每一集获取音轨并选择兼容的音轨
-        const episodeUrls = await Promise.all(
-          allEpisodes.map(async (ep) => {
-            try {
-              // 获取当前集的音轨
-              const epAudioStreams = await client.getAudioStreams(ep.Id);
-              const epCompatibleAudioIndex =
-                findCompatibleAudioTrack(epAudioStreams);
-              console.log(
-                `========== [/api/detail] 剧集 ${ep.Id} 选择的音轨索引:`,
-                epCompatibleAudioIndex,
-              );
-
-              return await client.getStreamUrl(
-                ep.Id,
-                true,
-                false,
-                epCompatibleAudioIndex,
-              );
-            } catch (error) {
-              console.error(
-                `========== [/api/detail] 获取剧集 ${ep.Id} 音轨失败:`,
-                error,
-              );
-              // 失败时不指定音轨索引
-              return await client.getStreamUrl(ep.Id);
-            }
-          }),
-        );
+        // 并发控制：每批3个请求，避免过多并发
+        const CONCURRENCY = 3;
+        const episodeUrls: string[] = [];
+        for (let i = 0; i < allEpisodes.length; i += CONCURRENCY) {
+          const batch = allEpisodes.slice(i, i + CONCURRENCY);
+          const batchUrls = await Promise.all(
+            batch.map(async (ep) => {
+              try {
+                const epAudioStreams = await client.getAudioStreams(ep.Id);
+                const epCompatibleAudioIndex =
+                  findCompatibleAudioTrack(epAudioStreams);
+                return await client.getStreamUrl(
+                  ep.Id,
+                  true,
+                  false,
+                  epCompatibleAudioIndex,
+                );
+              } catch {
+                return await client.getStreamUrl(ep.Id);
+              }
+            }),
+          );
+          episodeUrls.push(...batchUrls);
+        }
 
         result = {
           source: sourceCode,

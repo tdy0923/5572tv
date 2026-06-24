@@ -19,35 +19,37 @@
 
 /* ===== Small Screen (Mobile Portrait) ===== */
 @media (max-width: 380px) {
-  /* 减小控制按钮的间距和尺寸，确保完整显示 */
+  /* 控制按钮至少44px触控目标 (Apple HIG) */
   .art-controls button,
   .art-control {
-    min-width: 32px !important;
-    padding: 0 4px !important;
+    min-width: 44px !important;
+    padding: 6px 6px !important;
     font-size: 13px !important;
   }
 
-  /* 减小控制栏的内边距 */
+  /* 控制栏内边距 */
   .art-controls {
     padding: 0 4px !important;
   }
 
-  /* 确保全屏按钮始终可见 */
+  /* 全屏按钮始终可见 */
   .art-control-fullscreen {
     display: flex !important;
-    min-width: 32px !important;
+    min-width: 44px !important;
   }
 
-  /* 调整播放器时间显示更紧凑 */
+  /* 时间显示 */
   .art-control-time {
     font-size: 11px !important;
     padding: 0 2px !important;
   }
 
-  /* 减小进度条高度以节省空间 */
+  /* 进度条：视觉保持细，但触控热区扩大 */
   .art-progress {
     height: 4px !important;
     min-height: 4px !important;
+    padding: 18px 0 !important;
+    background-clip: content-box !important;
   }
 }
 

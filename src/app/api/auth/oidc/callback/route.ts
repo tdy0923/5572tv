@@ -506,7 +506,7 @@ export async function GET(request: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: false,
+        secure: true,
       });
 
       // 清除state cookie

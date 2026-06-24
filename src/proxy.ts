@@ -124,17 +124,33 @@ async function getTrustedNetworkConfig(
 
 // 获取客户端 IP
 function getClientIP(request: NextRequest): string {
-  // 按优先级获取客户端 IP
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
+  // 优先使用Cloudflare不可伪造的头
+  const cfIP = request.headers.get('cf-connecting-ip');
+  if (cfIP) {
+    return cfIP;
   }
 
-  return (
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
-    'unknown'
-  );
+  // 非Cloudflare部署时，使用x-real-ip（反代层设置）
+  const realIP = request.headers.get('x-real-ip');
+  if (realIP) {
+    return realIP;
+  }
+
+  // x-forwarded-for仅在反代层已清洗时使用（避免伪造）
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) {
+    const firstIP = forwardedFor.split(',')[0].trim();
+    // 拒绝私有IP作为客户端IP（防止伪造绕过）
+    if (
+      !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254\.)/.test(
+        firstIP,
+      )
+    ) {
+      return firstIP;
+    }
+  }
+
+  return 'unknown';
 }
 
 // 简化的 IP/CIDR 匹配（Edge Runtime 兼容）
@@ -215,9 +231,9 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 天
+      maxAge: 7 * 24 * 60 * 60,
     });
   } else {
     // 数据库模式：生成签名 cookie（需要异步，这里简化处理）
@@ -231,9 +247,9 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 天
+      maxAge: 7 * 24 * 60 * 60,
     });
   }
 

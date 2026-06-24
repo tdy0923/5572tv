@@ -2,6 +2,17 @@
 
 import { NextRequest } from 'next/server';
 
+function getPasswordSecret(): string {
+  const secret = process.env.PASSWORD;
+  if (!secret || secret.length < 16) {
+    console.error(
+      '[Auth] CRITICAL: PASSWORD env must be set with length >= 16',
+    );
+    return '';
+  }
+  return secret;
+}
+
 // Verify HMAC signature to prevent cookie forgery
 async function verifySignature(
   data: string,
@@ -63,12 +74,28 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
       return null;
     }
 
-    // Verify HMAC signature
-    const isValid = await verifySignature(
-      authData.username,
+    // Verify HMAC signature (support both old and new formats)
+    const secret = getPasswordSecret();
+    if (!secret) {
+      return null;
+    }
+
+    // New format: sign(username:role)
+    const newSignData = `${authData.username}:${authData.role || 'user'}`;
+    let isValid = await verifySignature(
+      newSignData,
       authData.signature,
-      process.env.PASSWORD || '',
+      secret,
     );
+
+    // Backward compatibility: old format sign(username)
+    if (!isValid) {
+      isValid = await verifySignature(
+        authData.username,
+        authData.signature,
+        secret,
+      );
+    }
     if (!isValid) {
       console.warn(
         '[Auth] Cookie signature verification failed:',

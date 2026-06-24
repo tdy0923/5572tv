@@ -96,27 +96,30 @@ async function saveToKvrocks(snapshot: RequestMetrics[]): Promise<void> {
  * 记录单次请求的性能数据
  */
 export function recordRequest(metrics: RequestMetrics): void {
-  // 首次调用时标记已加载（持久化已禁用）
   if (!dataLoaded) {
     dataLoaded = true;
   }
 
-  // 添加到内存缓存
   requestCache.push(metrics);
 
-  // 清理超过 48 小时的旧数据
+  // 清理超过 48 小时的旧数据（批量splice代替逐个shift）
   const now = Date.now();
   const cutoffTime = now - MAX_CACHE_AGE;
-  while (requestCache.length > 0 && requestCache[0].timestamp < cutoffTime) {
-    requestCache.shift();
+  let cutoffIndex = 0;
+  while (
+    cutoffIndex < requestCache.length &&
+    requestCache[cutoffIndex].timestamp < cutoffTime
+  ) {
+    cutoffIndex++;
+  }
+  if (cutoffIndex > 0) {
+    requestCache.splice(0, cutoffIndex);
   }
 
-  // 限制缓存大小，移除最旧的数据
-  while (requestCache.length > MAX_CACHE_SIZE) {
-    requestCache.shift();
+  // 限制缓存大小
+  if (requestCache.length > MAX_CACHE_SIZE) {
+    requestCache.splice(0, requestCache.length - MAX_CACHE_SIZE);
   }
-
-  // 持久化已禁用，不再保存到 Kvrocks
 }
 
 /**
@@ -215,9 +218,12 @@ export function recordSystemMetrics(): void {
   const metrics = collectSystemMetrics();
   systemMetricsCache.push(metrics);
 
-  // 限制缓存大小
+  // 限制缓存大小（批量splice）
   if (systemMetricsCache.length > MAX_SYSTEM_METRICS) {
-    systemMetricsCache.shift();
+    systemMetricsCache.splice(
+      0,
+      systemMetricsCache.length - MAX_SYSTEM_METRICS,
+    );
   }
 }
 

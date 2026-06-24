@@ -3,14 +3,16 @@
  * Detects and removes ad segments from M3U8 playlists
  */
 
-// Known ad segment patterns
+// Known ad segment patterns (±15% tolerance)
 const KNOWN_AD_SEGMENT_PATTERNS = [
-  // Duration-based patterns (seconds)
-  { minDuration: 5.5, maxDuration: 5.8, label: '5.6s ad' },
-  { minDuration: 2.8, maxDuration: 3.1, label: '2.96s ad' },
-  { minDuration: 14.8, maxDuration: 15.2, label: '15s ad' },
-  { minDuration: 29.5, maxDuration: 30.5, label: '30s ad' },
-  { minDuration: 59.5, maxDuration: 60.5, label: '60s ad' },
+  { minDuration: 2.3, maxDuration: 3.5, label: '3s ad' },
+  { minDuration: 4.5, maxDuration: 6.5, label: '5.6s ad' },
+  { minDuration: 12.5, maxDuration: 17.0, label: '15s ad' },
+  { minDuration: 18.0, maxDuration: 22.0, label: '20s ad' },
+  { minDuration: 25.0, maxDuration: 35.0, label: '30s ad' },
+  { minDuration: 40.0, maxDuration: 50.0, label: '45s ad' },
+  { minDuration: 55.0, maxDuration: 65.0, label: '60s ad' },
+  { minDuration: 85.0, maxDuration: 95.0, label: '90s ad' },
 ];
 
 // Ad-related URL patterns
@@ -20,16 +22,19 @@ const AD_URL_PATTERNS = [
   /commercial/i,
   /promo/i,
   /sponsor/i,
+  /prebid|vpaid/i,
+  /doubleclick|googlesyndication/i,
+  /[?&](?:is_?ad|ad[_=]|adid)=/i,
 ];
 
 // Ad domain patterns
 const AD_DOMAIN_PATTERNS = [
-  'ffzyad',
-  'bytegoofy',
-  'iqiyi.hbuioo.com',
-  'ad.',
-  'ads.',
-  'adv.',
+  /ffzyad/i,
+  /bytegoofy/i,
+  /iqiyi\.hbuioo\.com/i,
+  /^ad[0-9]*\./i,
+  /^ads\./,
+  /^adv\./,
 ];
 
 interface ParsedSegment {
@@ -54,7 +59,9 @@ function isAdUrl(url: string): boolean {
 function isAdDomain(url: string): boolean {
   try {
     const hostname = new URL(url).hostname;
-    return AD_DOMAIN_PATTERNS.some((d) => hostname.includes(d));
+    return AD_DOMAIN_PATTERNS.some((d) =>
+      d instanceof RegExp ? d.test(hostname) : hostname.includes(d),
+    );
   } catch {
     return false;
   }

@@ -128,16 +128,31 @@ export function launchExternalPlayer(
   try {
     const url = player.buildUrl(videoUrl, title);
 
-    // Create hidden iframe to trigger protocol handler
+    // Detect iOS
+    const isIOS =
+      /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS) {
+      // iOS: iframe无法触发自定义协议，必须用location.href
+      window.location.href = url;
+      return true;
+    }
+
+    // 其他平台: iframe + fallback
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = url;
     document.body.appendChild(iframe);
 
-    // Remove iframe after a short delay
+    const fallbackTimer = setTimeout(() => {
+      window.location.href = url;
+    }, 800);
+
     setTimeout(() => {
       document.body.removeChild(iframe);
-    }, 1000);
+      clearTimeout(fallbackTimer);
+    }, 1500);
 
     return true;
   } catch (e) {
