@@ -30,6 +30,7 @@ import { deduplicateDanmaku, useDanmu } from '@/hooks/useDanmu';
 import AcgSearch from '@/components/AcgSearch';
 import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
 
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
 import type { WakeLockSentinel } from './utils';
@@ -2961,14 +2962,6 @@ function PlayPageClient() {
     initFromHistory();
   }, [currentSource, currentId, currentEpisodeIndex, searchParams]);
 
-  // 🚀 优化的换源处理（防连续点击）
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyboardShortcuts);
-    return () => {
-      document.removeEventListener('keydown', handleKeyboardShortcuts);
-    };
-  }, []);
-
   // 🚀 组件卸载时清理所有定时器和状态
   useEffect(() => {
     return () => {
@@ -3065,107 +3058,16 @@ function PlayPageClient() {
     }
   };
 
-  // ---------------------------------------------------------------------------
   // 键盘快捷键
-  // ---------------------------------------------------------------------------
-  // 处理全局快捷键
-  const handleKeyboardShortcuts = (e: KeyboardEvent) => {
-    // 忽略输入框中的按键事件
-    if (
-      (e.target as HTMLElement).tagName === 'INPUT' ||
-      (e.target as HTMLElement).tagName === 'TEXTAREA'
-    )
-      return;
-
-    // Alt + 左箭头 = 上一集
-    if (e.altKey && e.key === 'ArrowLeft') {
-      if (detailRef.current && currentEpisodeIndexRef.current > 0) {
-        handlePreviousEpisode();
-        e.preventDefault();
-      }
-    }
-
-    // Alt + 右箭头 = 下一集
-    if (e.altKey && e.key === 'ArrowRight') {
-      const d = detailRef.current;
-      const idx = currentEpisodeIndexRef.current;
-      if (d && d.episodes && idx < d.episodes.length - 1) {
-        handleNextEpisode();
-        e.preventDefault();
-      }
-    }
-
-    // 左箭头 = 快退
-    if (!e.altKey && e.key === 'ArrowLeft') {
-      if (artPlayerRef.current && artPlayerRef.current.currentTime > 5) {
-        artPlayerRef.current.currentTime -= 10;
-        e.preventDefault();
-      }
-    }
-
-    // 右箭头 = 快进
-    if (!e.altKey && e.key === 'ArrowRight') {
-      if (
-        artPlayerRef.current &&
-        artPlayerRef.current.currentTime < artPlayerRef.current.duration - 5
-      ) {
-        artPlayerRef.current.currentTime += 10;
-        e.preventDefault();
-      }
-    }
-
-    // 上箭头 = 音量+
-    if (e.key === 'ArrowUp') {
-      if (artPlayerRef.current && artPlayerRef.current.volume < 1) {
-        artPlayerRef.current.volume =
-          Math.round((artPlayerRef.current.volume + 0.1) * 10) / 10;
-        artPlayerRef.current.notice.show = `音量: ${Math.round(
-          artPlayerRef.current.volume * 100,
-        )}`;
-        e.preventDefault();
-      }
-    }
-
-    // 下箭头 = 音量-
-    if (e.key === 'ArrowDown') {
-      if (artPlayerRef.current && artPlayerRef.current.volume > 0) {
-        artPlayerRef.current.volume =
-          Math.round((artPlayerRef.current.volume - 0.1) * 10) / 10;
-        artPlayerRef.current.notice.show = `音量: ${Math.round(
-          artPlayerRef.current.volume * 100,
-        )}`;
-        e.preventDefault();
-      }
-    }
-
-    // 空格 = 播放/暂停
-    if (e.key === ' ') {
-      if (artPlayerRef.current) {
-        artPlayerRef.current.toggle();
-        e.preventDefault();
-      }
-    }
-
-    // f 键 = 切换全屏
-    if (e.key === 'f' || e.key === 'F') {
-      if (artPlayerRef.current) {
-        artPlayerRef.current.fullscreen = !artPlayerRef.current.fullscreen;
-        e.preventDefault();
-      }
-    }
-
-    // ? 键 = 显示快捷键帮助
-    if (e.key === '?') {
-      setShowShortcutsHelp(true);
-      e.preventDefault();
-    }
-
-    // Escape 键 = 关闭快捷键帮助
-    if (e.key === 'Escape' && showShortcutsHelp) {
-      setShowShortcutsHelp(false);
-      e.preventDefault();
-    }
-  };
+  useKeyboardShortcuts({
+    artPlayerRef,
+    detailRef,
+    currentEpisodeIndexRef,
+    handlePreviousEpisode,
+    handleNextEpisode,
+    setShowShortcutsHelp,
+    showShortcutsHelp,
+  });
 
   // ---------------------------------------------------------------------------
   // 播放记录相关

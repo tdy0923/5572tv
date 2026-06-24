@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  CheckCircle,
   Download,
   ExternalLink,
   Shield,
@@ -11,9 +12,8 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-// 检测用户平台
 function detectPlatform(): 'android' | 'ios' | 'tv' | 'desktop' {
   if (typeof window === 'undefined') return 'desktop';
   const ua = navigator.userAgent.toLowerCase();
@@ -23,15 +23,37 @@ function detectPlatform(): 'android' | 'ios' | 'tv' | 'desktop' {
   return 'desktop';
 }
 
-// 生成二维码 URL（使用公共 API）
 function getQrCodeUrl(text: string): string {
   return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
 }
 
 export default function DownloadPage() {
   const detectedPlatform = useMemo(() => detectPlatform(), []);
+  const [activeScreenshot, setActiveScreenshot] = useState(0);
 
-  // 下载链接配置
+  const screenshots = [
+    {
+      label: '首页推荐',
+      color: 'from-emerald-500 to-teal-600',
+      items: ['热门电影', '热播剧集', '短剧推荐'],
+    },
+    {
+      label: '搜索发现',
+      color: 'from-blue-500 to-indigo-600',
+      items: ['AI 智能搜索', '豆瓣数据', '多源聚合'],
+    },
+    {
+      label: '播放器',
+      color: 'from-purple-500 to-pink-600',
+      items: ['弹幕互动', '倍速播放', '画质切换'],
+    },
+    {
+      label: '个人中心',
+      color: 'from-orange-500 to-red-600',
+      items: ['播放历史', '收藏管理', '设置偏好'],
+    },
+  ];
+
   const downloadLinks = {
     android: {
       name: 'Android',
@@ -41,7 +63,14 @@ export default function DownloadPage() {
       qrText: 'https://www.5572.net/download/5572tv-android.apk',
       size: '约 25MB',
       version: 'v1.0.0',
-      features: ['竖屏短剧', '画中画', '离线缓存', '投屏', '弹幕发送'],
+      features: [
+        '竖屏短剧',
+        '画中画 PiP',
+        '离线缓存',
+        '投屏 Chromecast',
+        '弹幕发送',
+        '后台播放',
+      ],
     },
     ios: {
       name: 'iOS',
@@ -51,7 +80,13 @@ export default function DownloadPage() {
       qrText: 'https://testflight.apple.com/join/xxxxx',
       size: '约 30MB',
       version: 'v1.0.0',
-      features: ['竖屏短剧', '画中画', 'AirPlay', 'Siri 快捷指令', 'Widget'],
+      features: [
+        '竖屏短剧',
+        '画中画',
+        'AirPlay 投屏',
+        'Siri 快捷指令',
+        'Widget 小组件',
+      ],
     },
     tv: {
       name: 'Android TV',
@@ -71,12 +106,11 @@ export default function DownloadPage() {
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800'>
-      {/* Hero Section */}
+      {/* Hero */}
       <div className='relative overflow-hidden bg-linear-to-r from-green-600 via-green-500 to-emerald-500 text-white'>
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
         <div className='relative max-w-6xl mx-auto px-4 py-16 sm:py-24'>
           <div className='flex flex-col lg:flex-row items-center gap-12'>
-            {/* 左侧文字 */}
             <div className='flex-1 text-center lg:text-left'>
               <h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold mb-4'>
                 5572 影视
@@ -87,8 +121,6 @@ export default function DownloadPage() {
               <p className='text-lg text-white/60 mb-8'>
                 海量资源 · AI搜索 · 弹幕互动 · 多端同步
               </p>
-
-              {/* 下载按钮 */}
               <div className='flex flex-col sm:flex-row gap-4 justify-center lg:justify-start'>
                 <a
                   href={currentPlatform.url}
@@ -105,8 +137,6 @@ export default function DownloadPage() {
                   <ExternalLink className='w-5 h-5' />
                 </Link>
               </div>
-
-              {/* 平台标签 */}
               <div className='flex gap-3 mt-6 justify-center lg:justify-start'>
                 {Object.entries(downloadLinks).map(([key, platform]) => {
                   const Icon = platform.icon;
@@ -114,11 +144,7 @@ export default function DownloadPage() {
                     <Link
                       key={key}
                       href={`/download#${key}`}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                        detectedPlatform === key
-                          ? 'bg-white text-green-600 shadow-lg'
-                          : 'bg-white/20 text-white hover:bg-white/30'
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${detectedPlatform === key ? 'bg-white text-green-600 shadow-lg' : 'bg-white/20 text-white hover:bg-white/30'}`}
                     >
                       <Icon className='w-4 h-4' />
                       {platform.name}
@@ -128,38 +154,91 @@ export default function DownloadPage() {
               </div>
             </div>
 
-            {/* 右侧手机预览 */}
-            <div className='flex-shrink-0'>
-              <div className='relative w-64 h-[500px] bg-gray-900 rounded-[3rem] shadow-2xl border-4 border-gray-700 overflow-hidden'>
-                <div className='absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl' />
-                <div className='p-4 pt-10'>
-                  <div className='text-center mb-4'>
-                    <div className='w-16 h-16 mx-auto bg-green-500 rounded-2xl flex items-center justify-center text-2xl font-bold text-white'>
-                      5
-                    </div>
-                    <p className='text-white text-sm mt-2 font-medium'>
-                      5572 影视
-                    </p>
+            {/* Phone Mockup with Real-like UI */}
+            <div className='flex-shrink-0 hidden sm:block'>
+              <div className='relative w-64 h-[520px] bg-gray-900 rounded-[3rem] shadow-2xl border-4 border-gray-700 overflow-hidden'>
+                <div className='absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-2xl z-10' />
+                <div className='h-full overflow-hidden'>
+                  {/* Status Bar */}
+                  <div className='flex justify-between items-center px-4 pt-8 pb-2 text-white/60 text-xs'>
+                    <span>9:41</span>
+                    <span>●●● WiFi 🔋</span>
                   </div>
-                  <div className='space-y-3'>
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className='flex gap-2'>
-                        <div className='w-16 h-22 bg-gray-700 rounded-lg' />
-                        <div className='flex-1'>
-                          <div className='h-3 bg-gray-700 rounded w-3/4 mb-1' />
-                          <div className='h-2 bg-gray-700 rounded w-1/2' />
+                  {/* App Header */}
+                  <div className='px-4 py-2'>
+                    <div className='flex items-center gap-2 mb-3'>
+                      <div className='w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center text-white font-bold text-sm'>
+                        5
+                      </div>
+                      <span className='text-white font-bold text-sm'>
+                        5572 影视
+                      </span>
+                    </div>
+                    <div className='flex gap-2 mb-3'>
+                      {['推荐', '电影', '剧集', '动漫'].map((t, i) => (
+                        <span
+                          key={t}
+                          className={`text-xs px-3 py-1 rounded-full ${i === 0 ? 'bg-green-500 text-white' : 'bg-white/10 text-white/60'}`}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Content Cards */}
+                  <div className='px-3 space-y-2'>
+                    {screenshots[activeScreenshot].items.map((item, i) => (
+                      <div
+                        key={i}
+                        className={`flex gap-2 p-2 rounded-xl bg-gradient-to-r ${screenshots[activeScreenshot].color} bg-opacity-20`}
+                      >
+                        <div className='w-12 h-16 rounded-lg bg-white/20 flex-shrink-0' />
+                        <div className='flex-1 py-1'>
+                          <div className='h-3 bg-white/30 rounded w-3/4 mb-1' />
+                          <div className='h-2 bg-white/20 rounded w-1/2 mb-1' />
+                          <div className='flex gap-1'>
+                            <span className='text-[9px] text-white/50 bg-white/10 px-1 rounded'>
+                              HD
+                            </span>
+                            <span className='text-[9px] text-white/50'>·</span>
+                            <span className='text-[9px] text-white/50'>
+                              8.5分
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
+                  {/* Bottom Nav */}
+                  <div className='absolute bottom-0 left-0 right-0 flex justify-around py-2 bg-gray-900/90 backdrop-blur'>
+                    {['首页', '搜索', '我的'].map((t, i) => (
+                      <div
+                        key={t}
+                        className={`flex flex-col items-center gap-0.5 ${i === 0 ? 'text-green-400' : 'text-white/40'}`}
+                      >
+                        <div className='w-5 h-5 rounded-full bg-current opacity-20' />
+                        <span className='text-[9px]'>{t}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </div>
+              {/* Screenshot Dots */}
+              <div className='flex justify-center gap-2 mt-4'>
+                {screenshots.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveScreenshot(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${i === activeScreenshot ? 'bg-white w-6' : 'bg-white/40'}`}
+                  />
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 功能亮点 */}
+      {/* Features */}
       <div className='max-w-6xl mx-auto px-4 py-16'>
         <h2 className='text-2xl sm:text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white'>
           为什么选择 App？
@@ -167,44 +246,60 @@ export default function DownloadPage() {
         <p className='text-center text-gray-500 dark:text-gray-400 mb-12'>
           比网页版更强大，体验更流畅
         </p>
-
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-          <FeatureCard
-            icon={<Zap className='w-6 h-6' />}
-            title='极速加载'
-            description='原生性能，秒开播放'
-            color='yellow'
-          />
-          <FeatureCard
-            icon={<Shield className='w-6 h-6' />}
-            title='离线观看'
-            description='WiFi下载，无网也能看'
-            color='green'
-          />
-          <FeatureCard
-            icon={<Wifi className='w-6 h-6' />}
-            title='多端同步'
-            description='手机、平板、电视进度同步'
-            color='blue'
-          />
-          <FeatureCard
-            icon={<Star className='w-6 h-6' />}
-            title='智能推荐'
-            description='AI分析你的喜好，精准推荐'
-            color='purple'
-          />
+          {[
+            {
+              icon: <Zap className='w-6 h-6' />,
+              title: '极速加载',
+              desc: '原生性能，秒开播放',
+              color: 'yellow',
+            },
+            {
+              icon: <Shield className='w-6 h-6' />,
+              title: '离线观看',
+              desc: 'WiFi下载，无网也能看',
+              color: 'green',
+            },
+            {
+              icon: <Wifi className='w-6 h-6' />,
+              title: '多端同步',
+              desc: '手机、平板、电视进度同步',
+              color: 'blue',
+            },
+            {
+              icon: <Star className='w-6 h-6' />,
+              title: '智能推荐',
+              desc: 'AI分析喜好，精准推荐',
+              color: 'purple',
+            },
+          ].map((f) => (
+            <div
+              key={f.title}
+              className='bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'
+            >
+              <div
+                className={`w-14 h-14 rounded-2xl bg-${f.color}-100 dark:bg-${f.color}-900/30 text-${f.color}-600 flex items-center justify-center mb-4`}
+              >
+                {f.icon}
+              </div>
+              <h3 className='text-lg font-bold mb-2 text-gray-900 dark:text-white'>
+                {f.title}
+              </h3>
+              <p className='text-gray-500 dark:text-gray-400 text-sm'>
+                {f.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* 平台详情 */}
+      {/* Platform Detail */}
       <div id={detectedPlatform} className='max-w-4xl mx-auto px-4 py-16'>
         <h2 className='text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white'>
           {currentPlatform.name} 版下载
         </h2>
-
         <div className='bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden'>
           <div className='flex flex-col md:flex-row'>
-            {/* 左侧信息 */}
             <div className='flex-1 p-8'>
               <div className='flex items-center gap-3 mb-4'>
                 <currentPlatform.icon className='w-8 h-8 text-green-500' />
@@ -217,38 +312,21 @@ export default function DownloadPage() {
                   </p>
                 </div>
               </div>
-
               <div className='flex items-center gap-4 mb-6 text-sm text-gray-500 dark:text-gray-400'>
                 <span>{currentPlatform.version}</span>
                 <span>·</span>
                 <span>{currentPlatform.size}</span>
               </div>
-
-              {/* 功能列表 */}
               <div className='grid grid-cols-2 gap-3 mb-8'>
                 {currentPlatform.features.map((feature) => (
                   <div key={feature} className='flex items-center gap-2'>
-                    <div className='w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center'>
-                      <svg
-                        className='w-3 h-3 text-green-600'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                          clipRule='evenodd'
-                        />
-                      </svg>
-                    </div>
+                    <CheckCircle className='w-4 h-4 text-green-500 flex-shrink-0' />
                     <span className='text-sm text-gray-700 dark:text-gray-300'>
                       {feature}
                     </span>
                   </div>
                 ))}
               </div>
-
-              {/* 下载按钮 */}
               <a
                 href={currentPlatform.url}
                 className='w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-green-500 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-green-600 hover:shadow-xl transition-all'
@@ -257,8 +335,6 @@ export default function DownloadPage() {
                 立即下载
               </a>
             </div>
-
-            {/* 右侧二维码 */}
             <div className='flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-700/50 md:border-l border-gray-200 dark:border-gray-700'>
               <img
                 src={getQrCodeUrl(currentPlatform.qrText)}
@@ -276,7 +352,7 @@ export default function DownloadPage() {
         </div>
       </div>
 
-      {/* 对比表 */}
+      {/* Comparison */}
       <div className='max-w-4xl mx-auto px-4 py-16'>
         <h2 className='text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white'>
           网页版 vs App
@@ -352,45 +428,12 @@ export default function DownloadPage() {
         </div>
       </div>
 
-      {/* 底部 */}
+      {/* Footer */}
       <div className='max-w-4xl mx-auto px-4 py-12 text-center'>
         <p className='text-gray-400 dark:text-gray-500 text-sm'>
-          5572 影视 © 2024 · 智能影视播放平台
+          5572 影视 © 2025 · 智能影视播放平台
         </p>
       </div>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-  color,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  color: string;
-}) {
-  const colorClasses = {
-    yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600',
-    green: 'bg-green-100 dark:bg-green-900/30 text-green-600',
-    blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600',
-    purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600',
-  };
-
-  return (
-    <div className='bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1'>
-      <div
-        className={`w-14 h-14 rounded-2xl ${colorClasses[color as keyof typeof colorClasses]} flex items-center justify-center mb-4`}
-      >
-        {icon}
-      </div>
-      <h3 className='text-lg font-bold mb-2 text-gray-900 dark:text-white'>
-        {title}
-      </h3>
-      <p className='text-gray-500 dark:text-gray-400 text-sm'>{description}</p>
     </div>
   );
 }
