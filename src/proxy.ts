@@ -376,13 +376,22 @@ async function handleAuthentication(
 
   // 验证签名（如果存在）
   if (authInfo.signature) {
-    const isValidSignature = await verifySignature(
-      authInfo.username,
+    // 新格式：sign(username:role)，向后兼容旧格式 sign(username)
+    const signData = `${authInfo.username}:${authInfo.role || 'user'}`;
+    let isValidSignature = await verifySignature(
+      signData,
       authInfo.signature,
       process.env.PASSWORD || '',
     );
 
-    // 签名验证通过即可
+    if (!isValidSignature) {
+      isValidSignature = await verifySignature(
+        authInfo.username,
+        authInfo.signature,
+        process.env.PASSWORD || '',
+      );
+    }
+
     if (isValidSignature) {
       return response || NextResponse.next();
     }
