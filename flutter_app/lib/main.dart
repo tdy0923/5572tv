@@ -5,7 +5,6 @@ import 'core/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/video_provider.dart';
 import 'services/download_manager.dart';
-import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
 
 void main() {

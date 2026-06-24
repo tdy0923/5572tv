@@ -49,6 +49,14 @@ flutter_app/.dart_tool/
 flutter_app/.packages
 flutter_app/.flutter-plugins
 flutter_app/.flutter-plugins-dependencies
+
+# Flutter platform files (non-Android)
+flutter_app/ios/
+flutter_app/linux/
+flutter_app/macos/
+flutter_app/windows/
+flutter_app/web/
+flutter_app/test/
 public/manifest.json
 
 # local dev files

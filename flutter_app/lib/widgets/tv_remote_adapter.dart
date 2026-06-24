@@ -54,7 +54,7 @@ class _TVRemoteAdapterState extends State<TVRemoteAdapter> {
         widget.onBack?.call();
         return KeyEventResult.handled;
 
-      case LogicalKeyboardKey.menu:
+      case LogicalKeyboardKey.contextMenu:
         widget.onMenu?.call();
         return KeyEventResult.handled;
 

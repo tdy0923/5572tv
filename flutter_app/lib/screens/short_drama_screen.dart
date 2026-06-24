@@ -12,7 +12,7 @@ class ShortDramaScreen extends StatefulWidget {
 }
 
 class _ShortDramaScreenState extends State<ShortDramaScreen> {
-  int _currentDramaIndex = 0;
+  final int _currentDramaIndex = 0;
   int _currentEpisodeIndex = 0;
   List<Map<String, dynamic>> _dramas = [];
   bool _isLoading = true;

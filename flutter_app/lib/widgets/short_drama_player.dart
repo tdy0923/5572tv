@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 class ShortDramaVerticalPlayer extends StatefulWidget {
@@ -148,8 +147,9 @@ class _ShortDramaVerticalPlayerState extends State<ShortDramaVerticalPlayer> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.episodesTitles[widget.currentIndex] ?? 
-                        '第 ${widget.currentIndex + 1} 集',
+                        widget.currentIndex < widget.episodesTitles.length
+                            ? widget.episodesTitles[widget.currentIndex]
+                            : '第 ${widget.currentIndex + 1} 集',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -243,7 +243,9 @@ class _ShortDramaVerticalPlayerState extends State<ShortDramaVerticalPlayer> {
                             style: const TextStyle(color: Colors.white, fontSize: 14),
                           ),
                           Text(
-                            widget.episodesTitles[widget.currentIndex] ?? '',
+                            widget.currentIndex < widget.episodesTitles.length
+                                ? widget.episodesTitles[widget.currentIndex]
+                                : '',
                             style: const TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                         ],

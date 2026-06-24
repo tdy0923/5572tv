@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../services/api_service.dart';
-
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   String? _username;
-  String? _token;
   
   bool get isLoggedIn => _isLoggedIn;
   String? get username => _username;
@@ -20,7 +17,6 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     _isLoggedIn = false;
     _username = null;
-    _token = null;
     notifyListeners();
   }
 }

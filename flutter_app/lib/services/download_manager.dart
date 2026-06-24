@@ -27,7 +27,7 @@ class DownloadTask {
 
 class DownloadManager extends ChangeNotifier {
   final List<DownloadTask> _tasks = [];
-  bool _isDownloading = false;
+  final bool _isDownloading = false;
 
   List<DownloadTask> get tasks => List.unmodifiable(_tasks);
   bool get isDownloading => _isDownloading;
@@ -99,7 +99,7 @@ class DownloadManager extends ChangeNotifier {
 
       await for (final chunk in response.stream) {
         sink.add(chunk);
-        bytesReceived += chunk.length as int;
+        bytesReceived += chunk.length;
 
         if (contentLength != null) {
           task.progress = bytesReceived / contentLength;
