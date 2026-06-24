@@ -18,8 +18,10 @@ import '../models/video_info.dart';
 import '../utils/font_utils.dart';
 import '../services/page_cache_service.dart';
 import '../services/version_service.dart';
+import '../services/announcement_service.dart';
 import '../widgets/tv_remote_adapter.dart';
 import '../widgets/update_dialog.dart';
+import '../widgets/announcement_dialog.dart';
 import 'movie_screen.dart';
 import 'tv_screen.dart';
 import 'anime_screen.dart';
@@ -53,23 +55,31 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkForUpdates();
   }
 
-  /// 检查应用更新
+  /// 检查应用更新和公告
   void _checkForUpdates() async {
-    // 延迟3秒后检查更新，避免影响页面加载
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
     try {
+      // 检查版本更新
       final versionInfo = await VersionService.checkForUpdate();
-
       if (versionInfo != null && mounted) {
-        final shouldShow = await VersionService.shouldShowUpdatePrompt(
-          versionInfo.latestVersion,
-        );
-
+        final shouldShow = await VersionService.shouldShowUpdatePrompt(versionInfo.latestVersion);
         if (shouldShow && mounted) {
           UpdateDialog.show(context, versionInfo);
+          return;
         }
+      }
+
+      // 检查公告
+      final announcement = await AnnouncementService.fetchAnnouncement('https://www.5572.net');
+      if (announcement != null && mounted) {
+        final shouldShow = await AnnouncementService.shouldShow(announcement);
+        if (shouldShow && mounted) {
+          AnnouncementDialog.show(context, announcement);
+        }
+        }
+      }
       }
     } catch (e) {
       // 静默失败，不影响用户体验
