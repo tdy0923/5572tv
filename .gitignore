@@ -40,6 +40,9 @@ next-env.d.ts
 sitemap.xml
 sitemap-*.xml
 
+# binary downloads
+public/download/*.apk
+
 # generated files
 src/lib/runtime.ts
 public/manifest.json
