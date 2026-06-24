@@ -17,6 +17,7 @@ import '../widgets/simple_tab_switcher.dart';
 import 'player_screen.dart';
 import '../widgets/filter_pill_hover.dart';
 import '../utils/device_utils.dart';
+import '../widgets/tv_remote_adapter.dart';
 import '../utils/font_utils.dart';
 import '../widgets/filter_options_selector.dart';
 
@@ -560,7 +561,9 @@ class _AnimeScreenState extends State<AnimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StyledRefreshIndicator(
+    return TVRemoteAdapter(
+      onBack: () => Navigator.of(context).maybePop(),
+      child: StyledRefreshIndicator(
       onRefresh: _refreshAnimeData,
       refreshText: '刷新动漫数据...',
       primaryColor: const Color(0xFF27AE60),

@@ -4,6 +4,7 @@ import '../models/live_channel.dart';
 import '../models/live_source.dart';
 import '../utils/font_utils.dart';
 import '../utils/device_utils.dart';
+import '../widgets/tv_remote_adapter.dart';
 import '../services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'live_player_screen.dart';

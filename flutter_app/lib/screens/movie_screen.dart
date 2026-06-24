@@ -13,6 +13,8 @@ import '../widgets/pulsing_dots_indicator.dart';
 import 'player_screen.dart';
 import '../widgets/filter_pill_hover.dart';
 import '../utils/device_utils.dart';
+import '../widgets/tv_remote_adapter.dart';
+import '../widgets/tv_remote_adapter.dart';
 import '../utils/font_utils.dart';
 import '../widgets/filter_options_selector.dart';
 
@@ -467,7 +469,9 @@ class _MovieScreenState extends State<MovieScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StyledRefreshIndicator(
+    return TVRemoteAdapter(
+      onBack: () => Navigator.of(context).maybePop(),
+      child: StyledRefreshIndicator(
       onRefresh: _refreshMoviesData,
       refreshText: '刷新电影数据...',
       primaryColor: const Color(0xFF27AE60),
