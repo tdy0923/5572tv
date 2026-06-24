@@ -285,6 +285,25 @@ html:not(.dark) body {
   }
 }
 
+/* 平板断点 (768-1080px) */
+@media (min-width: 768px) and (max-width: 1080px) {
+  /* 平板布局优化 */
+  .container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  /* 平板横屏时调整网格列数 */
+  @media (orientation: landscape) {
+    .grid-cols-2 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .grid-cols-3 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
 /* 隐藏所有滚动条（兼容 WebKit、Firefox、IE/Edge）- 排除ArtPlayer */
 *:not(.artplayer):not(.artplayer *) {
   -ms-overflow-style: none; /* IE & Edge */
