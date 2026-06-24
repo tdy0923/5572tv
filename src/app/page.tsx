@@ -925,7 +925,7 @@ function HomeClient() {
         >
           {activeTab === 'reminders' ? (
             // 想看视图
-            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-xl sm:rounded-[24px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -1144,7 +1144,7 @@ function HomeClient() {
             </section>
           ) : activeTab === 'favorites' ? (
             // 收藏夹视图
-            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-xl sm:rounded-[24px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   我的收藏
@@ -1506,7 +1506,7 @@ function HomeClient() {
             </section>
           ) : activeTab === 'history' ? (
             // 播放历史时间线
-            <section className='mb-8 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+            <section className='mb-8 rounded-xl sm:rounded-[24px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
               <div className='mb-6 flex items-center justify-between'>
                 <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                   观看历史
@@ -1887,6 +1887,7 @@ function HomeClient() {
                             rate={movie.rate}
                             year={movie.year}
                             type='movie'
+                            priority={index < 3}
                           />
                         </div>
                       ))}
@@ -1932,6 +1933,7 @@ function HomeClient() {
                             rate={show.rate}
                             year={show.year}
                             type='tv'
+                            priority={index < 3}
                           />
                         </div>
                       ))}
@@ -2028,6 +2030,7 @@ function HomeClient() {
                             rate={show.rate}
                             year={show.year}
                             type='variety'
+                            priority={index < 3}
                           />
                         </div>
                       ))}
@@ -2063,6 +2066,7 @@ function HomeClient() {
                           drama={drama}
                           className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           disableEpisodeFetch
+                          priority={index < 3}
                         />
                       ))}
                 </ScrollableRow>
