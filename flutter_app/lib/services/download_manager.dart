@@ -83,9 +83,9 @@ class DownloadManager extends ChangeNotifier {
         await downloadDir.create(recursive: true);
       }
 
-      final response = await http.send(
-        http.Request('GET', Uri.parse(task.url)),
-      );
+      final client = http.Client();
+      final request = http.Request('GET', Uri.parse(task.url));
+      final response = await client.send(request);
 
       final contentLength = response.contentLength;
       if (contentLength != null) {
@@ -99,12 +99,14 @@ class DownloadManager extends ChangeNotifier {
 
       await for (final chunk in response.stream) {
         sink.add(chunk);
-        bytesReceived += chunk.length;
+        bytesReceived += chunk.length as int;
 
         if (contentLength != null) {
           task.progress = bytesReceived / contentLength;
         }
       }
+
+      client.close();
 
       await sink.close();
 
