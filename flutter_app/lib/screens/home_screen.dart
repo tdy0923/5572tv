@@ -18,6 +18,7 @@ import '../models/video_info.dart';
 import '../utils/font_utils.dart';
 import '../services/page_cache_service.dart';
 import '../services/version_service.dart';
+import '../widgets/tv_remote_adapter.dart';
 import '../widgets/update_dialog.dart';
 import 'movie_screen.dart';
 import 'tv_screen.dart';
@@ -389,7 +390,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
+    return TVRemoteAdapter(
+      onBack: () {
+        if (_currentBottomNavIndex != 0) {
+          _onBottomNavChanged(0);
+        }
+      },
+      child: MainLayout(
       content: _buildBottomNavPageView(),
       currentBottomNavIndex: _currentBottomNavIndex,
       onBottomNavChanged: _onBottomNavChanged,
@@ -397,6 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTopTabChanged: _onTopTabChanged,
       onHomeTap: _onHomeTap,
       onSearchTap: _onSearchTap,
+      ),
     );
   }
 

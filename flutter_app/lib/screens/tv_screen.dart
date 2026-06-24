@@ -15,6 +15,7 @@ import '../widgets/filter_pill_hover.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
 import '../widgets/filter_options_selector.dart';
+import '../widgets/tv_remote_adapter.dart';
 
 class TvScreen extends StatefulWidget {
   const TvScreen({super.key});
@@ -499,7 +500,9 @@ class _TvScreenState extends State<TvScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StyledRefreshIndicator(
+    return TVRemoteAdapter(
+      onBack: () => Navigator.of(context).maybePop(),
+      child: StyledRefreshIndicator(
       onRefresh: _refreshTvShowsData,
       refreshText: '刷新电视剧数据...',
       primaryColor: const Color(0xFF27AE60),
@@ -534,6 +537,7 @@ class _TvScreenState extends State<TvScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
