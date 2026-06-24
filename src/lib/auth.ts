@@ -3,14 +3,7 @@
 import { NextRequest } from 'next/server';
 
 function getPasswordSecret(): string {
-  const secret = process.env.PASSWORD;
-  if (!secret || secret.length < 16) {
-    console.error(
-      '[Auth] CRITICAL: PASSWORD env must be set with length >= 16',
-    );
-    return '';
-  }
-  return secret;
+  return process.env.PASSWORD || '';
 }
 
 // Verify HMAC signature to prevent cookie forgery

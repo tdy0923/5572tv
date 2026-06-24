@@ -231,7 +231,7 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
     });
@@ -247,7 +247,7 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
     });

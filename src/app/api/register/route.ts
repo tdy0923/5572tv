@@ -266,7 +266,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       });
 
       return response;

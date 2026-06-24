@@ -386,7 +386,7 @@ export async function GET(request: Request) {
       path: '/',
       expires: expires,
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: false,
     });
 

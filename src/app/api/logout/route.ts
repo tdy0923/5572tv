@@ -11,7 +11,7 @@ export async function POST() {
     expires: new Date(0),
     sameSite: 'lax',
     httpOnly: false,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
   });
 
   // 同时清除旧的认证cookie (auth) 以保持兼容性
@@ -20,7 +20,7 @@ export async function POST() {
     expires: new Date(0),
     sameSite: 'lax',
     httpOnly: false,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
   });
 
   return response;

@@ -213,7 +213,7 @@ export async function POST(req: NextRequest) {
           expires: new Date(0),
           sameSite: 'lax',
           httpOnly: false,
-          secure: true,
+          secure: process.env.NODE_ENV === 'production',
         });
 
         return response;
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       });
 
       return response;
@@ -294,7 +294,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       });
 
       recordSuccessfulLogin(ip);
@@ -353,7 +353,7 @@ export async function POST(req: NextRequest) {
         expires,
         sameSite: 'lax',
         httpOnly: false,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
       });
 
       return response;
