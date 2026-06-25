@@ -9,7 +9,6 @@ import {
   Sparkles,
   Star,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback, useEffect, useState } from 'react';
 
@@ -344,28 +343,28 @@ function ShortDramaCard({
           return false;
         }}
       >
-        {/* 封面图片 */}
+        {/* 封面图片 - 代理图片不能用next/image */}
         <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-black/6 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6'>
-          <Image
+          <img
             src={processImageUrl(posterUrl)}
             alt={drama.name}
-            fill
-            sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-            className={`object-cover transition-all duration-700 ease-out ${
+            className={`h-full w-full object-cover transition-all duration-700 ease-out ${
               imageLoaded
                 ? 'opacity-100 blur-0 scale-100 group-hover:scale-105'
                 : 'opacity-0 blur-md scale-105'
             }`}
             referrerPolicy='no-referrer'
             loading={priority ? undefined : 'lazy'}
-            priority={priority}
-            quality={75}
             onLoad={() => {
               loadedImageUrls.add(processImageUrl(posterUrl));
               setImageLoaded(true);
             }}
             onError={(e) => {
-              // next/image onError doesn't provide src directly, set fallback
+              const img = e.target as HTMLImageElement;
+              if (!img.dataset.fallbackApplied) {
+                img.dataset.fallbackApplied = 'true';
+                img.src = '/placeholder-cover.jpg';
+              }
               setImageLoaded(true);
             }}
           />
