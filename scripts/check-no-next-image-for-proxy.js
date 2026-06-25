@@ -9,35 +9,45 @@
 
 const fs = require('fs');
 const path = require('path');
-const glob = require('glob');
 
 const SRC_DIR = path.join(__dirname, '../src');
-const PROXY_PATTERN = /processImageUrl|image-proxy|\/api\/image-proxy/;
-const NEXT_IMAGE_PATTERN = /from\s+['"]next\/image['"]/;
-const JSX_IMAGE_PATTERN = /<Image[\s\S]*?src=\{.*?processImageUrl/;
+
+function walkDir(dir) {
+  let results = [];
+  const list = fs.readdirSync(dir);
+  list.forEach(file => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(walkDir(filePath));
+    } else if (/\.(tsx|ts)$/.test(file) && !file.endsWith('.d.ts')) {
+      results.push(filePath);
+    }
+  });
+  return results;
+}
 
 let hasErrors = false;
 const errors = [];
 
-// 扫描所有tsx/ts文件
-const files = glob.sync(`${SRC_DIR}/**/*.{tsx,ts}`, { ignore: '**/node_modules/**' });
+const files = walkDir(SRC_DIR);
 
 for (const file of files) {
   const content = fs.readFileSync(file, 'utf-8');
   const lines = content.split('\n');
   
   // 检查是否导入了next/image
-  const hasNextImage = NEXT_IMAGE_PATTERN.test(content);
+  const hasNextImage = /from\s+['"]next\/image['"]/.test(content);
   if (!hasNextImage) continue;
   
   // 检查是否使用了代理图片
-  const hasProxyImage = PROXY_PATTERN.test(content);
+  const hasProxyImage = /processImageUrl|image-proxy|\/api\/image-proxy/.test(content);
   if (!hasProxyImage) continue;
   
   // 检查是否有 <Image src={processImageUrl...} 模式
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (JSX_IMAGE_PATTERN.test(line)) {
+    if (/<Image[\s\S]*?src=\{.*?processImageUrl/.test(line)) {
       const relativePath = path.relative(process.cwd(), file);
       errors.push(`${relativePath}:${i + 1} - 禁止对代理图片使用next/image，必须用<img>标签`);
       hasErrors = true;
