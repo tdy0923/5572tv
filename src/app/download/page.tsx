@@ -4,6 +4,7 @@ import {
   CheckCircle,
   Download,
   ExternalLink,
+  Monitor,
   Shield,
   Smartphone,
   Star,
@@ -424,6 +425,88 @@ export default function DownloadPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      {/* 安装指南 */}
+      <div className='max-w-4xl mx-auto px-4 py-12'>
+        <h2 className='text-2xl sm:text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white'>
+          安装说明
+        </h2>
+        <div className='bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+            <div>
+              <h3 className='text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2'>
+                <Smartphone className='w-5 h-5 text-green-500' />
+                Android 安装步骤
+              </h3>
+              <ol className='space-y-3 text-sm text-gray-600 dark:text-gray-400'>
+                <li className='flex gap-3'>
+                  <span className='flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xs font-bold'>
+                    1
+                  </span>
+                  <span>点击上方下载按钮，获取 APK 安装包</span>
+                </li>
+                <li className='flex gap-3'>
+                  <span className='flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xs font-bold'>
+                    2
+                  </span>
+                  <span>打开下载的 APK 文件，系统可能提示"风险应用"</span>
+                </li>
+                <li className='flex gap-3'>
+                  <span className='flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xs font-bold'>
+                    3
+                  </span>
+                  <span>
+                    点击 <strong>"仍然安装"</strong> 或{' '}
+                    <strong>"允许本次安装"</strong> 即可
+                  </span>
+                </li>
+                <li className='flex gap-3'>
+                  <span className='flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center text-xs font-bold'>
+                    4
+                  </span>
+                  <span>安装完成后打开 App，登录即可使用</span>
+                </li>
+              </ol>
+              <p className='mt-4 text-xs text-gray-400 dark:text-gray-500'>
+                * Android 系统对非 Google Play
+                安装的应用会显示安全提示，这是正常的安全机制，点击"仍然安装"即可
+              </p>
+            </div>
+            <div>
+              <h3 className='text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2'>
+                <Monitor className='w-5 h-5 text-blue-500' />
+                常见问题
+              </h3>
+              <div className='space-y-4 text-sm text-gray-600 dark:text-gray-400'>
+                <div>
+                  <p className='font-medium text-gray-900 dark:text-white mb-1'>
+                    Q: 为什么安装时提示"不安全"？
+                  </p>
+                  <p>
+                    A: 这是 Android 系统的安全机制。我们是独立开发者，未通过
+                    Google Play 发布，所以系统会提示。App 本身是安全的。
+                  </p>
+                </div>
+                <div>
+                  <p className='font-medium text-gray-900 dark:text-white mb-1'>
+                    Q: 安装后打不开怎么办？
+                  </p>
+                  <p>
+                    A: 请确保已开启"允许安装未知来源应用"（设置 → 安全 →
+                    未知来源）。
+                  </p>
+                </div>
+                <div>
+                  <p className='font-medium text-gray-900 dark:text-white mb-1'>
+                    Q: 会自动更新吗？
+                  </p>
+                  <p>A: App 内会自动检测新版本并提示更新。</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
