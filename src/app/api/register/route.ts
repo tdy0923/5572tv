@@ -59,13 +59,14 @@ async function generateAuthCookie(
 
   if (username && process.env.PASSWORD) {
     authData.username = username;
-    // 使用密码作为密钥对用户名进行签名
-    const signature = await generateSignature(username, process.env.PASSWORD);
+    // 使用密码作为密钥对 username:role 进行签名（与 login 保持一致）
+    const signData = `${username}:${role || 'user'}`;
+    const signature = await generateSignature(signData, process.env.PASSWORD);
     authData.signature = signature;
     authData.timestamp = Date.now(); // 添加时间戳防重放攻击
   }
 
-  return encodeURIComponent(JSON.stringify(authData));
+  return JSON.stringify(authData);
 }
 
 export async function POST(req: NextRequest) {

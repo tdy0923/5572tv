@@ -59,13 +59,14 @@ async function generateAuthCookie(
 
   if (username && process.env.PASSWORD) {
     authData.username = username;
-    const signature = await generateSignature(username, process.env.PASSWORD);
+    const signData = `${username}:${role}`;
+    const signature = await generateSignature(signData, process.env.PASSWORD);
     authData.signature = signature;
     authData.timestamp = Date.now();
     authData.loginTime = Date.now();
   }
 
-  return encodeURIComponent(JSON.stringify(authData));
+  return JSON.stringify(authData);
 }
 
 export async function GET(request: Request) {
@@ -305,7 +306,8 @@ export async function GET(request: Request) {
     const authData: Record<string, any> = { role: 'user' };
     if (username && process.env.PASSWORD) {
       authData.username = username;
-      const signature = await generateSignature(username, process.env.PASSWORD);
+      const signData = `${username}:user`;
+      const signature = await generateSignature(signData, process.env.PASSWORD);
       authData.signature = signature;
       authData.timestamp = Date.now();
       authData.loginTime = Date.now();

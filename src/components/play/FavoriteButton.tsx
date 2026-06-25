@@ -22,7 +22,7 @@ const FavoriteButton = memo(function FavoriteButton({
         e.stopPropagation();
         onToggle();
       }}
-      className='group relative inline-flex shrink-0 items-center justify-center rounded-full border border-black/6 bg-white/72 p-2 text-gray-700 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:scale-105 dark:border-white/8 dark:bg-white/[0.05] dark:text-gray-200'
+      className='group relative inline-flex shrink-0 items-center justify-center rounded-full border border-black/6 bg-white/72 p-2.5 text-gray-700 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition-all duration-300 hover:scale-105 dark:border-white/8 dark:bg-white/[0.05] dark:text-gray-200'
       title={favorited ? '取消收藏' : '添加收藏'}
     >
       <FavoriteIcon filled={favorited} />

@@ -19,17 +19,11 @@ const BackToTopButton = memo(function BackToTopButton({
   return (
     <button
       onClick={onClick}
-      className={`fixed z-500 w-12 h-12 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group relative overflow-hidden ${
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-500 w-12 h-12 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group relative overflow-hidden ${
         show
           ? 'opacity-100 translate-y-0 pointer-events-auto'
           : 'opacity-0 translate-y-4 pointer-events-none'
       }`}
-      style={{
-        position: 'fixed',
-        right: '1.5rem',
-        bottom: '1.5rem',
-        left: 'auto',
-      }}
       aria-label='返回顶部'
     >
       {/* 渐变背景 */}

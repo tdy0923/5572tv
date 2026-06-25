@@ -33,6 +33,7 @@ export interface Favorite {
   remarks?: string; // 备注信息（如"X天后上映"、"已上映"等）
   group?: string; // 收藏分组
   status?: 'want' | 'watching' | 'watched'; // 观看状态
+  douban_id?: number; // 豆瓣ID（用于准确识别视频）
 }
 
 // 提醒数据结构（与收藏类似，但 releaseDate 是必需的）

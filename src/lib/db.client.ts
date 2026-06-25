@@ -55,6 +55,7 @@ export interface Favorite {
   releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
   remarks?: string; // 备注信息（如"X天后上映"、"已上映"等）
   group?: string; // 收藏分组
+  douban_id?: number; // 豆瓣ID（用于准确识别视频）
 }
 
 // ---- 提醒类型 ----

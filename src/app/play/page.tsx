@@ -1152,24 +1152,27 @@ function PlayPageClient() {
   };
 
   // 获取源权重映射（缓存30秒避免重复请求）
-  let _sourceWeightsCache: Record<string, number> | null = null;
-  let _sourceWeightsCacheTime = 0;
+  const _sourceWeightsCacheRef = useRef<Record<string, number> | null>(null);
+  const _sourceWeightsCacheTimeRef = useRef(0);
   const fetchSourceWeights = async (): Promise<Record<string, number>> => {
     const now = Date.now();
-    if (_sourceWeightsCache && now - _sourceWeightsCacheTime < 30000) {
-      return _sourceWeightsCache;
+    if (
+      _sourceWeightsCacheRef.current &&
+      now - _sourceWeightsCacheTimeRef.current < 30000
+    ) {
+      return _sourceWeightsCacheRef.current;
     }
     try {
       const response = await fetch('/api/source-weights');
       if (!response.ok) {
-        return _sourceWeightsCache || {};
+        return _sourceWeightsCacheRef.current || {};
       }
       const data = await response.json();
-      _sourceWeightsCache = data.weights || {};
-      _sourceWeightsCacheTime = now;
-      return _sourceWeightsCache;
+      _sourceWeightsCacheRef.current = data.weights || {};
+      _sourceWeightsCacheTimeRef.current = now;
+      return _sourceWeightsCacheRef.current;
     } catch (error) {
-      return _sourceWeightsCache || {};
+      return _sourceWeightsCacheRef.current || {};
     }
   };
 
@@ -2267,7 +2270,7 @@ function PlayPageClient() {
         const MAX_CODE_SIZE = 51200;
         if (jsCode.length > MAX_CODE_SIZE) {
           console.warn('自定义去广告代码超过 50KB 限制，跳过');
-          return null;
+          return m3u8Content;
         }
         // 检查代码是否包含危险函数
         const dangerousPatterns = [
@@ -2285,7 +2288,7 @@ function PlayPageClient() {
         for (const pattern of dangerousPatterns) {
           if (pattern.test(jsCode)) {
             console.warn('自定义去广告代码包含危险模式，跳过');
-            return null;
+            return m3u8Content;
           }
         }
         const customFunction = new Function(
@@ -3428,12 +3431,13 @@ function PlayPageClient() {
           favorite: {
             title: videoTitleRef.current,
             source_name: detailRef.current?.source_name || '',
-            year: detailRef.current?.year,
+            year: videoYearRef.current || detailRef.current?.year,
             cover: resolveCardPosterUrl(detailRef.current?.poster, videoCover),
             total_episodes: detailRef.current?.episodes.length || 1,
             save_time: Date.now(),
             search_title: searchTitle,
             type: contentType,
+            douban_id: videoDoubanIdRef.current || undefined,
           },
         },
         {

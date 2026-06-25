@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
         },
       });
     } finally {
-      // Clean up pending request after a short delay (for concurrent requests)
-      setTimeout(() => pendingRequests.delete(decodedUrl), 100);
+      // Clean up pending request after delay (for concurrent browser requests)
+      setTimeout(() => pendingRequests.delete(decodedUrl), 3000);
     }
   } catch (error) {
     // Return 1x1 transparent pixel on error

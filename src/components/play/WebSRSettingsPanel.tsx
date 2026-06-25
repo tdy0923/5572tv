@@ -141,7 +141,7 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
   return (
     <div
       ref={panelRef}
-      className={`fixed right-4 bottom-20 z-60 w-80 overflow-hidden transition-all ${
+      className={`fixed right-2 bottom-20 z-60 w-[calc(100vw-1rem)] max-w-80 overflow-hidden transition-all sm:right-4 ${
         prefersReducedMotion ? 'duration-0' : 'duration-500'
       } ${
         isVisible

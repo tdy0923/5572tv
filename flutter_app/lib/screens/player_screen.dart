@@ -672,7 +672,12 @@ class _PlayerScreenState extends State<PlayerScreen>
             startAt: startAt);
       }
     } catch (e) {
-      // 静默处理错误
+      if (mounted) {
+        setState(() {
+          _errorMessage = '播放失败: $e';
+          _showError = true;
+        });
+      }
     }
   }
 
@@ -2341,7 +2346,15 @@ class _PlayerScreenState extends State<PlayerScreen>
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: hideError,
+                          onPressed: () {
+                            hideError();
+                            if (currentDetail != null &&
+                                currentEpisodeIndex <
+                                    currentDetail!.episodes.length) {
+                              updateVideoUrl(
+                                  currentDetail!.episodes[currentEpisodeIndex]);
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
                                 ? const Color(0xFF2D3748)

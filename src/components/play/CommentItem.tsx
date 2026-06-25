@@ -44,7 +44,7 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
-                    className={`w-3 h-3 ${
+                    className={`w-4 h-4 ${
                       i < comment.rating
                         ? 'text-yellow-400'
                         : 'text-gray-300 dark:text-gray-600'

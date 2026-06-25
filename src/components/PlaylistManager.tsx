@@ -146,7 +146,7 @@ export default function PlaylistManager({
           </h3>
           <button
             onClick={onClose}
-            className='p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800'
+            className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 min-w-[44px] min-h-[44px] flex items-center justify-center'
           >
             <X className='w-5 h-5 text-gray-500' />
           </button>

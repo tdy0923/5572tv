@@ -34,8 +34,6 @@ const nextConfig = {
 
   // 图片优化配置
   images: {
-    // 代理图片不兼容 Next.js 优化管道，保持原图输出
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

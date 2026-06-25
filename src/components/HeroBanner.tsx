@@ -77,15 +77,15 @@ function HeroBanner({
     return url;
   };
 
-  // 确保 backdrop 是高清版本
+  // 确保 backdrop 是中等尺寸（平衡质量和速度）
   const getHDBackdrop = (url?: string) => {
     if (!url) return url;
     return url
-      .replace('/view/photo/s/', '/view/photo/l/')
-      .replace('/view/photo/m/', '/view/photo/l/')
-      .replace('/view/photo/sqxs/', '/view/photo/l/')
-      .replace('/s_ratio_poster/', '/l_ratio_poster/')
-      .replace('/m_ratio_poster/', '/l_ratio_poster/');
+      .replace('/view/photo/s/', '/view/photo/m/')
+      .replace('/view/photo/l/', '/view/photo/m/')
+      .replace('/view/photo/sqxs/', '/view/photo/m/')
+      .replace('/s_ratio_poster/', '/m_ratio_poster/')
+      .replace('/l_ratio_poster/', '/m_ratio_poster/');
   };
 
   // 处理视频 URL，使用代理绕过防盗链
@@ -165,23 +165,18 @@ function HeroBanner({
     onSwipeRight: handlePrev,
   });
 
-  // 预加载背景图片（只预加载当前和相邻的图片，优化性能）
+  // 预加载背景图片（只预加载当前图片，优化性能）
   useEffect(() => {
-    // 预加载当前、前一张、后一张
-    const indicesToPreload = [
-      currentIndex,
-      (currentIndex - 1 + items.length) % items.length,
-      (currentIndex + 1) % items.length,
-    ];
-
-    indicesToPreload.forEach((index) => {
-      const item = items[index];
-      if (item) {
-        const img = new window.Image();
-        const imageUrl = getHDBackdrop(item.backdrop) || item.poster;
-        img.src = getProxiedImageUrl(imageUrl);
-      }
-    });
+    // 只预加载当前图片，减少带宽消耗
+    const item = items[currentIndex];
+    if (item) {
+      const img = new window.Image();
+      // 使用中等尺寸而非大尺寸，平衡质量和速度
+      const imageUrl = (item.backdrop || item.poster || '')
+        .replace('/view/photo/l/', '/view/photo/m/')
+        .replace('/l_ratio_poster/', '/m_ratio_poster/');
+      img.src = getProxiedImageUrl(imageUrl);
+    }
   }, [items, currentIndex]);
 
   const hasItems = items.length > 0;

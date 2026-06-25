@@ -80,7 +80,7 @@ export default function DanmuSendBox({
                   setColor(c.value);
                   setShowColors(false);
                 }}
-                className='w-6 h-6 rounded-full border-2 transition-transform hover:scale-110'
+                className='w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center p-1'
                 style={{
                   backgroundColor: c.value,
                   borderColor: color === c.value ? '#3b82f6' : 'transparent',

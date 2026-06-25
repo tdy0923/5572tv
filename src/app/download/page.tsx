@@ -62,8 +62,8 @@ export default function DownloadPage() {
       description: '支持 Android 5.0+ 手机和平板',
       url: '/download/5572tv-android.apk',
       qrText: 'https://www.5572.net/download/5572tv-android.apk',
-      size: '约 25MB',
-      version: 'v1.0.0',
+      size: '约 27MB',
+      version: 'v1.4.0',
       features: [
         '竖屏短剧',
         '画中画 PiP',
@@ -80,7 +80,7 @@ export default function DownloadPage() {
       url: '#',
       qrText: 'https://testflight.apple.com/join/xxxxx',
       size: '约 30MB',
-      version: 'v1.0.0',
+      version: 'v1.4.0',
       features: [
         '竖屏短剧',
         '画中画',
@@ -95,8 +95,8 @@ export default function DownloadPage() {
       description: '支持 Android TV 和智能电视',
       url: '/download/5572tv-android.apk',
       qrText: 'https://www.5572.net/download/5572tv-android.apk',
-      size: '约 20MB',
-      version: 'v1.0.0',
+      size: '约 27MB',
+      version: 'v1.4.0',
       features: ['遥控器操作', '大屏优化', '语音搜索', '4K 支持', '屏保模式'],
     },
   };

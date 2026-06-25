@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "tv.luna.media5572"
+    namespace = "com.media5572.app"
     compileSdk = 36
     ndkVersion = "29.0.14033849"
 
@@ -23,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "tv.luna.media5572"
+        applicationId = "com.media5572.app"
         minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

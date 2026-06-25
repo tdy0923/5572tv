@@ -1295,7 +1295,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {favoritesLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <SkeletonCard key={i} />

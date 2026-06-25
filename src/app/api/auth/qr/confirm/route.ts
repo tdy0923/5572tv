@@ -22,7 +22,8 @@ async function generateAuthCookie(
   authData.username = username;
   const encoder = new TextEncoder();
   const keyData = encoder.encode(process.env.PASSWORD || '');
-  const messageData = encoder.encode(username);
+  const signData = `${username}:${role}`;
+  const messageData = encoder.encode(signData);
   const key = await crypto.subtle.importKey(
     'raw',
     keyData,
@@ -37,7 +38,7 @@ async function generateAuthCookie(
   authData.timestamp = Date.now();
   authData.loginTime = Date.now();
 
-  return encodeURIComponent(JSON.stringify(authData));
+  return JSON.stringify(authData);
 }
 
 interface QRSession {
