@@ -309,28 +309,18 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     const errorResponse = {
-      error: '获取豆瓣短评失败',
-      details: (error as Error).message,
+      comments: [],
+      total: 0,
+      start,
+      limit,
+      count: 0,
+      error: '获取豆瓣短评暂时不可用',
     };
-    const errorResponseSize = Buffer.byteLength(
-      JSON.stringify(errorResponse),
-      'utf8',
-    );
 
-    // 记录错误请求
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/douban/comments',
-      statusCode: 500,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: 0,
-      requestSize: 0,
-      responseSize: errorResponseSize,
+    return NextResponse.json(errorResponse, {
+      status: 200,
+      headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' },
     });
-
-    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
 
