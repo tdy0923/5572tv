@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm gen:manifest && next dev -H 0.0.0.0",
-    "build": "pnpm gen:manifest && next build",
+    "build": "node scripts/check-no-next-image-for-proxy.js && pnpm gen:manifest && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "eslint src --fix && pnpm format",
@@ -16,7 +16,8 @@
     "format:check": "prettier -c .",
     "gen:manifest": "node scripts/generate-manifest.js",
     "postbuild": "echo 'Build completed - sitemap generation disabled'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "check:image-rules": "node scripts/check-no-next-image-for-proxy.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
