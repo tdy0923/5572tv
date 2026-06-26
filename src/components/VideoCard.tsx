@@ -1472,7 +1472,7 @@ function VideoCard({
               target='_blank'
               rel='noopener noreferrer'
               onClick={(e) => e.stopPropagation()}
-              className='absolute top-2 left-2 opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 sm:group-hover:opacity-100 sm:group-hover:translate-x-0'
+              className='absolute top-2 left-2 opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1687,7 +1687,7 @@ function VideoCard({
             }
           >
             <span
-              className='relative z-10 block line-clamp-2 text-xs font-bold text-gray-900 transition-colors duration-300 ease-in-out group-hover:text-gray-950 dark:text-gray-100 dark:group-hover:text-white @[140px]:text-sm'
+              className='relative z-10 block line-clamp-2 text-xs sm:text-sm font-bold text-gray-900 transition-colors duration-300 ease-in-out group-hover:text-gray-950 dark:text-gray-100 dark:group-hover:text-white @[140px]:text-sm'
               style={
                 {
                   WebkitUserSelect: 'none',

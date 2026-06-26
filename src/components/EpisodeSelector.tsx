@@ -409,7 +409,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                         buttonRefs.current[idx] = el;
                       }}
                       onClick={() => handleCategoryClick(idx)}
-                      className={`min-w-[64px] sm:min-w-[80px] relative py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 text-center rounded-t-lg active:scale-95
+                      className={`min-w-[56px] sm:min-w-[72px] relative py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 text-center rounded-t-lg active:scale-95
                         ${
                           isActive
                             ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'

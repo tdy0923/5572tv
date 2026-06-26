@@ -87,7 +87,7 @@ const CapsuleSwitch: React.FC<CapsuleSwitchProps> = ({
                 buttonRefs.current[index] = el;
               }}
               onClick={() => onChange(opt.value)}
-              className={`relative z-10 min-w-[72px] rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer sm:min-w-[90px] sm:py-2 sm:text-sm ${
+              className={`relative z-10 min-w-[60px] rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer sm:min-w-[80px] sm:py-2 sm:text-sm ${
                 isActive
                   ? 'text-[#171717]'
                   : 'text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'

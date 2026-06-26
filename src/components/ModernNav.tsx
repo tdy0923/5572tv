@@ -283,7 +283,7 @@ export default function ModernNav({
               </h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
-                className='p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors'
+                className='p-3 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors'
               >
                 <X className='w-5 h-5 text-gray-600 dark:text-gray-400' />
               </button>

@@ -194,7 +194,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
             Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className='min-w-[96px] w-24 sm:min-w-[180px] sm:w-44'
+                className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
               >
                 <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 animate-pulse dark:bg-gray-800'>
                   <div className='absolute inset-0 bg-gray-300 dark:bg-gray-700'></div>

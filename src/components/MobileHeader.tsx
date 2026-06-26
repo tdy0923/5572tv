@@ -63,7 +63,7 @@ const MobileHeader = ({
       <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'>
         <Link
           href='/'
-          className='text-[1.35rem] font-black tracking-[-0.04em] text-[#171717] dark:text-[#fff6de] transition-opacity hover:opacity-80'
+          className='text-[1.2rem] sm:text-[1.35rem] font-black tracking-[-0.04em] text-[#171717] dark:text-[#fff6de] transition-opacity hover:opacity-80 truncate'
         >
           {siteName}
         </Link>

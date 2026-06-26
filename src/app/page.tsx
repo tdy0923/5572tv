@@ -872,7 +872,7 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
-      <div className='overflow-visible -mt-2 pb-20 md:mt-0 md:pb-safe-bottom'>
+      <div className='overflow-visible mt-0 pb-20 md:pb-safe-bottom'>
         <div className='mb-8 space-y-4'>
           <SiteAdSlot position='home_hero' />
           {/* 欢迎横幅 - 现代化精简设计 */}
@@ -999,7 +999,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-6 sm:gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {(() => {
                   // 筛选
                   let filtered = reminderItems;
@@ -1295,7 +1295,7 @@ function HomeClient() {
                 </div>
               )}
 
-              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-10 sm:gap-y-20 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+              <div className='justify-start grid grid-cols-2 sm:grid-cols-3 gap-x-2 gap-y-6 sm:gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
                 {favoritesLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <SkeletonCard key={i} />

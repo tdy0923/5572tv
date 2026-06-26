@@ -461,14 +461,21 @@ function HeroBanner({
             <button
               key={index}
               onClick={() => handleIndicatorClick(index)}
-              className={`h-1 rounded-full transition-all duration-300 ${
+              className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'w-8 sm:w-10 bg-white shadow-lg'
-                  : 'w-2 bg-white/50 hover:bg-white/75'
+                  ? 'w-8 sm:w-10 h-2 bg-white shadow-lg'
+                  : 'w-2 h-2 bg-white/50 hover:bg-white/75'
               }`}
               aria-label={`跳转到第 ${index + 1} 张`}
             />
           ))}
+        </div>
+      )}
+
+      {/* Mobile swipe hint */}
+      {showIndicators && items.length > 1 && (
+        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 md:hidden mt-2 text-xs text-white/40 text-center'>
+          ← 滑动浏览 →
         </div>
       )}
 
