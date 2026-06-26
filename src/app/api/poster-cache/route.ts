@@ -11,8 +11,8 @@ import { join } from 'path';
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'poster-cache');
-const MAX_CACHE_SIZE_MB = 500; // 最大缓存 500MB
-const MAX_CACHE_FILES = 10000; // 最大文件数
+const MAX_CACHE_SIZE_MB = 1500; // 海报缓存 1.5GB
+const MAX_CACHE_FILES = 30000; // 最大文件数
 const MAX_AGE_DAYS = 30; // 30天未访问自动清理
 const CLEANUP_INTERVAL = 1000; // 每1000次请求清理一次
 
