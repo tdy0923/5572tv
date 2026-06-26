@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
+import DynamicBackground from '@/components/download/DynamicBackground';
 
 function detectPlatform(): 'android' | 'ios' | 'tv' | 'desktop' {
   if (typeof window === 'undefined') return 'desktop';
@@ -136,6 +137,9 @@ export default function DownloadPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section - Cinema Style */}
       <div className="relative overflow-hidden">
+        {/* Dynamic Particle Background */}
+        <DynamicBackground />
+        
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
