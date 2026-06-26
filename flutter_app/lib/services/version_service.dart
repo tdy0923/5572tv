@@ -4,8 +4,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VersionService {
-  static const String githubRepoUrl = 'https://github.com/MoonTechLab/Selene';
-  static const String githubApiUrl = 'https://api.github.com/repos/MoonTechLab/Selene/releases/latest';
+  static const String githubRepoUrl = 'https://www.5572.net/download';
+  static const String githubApiUrl = 'https://www.5572.net/api/version-check';
   static const String _lastCheckKey = 'last_version_check';
   static const String _dismissedVersionKey = 'dismissed_version';
   
