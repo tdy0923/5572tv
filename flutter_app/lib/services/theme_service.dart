@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io' show Platform;
 import 'package:macos_window_utils/macos_window_utils.dart';
+import '../theme/app_theme.dart';
 
 class ThemeService extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
@@ -117,18 +118,21 @@ class ThemeService extends ChangeNotifier {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2c3e50),
+        seedColor: AppTheme.primary,
         brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: const Color(0xFFf8f9fa),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFFffffff),
-        foregroundColor: Color(0xFF2c3e50),
+      scaffoldBackgroundColor: AppTheme.lightBg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppTheme.lightSurface,
+        foregroundColor: AppTheme.textPrimaryLight,
         elevation: 0,
       ),
-      cardTheme: const CardTheme(
-        color: Color(0xFFffffff),
+      cardTheme: CardTheme(
+        color: AppTheme.lightSurface,
         elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        ),
       ),
       textTheme: textTheme,
       fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
@@ -183,18 +187,21 @@ class ThemeService extends ChangeNotifier {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2c3e50),
+        seedColor: AppTheme.primary,
         brightness: Brightness.dark,
       ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1e1e1e),
-        foregroundColor: Color(0xFFffffff),
+      scaffoldBackgroundColor: AppTheme.darkBg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppTheme.darkSurface,
+        foregroundColor: AppTheme.textPrimaryDark,
         elevation: 0,
       ),
-      cardTheme: const CardTheme(
-        color: Color(0xFF1e1e1e),
+      cardTheme: CardTheme(
+        color: AppTheme.darkCard,
         elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        ),
       ),
       textTheme: textTheme,
       fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
