@@ -5,7 +5,7 @@ import { detectPlatform } from './utils';
 import HeroSection from './components/HeroSection';
 import PlatformTabs from './components/PlatformTabs';
 import InstallGuide from './components/InstallGuide';
-import AIFeatureShowcase from './components/AIFeatureShowcase';
+import FeatureShowcase from './components/FeatureShowcase';
 import DynamicBackground from '@/components/download/DynamicBackground';
 
 export default function DownloadPage() {
@@ -14,7 +14,7 @@ export default function DownloadPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<'android' | 'ios' | 'tv' | 'desktop'>(platform);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
       <DynamicBackground />
       <HeroSection 
         platform={selectedPlatform} 
@@ -24,7 +24,7 @@ export default function DownloadPage() {
         selected={selectedPlatform} 
         onSelect={setSelectedPlatform} 
       />
-      <AIFeatureShowcase />
+      <FeatureShowcase />
       {showGuide && (
         <InstallGuide 
           platform={selectedPlatform} 
