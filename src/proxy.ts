@@ -485,8 +485,6 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/ai/', // AI 功能端点（公共数据，无需认证）
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/api/version-check', // 版本检查（公共数据，无需认证）
-    '/api/agnes-image', // Agnes AI 图片生成（公共数据，无需认证）
-    '/api/agnes-video', // Agnes AI 视频生成（公共数据，无需认证）
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
   ];
