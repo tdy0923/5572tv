@@ -1,32 +1,34 @@
 'use client';
 
 import { useMemo } from 'react';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import MobileLayout from '@/ui/mobile/layouts/MobileLayout';
 import MobileHeroBanner from '@/ui/mobile/components/MobileHeroBanner';
 import MobileVideoCard from '@/ui/mobile/components/MobileVideoCard';
-import MobileContentSection from '@/ui/mobile/components/MobileContentSection';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { resolveCardPosterUrl } from '@/lib/utils';
 
 /**
  * 移动端首页 - Netflix风格
- * 垂直滚动 + 分类区块
+ * 垂直滚动 + 分类区块 + 横向卡片
  */
 export default function MobileHomePage() {
   const { data, isLoading } = useHomePageQueries();
 
-  // 准备Hero数据
+  // Hero数据
   const heroItems = useMemo(() => {
     if (!data?.hotMovies) return [];
     return data.hotMovies.slice(0, 5).map((item) => ({
       poster: resolveCardPosterUrl(item.poster),
       title: item.title,
       href: `/play?source=douban&id=${item.id}`,
-      subtitle: item.year ? `${item.year} · ${item.rate || ''}` : item.rate || '',
+      subtitle: item.year || '',
+      rate: item.rate || '',
     }));
   }, [data]);
 
-  // 准备内容区块
+  // 内容区块
   const sections = useMemo(() => {
     const result: { title: string; href: string; items: { poster: string; title: string; href: string; subtitle?: string }[] }[] = [];
     
@@ -34,7 +36,7 @@ export default function MobileHomePage() {
       result.push({
         title: '热门电影',
         href: '/search?type=movie',
-        items: data.hotMovies.slice(0, 12).map((item) => ({
+        items: data.hotMovies.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
           href: `/play?source=douban&id=${item.id}`,
@@ -42,12 +44,11 @@ export default function MobileHomePage() {
         })),
       });
     }
-
     if (data?.hotTvShows?.length) {
       result.push({
         title: '热播剧集',
         href: '/search?type=tv',
-        items: data.hotTvShows.slice(0, 12).map((item) => ({
+        items: data.hotTvShows.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
           href: `/play?source=douban&id=${item.id}`,
@@ -55,12 +56,11 @@ export default function MobileHomePage() {
         })),
       });
     }
-
     if (data?.hotAnime?.length) {
       result.push({
         title: '动漫',
         href: '/search?type=anime',
-        items: data.hotAnime.slice(0, 12).map((item) => ({
+        items: data.hotAnime.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
           href: `/play?source=douban&id=${item.id}`,
@@ -68,12 +68,11 @@ export default function MobileHomePage() {
         })),
       });
     }
-
     if (data?.hotShortDramas?.length) {
       result.push({
         title: '短剧',
         href: '/shortdrama',
-        items: data.hotShortDramas.slice(0, 12).map((item) => ({
+        items: data.hotShortDramas.slice(0, 10).map((item) => ({
           poster: item.cover || '',
           title: item.name,
           href: `/play?source=shortdrama&id=${item.id}`,
@@ -81,39 +80,43 @@ export default function MobileHomePage() {
         })),
       });
     }
-
     return result;
   }, [data]);
 
   return (
     <MobileLayout>
-      {/* Hero Banner - 全屏大图 */}
+      {/* Hero */}
       <MobileHeroBanner items={heroItems} />
 
-      {/* 内容区块 - 垂直滚动 */}
+      {/* 分类区块 */}
       <div className="pb-4">
         {sections.map((section, sIndex) => (
-          <MobileContentSection 
-            key={sIndex} 
-            title={section.title}
-            href={section.href}
-          >
-            {section.items.map((item, iIndex) => (
-              <div key={iIndex} className="flex-shrink-0 w-[40vw] snap-start">
-                <MobileVideoCard
-                  title={item.title}
-                  poster={item.poster}
-                  href={item.href}
-                  subtitle={item.subtitle}
-                  priority={sIndex === 0 && iIndex < 3}
-                />
-              </div>
-            ))}
-          </MobileContentSection>
+          <section key={sIndex} className="py-4">
+            <div className="flex items-center justify-between px-4 mb-3">
+              <h2 className="text-lg font-bold text-white">{section.title}</h2>
+              {section.href && (
+                <Link href={section.href} className="flex items-center gap-1 text-sm text-[#f4c24d]">
+                  更多 <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
+            </div>
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide">
+              {section.items.map((item, iIndex) => (
+                <div key={iIndex} className="flex-shrink-0 w-[40vw] snap-start">
+                  <MobileVideoCard
+                    title={item.title}
+                    poster={item.poster}
+                    href={item.href}
+                    subtitle={item.subtitle}
+                    priority={sIndex === 0 && iIndex < 3}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
 
-      {/* 加载状态 */}
       {isLoading && (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-2 border-[#f4c24d] border-t-transparent rounded-full animate-spin" />
