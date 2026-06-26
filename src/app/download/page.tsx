@@ -6,7 +6,6 @@ import HeroSection from './components/HeroSection';
 import PlatformTabs from './components/PlatformTabs';
 import InstallGuide from './components/InstallGuide';
 import FeatureShowcase from './components/FeatureShowcase';
-import DynamicBackground from '@/components/download/DynamicBackground';
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
@@ -14,8 +13,7 @@ export default function DownloadPage() {
   const [selectedPlatform, setSelectedPlatform] = useState<'android' | 'ios' | 'tv' | 'desktop'>(platform);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white overflow-hidden">
-      <DynamicBackground />
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       <HeroSection 
         platform={selectedPlatform} 
         onShowGuide={() => setShowGuide(true)} 

@@ -19,101 +19,81 @@ export default function HeroSection({ platform, onShowGuide }: HeroSectionProps)
   const isIOS = platform === 'ios';
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* 背景图 */}
-      <div className="absolute inset-0">
-        <Image
-          src="/images/agnes/epic-bg.png"
-          alt=""
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-[#0a0a0a]" />
-      </div>
+    <section className="relative min-h-screen flex items-center">
+      {/* 简洁背景 - 渐变而非花哨 */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
+      
+      {/* 微妙的装饰 - 只有一个光晕 */}
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#f4c24d]/5 rounded-full blur-[150px]" />
 
-      {/* 动态光效 */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#f4c24d]/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-[100px] animate-pulse delay-1000" />
-
-      {/* 网格线效果 */}
-      <div className="absolute inset-0 opacity-5" style={{
-        backgroundImage: `linear-gradient(rgba(244,194,77,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(244,194,77,0.3) 1px, transparent 1px)`,
-        backgroundSize: '50px 50px'
-      }} />
-
-      <div className={`relative z-10 text-center px-6 max-w-4xl mx-auto transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-        {/* Logo */}
-        <div className="relative inline-block mb-8">
-          <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-[#f4c24d] to-[#d89c18] flex items-center justify-center shadow-2xl shadow-[#f4c24d]/40">
-            <span className="text-5xl font-black text-black">5</span>
+      <div className={`relative z-10 w-full max-w-6xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center gap-16 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+        
+        {/* 左侧：文字内容 */}
+        <div className="flex-1 text-center lg:text-left">
+          {/* Logo */}
+          <div className="inline-flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-xl bg-[#f4c24d] flex items-center justify-center">
+              <span className="text-2xl font-black text-black">5</span>
+            </div>
+            <span className="text-xl font-semibold text-white tracking-tight">5572</span>
           </div>
-          <div className="absolute -inset-4 bg-[#f4c24d]/20 rounded-3xl blur-xl animate-pulse" />
+
+          {/* 标题 - 大但不夸张 */}
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+            影视
+            <br />
+            <span className="text-[#f4c24d]">播放平台</span>
+          </h1>
+          
+          <p className="text-lg text-gray-400 mb-10 max-w-md leading-relaxed">
+            海量资源，AI搜索，多端同步。<br />
+            为你打造极致的观影体验。
+          </p>
+
+          {/* CTA */}
+          {isIOS ? (
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={onShowGuide}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold text-base hover:bg-[#d89c18] transition-colors min-h-[56px]"
+              >
+                添加到主屏幕
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <span className="text-sm text-gray-500 self-center">Safari → 分享 → 添加到主屏幕</span>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-4">
+              <a
+                href="/download/5572tv-android.apk"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold text-base hover:bg-[#d89c18] transition-colors min-h-[56px]"
+              >
+                <Download className="w-5 h-5" />
+                下载 APK
+              </a>
+              <span className="text-sm text-gray-500 self-center">v1.5.0 · 65MB</span>
+            </div>
+          )}
         </div>
 
-        {/* 标题 */}
-        <h1 className="text-6xl sm:text-8xl font-black mb-4 tracking-tight">
-          <span className="bg-gradient-to-r from-white via-[#f4c24d] to-white bg-clip-text text-transparent">
-            5572
-          </span>
-        </h1>
-        <p className="text-2xl sm:text-3xl text-gray-300 mb-2 font-light">
-          影视
-        </p>
-        <p className="text-lg text-gray-400 mb-12">
-          智能影视播放平台 · 海量资源 · AI驱动
-        </p>
-
-        {/* CTA按钮 */}
-        {isIOS ? (
-          <div className="space-y-4">
-            <button
-              onClick={onShowGuide}
-              className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#f4c24d] to-[#d89c18] text-black rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#f4c24d]/40 min-h-[60px]"
-            >
-              <span className="relative z-10">添加到主屏幕</span>
-              <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
-            <p className="text-sm text-gray-500">Safari 打开后添加到主屏幕</p>
+        {/* 右侧：产品预览 */}
+        <div className="flex-1 flex justify-center lg:justify-end">
+          <div className="relative">
+            {/* 手机框 */}
+            <div className="w-72 h-[480px] bg-[#1a1a1a] rounded-[3rem] border-2 border-gray-800 p-3 shadow-2xl">
+              <div className="w-full h-full rounded-[2.5rem] overflow-hidden bg-black">
+                <Image
+                  src="/images/agnes/phone-mockup.png"
+                  alt="App Preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            
+            {/* 装饰光效 */}
+            <div className="absolute -inset-10 bg-[#f4c24d]/5 rounded-full blur-[80px] -z-10" />
           </div>
-        ) : (
-          <div className="space-y-4">
-            <a
-              href="/download/5572tv-android.apk"
-              className="group relative inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#f4c24d] to-[#d89c18] text-black rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#f4c24d]/40 min-h-[60px]"
-            >
-              <Download className="w-6 h-6 relative z-10" />
-              <span className="relative z-10">立即下载</span>
-              <ArrowRight className="w-6 h-6 relative z-10 group-hover:translate-x-1 transition-transform" />
-              <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            </a>
-            <p className="text-sm text-gray-500">v1.5.0 · 65MB · Android 5.0+</p>
-            <button
-              onClick={onShowGuide}
-              className="text-[#f4c24d] hover:underline text-sm"
-            >
-              安装遇到问题？点击查看帮助 →
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* 手机模型 */}
-      <div className={`absolute right-0 bottom-0 w-1/3 max-w-md opacity-80 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-80 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-        <Image
-          src="/images/agnes/phone-mockup.png"
-          alt="App Preview"
-          width={400}
-          height={300}
-          className="object-contain drop-shadow-2xl"
-        />
-      </div>
-
-      {/* 向下滚动提示 */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 rounded-full border-2 border-gray-600 flex justify-center pt-2">
-          <div className="w-1 h-2 bg-gray-500 rounded-full" />
         </div>
       </div>
     </section>
