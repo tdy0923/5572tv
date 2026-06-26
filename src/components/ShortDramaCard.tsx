@@ -405,11 +405,11 @@ function ShortDramaCard({
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleToggleFavorite}
-            className='absolute bottom-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm sm:opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70'
+            className='absolute bottom-1 right-1 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm sm:opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70'
             aria-label={favorited ? '取消收藏' : '添加收藏'}
           >
             <Heart
-              className={`h-4 w-4 transition-all duration-300 ${
+              className={`h-5 w-5 transition-all duration-300 ${
                 favorited
                   ? 'fill-red-500 text-red-500 scale-110'
                   : 'text-white hover:text-red-400'

@@ -98,14 +98,14 @@ export default function PhonePlayerControls({
           </div>
 
           {/* 控制按钮 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-3 sm:gap-4">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onSeek(currentTime - 10);
                 }}
-                className="p-2 text-white/80 hover:text-white"
+                className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white"
               >
                 <SkipBack className="h-5 w-5" />
               </button>
@@ -115,7 +115,7 @@ export default function PhonePlayerControls({
                   e.stopPropagation();
                   onPlayPause();
                 }}
-                className="p-3 bg-white/20 rounded-full backdrop-blur-sm"
+                className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center bg-white/20 rounded-full backdrop-blur-sm"
               >
                 {isPlaying ? (
                   <Pause className="h-6 w-6 text-white" />
@@ -129,17 +129,17 @@ export default function PhonePlayerControls({
                   e.stopPropagation();
                   onSeek(currentTime + 10);
                 }}
-                className="p-2 text-white/80 hover:text-white"
+                className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white"
               >
                 <SkipForward className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button className="p-2 text-white/80 hover:text-white">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white">
                 <Volume2 className="h-5 w-5" />
               </button>
-              <button className="p-2 text-white/80 hover:text-white">
+              <button className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white">
                 <Settings className="h-5 w-5" />
               </button>
               <button
@@ -147,7 +147,7 @@ export default function PhonePlayerControls({
                   e.stopPropagation();
                   onFullscreen();
                 }}
-                className="p-2 text-white/80 hover:text-white"
+                className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-white/80 hover:text-white"
               >
                 <Maximize2 className="h-5 w-5" />
               </button>

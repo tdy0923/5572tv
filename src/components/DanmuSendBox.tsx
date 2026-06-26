@@ -66,7 +66,7 @@ export default function DanmuSendBox({
       <div className='relative'>
         <button
           onClick={() => setShowColors(!showColors)}
-          className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
+          className='p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors'
           title='选择颜色'
         >
           <Palette className='w-5 h-5' style={{ color }} />
@@ -80,7 +80,7 @@ export default function DanmuSendBox({
                   setColor(c.value);
                   setShowColors(false);
                 }}
-                className='w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center p-1'
+                className='w-10 h-10 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center'
                 style={{
                   backgroundColor: c.value,
                   borderColor: color === c.value ? '#3b82f6' : 'transparent',
