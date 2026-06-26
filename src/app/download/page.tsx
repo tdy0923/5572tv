@@ -122,7 +122,7 @@ export default function DownloadPage() {
       icon: <Play className="w-6 h-6" />,
       title: '极速播放',
       desc: '自适应画质，秒开播放，多线路自动切换',
-      gradient: 'from-green-500 to-emerald-500',
+      gradient: 'from-primary to-emerald-500',
     },
     {
       icon: <Wifi className="w-6 h-6" />,
@@ -141,7 +141,7 @@ export default function DownloadPage() {
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
         
         {/* Glow Effects */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
 
         <div className="relative max-w-6xl mx-auto px-4 py-16 sm:py-24">
@@ -149,8 +149,8 @@ export default function DownloadPage() {
             {/* Left Content */}
             <div className="flex-1 text-center lg:text-left">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-sm mb-6">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary text-sm mb-6">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                 最新版本 v1.4.0
               </div>
 
@@ -168,7 +168,7 @@ export default function DownloadPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <a
                   href={current.url}
-                  className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl font-bold text-lg shadow-xl shadow-green-500/25 hover:shadow-green-500/40 transition-all hover:scale-105"
+                  className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-emerald-500 rounded-2xl font-bold text-lg shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-105"
                 >
                   <Download className="w-5 h-5" />
                   下载 {current.name} 版
@@ -193,7 +193,7 @@ export default function DownloadPage() {
                       href={`/download#${key}`}
                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                         detectedPlatform === key
-                          ? 'bg-green-500 text-white'
+                          ? 'bg-primary text-white'
                           : 'bg-white/5 text-gray-400 hover:bg-white/10'
                       }`}
                     >
@@ -224,7 +224,7 @@ export default function DownloadPage() {
                     {/* App Header */}
                     <div className="px-4 py-2">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-emerald-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg">
                           5
                         </div>
                         <span className="text-white font-bold text-sm">5572 影视</span>
@@ -237,7 +237,7 @@ export default function DownloadPage() {
                             key={t}
                             className={`text-xs px-3 py-1 rounded-full ${
                               i === 0
-                                ? 'bg-green-500 text-white'
+                                ? 'bg-primary text-white'
                                 : 'bg-white/10 text-white/60'
                             }`}
                           >
@@ -269,7 +269,7 @@ export default function DownloadPage() {
                             <div className="h-3 bg-white/20 rounded w-3/4 mb-1" />
                             <div className="h-2 bg-white/10 rounded w-1/2 mb-1" />
                             <div className="flex gap-1">
-                              <span className="text-[9px] text-green-400 bg-green-400/10 px-1 rounded">HD</span>
+                              <span className="text-[9px] text-primary bg-primary/10 px-1 rounded">HD</span>
                               <span className="text-[9px] text-white/40">·</span>
                               <span className="text-[9px] text-yellow-400">★ {(8.5 - i * 0.3).toFixed(1)}</span>
                             </div>
@@ -288,7 +288,7 @@ export default function DownloadPage() {
                         <div
                           key={item.name}
                           className={`flex flex-col items-center gap-0.5 ${
-                            item.active ? 'text-green-400' : 'text-white/40'
+                            item.active ? 'text-primary' : 'text-white/40'
                           }`}
                         >
                           <div className="w-5 h-5 rounded-full bg-current opacity-20" />
@@ -339,7 +339,7 @@ export default function DownloadPage() {
             {/* Left - Info */}
             <div className="flex-1 p-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center">
                   <current.icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -361,7 +361,7 @@ export default function DownloadPage() {
               ) : (
                 <a
                   href={current.url}
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl font-bold text-lg shadow-lg shadow-green-500/25 hover:shadow-green-500/40 transition-all hover:scale-[1.02]"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-primary to-emerald-500 rounded-2xl font-bold text-lg shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-[1.02]"
                 >
                   <Download className="w-5 h-5" />
                   立即下载
@@ -372,7 +372,7 @@ export default function DownloadPage() {
               <div className="grid grid-cols-2 gap-3 mt-6">
                 {current.features.map((feature, i) => (
                   <div key={i} className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     <div>
                       <span className="text-sm font-medium text-white">{feature.name}</span>
                       <p className="text-xs text-gray-500">{feature.desc}</p>
@@ -412,7 +412,7 @@ export default function DownloadPage() {
                 <tr className="border-b border-white/5">
                   <th className="p-4 text-left text-gray-400 font-medium">功能</th>
                   <th className="p-4 text-center text-gray-400 font-medium">网页版</th>
-                  <th className="p-4 text-center text-green-400 font-bold">App 版</th>
+                  <th className="p-4 text-center text-primary font-bold">App 版</th>
                 </tr>
               </thead>
               <tbody>
@@ -435,7 +435,7 @@ export default function DownloadPage() {
                     <td className="p-4 text-center">
                       {typeof row.web === 'boolean' ? (
                         row.web ? (
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                         ) : (
                           <span className="text-gray-600">—</span>
                         )
@@ -446,12 +446,12 @@ export default function DownloadPage() {
                     <td className="p-4 text-center">
                       {typeof row.app === 'boolean' ? (
                         row.app ? (
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                         ) : (
                           <span className="text-gray-600">—</span>
                         )
                       ) : (
-                        <span className="text-sm text-green-400 font-medium">{row.app}</span>
+                        <span className="text-sm text-primary font-medium">{row.app}</span>
                       )}
                     </td>
                   </tr>
@@ -471,24 +471,24 @@ export default function DownloadPage() {
           {/* Installation Steps */}
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-white/5">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-green-400" />
+              <Smartphone className="w-5 h-5 text-primary" />
               Android 安装步骤
             </h3>
             <ol className="space-y-3 text-sm text-gray-400">
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold">1</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">1</span>
                 <span>点击下载按钮，获取 APK 安装包</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold">2</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">2</span>
                 <span>打开下载的 APK 文件</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold">3</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">3</span>
                 <span>点击 <strong className="text-white">"仍然安装"</strong> 或 <strong className="text-white">"允许本次安装"</strong></span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold">4</span>
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</span>
                 <span>安装完成后打开 App，登录即可使用</span>
               </li>
             </ol>
@@ -525,7 +525,7 @@ export default function DownloadPage() {
       <div className="border-t border-white/5 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
               5
             </div>
             <span className="font-bold">5572 影视</span>
