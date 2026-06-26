@@ -302,10 +302,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       if (mounted) {
         setState(() {
           _hasCompleted = false;
-          // _isLoadingVideo = false;
+          _isLoadingVideo = false;
         });
       }
-      // widget.onReady?.call();
+      widget.onReady?.call();
     } catch (error) {
       debugPrint('VideoPlayerWidget: error while changing source $error');
       if (mounted) {
