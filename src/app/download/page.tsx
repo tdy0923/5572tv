@@ -54,7 +54,7 @@ export default function DownloadPage() {
       description: '支持 Android 5.0+ 手机和平板',
       url: '/download/5572tv-android.apk',
       qrText: 'https://www.5572.net/download/5572tv-android.apk',
-      size: '28 MB',
+      size: '65 MB',
       version: 'v1.4.0',
       updatedAt: '2025-06-24',
       features: [
@@ -91,7 +91,7 @@ export default function DownloadPage() {
       description: '支持 Android TV 和智能电视',
       url: '/download/5572tv-android.apk',
       qrText: 'https://www.5572.net/download/5572tv-android.apk',
-      size: '28 MB',
+      size: '65 MB',
       version: 'v1.4.0',
       updatedAt: '2025-06-24',
       features: [
