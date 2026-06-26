@@ -29,7 +29,7 @@ const features = [
 
 export default function DownloadPage() {
   const detected = useMemo(() => detectPlatform(), []);
-  const [active, setActive] = useState(detected);
+  const [active, setActive] = useState<'android' | 'ios' | 'tv' | 'desktop'>(detected);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
