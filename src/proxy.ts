@@ -299,6 +299,7 @@ export async function proxy(request: NextRequest) {
 
   // 跳过不需要认证的路径
   if (shouldSkipAuth(pathname)) {
+    // console.log('[Middleware] Skipping auth for:', pathname);
     return NextResponse.next();
   }
 
