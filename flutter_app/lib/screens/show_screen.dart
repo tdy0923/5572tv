@@ -487,38 +487,39 @@ class _ShowScreenState extends State<ShowScreen> {
     return TVRemoteAdapter(
       onBack: () => Navigator.of(context).maybePop(),
       child: StyledRefreshIndicator(
-      onRefresh: _refreshShowsData,
-      refreshText: '刷新综艺数据...',
-      primaryColor: const Color(0xFF27AE60),
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            _buildFilterSection(),
-            const SizedBox(height: 16),
-            DoubanMoviesGrid(
-              movies: _shows,
-              isLoading: _isLoading && _shows.isEmpty,
-              errorMessage: _errorMessage,
-              onVideoTap: _onVideoTap,
-              onGlobalMenuAction: (videoInfo, action) {
-                _handleMenuAction(videoInfo, action);
-              },
-              contentType: 'show',
-            ),
-            // 底部指示器 - 加载更多或到底提示
-            if (_isLoadingMore)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: PulsingDotsIndicator(),
-              )
-            else if (!_hasMore && _shows.isNotEmpty && !_isLoading)
-              _buildEndOfListIndicator()
-            else
-              const SizedBox(height: 50), // 占位符保持间距
-          ],
+        onRefresh: _refreshShowsData,
+        refreshText: '刷新综艺数据...',
+        primaryColor: const Color(0xFF27AE60),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              _buildFilterSection(),
+              const SizedBox(height: 16),
+              DoubanMoviesGrid(
+                movies: _shows,
+                isLoading: _isLoading && _shows.isEmpty,
+                errorMessage: _errorMessage,
+                onVideoTap: _onVideoTap,
+                onGlobalMenuAction: (videoInfo, action) {
+                  _handleMenuAction(videoInfo, action);
+                },
+                contentType: 'show',
+              ),
+              // 底部指示器 - 加载更多或到底提示
+              if (_isLoadingMore)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: PulsingDotsIndicator(),
+                )
+              else if (!_hasMore && _shows.isNotEmpty && !_isLoading)
+                _buildEndOfListIndicator()
+              else
+                const SizedBox(height: 50), // 占位符保持间距
+            ],
+          ),
         ),
       ),
     );

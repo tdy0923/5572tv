@@ -78,8 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
         if (shouldShow && mounted) {
           AnnouncementDialog.show(context, announcement);
         }
-        }
-      }
       }
     } catch (e) {
       // 静默失败，不影响用户体验
@@ -827,24 +825,22 @@ class _HomeScreenState extends State<HomeScreen> {
       final result = await cacheService.removeFavorite(
           playRecord.source, playRecord.id, context);
 
-      if (!result.success) {
+      if (!result.success && mounted) {
         // 显示错误提示
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result.errorMessage ?? '取消收藏失败',
-                style: FontUtils.poppins(color: Colors.white),
-              ),
-              backgroundColor: const Color(0xFFe74c3c),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              margin: const EdgeInsets.all(16),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result.errorMessage ?? '取消收藏失败',
+              style: FontUtils.poppins(color: Colors.white),
             ),
-          );
-        }
+            backgroundColor: const Color(0xFFe74c3c),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
         // API失败时重新刷新缓存以恢复数据
         _refreshFavorites();
       }
@@ -875,7 +871,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refreshFavorites() async {
     try {
       // 刷新收藏夹缓存数据
-      await PageCacheService().refreshFavorites(context);
+      if (mounted) {
+        await PageCacheService().refreshFavorites(context);
+      }
 
       // 通知收藏夹组件刷新UI
       FavoritesGrid.refreshFavorites();

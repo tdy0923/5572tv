@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-import 'package:pip_flutter/pip_flutter.dart';
 import 'mobile_player_controls.dart';
 import 'pc_player_controls.dart';
 import 'video_player_surface.dart';
@@ -151,13 +150,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   }
 
   void _setupPipListener() {
-    PipFlutter.onPictureInPictureStatusChanged.listen((isInPipMode) {
-      if (mounted) {
-        setState(() {
-          _isPipMode = isInPipMode;
-        });
-      }
-    });
+    // PiP functionality not available without pip_flutter package
   }
 
   @override
@@ -345,16 +338,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
 
 
   Future<void> _enterPipMode() async {
-    try {
-      if (await PipFlutter.isPipAvailable()) {
-        await PipFlutter.enterPictureInPictureMode();
-        setState(() {
-          _isPipMode = true;
-        });
-      }
-    } catch (e) {
-      debugPrint('PiP not available: $e');
-    }
+    debugPrint('PiP not available without pip_flutter package');
   }
 
   Future<void> _externalDispose() async {

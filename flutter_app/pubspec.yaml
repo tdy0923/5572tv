@@ -59,7 +59,6 @@ dependencies:
   bitsdojo_window: ^0.1.6
   media_kit: ^1.2.3
   media_kit_video: ^2.0.1
-  pip_flutter: ^1.0.0
 
 dev_dependencies:
   flutter_test:

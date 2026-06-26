@@ -564,54 +564,55 @@ class _AnimeScreenState extends State<AnimeScreen> {
     return TVRemoteAdapter(
       onBack: () => Navigator.of(context).maybePop(),
       child: StyledRefreshIndicator(
-      onRefresh: _refreshAnimeData,
-      refreshText: '刷新动漫数据...',
-      primaryColor: const Color(0xFF27AE60),
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            _buildFilterSection(),
-            const SizedBox(height: 16),
-            _selectedCategoryValue == '每日放送' 
-                ? BangumiGrid(
-                    bangumiItems: _bangumiList,
-                    isLoading: _isLoading && _bangumiList.isEmpty,
-                    errorMessage: _errorMessage,
-                    onVideoTap: _onVideoTap,
-                    onGlobalMenuAction: (videoInfo, action) {
-                      _handleMenuAction(videoInfo, action);
-                    },
-                    contentType: 'anime',
-                  )
-                : DoubanMoviesGrid(
-                    movies: _animeList,
-                    isLoading: _isLoading && _animeList.isEmpty,
-                    errorMessage: _errorMessage,
-                    onVideoTap: _onVideoTap,
-                    onGlobalMenuAction: (videoInfo, action) {
-                      _handleMenuAction(videoInfo, action);
-                    },
-                    contentType: 'anime',
-                  ),
-            // 底部指示器 - 加载更多或到底提示
-            if (_selectedCategoryValue == '每日放送')
-              // Bangumi 数据无需加载更多，直接显示底部指示器
-              (_bangumiList.isNotEmpty && !_isLoading)
-                  ? _buildEndOfListIndicator()
-                  : const SizedBox(height: 50)
-            else if (_isLoadingMore)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: PulsingDotsIndicator(),
-              )
-            else if (!_hasMore && _animeList.isNotEmpty && !_isLoading)
-              _buildEndOfListIndicator()
-            else
-              const SizedBox(height: 50), // 占位符保持间距
-          ],
+        onRefresh: _refreshAnimeData,
+        refreshText: '刷新动漫数据...',
+        primaryColor: const Color(0xFF27AE60),
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              _buildFilterSection(),
+              const SizedBox(height: 16),
+              _selectedCategoryValue == '每日放送' 
+                  ? BangumiGrid(
+                      bangumiItems: _bangumiList,
+                      isLoading: _isLoading && _bangumiList.isEmpty,
+                      errorMessage: _errorMessage,
+                      onVideoTap: _onVideoTap,
+                      onGlobalMenuAction: (videoInfo, action) {
+                        _handleMenuAction(videoInfo, action);
+                      },
+                      contentType: 'anime',
+                    )
+                  : DoubanMoviesGrid(
+                      movies: _animeList,
+                      isLoading: _isLoading && _animeList.isEmpty,
+                      errorMessage: _errorMessage,
+                      onVideoTap: _onVideoTap,
+                      onGlobalMenuAction: (videoInfo, action) {
+                        _handleMenuAction(videoInfo, action);
+                      },
+                      contentType: 'anime',
+                    ),
+              // 底部指示器 - 加载更多或到底提示
+              if (_selectedCategoryValue == '每日放送')
+                // Bangumi 数据无需加载更多，直接显示底部指示器
+                (_bangumiList.isNotEmpty && !_isLoading)
+                    ? _buildEndOfListIndicator()
+                    : const SizedBox(height: 50)
+              else if (_isLoadingMore)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: PulsingDotsIndicator(),
+                )
+              else if (!_hasMore && _animeList.isNotEmpty && !_isLoading)
+                _buildEndOfListIndicator()
+              else
+                const SizedBox(height: 50), // 占位符保持间距
+            ],
+          ),
         ),
       ),
     );
