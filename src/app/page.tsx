@@ -47,6 +47,8 @@ import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 import { useClearFavoritesMutation } from '@/hooks/useFavoritesMutations';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
+import { useDevice } from '@/core/hooks/useDevice';
+import MobileHomePage from '@/components/MobileHomePage';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
