@@ -474,6 +474,8 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/douban', // 豆瓣 API 端点（公共数据，无需认证）
     '/api/image-proxy', // 图片代理（公共数据，无需认证）
     '/api/video-proxy', // 视频代理（公共数据，无需认证）
+    '/api/poster-cache', // 海报本地缓存（公共数据，无需认证）
+    '/api/video-cache', // 视频缩略图缓存（公共数据，无需认证）
     '/api/search/trending', // 热门搜索（公共数据，无需认证）
     '/api/shortdrama', // 短剧 API（公共数据，无需认证）
     '/api/release-calendar', // 即将上映（公共数据，无需认证）
