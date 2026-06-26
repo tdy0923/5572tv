@@ -47,6 +47,7 @@ export default function DownloadPage() {
     version: string;
     updatedAt: string;
     comingSoon?: boolean;
+    pwa?: boolean;
     features: { name: string; desc: string }[];
   }> = {
     android: {
@@ -70,20 +71,18 @@ export default function DownloadPage() {
     ios: {
       name: 'iOS',
       icon: Smartphone,
-      description: '支持 iOS 14.0+ iPhone 和 iPad',
-      url: '#',
-      qrText: 'https://testflight.apple.com/join/xxxxx',
-      size: '32 MB',
+      description: '使用 PWA 安装到主屏幕',
+      url: '/',
+      qrText: 'https://www.5572.net',
+      size: '无需下载',
       version: 'v1.4.0',
-      updatedAt: '2025-06-24',
-      comingSoon: true,
+      updatedAt: '2025-06-26',
+      pwa: true,
       features: [
-        { name: '竖屏短剧', desc: '沉浸式竖屏播放体验' },
-        { name: '画中画', desc: '小窗追剧不耽误聊天' },
-        { name: 'AirPlay 投屏', desc: 'Apple TV 大屏观影' },
-        { name: 'Siri 快捷指令', desc: '语音控制播放' },
-        { name: 'Widget 小组件', desc: '桌面快速访问' },
-        { name: '后台播放', desc: '锁屏后继续播放' },
+        { name: '添加到主屏幕', desc: 'Safari 分享菜单安装' },
+        { name: '离线访问', desc: 'PWA 支持离线缓存' },
+        { name: '全屏体验', desc: '像原生 App 一样全屏' },
+        { name: '推送通知', desc: '支持 Web Push 通知' },
       ],
     },
     tv: {
@@ -358,7 +357,12 @@ export default function DownloadPage() {
                 <span className="px-3 py-1 bg-white/5 rounded-lg">{current.updatedAt}</span>
               </div>
 
-              {current.comingSoon ? (
+              {current.pwa ? (
+                <div className="w-full px-6 py-4 bg-gradient-to-r from-primary/20 to-primary/10 border border-primary/30 rounded-2xl text-center">
+                  <p className="text-primary font-bold text-lg">PWA 应用</p>
+                  <p className="text-gray-400 text-sm mt-1">Safari 打开后添加到主屏幕</p>
+                </div>
+              ) : current.comingSoon ? (
                 <div className="w-full px-6 py-4 bg-gray-700 text-gray-400 rounded-2xl font-bold text-lg text-center cursor-not-allowed">
                   即将推出
                 </div>
@@ -471,34 +475,58 @@ export default function DownloadPage() {
         <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">
           安装说明 & 常见问题
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Installation Steps */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Android Installation */}
           <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-white/5">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-primary" />
-              Android 安装步骤
+              Android 安装
             </h3>
             <ol className="space-y-3 text-sm text-gray-400">
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">1</span>
-                <span>点击下载按钮，获取 APK 安装包</span>
+                <span>点击下载按钮获取 APK</span>
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">2</span>
-                <span>打开下载的 APK 文件</span>
+                <span>打开 APK 文件</span>
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">3</span>
-                <span>点击 <strong className="text-white">"仍然安装"</strong> 或 <strong className="text-white">"允许本次安装"</strong></span>
+                <span>点击 <strong className="text-white">"仍然安装"</strong></span>
               </li>
               <li className="flex gap-3">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</span>
-                <span>安装完成后打开 App，登录即可使用</span>
+                <span>打开 App 登录使用</span>
               </li>
             </ol>
-            <p className="mt-4 text-xs text-gray-500">
-              * Android 系统对非 Google Play 安装的应用会显示安全提示，这是正常的安全机制
-            </p>
+          </div>
+
+          {/* iOS PWA Installation */}
+          <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-6 border border-white/5">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-primary" />
+              iOS 安装 (PWA)
+            </h3>
+            <ol className="space-y-3 text-sm text-gray-400">
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                <span>Safari 打开 <strong className="text-white">www.5572.net</strong></span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">2</span>
+                <span>点击底部 <strong className="text-white">分享按钮</strong></span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">3</span>
+                <span>选择 <strong className="text-white">"添加到主屏幕"</strong></span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">4</span>
+                <span>点击 <strong className="text-white">"添加"</strong> 完成安装</span>
+              </li>
+            </ol>
+            <p className="mt-3 text-xs text-gray-500">* iOS 无需下载安装，直接使用网页版</p>
           </div>
 
           {/* FAQ */}
@@ -507,18 +535,22 @@ export default function DownloadPage() {
               <Star className="w-5 h-5 text-yellow-400" />
               常见问题
             </h3>
-            <div className="space-y-4 text-sm">
+            <div className="space-y-3 text-sm">
               <div>
-                <p className="font-medium text-white mb-1">Q: 为什么安装时提示"不安全"？</p>
-                <p className="text-gray-400">A: 这是 Android 系统的安全机制。我们是独立开发者，未通过 Google Play 发布，所以系统会提示。App 本身是安全的。</p>
+                <p className="font-medium text-white mb-1">Q: 安装时提示"不安全"？</p>
+                <p className="text-gray-400">A: 这是 Android 安全机制，点击"仍然安装"即可。</p>
               </div>
               <div>
-                <p className="font-medium text-white mb-1">Q: 安装后打不开怎么办？</p>
-                <p className="text-gray-400">A: 请确保已开启"允许安装未知来源应用"（设置 → 安全 → 未知来源）。</p>
+                <p className="font-medium text-white mb-1">Q: 打不开怎么办？</p>
+                <p className="text-gray-400">A: 设置 → 安全 → 允许未知来源应用。</p>
+              </div>
+              <div>
+                <p className="font-medium text-white mb-1">Q: iOS 能用吗？</p>
+                <p className="text-gray-400">A: 可以，使用 PWA 方式安装到主屏幕。</p>
               </div>
               <div>
                 <p className="font-medium text-white mb-1">Q: 会自动更新吗？</p>
-                <p className="text-gray-400">A: App 内会自动检测新版本并提示更新。</p>
+                <p className="text-gray-400">A: App 内自动检测新版本并提示更新。</p>
               </div>
             </div>
           </div>
