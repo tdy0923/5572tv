@@ -5,7 +5,7 @@ import { detectPlatform } from './utils';
 import HeroSection from './components/HeroSection';
 import PlatformTabs from './components/PlatformTabs';
 import InstallGuide from './components/InstallGuide';
-import FeatureGrid from './components/FeatureGrid';
+import AIFeatureShowcase from './components/AIFeatureShowcase';
 import DynamicBackground from '@/components/download/DynamicBackground';
 
 export default function DownloadPage() {
@@ -24,7 +24,7 @@ export default function DownloadPage() {
         selected={selectedPlatform} 
         onSelect={setSelectedPlatform} 
       />
-      <FeatureGrid />
+      <AIFeatureShowcase />
       {showGuide && (
         <InstallGuide 
           platform={selectedPlatform} 

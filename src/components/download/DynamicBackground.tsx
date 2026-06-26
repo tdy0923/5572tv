@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 export default function DynamicBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -56,7 +57,7 @@ export default function DynamicBackground() {
     const init = () => {
       resize();
       particles = [];
-      const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000));
+      const count = Math.min(60, Math.floor((canvas.width * canvas.height) / 20000));
       for (let i = 0; i < count; i++) {
         particles.push(new Particle());
       }
@@ -69,8 +70,8 @@ export default function DynamicBackground() {
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 150) {
-            ctx.strokeStyle = `rgba(244, 194, 77, ${0.1 * (1 - dist / 150)})`;
+          if (dist < 120) {
+            ctx.strokeStyle = `rgba(244, 194, 77, ${0.08 * (1 - dist / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
@@ -105,10 +106,23 @@ export default function DynamicBackground() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ opacity: 0.6 }}
-    />
+    <>
+      {/* AI生成的背景图 */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/agnes/hero-bg.png"
+          alt=""
+          fill
+          className="object-cover opacity-30"
+          priority
+        />
+      </div>
+      {/* 粒子动画叠加 */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ opacity: 0.6 }}
+      />
+    </>
   );
 }
