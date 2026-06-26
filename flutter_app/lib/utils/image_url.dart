@@ -4,6 +4,8 @@
 /// - [originalUrl]: 原始图片地址
 /// - [source]: 数据来源（如 'douban'、'bangumi' 等）
 /// 返回可直接用于加载的图片地址。
+/// 
+/// 策略：首次请求走API下载并缓存，后续直接访问静态文件
 Future<String> getImageUrl(String originalUrl, String? source) async {
   if (originalUrl.isEmpty) return originalUrl;
 
@@ -12,6 +14,7 @@ Future<String> getImageUrl(String originalUrl, String? source) async {
       originalUrl.contains('doubanio.com') || 
       originalUrl.contains('manmankan.com')) {
     const baseUrl = 'https://www.5572.net';
+    // 通过API代理（首次下载并缓存，后续Cloudflare直接返回静态文件）
     return '$baseUrl/api/poster-cache?url=${Uri.encodeComponent(originalUrl)}';
   }
 
@@ -21,7 +24,9 @@ Future<String> getImageUrl(String originalUrl, String? source) async {
 /// 返回加载网络图片所需的 HTTP 头。
 Map<String, String>? getImageRequestHeaders(String imageUrl, String? source) {
   // 代理URL不需要额外头
-  if (imageUrl.contains('/api/poster-cache') || imageUrl.contains('/api/image-proxy')) {
+  if (imageUrl.contains('/api/poster-cache') || 
+      imageUrl.contains('/api/image-proxy') ||
+      imageUrl.contains('/poster-cache/')) {
     return null;
   }
   return null;

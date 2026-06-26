@@ -75,6 +75,34 @@ const nextConfig = {
         },
       ],
     },
+    // 海报缓存 - 长期缓存
+    {
+      source: '/poster-cache/:path*',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'public, max-age=2592000, s-maxage=2592000, immutable',
+        },
+        {
+          key: 'Access-Control-Allow-Origin',
+          value: '*',
+        },
+      ],
+    },
+    // 视频缩略图缓存 - 长期缓存
+    {
+      source: '/video-cache/:path*',
+      headers: [
+        {
+          key: 'Cache-Control',
+          value: 'public, max-age=2592000, s-maxage=2592000, immutable',
+        },
+        {
+          key: 'Access-Control-Allow-Origin',
+          value: '*',
+        },
+      ],
+    },
   ],
 };
 
