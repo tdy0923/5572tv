@@ -4136,7 +4136,7 @@ function PlayPageClient() {
                       input.maxLength = 100;
                       input.className = 'danmaku-mobile-input';
                       input.style.cssText =
-                        'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:calc(100vw - 40px);max-width:400px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.8);color:white;font-size:16px;z-index:99999;outline:none;backdrop-filter:blur(10px);';
+                        'position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100vw - 40px);max-width:400px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.2);background:rgba(0,0,0,0.8);color:white;font-size:16px;z-index:99999;outline:none;backdrop-filter:blur(10px);';
                       document.body.appendChild(input);
                       input.focus();
 

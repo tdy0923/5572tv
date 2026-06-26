@@ -1344,7 +1344,7 @@ function SearchPageClient() {
                       }
                     }}
                     active={searchType === 'video'}
-                    className='min-w-[110px] flex-shrink-0 whitespace-nowrap px-4 py-2.5 font-semibold sm:min-w-0 sm:px-6 sm:text-base'
+                    className='min-w-0 flex-shrink whitespace-nowrap px-3 py-2.5 font-semibold sm:px-6 sm:text-base'
                   >
                     影视资源
                   </PillButton>
@@ -1365,7 +1365,7 @@ function SearchPageClient() {
                       }
                     }}
                     active={searchType === 'netdisk'}
-                    className='min-w-[110px] flex-shrink-0 whitespace-nowrap px-4 py-2.5 font-semibold sm:min-w-0 sm:px-6 sm:text-base'
+                    className='min-w-0 flex-shrink whitespace-nowrap px-3 py-2.5 font-semibold sm:px-6 sm:text-base'
                   >
                     网盘资源
                   </PillButton>
@@ -1391,7 +1391,7 @@ function SearchPageClient() {
                       }
                     }}
                     active={searchType === 'tmdb-actor'}
-                    className='min-w-[110px] flex-shrink-0 whitespace-nowrap px-4 py-2.5 font-semibold sm:min-w-0 sm:px-6 sm:text-base'
+                    className='min-w-0 flex-shrink whitespace-nowrap px-3 py-2.5 font-semibold sm:px-6 sm:text-base'
                   >
                     TMDB演员
                   </PillButton>
