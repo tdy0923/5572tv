@@ -44,9 +44,10 @@ class AnnouncementService {
   /// 标记已读
   static Future<void> dismiss() async {
     final prefs = await SharedPreferences.getInstance();
-    final info = await fetchAnnouncement('');
-    if (info != null) {
-      await prefs.setString(_dismissedContentKey, info.content);
+    final lastContent = prefs.getString(_dismissedContentKey);
+    if (lastContent != null) {
+      // 已经标记过，无需再次获取
+      return;
     }
   }
 }

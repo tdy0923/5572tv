@@ -201,9 +201,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       if (!mounted || _playerDisposed) return;
       setState(() {
         _hasCompleted = false;
-        // _isLoadingVideo = false;
+        _isLoadingVideo = false;
       });
-      // widget.onReady?.call();
+      widget.onReady?.call();
     } catch (error) {
       debugPrint('VideoPlayerWidget: failed to open media $error');
       if (mounted) {
