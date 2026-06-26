@@ -111,6 +111,8 @@ import {
 } from './hooks/usePlayPageQueries';
 import { useSourceSearch } from './hooks/useSourceSearch';
 import { useTrailerFallback } from './hooks/useTrailerFallback';
+import DeviceRouter from '@/components/DeviceRouter';
+import MobilePlayWrapper from '@/components/MobilePlayWrapper';
 
 const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
 
@@ -7152,5 +7154,19 @@ function PlayPageClientWrapper() {
   // Using full searchParams.toString() caused infinite remount loop with replaceState
   const key = `${searchParams.get('source') || ''}+${searchParams.get('id') || ''}`;
 
-  return <PlayPageClient key={key} />;
+  return (
+    <DeviceRouter
+      mobile={
+        <MobilePlayWrapper
+          title=""
+          episodes={[]}
+          currentEpisode={0}
+          onEpisodeChange={() => {}}
+        >
+          <PlayPageClient key={key} />
+        </MobilePlayWrapper>
+      }
+      desktop={<PlayPageClient key={key} />}
+    />
+  );
 }

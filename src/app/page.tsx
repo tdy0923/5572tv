@@ -49,6 +49,7 @@ import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
 import { useDevice } from '@/core/hooks/useDevice';
 import MobileHomePage from '@/components/MobileHomePage';
+import DeviceRouter from '@/components/DeviceRouter';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
@@ -2159,7 +2160,19 @@ function HomeClient() {
 export default function Home() {
   return (
     <Suspense>
-      <HomeClient />
+      <DeviceRouter
+        mobile={<MobileHomePage />}
+        desktop={<HomeClient />}
+      />
+    </Suspense>
+  );
+}
+
+// 移动端首页包装器
+export function MobileHome() {
+  return (
+    <Suspense>
+      <MobileHomePage />
     </Suspense>
   );
 }
