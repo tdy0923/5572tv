@@ -1,6 +1,7 @@
 /**
- * Poster Cache API - 智能缓存策略
- * 严格控制存储空间，按需缓存，自动清理
+ * Poster Cache API - 按内容ID缓存
+ * 每个影片只保留一张最新海报，节省空间
+ * 当有新海报时自动替换旧的
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -11,34 +12,43 @@ import { join } from 'path';
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'poster-cache');
-const MAX_CACHE_SIZE_MB = 1500; // 海报缓存 1.5GB
-const MAX_CACHE_FILES = 30000; // 最大文件数
-const MAX_AGE_DAYS = 30; // 30天未访问自动清理
-const CLEANUP_INTERVAL = 1000; // 每1000次请求清理一次
+const MAX_CACHE_SIZE_MB = 1500;
+const MAX_CACHE_FILES = 30000;
 
-let requestCount = 0;
-
-// 确保缓存目录存在
 async function ensureCacheDir() {
   if (!existsSync(CACHE_DIR)) {
     await mkdir(CACHE_DIR, { recursive: true });
   }
 }
 
-// 生成缓存文件名
-function getCacheFileName(url: string): string {
+/**
+ * 从URL提取内容ID
+ * 豆瓣: /view/photo/s_ratio_poster/public/p2929038414.jpg → p2929038414
+ * 通用: 使用URL的最后部分作为ID
+ */
+function getContentId(url: string): string {
+  // 豆瓣图片URL格式: https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929038414.jpg
+  const doubanMatch = url.match(/\/public\/(p\d+)\./);
+  if (doubanMatch) {
+    return doubanMatch[1]; // p2929038414
+  }
+
+  // manmankan格式: /yybpic/202401/xxx.jpg
+  const manmankanMatch = url.match(/\/([^/]+)\.(jpg|jpeg|png|webp)/i);
+  if (manmankanMatch) {
+    return manmankanMatch[1];
+  }
+
+  // 通用: 使用URL的hash
   let hash = 0;
   for (let i = 0; i < url.length; i++) {
     const char = url.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash;
   }
-  const ext = url.includes('.webp') ? '.webp' : 
-              url.includes('.png') ? '.png' : '.jpg';
-  return `${Math.abs(hash).toString(36)}${ext}`;
+  return `hash_${Math.abs(hash).toString(36)}`;
 }
 
-// 获取Referer
 function getReferer(url: string): string {
   if (url.includes('doubanio.com') || url.includes('douban.com')) {
     return 'https://movie.douban.com/';
@@ -49,139 +59,46 @@ function getReferer(url: string): string {
   return '';
 }
 
-// 获取缓存统计
-async function getCacheStats() {
-  try {
-    const files = await readdir(CACHE_DIR);
-    let totalSize = 0;
-    for (const file of files) {
-      const filePath = join(CACHE_DIR, file);
-      const fileStat = await stat(filePath);
-      totalSize += fileStat.size;
-    }
-    return {
-      count: files.length,
-      sizeMB: Math.round(totalSize / 1024 / 1024),
-    };
-  } catch {
-    return { count: 0, sizeMB: 0 };
-  }
-}
+/**
+ * 保存海报并管理旧文件
+ * 同一个contentId的新海报会自动替换旧的
+ */
+async function savePoster(contentId: string, imageData: ArrayBuffer, url: string): Promise<string> {
+  // 根据内容类型确定扩展名
+  let ext = '.jpg';
+  if (url.includes('.webp')) ext = '.webp';
+  else if (url.includes('.png')) ext = '.png';
 
-// 清理过期缓存
-async function cleanupExpiredCache() {
-  try {
-    const files = await readdir(CACHE_DIR);
-    const now = Date.now();
-    const maxAge = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
-    let deletedCount = 0;
+  const fileName = `${contentId}${ext}`;
+  const filePath = join(CACHE_DIR, fileName);
 
-    for (const file of files) {
-      const filePath = join(CACHE_DIR, file);
-      try {
-        const fileStat = await stat(filePath);
-        const age = now - fileStat.mtimeMs;
-        
-        // 删除超过30天未访问的文件
-        if (age > maxAge) {
-          await unlink(filePath);
-          deletedCount++;
-        }
-      } catch {
-        // 忽略单个文件错误
-      }
-    }
-    
-    return deletedCount;
-  } catch {
-    return 0;
+  // 如果同ID的旧文件存在，删除它（新海报替换旧的）
+  if (existsSync(filePath)) {
+    try {
+      await unlink(filePath);
+    } catch {}
   }
-}
 
-// 智能清理：超过限制时删除最旧的文件
-async function smartCleanup() {
-  const stats = await getCacheStats();
-  
-  // 如果文件数超过限制，删除最旧的20%
-  if (stats.count > MAX_CACHE_FILES) {
-    const files = await readdir(CACHE_DIR);
-    const fileStats = await Promise.all(
-      files.map(async (file) => ({
-        name: file,
-        mtime: (await stat(join(CACHE_DIR, file))).mtimeMs,
-      }))
-    );
-    
-    // 按修改时间排序，删除最旧的20%
-    fileStats.sort((a, b) => a.mtime - b.mtime);
-    const toDelete = fileStats.slice(0, Math.floor(files.length * 0.2));
-    
-    for (const file of toDelete) {
-      try {
-        await unlink(join(CACHE_DIR, file.name));
-      } catch {}
-    }
-    
-    return toDelete.length;
-  }
-  
-  // 如果大小超过限制，删除最旧的30%
-  if (stats.sizeMB > MAX_CACHE_SIZE_MB) {
-    const files = await readdir(CACHE_DIR);
-    const fileStats = await Promise.all(
-      files.map(async (file) => {
-        const filePath = join(CACHE_DIR, file);
-        const fileStat = await stat(filePath);
-        return {
-          name: file,
-          size: fileStat.size,
-          mtime: fileStat.mtimeMs,
-        };
-      })
-    );
-    
-    // 按修改时间排序，删除最旧的30%
-    fileStats.sort((a, b) => a.mtime - b.mtime);
-    const toDelete = fileStats.slice(0, Math.floor(files.length * 0.3));
-    
-    for (const file of toDelete) {
-      try {
-        await unlink(join(CACHE_DIR, file.name));
-      } catch {}
-    }
-    
-    return toDelete.length;
-  }
-  
-  return 0;
+  // 保存新海报
+  await writeFile(filePath, Buffer.from(imageData));
+  return fileName;
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
     const url = searchParams.get('url');
-    const statsOnly = searchParams.get('stats') === 'true';
-
-    // 返回统计信息
-    if (statsOnly) {
-      const stats = await getCacheStats();
-      return NextResponse.json(stats);
-    }
 
     if (!url) {
-      return NextResponse.json({ error: 'Missing url parameter' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing url' }, { status: 400 });
     }
 
     await ensureCacheDir();
-    
-    // 每1000次请求执行清理
-    requestCount++;
-    if (requestCount % CLEANUP_INTERVAL === 0) {
-      await cleanupExpiredCache();
-      await smartCleanup();
-    }
 
-    const cacheFile = join(CACHE_DIR, getCacheFileName(url));
+    // 按内容ID获取缓存文件名
+    const contentId = getContentId(url);
+    const ext = url.includes('.webp') ? '.webp' : url.includes('.png') ? '.png' : '.jpg';
+    const cacheFile = join(CACHE_DIR, `${contentId}${ext}`);
 
     // 检查缓存是否存在
     if (existsSync(cacheFile)) {
@@ -189,16 +106,27 @@ export async function GET(request: NextRequest) {
       return new NextResponse(data, {
         headers: {
           'Content-Type': 'image/jpeg',
-          'Cache-Control': 'public, max-age=604800, s-maxage=604800',
+          'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
           'Access-Control-Allow-Origin': '*',
         },
       });
     }
 
     // 检查缓存空间
-    const stats = await getCacheStats();
-    if (stats.count >= MAX_CACHE_FILES || stats.sizeMB >= MAX_CACHE_SIZE_MB) {
-      await smartCleanup();
+    const files = await readdir(CACHE_DIR);
+    if (files.length >= MAX_CACHE_FILES) {
+      // 删除最旧的10%文件
+      const fileStats = await Promise.all(
+        files.map(async (f) => ({
+          name: f,
+          mtime: (await stat(join(CACHE_DIR, f))).mtimeMs,
+        }))
+      );
+      fileStats.sort((a, b) => a.mtime - b.mtime);
+      const toDelete = fileStats.slice(0, Math.floor(files.length * 0.1));
+      for (const f of toDelete) {
+        try { await unlink(join(CACHE_DIR, f.name)); } catch {}
+      }
     }
 
     // 下载图片
@@ -213,33 +141,23 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch' }, { status: 502 });
+      return NextResponse.json({ error: 'Failed' }, { status: 502 });
     }
 
     const imageData = await response.arrayBuffer();
     
-    // 检查单个文件大小（限制500KB）
-    if (imageData.byteLength > 500 * 1024) {
-      return new NextResponse(imageData, {
-        headers: {
-          'Content-Type': response.headers.get('content-type') || 'image/jpeg',
-          'Cache-Control': 'public, max-age=604800',
-        },
-      });
-    }
-
-    // 保存到缓存
-    await writeFile(cacheFile, Buffer.from(imageData));
+    // 保存海报（自动替换同ID旧文件）
+    await savePoster(contentId, imageData, url);
 
     return new NextResponse(imageData, {
       headers: {
         'Content-Type': response.headers.get('content-type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=604800, s-maxage=604800',
+        'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
         'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (error) {
     console.error('Poster cache error:', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ error: 'Error' }, { status: 500 });
   }
 }
