@@ -256,7 +256,7 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
   return response;
 }
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Rate limiting - skip for static assets and all API endpoints
