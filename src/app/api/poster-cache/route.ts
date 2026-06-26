@@ -63,25 +63,31 @@ function getReferer(url: string): string {
  * 保存海报并管理旧文件
  * 同一个contentId的新海报会自动替换旧的
  */
-async function savePoster(contentId: string, imageData: ArrayBuffer, url: string): Promise<string> {
-  // 根据内容类型确定扩展名
-  let ext = '.jpg';
-  if (url.includes('.webp')) ext = '.webp';
-  else if (url.includes('.png')) ext = '.png';
+async function savePoster(contentId: string, imageData: ArrayBuffer, url: string): Promise<string | null> {
+  try {
+    // 根据内容类型确定扩展名
+    let ext = '.jpg';
+    if (url.includes('.webp')) ext = '.webp';
+    else if (url.includes('.png')) ext = '.png';
 
-  const fileName = `${contentId}${ext}`;
-  const filePath = join(CACHE_DIR, fileName);
+    const fileName = `${contentId}${ext}`;
+    const filePath = join(CACHE_DIR, fileName);
 
-  // 如果同ID的旧文件存在，删除它（新海报替换旧的）
-  if (existsSync(filePath)) {
-    try {
-      await unlink(filePath);
-    } catch {}
+    // 如果同ID的旧文件存在，删除它（新海报替换旧的）
+    if (existsSync(filePath)) {
+      try {
+        await unlink(filePath);
+      } catch {}
+    }
+
+    // 保存新海报
+    await writeFile(filePath, Buffer.from(imageData));
+    return fileName;
+  } catch (error) {
+    // 文件写入失败时返回null，API仍会返回图片数据
+    console.warn('Failed to save poster:', error);
+    return null;
   }
-
-  // 保存新海报
-  await writeFile(filePath, Buffer.from(imageData));
-  return fileName;
 }
 
 export async function GET(request: NextRequest) {
