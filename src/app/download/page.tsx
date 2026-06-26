@@ -15,9 +15,9 @@ function detectPlatform(): 'android' | 'ios' | 'tv' | 'desktop' {
 }
 
 const platforms = [
-  { id: 'android', name: 'Android', icon: Smartphone, desc: 'APK 安装包', size: '65MB', version: 'v1.5.0' },
-  { id: 'ios', name: 'iOS', icon: Smartphone, desc: 'PWA 网页应用', size: '-', version: 'v1.5.0' },
-  { id: 'tv', name: 'TV', icon: Tv, desc: '电视版 APK', size: '65MB', version: 'v1.5.0' },
+  { id: 'android' as const, name: 'Android', icon: Smartphone, desc: 'APK 安装包', size: '65MB', version: 'v1.5.0' },
+  { id: 'ios' as const, name: 'iOS', icon: Smartphone, desc: 'PWA 网页应用', size: '-', version: 'v1.5.0' },
+  { id: 'tv' as const, name: 'TV', icon: Tv, desc: '电视版 APK', size: '65MB', version: 'v1.5.0' },
 ];
 
 const features = [
@@ -29,7 +29,7 @@ const features = [
 
 export default function DownloadPage() {
   const detected = useMemo(() => detectPlatform(), []);
-  const [active, setActive] = useState<'android' | 'ios' | 'tv' | 'desktop'>(detected);
+  const [active, setActive] = useState<'android' | 'ios' | 'tv' | 'desktop'>('android');
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
