@@ -333,7 +333,7 @@ function HomeClient() {
     return cached;
   }, [homeData?.hotShortDramas, state.hotShortDramas]);
 
-  const bangumiCalendarData = homeData?.bangumiCalendar || [];
+  const bangumiCalendarData: any[] = [];
 
   // 🚀 计算 loading 状态：首次加载时显示 loading
   const loading = homeLoading;

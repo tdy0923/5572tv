@@ -7,10 +7,6 @@
 import { useQueries } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import {
-  BangumiCalendarData,
-  GetBangumiCalendarData,
-} from '@/lib/bangumi.client';
 import { getRecommendedShortDramas } from '@/lib/shortdrama.client';
 import { SearchResult, ShortDramaItem } from '@/lib/types';
 
@@ -20,7 +16,6 @@ export interface HomePageData {
   hotVarietyShows: SearchResult[];
   hotAnime: SearchResult[];
   hotShortDramas: ShortDramaItem[];
-  bangumiCalendar: BangumiCalendarData[];
 }
 
 export interface HomePageQueriesResult {
@@ -96,7 +91,6 @@ export function useHomePageQueries(): HomePageQueriesResult {
       varietyResult,
       animeResult,
       shortDramaResult,
-      bangumiResult,
     ] = results;
 
     return {
@@ -105,7 +99,6 @@ export function useHomePageQueries(): HomePageQueriesResult {
       hotVarietyShows: varietyResult?.data || [],
       hotAnime: animeResult?.data || [],
       hotShortDramas: shortDramaResult?.data || [],
-      bangumiCalendar: bangumiResult?.data || [],
     };
   }, []);
 
@@ -148,11 +141,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
         queryFn: () => getRecommendedShortDramas(20),
         staleTime: 5 * 60 * 1000,
       },
-      {
-        queryKey: ['bangumi-calendar'],
-        queryFn: () => GetBangumiCalendarData(),
-        staleTime: 10 * 60 * 1000,
-      },
+      ,
     ],
     combine,
   });
@@ -163,7 +152,6 @@ export function useHomePageQueries(): HomePageQueriesResult {
     hotVarietyShows: [],
     hotAnime: [],
     hotShortDramas: [],
-    bangumiCalendar: [],
   };
 
   return {

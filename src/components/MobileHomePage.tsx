@@ -24,7 +24,7 @@ export default function MobileHomePage() {
     return data.hotMovies.slice(0, 5).map((item) => ({
       poster: resolveCardPosterUrl(item.poster),
       title: item.title,
-      href: `/play?source=douban&id=${item.id}`,
+      href: `/play?source=${item.source || 'unknown'}&id=${item.id}&title=${encodeURIComponent(item.title || '')}`,
       subtitle: item.year || '',
       rate: (item as any).rate || '',
     }));
@@ -50,7 +50,7 @@ export default function MobileHomePage() {
         items: data.hotMovies.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
-          href: `/play?source=douban&id=${item.id}`,
+          href: `/play?source=${item.source || 'unknown'}&id=${item.id}&title=${encodeURIComponent(item.title || '')}`,
           subtitle: item.year || '',
         })),
       });
@@ -62,7 +62,7 @@ export default function MobileHomePage() {
         items: data.hotTvShows.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
-          href: `/play?source=douban&id=${item.id}`,
+          href: `/play?source=${item.source || 'unknown'}&id=${item.id}&title=${encodeURIComponent(item.title || '')}`,
           subtitle: item.year || '',
         })),
       });
@@ -74,7 +74,7 @@ export default function MobileHomePage() {
         items: data.hotAnime.slice(0, 10).map((item) => ({
           poster: resolveCardPosterUrl(item.poster),
           title: item.title,
-          href: `/play?source=douban&id=${item.id}`,
+          href: `/play?source=${item.source || 'unknown'}&id=${item.id}&title=${encodeURIComponent(item.title || '')}`,
           subtitle: item.year || '',
         })),
       });
