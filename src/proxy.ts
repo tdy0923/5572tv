@@ -487,6 +487,9 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/version-check', // 版本检查（公共数据，无需认证）
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
+    '/favorites', // 收藏页面（客户端重定向）
+    '/history', // 历史页面（客户端重定向）
+    '/profile', // 个人中心（客户端重定向）
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
