@@ -27,7 +27,6 @@ import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
 import { deduplicateDanmaku, useDanmu } from '@/hooks/useDanmu';
 
-import AcgSearch from '@/components/AcgSearch';
 import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
 
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -50,17 +49,39 @@ import {
   sanitizePlaybackRate,
   savePreferredAudioLang,
 } from './utils';
+
+const AcgSearch = dynamic(() => import('@/components/AcgSearch'), {
+  ssr: false,
+});
 const DanmuManualMatchModal = dynamic(
   () => import('@/components/DanmuManualMatchModal'),
   { ssr: false },
 );
-import DownloadEpisodeSelector from '@/components/download/DownloadEpisodeSelector';
-import EpisodeSelector from '@/components/EpisodeSelector';
-import NetDiskSearchResults from '@/components/NetDiskSearchResults';
+const DownloadEpisodeSelector = dynamic(
+  () => import('@/components/download/DownloadEpisodeSelector'),
+  { ssr: false },
+);
+const EpisodeSelector = dynamic(() => import('@/components/EpisodeSelector'), {
+  ssr: false,
+});
+const NetDiskSearchResults = dynamic(
+  () => import('@/components/NetDiskSearchResults'),
+  { ssr: false },
+);
+const PlaylistManager = dynamic(() => import('@/components/PlaylistManager'), {
+  ssr: false,
+});
+const ReviewSection = dynamic(() => import('@/components/ReviewSection'), {
+  ssr: false,
+});
+const ShortDramaVerticalPlayer = dynamic(
+  () => import('@/components/shortdrama/ShortDramaVerticalPlayer'),
+  { ssr: false },
+);
+
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
-import ShortDramaVerticalPlayer from '@/components/shortdrama/ShortDramaVerticalPlayer';
 const DanmuSettingsPanel = dynamic(
   () => import('@/components/play/DanmuSettingsPanel'),
   { ssr: false },
@@ -91,8 +112,8 @@ const WebSRSettingsPanel = dynamic(
   () => import('@/components/play/WebSRSettingsPanel'),
   { ssr: false },
 );
-import PlaylistManager from '@/components/PlaylistManager';
-import ReviewSection from '@/components/ReviewSection';
+import DeviceRouter from '@/components/DeviceRouter';
+import MobilePlayWrapper from '@/components/MobilePlayWrapper';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
@@ -111,8 +132,6 @@ import {
 } from './hooks/usePlayPageQueries';
 import { useSourceSearch } from './hooks/useSourceSearch';
 import { useTrailerFallback } from './hooks/useTrailerFallback';
-import DeviceRouter from '@/components/DeviceRouter';
-import MobilePlayWrapper from '@/components/MobilePlayWrapper';
 
 const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
 
@@ -7158,7 +7177,7 @@ function PlayPageClientWrapper() {
     <DeviceRouter
       mobile={
         <MobilePlayWrapper
-          title=""
+          title=''
           episodes={[]}
           currentEpisode={0}
           onEpisodeChange={() => {}}

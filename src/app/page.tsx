@@ -47,13 +47,12 @@ import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 import { useClearFavoritesMutation } from '@/hooks/useFavoritesMutations';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
-import { useDevice } from '@/core/hooks/useDevice';
-import MobileHomePage from '@/components/MobileHomePage';
-import DeviceRouter from '@/components/DeviceRouter';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
+import DeviceRouter from '@/components/DeviceRouter';
 import HeroBanner from '@/components/HeroBanner';
+import MobileHomePage from '@/components/MobileHomePage';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -633,142 +632,132 @@ function HomeClient() {
   }, [homeData, homeLoading, refetchHomeData]);
 
   // 🚀 当 GlobalCache 数据加载完成后，延迟加载详情数据
-  const detailTimeoutRefs = useRef<NodeJS.Timeout[]>([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!homeData) return;
 
-    // 清理上一次的 timeout
-    detailTimeoutRefs.current.forEach((t) => clearTimeout(t));
-    detailTimeoutRefs.current = [];
+    // 取消上一次的请求
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-    // 延迟加载电影详情
-    if (homeData.hotMovies.length > 0) {
-      const t1 = setTimeout(() => {
+    // 延迟1秒后并行加载所有详情数据（让首屏先渲染）
+    const timer = setTimeout(() => {
+      if (controller.signal.aborted) return;
+
+      // 收集所有需要加载的ID
+      const movieIds = homeData.hotMovies.slice(0, 2).map((m) => m.id);
+      const tvShowIds = homeData.hotTvShows.slice(0, 2).map((s) => s.id);
+      const animeId = homeData.hotAnime[0]?.id;
+      const varietyId = homeData.hotVarietyShows[0]?.id;
+
+      // 并行请求所有详情
+      const allIds = [
+        ...new Set(
+          [...movieIds, ...tvShowIds, animeId, varietyId].filter(Boolean),
+        ),
+      ];
+
+      if (allIds.length > 0) {
         Promise.all(
-          homeData.hotMovies.slice(0, 2).map(async (movie) => {
+          allIds.map(async (id) => {
             try {
-              const detailsRes = await getDoubanDetails(movie.id);
-              if (detailsRes.code === 200 && detailsRes.data) {
+              const res = await getDoubanDetails(id as string);
+              if (res.code === 200 && res.data) {
                 return {
-                  id: movie.id,
-                  plot_summary: detailsRes.data.plot_summary,
-                  backdrop: detailsRes.data.backdrop,
-                  trailerUrl: detailsRes.data.trailerUrl,
+                  id,
+                  plot_summary: res.data.plot_summary,
+                  backdrop: res.data.backdrop,
+                  trailerUrl: res.data.trailerUrl,
                 };
               }
             } catch (error) {
-              console.warn(`获取电影 ${movie.id} 详情失败:`, error);
+              // 忽略单个请求失败
             }
             return null;
           }),
         ).then((results) => {
-          dispatch({
-            type: 'UPDATE_HOT_MOVIES',
-            payload: (prev) => {
-              const base = prev.length > 0 ? prev : homeData.hotMovies;
-              return base.map((m) => {
-                const detail = results.find((r) => r?.id === m.id);
-                return detail ? { ...m, ...detail } : m;
-              });
-            },
-          });
+          if (controller.signal.aborted) return;
+
+          const detailsMap = new Map(
+            results.filter(Boolean).map((r) => [r!.id, r]),
+          );
+
+          // 更新电影
+          if (movieIds.length > 0) {
+            dispatch({
+              type: 'UPDATE_HOT_MOVIES',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotMovies;
+                return base.map((m) => {
+                  const detail = detailsMap.get(m.id);
+                  return detail ? { ...m, ...detail } : m;
+                });
+              },
+            });
+          }
+
+          // 更新剧集
+          if (tvShowIds.length > 0) {
+            dispatch({
+              type: 'UPDATE_HOT_TV_SHOWS',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotTvShows;
+                return base.map((s) => {
+                  const detail = detailsMap.get(s.id);
+                  return detail ? { ...s, ...detail } : s;
+                });
+              },
+            });
+          }
+
+          // 更新动漫
+          if (animeId && detailsMap.has(animeId)) {
+            dispatch({
+              type: 'UPDATE_HOT_ANIME',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotAnime;
+                return base.map((a) =>
+                  a.id === animeId ? { ...a, ...detailsMap.get(animeId) } : a,
+                );
+              },
+            });
+          }
+
+          // 更新综艺
+          if (varietyId && detailsMap.has(varietyId)) {
+            dispatch({
+              type: 'UPDATE_HOT_VARIETY_SHOWS',
+              payload: (prev) => {
+                const base = prev.length > 0 ? prev : homeData.hotVarietyShows;
+                return base.map((s) =>
+                  s.id === varietyId
+                    ? { ...s, ...detailsMap.get(varietyId) }
+                    : s,
+                );
+              },
+            });
+          }
         });
-        //           .catch((err) => console.log('[Homepage] Detail fetch error:', err));
-      }, 2000);
-      detailTimeoutRefs.current.push(t1);
-    }
+      }
+    }, 1000);
 
-    // 延迟加载剧集详情
-    if (homeData.hotTvShows.length > 0) {
-      const t2 = setTimeout(() => {
-        Promise.all(
-          homeData.hotTvShows.slice(0, 2).map(async (show) => {
-            try {
-              const detailsRes = await getDoubanDetails(show.id);
-              if (detailsRes.code === 200 && detailsRes.data) {
-                return {
-                  id: show.id,
-                  plot_summary: detailsRes.data.plot_summary,
-                  backdrop: detailsRes.data.backdrop,
-                  trailerUrl: detailsRes.data.trailerUrl,
-                };
-              }
-            } catch (error) {
-              console.warn(`获取剧集 ${show.id} 详情失败:`, error);
-            }
-            return null;
-          }),
-        ).then((results) => {
-          dispatch({
-            type: 'UPDATE_HOT_TV_SHOWS',
-            payload: (prev) => {
-              const base = prev.length > 0 ? prev : homeData.hotTvShows;
-              return base.map((s) => {
-                const detail = results.find((r) => r?.id === s.id);
-                return detail ? { ...s, ...detail } : s;
-              });
-            },
-          });
-        });
-        //           .catch((err) => console.log('[Homepage] Detail fetch error:', err));
-      }, 2000);
-      detailTimeoutRefs.current.push(t2);
-    }
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [homeData]);
 
-    // 延迟加载动漫详情
-    if (homeData.hotAnime.length > 0) {
-      const t3 = setTimeout(() => {
-        const anime = homeData.hotAnime[0];
-        getDoubanDetails(anime.id)
-          .then((detailsRes) => {
-            if (detailsRes.code === 200 && detailsRes.data) {
-              dispatch({
-                type: 'UPDATE_HOT_ANIME',
-                payload: (prev) => {
-                  const base = prev.length > 0 ? prev : homeData.hotAnime;
-                  return base.map((a) =>
-                    a.id === anime.id ? { ...a, ...detailsRes.data } : a,
-                  );
-                },
-              });
-            }
-          })
-          .catch((error) => {
-            console.warn(`获取动漫 ${anime.id} 详情失败:`, error);
-          });
-      }, 3000);
-      detailTimeoutRefs.current.push(t3);
-    }
+  // 🔄 异步加载即将上映数据
+  useEffect(() => {
+    if (!homeData) return;
 
-    // 延迟加载综艺详情
-    if (homeData.hotVarietyShows.length > 0) {
-      const t4 = setTimeout(() => {
-        const show = homeData.hotVarietyShows[0];
-        getDoubanDetails(show.id)
-          .then((detailsRes) => {
-            if (detailsRes.code === 200 && detailsRes.data) {
-              dispatch({
-                type: 'UPDATE_HOT_VARIETY_SHOWS',
-                payload: (prev) => {
-                  const base =
-                    prev.length > 0 ? prev : homeData.hotVarietyShows;
-                  return base.map((s) =>
-                    s.id === show.id ? { ...s, ...detailsRes.data } : s,
-                  );
-                },
-              });
-            }
-          })
-          .catch((error) => {
-            console.warn(`获取综艺 ${show.id} 详情失败:`, error);
-          });
-      }, 3000);
-      detailTimeoutRefs.current.push(t4);
-    }
+    const controller = new AbortController();
 
-    // 🔄 异步加载即将上映数据
-    fetch('/api/release-calendar?limit=100')
+    fetch('/api/release-calendar?limit=100', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) {
           console.error('获取即将上映数据失败，状态码:', res.status);
@@ -777,6 +766,8 @@ function HomeClient() {
         return res.json();
       })
       .then((upcomingData) => {
+        if (controller.signal.aborted) return;
+
         if (upcomingData?.items) {
           const releases = upcomingData.items;
           // 初始化Web Worker
@@ -794,7 +785,7 @@ function HomeClient() {
               );
 
               workerRef.current.onmessage = (e: MessageEvent) => {
-                const { selectedItems, stats, error } = e.data;
+                const { selectedItems, error } = e.data;
 
                 if (error) {
                   console.error('📅 [Worker] 处理失败:', error);
@@ -808,19 +799,15 @@ function HomeClient() {
                 });
               };
 
-              workerRef.current.onerror = (error) => {
-                console.error('📅 [Worker] 错误:', error);
+              workerRef.current.onerror = () => {
                 dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
               };
-            } catch (error) {
-              console.error('📅 [Worker] 初始化失败:', error);
+            } catch {
               dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
             }
           }
 
-          // 发送数据到Worker处理
           if (workerRef.current) {
-            // 使用 Asia/Shanghai 时区
             const todayStr = new Date()
               .toLocaleDateString('zh-CN', {
                 timeZone: 'Asia/Shanghai',
@@ -828,30 +815,25 @@ function HomeClient() {
                 month: '2-digit',
                 day: '2-digit',
               })
-              .replace(/\//g, '-'); // 转换为 YYYY-MM-DD 格式
+              .replace(/\//g, '-');
 
             workerRef.current.postMessage({
               releases,
               today: todayStr,
             });
-          } else {
-            console.warn('📅 Web Worker不可用，跳过即将上映数据处理');
-            dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
           }
         }
       })
-      .catch((error) => {
-        console.warn('获取即将上映数据失败:', error);
-        dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+        }
       });
 
-    return () => {
-      detailTimeoutRefs.current.forEach((t) => clearTimeout(t));
-    };
+    return () => controller.abort();
   }, [homeData]);
 
   // 🚀 TanStack Query - 使用 useMutation 管理清空收藏操作
-  // 特性：乐观更新（立即清空 UI）+ 错误回滚（失败时恢复数据）
   const clearFavoritesMutation = useClearFavoritesMutation();
 
   // 🚀 TanStack Query - 使用 useMutation 管理清空提醒操作
@@ -859,7 +841,7 @@ function HomeClient() {
 
   const handleCloseAnnouncement = (announcement: string) => {
     dispatch({ type: 'SET_SHOW_ANNOUNCEMENT', payload: false });
-    localStorage.setItem('hasSeenAnnouncement', announcement); // 记录已查看弹窗
+    localStorage.setItem('hasSeenAnnouncement', announcement);
   };
 
   const handleOpenAnnouncement = () => {
@@ -2160,10 +2142,7 @@ function HomeClient() {
 export default function Home() {
   return (
     <Suspense>
-      <DeviceRouter
-        mobile={<MobileHomePage />}
-        desktop={<HomeClient />}
-      />
+      <DeviceRouter mobile={<MobileHomePage />} desktop={<HomeClient />} />
     </Suspense>
   );
 }
