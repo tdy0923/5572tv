@@ -5,12 +5,13 @@ import Image from 'next/image';
 /**
  * 真实APP界面预览
  * 使用真实的APP图标和界面元素
+ * 响应式：桌面端更大，移动端适中
  */
 export default function PhonePreview() {
   return (
     <div className="relative">
-      {/* 手机框 - 真实比例 9:19.5 */}
-      <div className="w-[180px] h-[388px] bg-[#111] rounded-[2rem] border-[4px] border-gray-800 overflow-hidden shadow-2xl relative">
+      {/* 手机框 - 响应式大小 */}
+      <div className="w-[200px] sm:w-[240px] h-[430px] sm:h-[520px] bg-[#111] rounded-[2rem] sm:rounded-[2.5rem] border-[4px] sm:border-[5px] border-gray-800 overflow-hidden shadow-2xl relative">
         {/* 状态栏 */}
         <div className="absolute top-0 left-0 right-0 h-12 bg-black/50 flex items-center justify-between px-6 pt-2 z-10">
           <span className="text-xs text-white/60">9:41</span>
