@@ -46,16 +46,29 @@ async function handleM3U8Proxy(request, url) {
 
   var decodedUrl = decodeURIComponent(targetUrl);
 
+  // URL 格式验证
+  var parsedUrl;
+  try {
+    parsedUrl = new URL(decodedUrl);
+  } catch (e) {
+    return jsonResponse({ error: 'Invalid URL format' }, 400);
+  }
+
   // 从 CF 边缘拉取 M3U8（15s 超时）
-  var response = await fetch(decodedUrl, {
-    headers: {
-      'User-Agent': UA,
-      Accept: '*/*',
-      'Accept-Encoding': 'identity',
-    },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(15000),
-  });
+  var response;
+  try {
+    response = await fetch(decodedUrl, {
+      headers: {
+        'User-Agent': UA,
+        Accept: '*/*',
+        'Accept-Encoding': 'identity',
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (e) {
+    return jsonResponse({ error: 'Fetch failed: ' + e.message }, 502);
+  }
 
   if (!response.ok) {
     // CDN 返回非 200，尝试用不同 UA + Referer 重试
@@ -66,15 +79,19 @@ async function handleM3U8Proxy(request, url) {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15',
     ];
-    response = await fetch(decodedUrl, {
-      headers: {
-        'User-Agent': uas[Math.floor(Math.random() * uas.length)],
-        Accept: '*/*',
-        Referer: new URL(decodedUrl).origin + '/',
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(15000),
-    });
+    try {
+      response = await fetch(decodedUrl, {
+        headers: {
+          'User-Agent': uas[Math.floor(Math.random() * uas.length)],
+          Accept: '*/*',
+          Referer: parsedUrl.origin + '/',
+        },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000),
+      });
+    } catch (e) {
+      return jsonResponse({ error: 'Retry fetch failed: ' + e.message }, 502);
+    }
     if (!response.ok) {
       try {
         response.body.cancel();
