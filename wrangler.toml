@@ -3,10 +3,8 @@ main = "proxy.worker.js"
 compatibility_date = "2026-01-01"
 account_id = "0934ef7fb31492896f3871b281726e9d"
 
+# 只保留海报图片代理（豆瓣需要），移除视频代理
+# 视频让浏览器直接访问源站，和其他电影站一样
 routes = [
-  { pattern = "www.5572.net/api/proxy/segment*", zone_name = "5572.net" },
-  { pattern = "www.5572.net/api/proxy/key*", zone_name = "5572.net" },
-  { pattern = "www.5572.net/api/proxy/stream*", zone_name = "5572.net" },
-  { pattern = "www.5572.net/api/proxy/m3u8*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/douban/refresh-trailer*", zone_name = "5572.net" },
 ]
