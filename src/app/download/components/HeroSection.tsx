@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Download, Play, Star, Users } from 'lucide-react';
+import PhonePreview from './PhonePreview';
 
 interface HeroSectionProps {
   platform: string;
@@ -103,41 +104,9 @@ export default function HeroSection({ platform, onShowGuide }: HeroSectionProps)
             </div>
           </div>
 
-          {/* 右侧：APP界面展示 */}
+          {/* 右侧：真实APP界面预览 */}
           <div className={`flex-1 flex justify-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
-            <div className="relative">
-              {/* 手机框 */}
-              <div className="w-72 h-[480px] bg-black rounded-[2.5rem] border-[6px] border-gray-800 overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/agnes/phone-mockup.png"
-                  alt="5572 影视 APP"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              
-              {/* 悬浮卡片 */}
-              <div className="absolute -left-8 top-1/4 bg-white/10 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#f4c24d] flex items-center justify-center">
-                    <Play className="w-4 h-4 text-black" fill="black" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white">正在播放</div>
-                    <div className="text-xs text-gray-400">流浪地球3</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 悬浮评分 */}
-              <div className="absolute -right-4 bottom-1/3 bg-white/10 backdrop-blur-xl rounded-xl p-3 border border-white/10">
-                <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-                  <span className="text-lg font-bold text-white">9.2</span>
-                </div>
-                <div className="text-xs text-gray-400">豆瓣评分</div>
-              </div>
-            </div>
+            <PhonePreview />
           </div>
         </div>
       </div>
