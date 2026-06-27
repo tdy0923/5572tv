@@ -658,10 +658,15 @@ class _PlayerScreenState extends State<PlayerScreen>
 
       // 如果代理 URL 不为空，则将 newUrl encode 后拼接到代理 URL 后面
       String finalUrl = newUrl;
-      if (m3u8ProxyUrl.isNotEmpty) {
+      if (m3u8ProxyUrl.isNotEmpty && !newUrl.startsWith('http')) {
+        // 如果是相对URL，使用代理
         final encodedUrl = Uri.encodeComponent(newUrl);
         finalUrl = '$m3u8ProxyUrl$encodedUrl';
         print("使用 M3U8 代理: $finalUrl");
+      } else if (newUrl.startsWith('http')) {
+        // 如果已经是完整URL，直接使用
+        finalUrl = newUrl;
+        print("直接使用URL: $finalUrl");
       }
 
       if (_isCasting) {
@@ -672,6 +677,7 @@ class _PlayerScreenState extends State<PlayerScreen>
             startAt: startAt);
       }
     } catch (e) {
+      print("播放错误: $e");
       if (mounted) {
         setState(() {
           _errorMessage = '播放失败: $e';

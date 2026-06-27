@@ -177,10 +177,15 @@ class UserDataService {
     await prefs.setString(_m3u8ProxyUrlKey, url);
   }
 
-  // 获取 M3U8 代理 URL
+  // 获取 M3U8 代理 URL（默认使用服务器代理）
   static Future<String> getM3u8ProxyUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_m3u8ProxyUrlKey) ?? '';
+    final savedUrl = prefs.getString(_m3u8ProxyUrlKey);
+    // 如果用户没有配置，使用默认的服务器代理
+    if (savedUrl == null || savedUrl.isEmpty) {
+      return 'https://www.5572.net/api/video-proxy?url=';
+    }
+    return savedUrl;
   }
 
   // 保存优选测速设置
