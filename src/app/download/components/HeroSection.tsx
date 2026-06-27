@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Download, Smartphone, ArrowRight } from 'lucide-react';
+import { Download, Play, Star, Users } from 'lucide-react';
 
 interface HeroSectionProps {
   platform: string;
@@ -16,83 +16,128 @@ export default function HeroSection({ platform, onShowGuide }: HeroSectionProps)
     setIsVisible(true);
   }, []);
 
-  const isIOS = platform === 'ios';
-
   return (
-    <section className="relative min-h-screen flex items-center">
-      {/* 简洁背景 - 渐变而非花哨 */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
-      
-      {/* 微妙的装饰 - 只有一个光晕 */}
-      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#f4c24d]/5 rounded-full blur-[150px]" />
-
-      <div className={`relative z-10 w-full max-w-6xl mx-auto px-6 py-24 flex flex-col lg:flex-row items-center gap-16 transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-        
-        {/* 左侧：文字内容 */}
-        <div className="flex-1 text-center lg:text-left">
-          {/* Logo */}
-          <div className="inline-flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-[#f4c24d] flex items-center justify-center">
-              <span className="text-2xl font-black text-black">5</span>
-            </div>
-            <span className="text-xl font-semibold text-white tracking-tight">5572</span>
+    <section className="relative min-h-screen flex items-center bg-[#0a0a0a]">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6 py-20">
+        {/* 顶部状态栏模拟 */}
+        <div className={`flex items-center justify-between mb-12 transition-opacity duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/icons/icon-192x192.png"
+              alt="5572"
+              width={48}
+              height={48}
+              className="rounded-xl"
+            />
+            <span className="text-lg font-semibold text-white">5572 影视</span>
           </div>
-
-          {/* 标题 - 大但不夸张 */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            影视
-            <br />
-            <span className="text-[#f4c24d]">播放平台</span>
-          </h1>
-          
-          <p className="text-lg text-gray-400 mb-10 max-w-md leading-relaxed">
-            海量资源，AI搜索，多端同步。<br />
-            为你打造极致的观影体验。
-          </p>
-
-          {/* CTA */}
-          {isIOS ? (
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={onShowGuide}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold text-base hover:bg-[#d89c18] transition-colors min-h-[56px]"
-              >
-                添加到主屏幕
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <span className="text-sm text-gray-500 self-center">Safari → 分享 → 添加到主屏幕</span>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="/download/5572tv-android.apk"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold text-base hover:bg-[#d89c18] transition-colors min-h-[56px]"
-              >
-                <Download className="w-5 h-5" />
-                下载 APK
-              </a>
-              <span className="text-sm text-gray-500 self-center">v1.5.0 · 65MB</span>
-            </div>
-          )}
+          <div className="flex items-center gap-4 text-sm text-gray-400">
+            <span className="flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+              4.8
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="w-4 h-4" />
+              10万+
+            </span>
+          </div>
         </div>
 
-        {/* 右侧：产品预览 */}
-        <div className="flex-1 flex justify-center lg:justify-end">
-          <div className="relative">
-            {/* 手机框 */}
-            <div className="w-72 h-[480px] bg-[#1a1a1a] rounded-[3rem] border-2 border-gray-800 p-3 shadow-2xl">
-              <div className="w-full h-full rounded-[2.5rem] overflow-hidden bg-black">
+        {/* 主内容 */}
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          {/* 左侧文字 */}
+          <div className={`flex-1 text-center lg:text-left transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#f4c24d]/10 rounded-full text-[#f4c24d] text-sm font-medium mb-6">
+              <Play className="w-3 h-3 fill-current" />
+              正在热播
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+              想看的，
+              <br />
+              <span className="text-[#f4c24d]">这里都有</span>
+            </h1>
+            
+            <p className="text-lg text-gray-400 mb-8 max-w-lg">
+              海量影视资源聚合，AI智能搜索推荐，<br className="hidden sm:block" />
+              让每一次观影都是享受。
+            </p>
+
+            {/* 数据展示 */}
+            <div className="flex gap-8 mb-8 justify-center lg:justify-start">
+              <div>
+                <div className="text-2xl font-bold text-white">100万+</div>
+                <div className="text-sm text-gray-500">影视资源</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">50+</div>
+                <div className="text-sm text-gray-500">播放源</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">24h</div>
+                <div className="text-sm text-gray-500">实时更新</div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {platform === 'ios' ? (
+                <button
+                  onClick={onShowGuide}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]"
+                >
+                  添加到主屏幕
+                </button>
+              ) : (
+                <a
+                  href="/download/5572tv-android.apk"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]"
+                >
+                  <Download className="w-5 h-5" />
+                  下载 APK
+                </a>
+              )}
+              <span className="text-sm text-gray-500 self-center">
+                v1.5.0 · 65MB · Android 5.0+
+              </span>
+            </div>
+          </div>
+
+          {/* 右侧：APP界面展示 */}
+          <div className={`flex-1 flex justify-center transition-all duration-700 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
+            <div className="relative">
+              {/* 手机框 */}
+              <div className="w-72 h-[480px] bg-black rounded-[2.5rem] border-[6px] border-gray-800 overflow-hidden shadow-2xl">
                 <Image
                   src="/images/agnes/phone-mockup.png"
-                  alt="App Preview"
+                  alt="5572 影视 APP"
                   fill
                   className="object-cover"
                 />
               </div>
+              
+              {/* 悬浮卡片 */}
+              <div className="absolute -left-8 top-1/4 bg-white/10 backdrop-blur-xl rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#f4c24d] flex items-center justify-center">
+                    <Play className="w-4 h-4 text-black" fill="black" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white">正在播放</div>
+                    <div className="text-xs text-gray-400">流浪地球3</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 悬浮评分 */}
+              <div className="absolute -right-4 bottom-1/3 bg-white/10 backdrop-blur-xl rounded-xl p-3 border border-white/10">
+                <div className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <span className="text-lg font-bold text-white">9.2</span>
+                </div>
+                <div className="text-xs text-gray-400">豆瓣评分</div>
+              </div>
             </div>
-            
-            {/* 装饰光效 */}
-            <div className="absolute -inset-10 bg-[#f4c24d]/5 rounded-full blur-[80px] -z-10" />
           </div>
         </div>
       </div>
