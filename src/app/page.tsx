@@ -1527,7 +1527,7 @@ function HomeClient() {
                         {items.map((item) => (
                           <a
                             key={item.key}
-                            href={`/play?source=${encodeURIComponent(item.source || item.key.split('+')[0])}&id=${encodeURIComponent(item.id || item.key.split('+').slice(1).join('+'))}`}
+                            href={`/play?source=${encodeURIComponent(item.source || item.key.split('+')[0])}&id=${encodeURIComponent(item.id || item.key.split('+').slice(1).join('+'))}&title=${encodeURIComponent(item.title || '')}`}
                             className='group'
                           >
                             <div className='aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800'>
