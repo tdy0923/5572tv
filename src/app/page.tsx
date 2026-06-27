@@ -1571,11 +1571,11 @@ function HomeClient() {
                         id: movie.id,
                         title: movie.title,
                         poster: resolveCardPosterUrl(movie.poster),
-                        backdrop: movie.backdrop,
-                        trailerUrl: movie.trailerUrl,
-                        description: movie.plot_summary,
+                        // backdrop: movie.backdrop,
+                        // trailerUrl: movie.trailerUrl,
+                        // description: movie.plot_summary,
                         year: movie.year,
-                        rate: movie.rate,
+                        // rate: movie.rate,
                         douban_id: Number(movie.id),
                         type: 'movie',
                       })),
@@ -1584,11 +1584,11 @@ function HomeClient() {
                         id: show.id,
                         title: show.title,
                         poster: resolveCardPosterUrl(show.poster),
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
+                        // backdrop: show.backdrop,
+                        // trailerUrl: show.trailerUrl,
+                        // description: show.plot_summary,
                         year: show.year,
-                        rate: show.rate,
+                        // rate: show.rate,
                         douban_id: Number(show.id),
                         type: 'tv',
                       })),
@@ -1597,11 +1597,11 @@ function HomeClient() {
                         id: show.id,
                         title: show.title,
                         poster: resolveCardPosterUrl(show.poster),
-                        backdrop: show.backdrop,
-                        trailerUrl: show.trailerUrl,
-                        description: show.plot_summary,
+                        // backdrop: show.backdrop,
+                        // trailerUrl: show.trailerUrl,
+                        // description: show.plot_summary,
                         year: show.year,
-                        rate: show.rate,
+                        // rate: show.rate,
                         douban_id: Number(show.id),
                         type: 'variety',
                       })),
@@ -1610,11 +1610,11 @@ function HomeClient() {
                         id: anime.id,
                         title: anime.title,
                         poster: resolveCardPosterUrl(anime.poster),
-                        backdrop: anime.backdrop,
-                        trailerUrl: anime.trailerUrl,
-                        description: anime.plot_summary,
+                        // backdrop: anime.backdrop,
+                        // trailerUrl: anime.trailerUrl,
+                        // description: anime.plot_summary,
                         year: anime.year,
-                        rate: anime.rate,
+                        // rate: anime.rate,
                         douban_id: Number(anime.id),
                         type: 'anime',
                       })),
@@ -1902,7 +1902,6 @@ function HomeClient() {
                             title={movie.title}
                             poster={resolveCardPosterUrl(movie.poster)}
                             douban_id={Number(movie.id)}
-                            rate={movie.rate}
                             year={movie.year}
                             type='movie'
                             priority={index < 3}
@@ -1948,7 +1947,6 @@ function HomeClient() {
                             title={show.title}
                             poster={resolveCardPosterUrl(show.poster)}
                             douban_id={Number(show.id)}
-                            rate={show.rate}
                             year={show.year}
                             type='tv'
                             priority={index < 3}
@@ -2045,7 +2043,6 @@ function HomeClient() {
                             title={show.title}
                             poster={resolveCardPosterUrl(show.poster)}
                             douban_id={Number(show.id)}
-                            rate={show.rate}
                             year={show.year}
                             type='variety'
                             priority={index < 3}

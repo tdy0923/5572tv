@@ -1,13 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
-import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import MobileLayout from '@/ui/mobile/layouts/MobileLayout';
+import Link from 'next/link';
+import { useMemo } from 'react';
+
+import { resolveCardPosterUrl } from '@/lib/utils';
+import { useHomePageQueries } from '@/hooks/useHomePageQueries';
+
 import MobileHeroBanner from '@/ui/mobile/components/MobileHeroBanner';
 import MobileVideoCard from '@/ui/mobile/components/MobileVideoCard';
-import { useHomePageQueries } from '@/hooks/useHomePageQueries';
-import { resolveCardPosterUrl } from '@/lib/utils';
+import MobileLayout from '@/ui/mobile/layouts/MobileLayout';
 
 /**
  * 移动端首页 - Netflix风格
@@ -24,14 +26,23 @@ export default function MobileHomePage() {
       title: item.title,
       href: `/play?source=douban&id=${item.id}`,
       subtitle: item.year || '',
-      rate: item.rate || '',
+      rate: (item as any).rate || '',
     }));
   }, [data]);
 
   // 内容区块
   const sections = useMemo(() => {
-    const result: { title: string; href: string; items: { poster: string; title: string; href: string; subtitle?: string }[] }[] = [];
-    
+    const result: {
+      title: string;
+      href: string;
+      items: {
+        poster: string;
+        title: string;
+        href: string;
+        subtitle?: string;
+      }[];
+    }[] = [];
+
     if (data?.hotMovies?.length) {
       result.push({
         title: '热门电影',
@@ -89,20 +100,23 @@ export default function MobileHomePage() {
       <MobileHeroBanner items={heroItems} />
 
       {/* 分类区块 */}
-      <div className="pb-4">
+      <div className='pb-4'>
         {sections.map((section, sIndex) => (
-          <section key={sIndex} className="py-4">
-            <div className="flex items-center justify-between px-4 mb-3">
-              <h2 className="text-lg font-bold text-white">{section.title}</h2>
+          <section key={sIndex} className='py-4'>
+            <div className='flex items-center justify-between px-4 mb-3'>
+              <h2 className='text-lg font-bold text-white'>{section.title}</h2>
               {section.href && (
-                <Link href={section.href} className="flex items-center gap-1 text-sm text-[#f4c24d]">
-                  更多 <ChevronRight className="w-4 h-4" />
+                <Link
+                  href={section.href}
+                  className='flex items-center gap-1 text-sm text-[#f4c24d]'
+                >
+                  更多 <ChevronRight className='w-4 h-4' />
                 </Link>
               )}
             </div>
-            <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide">
+            <div className='flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide'>
               {section.items.map((item, iIndex) => (
-                <div key={iIndex} className="flex-shrink-0 w-[40vw] snap-start">
+                <div key={iIndex} className='flex-shrink-0 w-[40vw] snap-start'>
                   <MobileVideoCard
                     title={item.title}
                     poster={item.poster}
@@ -118,8 +132,8 @@ export default function MobileHomePage() {
       </div>
 
       {isLoading && (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-2 border-[#f4c24d] border-t-transparent rounded-full animate-spin" />
+        <div className='flex justify-center py-12'>
+          <div className='w-8 h-8 border-2 border-[#f4c24d] border-t-transparent rounded-full animate-spin' />
         </div>
       )}
     </MobileLayout>
