@@ -332,10 +332,61 @@ function buildRetryHeaders(targetUrl) {
   return h;
 }
 
+// W-01: Open Proxy防护 - 禁止访问内部/私有IP
+function isInternalUrl(urlStr) {
+  try {
+    var parsed = new URL(urlStr);
+    var hostname = parsed.hostname;
+
+    // 禁止访问本地/私有IP
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1'
+    )
+      return true;
+    if (hostname === '169.254.169.254') return true; // AWS/GCP/Azure元数据
+    if (hostname.startsWith('10.')) return true;
+    if (hostname.startsWith('172.')) {
+      var second = parseInt(hostname.split('.')[1], 10);
+      if (second >= 16 && second <= 31) return true;
+    }
+    if (hostname.startsWith('192.168.')) return true;
+    if (hostname.endsWith('.internal')) return true;
+    if (hostname.endsWith('.local')) return true;
+
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+// W-03: 请求体大小限制 (10MB)
+const MAX_BODY_SIZE = 10 * 1024 * 1024;
+
 async function handleGenericProxy(request, url) {
   var actualUrlStr = decodeURIComponent(url.pathname.replace('/', ''));
   actualUrlStr = ensureProtocol(actualUrlStr, url.protocol);
   actualUrlStr += url.search;
+
+  // W-01: 检查是否为内部URL
+  if (isInternalUrl(actualUrlStr)) {
+    return jsonResponse(
+      { error: 'Access to internal resources is forbidden' },
+      403,
+    );
+  }
+
+  // W-03: 检查请求体大小
+  if (request.body) {
+    var contentLength = parseInt(
+      request.headers.get('content-length') || '0',
+      10,
+    );
+    if (contentLength > MAX_BODY_SIZE) {
+      return jsonResponse({ error: 'Request body too large' }, 413);
+    }
+  }
 
   var newHeaders = filterHeaders(request.headers, function (name) {
     return !name.startsWith('cf-');
@@ -348,7 +399,13 @@ async function handleGenericProxy(request, url) {
     redirect: 'manual',
   });
 
-  var response = await fetch(modifiedRequest);
+  var response;
+  try {
+    response = await fetch(modifiedRequest);
+  } catch (e) {
+    return jsonResponse({ error: 'Proxy fetch failed: ' + e.message }, 502);
+  }
+
   var body = response.body;
 
   if ([301, 302, 303, 307, 308].includes(response.status)) {
@@ -379,8 +436,29 @@ function ensureProtocol(urlStr, defaultProtocol) {
     : defaultProtocol + '//' + urlStr;
 }
 
+// W-02: Header注入防护 - 验证Location头
 function handleRedirect(response, body) {
-  var location = new URL(response.headers.get('location'));
+  var locationHeader = response.headers.get('location');
+  if (!locationHeader) {
+    return jsonResponse({ error: 'Missing Location header' }, 502);
+  }
+
+  // 验证Location是否为有效URL
+  var location;
+  try {
+    location = new URL(locationHeader);
+  } catch {
+    return jsonResponse({ error: 'Invalid Location header' }, 502);
+  }
+
+  // 禁止重定向到内部URL
+  if (isInternalUrl(location.toString())) {
+    return jsonResponse(
+      { error: 'Redirect to internal resource forbidden' },
+      403,
+    );
+  }
+
   var modifiedLocation = '/' + encodeURIComponent(location.toString());
   return new Response(body, {
     status: response.status,
