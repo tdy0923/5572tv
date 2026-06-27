@@ -73,6 +73,11 @@ const nextConfig = {
           key: 'Permissions-Policy',
           value: 'camera=(), microphone=(), geolocation=()',
         },
+        {
+          key: 'Content-Security-Policy',
+          value:
+            "default-src 'self' https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';",
+        },
       ],
     },
     // 海报缓存 - 长期缓存
