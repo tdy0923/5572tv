@@ -2652,34 +2652,47 @@ function PlayPageClient() {
 
       // 如果已经有了source和id，优先通过单个详情接口快速获取
       if (currentSource && currentId) {
-        // 先快速获取当前源的详情
-        try {
-          // // console.log('[Play] 获取当前源详情:', currentSource, currentId);
-          const currentSourceDetail = await fetchSourceDetail(
-            currentSource,
-            currentId,
-            searchTitle || videoTitle,
-          );
-          // // console.log('[Play] 获取到的详情:', currentSourceDetail);
-          if (currentSourceDetail.length > 0) {
-            detailData = currentSourceDetail[0];
-            sourcesInfo = currentSourceDetail;
-            // // console.log('[Play] 设置 detailData 和 sourcesInfo 成功');
+        // douban等非视频源直接跳过详情获取，走搜索流程
+        const isDirectSource = ![
+          'douban',
+          'douban-search',
+          'douban-api',
+          'upcoming_release',
+        ].includes(currentSource);
 
-            if (!searchTitle && !videoTitle && detailData.title) {
-              setVideoTitle(detailData.title);
-              videoTitleRef.current = detailData.title;
-              setSearchTitle(detailData.title);
+        if (isDirectSource) {
+          // 先快速获取当前源的详情
+          try {
+            const currentSourceDetail = await fetchSourceDetail(
+              currentSource,
+              currentId,
+              searchTitle || videoTitle,
+            );
+            if (currentSourceDetail.length > 0) {
+              detailData = currentSourceDetail[0];
+              sourcesInfo = currentSourceDetail;
+
+              if (!searchTitle && !videoTitle && detailData.title) {
+                setVideoTitle(detailData.title);
+                videoTitleRef.current = detailData.title;
+                setSearchTitle(detailData.title);
+              }
+              if (!videoYearRef.current && detailData.year) {
+                setVideoYear(detailData.year);
+                videoYearRef.current = detailData.year;
+              }
+            } else {
+              console.warn('[Play] fetchSourceDetail 返回空数组');
             }
-            if (!videoYearRef.current && detailData.year) {
-              setVideoYear(detailData.year);
-              videoYearRef.current = detailData.year;
-            }
-          } else {
-            console.warn('[Play] fetchSourceDetail 返回空数组');
+          } catch (err) {
+            console.warn('获取当前源详情失败:', err);
           }
-        } catch (err) {
-          console.warn('获取当前源详情失败:', err);
+        } else {
+          console.warn(
+            '[Play] 当前源',
+            currentSource,
+            '不支持直接获取详情，将通过搜索查找',
+          );
         }
 
         // 获取其他源信息；当前源已可播放时放到后台，不阻塞首屏播放
