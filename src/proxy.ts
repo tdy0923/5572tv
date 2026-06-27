@@ -490,6 +490,8 @@ function shouldSkipAuth(pathname: string): boolean {
     '/favorites', // 收藏页面（客户端重定向）
     '/history', // 历史页面（客户端重定向）
     '/profile', // 个人中心（客户端重定向）
+    '/offline.html', // 离线页面（Service Worker需要）
+    '/sw.js', // Service Worker脚本
   ];
 
   return skipPaths.some((path) => pathname.startsWith(path));
