@@ -131,19 +131,17 @@ export function useSourceSwitching(params: {
       source?: string,
     ): Promise<'ok' | 'slow' | 'fail'> => {
       try {
-        const proxyUrl = new URL('/api/proxy/m3u8', window.location.origin);
-        proxyUrl.searchParams.set('url', url);
-        proxyUrl.searchParams.set('allowCORS', 'true');
-        if (source) proxyUrl.searchParams.set('5572tv-source', source);
+        // 直接访问视频源，不使用代理（和其他电影站一样）
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeout);
-        const resp = await fetch(proxyUrl.toString(), {
+        const resp = await fetch(url, {
           method: 'HEAD',
-          mode: 'cors',
+          mode: 'no-cors',
           signal: controller.signal,
         });
         clearTimeout(timer);
-        if (resp.ok) return 'ok';
+        // no-cors模式下resp.type为opaque，表示请求成功
+        if (resp.ok || resp.type === 'opaque') return 'ok';
         return 'fail';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'slow';

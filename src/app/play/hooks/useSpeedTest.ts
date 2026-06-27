@@ -109,8 +109,8 @@ export function useSpeedTest() {
           if (cdnDomain && isCdnBlocked(cdnDomain)) {
             return null;
           }
-          const proxyUrl = `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}&allowCORS=true&_t=${Date.now()}`;
-          const result = await getVideoResolutionFromM3u8(proxyUrl);
+          // 直接访问视频源，不使用代理
+          const result = await getVideoResolutionFromM3u8(episodeUrl);
           return { source, testResult: result };
         } catch {
           return null;
