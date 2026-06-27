@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Suspense,
   useEffect,
@@ -218,12 +219,23 @@ function HomeClient() {
   });
 
   const { announcement, announcementTitle } = useSite();
+  const searchParams = useSearchParams();
 
   // 解构状态以便使用
   const { activeTab, upcomingReleases, username, showAnnouncement } = state;
 
   const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
   const [showContinueWatching, setShowContinueWatching] = useState(false);
+
+  // 🎯 处理URL查询参数，支持从其他页面跳转到特定tab
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['favorites', 'history', 'profile', 'reminders'].includes(tab)) {
+      startTransition(() => {
+        dispatch({ type: 'SET_ACTIVE_TAB', payload: tab as any });
+      });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && announcement) {
