@@ -126,11 +126,14 @@ self.addEventListener('fetch', (event) => {
     return; // 让浏览器直接处理视频请求
   }
 
+  // API请求直接放行，不缓存（避免cookie问题）
+  if (isApiRequest(url.pathname)) {
+    return; // 让浏览器直接处理API请求
+  }
+
   // 根据资源类型选择缓存策略
   if (isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(event.request));
-  } else if (isApiRequest(url.pathname)) {
-    event.respondWith(networkFirst(event.request));
   } else if (isImageRequest(url.pathname)) {
     event.respondWith(cacheFirst(event.request));
   }
