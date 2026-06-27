@@ -30,20 +30,17 @@ export default function DownloadPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center">
-        {/* 动画渐变背景 */}
-        <AnimatedGradient />
-        
         {/* 背景图片 */}
         <div className="absolute inset-0">
           <Image
             src="/images/agnes/epic-bg.png"
             alt=""
             fill
-            className="object-cover opacity-20"
+            className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/90 to-[#0a0a0a]/60" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/95 via-[#0a0a0a]/80 to-[#0a0a0a]/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/30" />
         </div>
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-16">
