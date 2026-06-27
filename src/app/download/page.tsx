@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Download, Play, Star, Users, Zap, RefreshCw, Brain, Check, Smartphone, Tv } from 'lucide-react';
 import { detectPlatform } from './utils';
+import { browserDownload } from '@/lib/browser-download';
 import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 
@@ -97,13 +98,8 @@ export default function DownloadPage() {
                     href="/download/5572tv-android.apk" 
                     download="5572tv-android.apk"
                     onClick={(e) => {
-                      // Samsung浏览器兼容：触发下载
-                      const link = document.createElement('a');
-                      link.href = '/download/5572tv-android.apk';
-                      link.download = '5572tv-android.apk';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
+                      e.preventDefault();
+                      browserDownload('/download/5572tv-android.apk', '5572tv-android.apk');
                     }}
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]"
                   >
