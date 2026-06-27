@@ -76,15 +76,42 @@ async function handleM3U8Proxy(request, url) {
     return parsedUrl.hostname.includes(cdn);
   });
   if (isBlocked) {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: decodedUrl,
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
-      },
-    });
+    // 被封锁的CDN - 通过Worker代理内容，而不是302重定向
+    // 这样可以避免CORS问题
+    try {
+      var blockedResponse = await fetch(decodedUrl, {
+        headers: {
+          'User-Agent': UA,
+          Accept: '*/*',
+          'Accept-Encoding': 'identity',
+        },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!blockedResponse.ok) {
+        return jsonResponse(
+          { error: 'Blocked CDN fetch failed: ' + blockedResponse.status },
+          502,
+        );
+      }
+
+      // 返回代理的内容，添加CORS头
+      var blockedHeaders = new Headers(blockedResponse.headers);
+      blockedHeaders.set('Access-Control-Allow-Origin', '*');
+      blockedHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      blockedHeaders.set('Access-Control-Allow-Headers', '*');
+
+      return new Response(blockedResponse.body, {
+        status: blockedResponse.status,
+        headers: blockedHeaders,
+      });
+    } catch (e) {
+      return jsonResponse(
+        { error: 'Blocked CDN proxy failed: ' + e.message },
+        502,
+      );
+    }
   }
 
   // 从 CF 边缘拉取 M3U8（15s 超时）
