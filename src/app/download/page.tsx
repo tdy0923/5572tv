@@ -156,7 +156,7 @@ export default function DownloadPage() {
       <CoolFeatures />
 
       {/* 安装说明 */}
-      <section className="py-16 px-6 sm:px-12 lg:px-20">
+      <section className="py-16 px-6 sm:px-12 lg:px-20 bg-[#0a0a0a]">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>

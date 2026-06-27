@@ -41,10 +41,7 @@ export default function CoolFeatures() {
           {features.map((f, i) => (
             <div 
               key={i}
-              className={`relative p-6 rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden group hover:border-[#f4c24d]/30 transition-all duration-500 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${i * 100}ms` }}
+              className="relative p-6 rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden group hover:border-[#f4c24d]/30 transition-all duration-300 hover:scale-105"
             >
               {/* 发光背景 */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#f4c24d]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -54,7 +51,7 @@ export default function CoolFeatures() {
                   {f.icon}
                 </div>
                 
-                {/* 数字动画 */}
+                {/* 数字 */}
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-3xl font-bold text-[#f4c24d]">{f.value}</span>
                   <span className="text-lg text-[#f4c24d]/70">{f.unit}</span>
