@@ -54,6 +54,39 @@ async function handleM3U8Proxy(request, url) {
     return jsonResponse({ error: 'Invalid URL format' }, 400);
   }
 
+  // 已知封锁服务器IP的CDN列表 - 直接返回302让浏览器访问
+  var BLOCKED_CDNS = [
+    'cdnlz29.com',
+    'bfllvip.com',
+    'hhuus.com',
+    'xluuss.com',
+    'gsuus.com',
+    'ppqrrs.com',
+    'bfvvs.com',
+    'huyall.com',
+    'maowushi.com',
+    'oag7h.com',
+    'zuidazym3u8.com',
+    'ffzy-online4.com',
+    'feifei-online.com',
+    'power34play.vip',
+  ];
+
+  var isBlocked = BLOCKED_CDNS.some(function (cdn) {
+    return parsedUrl.hostname.includes(cdn);
+  });
+  if (isBlocked) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: decodedUrl,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      },
+    });
+  }
+
   // 从 CF 边缘拉取 M3U8（15s 超时）
   var response;
   try {
