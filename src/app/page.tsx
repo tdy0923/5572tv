@@ -1629,6 +1629,27 @@ function HomeClient() {
                 </section>
               )}
 
+              {/* 下载APP入口 */}
+              <a
+                href='/download'
+                className='mb-6 flex items-center justify-between rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white shadow-lg transition-transform hover:scale-[1.02] sm:mb-8 sm:rounded-2xl sm:p-5'
+              >
+                <div className='flex items-center gap-3'>
+                  <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white/20'>
+                    <Film className='h-5 w-5' />
+                  </div>
+                  <div>
+                    <h3 className='text-sm font-bold sm:text-base'>
+                      下载 5572 影视 APP
+                    </h3>
+                    <p className='text-xs text-white/80'>
+                      更好的观影体验，支持离线缓存
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className='h-5 w-5' />
+              </a>
+
               {/* 继续观看 */}
               <div className='relative mb-6 sm:mb-10' id='continue-watching'>
                 <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
