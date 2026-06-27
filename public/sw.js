@@ -121,6 +121,11 @@ self.addEventListener('fetch', (event) => {
   // 只处理 GET 请求
   if (event.request.method !== 'GET') return;
 
+  // 视频请求直接放行，不经过Service Worker缓存
+  if (isVideoRequest(url.pathname)) {
+    return; // 让浏览器直接处理视频请求
+  }
+
   // 根据资源类型选择缓存策略
   if (isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(event.request));
@@ -178,6 +183,21 @@ function isStaticAsset(pathname) {
 // 判断是否为 API 请求
 function isApiRequest(pathname) {
   return pathname.startsWith('/api/');
+}
+
+// 判断是否为图片请求
+function isImageRequest(pathname) {
+  return CACHE_STRATEGIES.images.some((ext) => pathname.includes(ext));
+}
+
+// 判断是否为视频请求（直接放行，不缓存）
+function isVideoRequest(pathname) {
+  return (
+    pathname.includes('.m3u8') ||
+    pathname.includes('.ts') ||
+    pathname.includes('/segment') ||
+    pathname.includes('/stream')
+  );
 }
 
 // 判断是否为图片请求

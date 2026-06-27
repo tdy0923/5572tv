@@ -3782,6 +3782,10 @@ function PlayPageClient() {
                 enableWorker: true,
                 // 参考 HLS.js config.ts：移动设备关闭低延迟模式以节省资源
                 lowLatencyMode: !isMobile,
+                // CORS配置：允许跨域请求
+                xhrSetup: (xhr: XMLHttpRequest) => {
+                  xhr.withCredentials = false;
+                },
 
                 // 🎯 官方推荐的缓冲策略 - iOS13+ 特别优化
                 /* 缓冲长度配置 - 参考 hlsDefaultConfig - 桌面设备应用用户配置 */
