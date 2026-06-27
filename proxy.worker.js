@@ -517,7 +517,12 @@ function replaceRelativePaths(text, protocol, host, origin) {
 function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
     status: status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+    },
   });
 }
 
