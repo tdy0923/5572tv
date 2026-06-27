@@ -1,9 +1,10 @@
-const CACHE_NAME = '5572tv-v2';
+const CACHE_NAME = '5572tv-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
+  '/offline.html',
 ];
 
 // 缓存策略配置
@@ -159,6 +160,9 @@ async function networkFirst(request) {
   } catch (err) {
     const cached = await caches.match(request);
     if (cached) return cached;
+    // 返回离线页面
+    const offlinePage = await caches.match('/offline.html');
+    if (offlinePage) return offlinePage;
     return new Response('Offline', { status: 503 });
   }
 }
