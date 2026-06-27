@@ -7,6 +7,8 @@ import { Download, Play, Star, Users, ChevronRight, Check, Smartphone, Tv, Monit
 import { detectPlatform } from './utils';
 import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
+import CoolFeatures from './components/CoolFeatures';
+import AnimatedGradient from './components/AnimatedGradient';
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
@@ -28,13 +30,16 @@ export default function DownloadPage() {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center">
-        {/* 背景 */}
+        {/* 动画渐变背景 */}
+        <AnimatedGradient />
+        
+        {/* 背景图片 */}
         <div className="absolute inset-0">
           <Image
             src="/images/agnes/epic-bg.png"
             alt=""
             fill
-            className="object-cover opacity-30"
+            className="object-cover opacity-20"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/90 to-[#0a0a0a]/60" />
@@ -150,33 +155,8 @@ export default function DownloadPage() {
         </div>
       </section>
 
-      {/* 功能特性 */}
-      <section className="py-20 px-6 sm:px-12 lg:px-20 bg-[#111]">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12 text-white">
-            为什么选择 5572
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { icon: <Play className="w-6 h-6" />, title: '极速播放', desc: '多源聚合，秒开无广告', stat: '0.5s' },
-              { icon: <Download className="w-6 h-6" />, title: '离线缓存', desc: 'WiFi下载，随时观看', stat: '100万+' },
-              { icon: <Users className="w-6 h-6" />, title: '多端同步', desc: '手机、平板、电视无缝切换', stat: '3台' },
-            ].map((f, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-white/[0.03] border border-white/5">
-                <div className="w-12 h-12 rounded-xl bg-[#f4c24d]/10 flex items-center justify-center text-[#f4c24d] mb-4">
-                  {f.icon}
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-bold text-white">{f.title}</h3>
-                  <span className="text-lg font-bold text-[#f4c24d]">{f.stat}</span>
-                </div>
-                <p className="text-sm text-gray-400">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 功能特性 - 炫酷组件 */}
+      <CoolFeatures />
 
       {/* 安装说明 */}
       <section className="py-16 px-6 sm:px-12 lg:px-20">
