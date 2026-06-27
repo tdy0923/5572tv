@@ -127,7 +127,7 @@ export default function DownloadPage() {
                   </button>
                 ) : (
                   <a
-                    href="/download/5572tv-android.apk"
+                    href="/download/5572tv-android.apk?v=1.5.0"
                     className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]"
                   >
                     <Download className="w-5 h-5" />

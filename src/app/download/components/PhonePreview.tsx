@@ -9,8 +9,8 @@ import Image from 'next/image';
 export default function PhonePreview() {
   return (
     <div className="relative">
-      {/* 手机框 */}
-      <div className="w-64 h-[420px] bg-[#111] rounded-[2.5rem] border-[5px] border-gray-800 overflow-hidden shadow-2xl relative">
+      {/* 手机框 - 真实比例 9:19.5 */}
+      <div className="w-[180px] h-[388px] bg-[#111] rounded-[2rem] border-[4px] border-gray-800 overflow-hidden shadow-2xl relative">
         {/* 状态栏 */}
         <div className="absolute top-0 left-0 right-0 h-12 bg-black/50 flex items-center justify-between px-6 pt-2 z-10">
           <span className="text-xs text-white/60">9:41</span>
