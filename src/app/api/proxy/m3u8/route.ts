@@ -87,11 +87,14 @@ export async function GET(request: Request) {
     );
     if (isBlocked) {
       // 直接返回原始URL，让浏览器直接访问
+      // 但需要添加CORS头防止CORS错误
       return new NextResponse(null, {
         status: 302,
         headers: {
           Location: decodedUrl,
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
         },
       });
     }

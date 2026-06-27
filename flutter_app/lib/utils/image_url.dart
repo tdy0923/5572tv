@@ -1,25 +1,34 @@
 // 通用图片地址处理工具
 
-/// 根据来源处理图片 URL。
-/// 策略：通过API代理加载（Cloudflare缓存）
-Future<String> getImageUrl(String originalUrl, String? source) async {
-  if (originalUrl.isEmpty) return originalUrl;
+const _apiBaseUrl = 'https://www.5572.net';
+const _posterCachePath = '/api/poster-cache?url=';
 
-  // 豆瓣/manmankan图片通过API代理加载
-  if (source == 'douban' || 
-      originalUrl.contains('doubanio.com') || 
-      originalUrl.contains('manmankan.com')) {
-    const baseUrl = 'https://www.5572.net';
-    return '$baseUrl/api/poster-cache?url=${Uri.encodeComponent(originalUrl)}';
+const _proxiedDomains = ['doubanio.com', 'manmankan.com'];
+const _proxiedSources = ['douban'];
+
+bool _needsProxy(String url, String? source) {
+  if (source != null && _proxiedSources.contains(source)) return true;
+  for (final domain in _proxiedDomains) {
+    if (url.contains(domain)) return true;
   }
+  return false;
+}
 
+/// 处理图片URL，豆瓣/manmankan图片通过API代理加载
+String getImageUrlSync(String originalUrl, String? source) {
+  if (originalUrl.isEmpty) return originalUrl;
+  if (_needsProxy(originalUrl, source)) {
+    return '$_apiBaseUrl$_posterCachePath${Uri.encodeComponent(originalUrl)}';
+  }
   return originalUrl;
 }
 
-/// 返回加载网络图片所需的 HTTP 头。
-Map<String, String>? getImageRequestHeaders(String imageUrl, String? source) {
-  // API代理URL不需要额外头
-  return null;
+/// 异步版本（保持向后兼容）
+Future<String> getImageUrl(String originalUrl, String? source) async {
+  return getImageUrlSync(originalUrl, source);
 }
 
-
+/// API代理URL不需要额外HTTP头
+Map<String, String>? getImageRequestHeaders(String imageUrl, String? source) {
+  return null;
+}
