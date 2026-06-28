@@ -77,17 +77,28 @@ async function fetchTrending(): Promise<{
   }
 }
 
-export function useHomePageQueries(): HomePageQueriesResult {
+export function useHomePageQueries(
+  initialData?: HomePageData,
+): HomePageQueriesResult {
   const trendingQuery = useQuery({
     queryKey: ['trending-homepage'],
     queryFn: fetchTrending,
     staleTime: 2 * 60 * 1000,
+    initialData: initialData
+      ? {
+          movies: initialData.hotMovies,
+          tvShows: initialData.hotTvShows,
+          variety: initialData.hotVarietyShows,
+          anime: initialData.hotAnime,
+        }
+      : undefined,
   });
 
   const shortDramaQuery = useQuery({
     queryKey: ['short-dramas-homepage'],
     queryFn: () => getRecommendedShortDramas(20),
     staleTime: 5 * 60 * 1000,
+    initialData: initialData?.hotShortDramas,
   });
 
   const trending = trendingQuery.data || {
