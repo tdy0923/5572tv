@@ -1636,8 +1636,8 @@ function HomeClient() {
                 <ContinueWatching className='mb-0' />
               </div>
 
-              {/* AI 猜你想看 */}
-              {username && aiRecommendations.length > 0 && (
+              {/* 猜你想看 - 有数据或有用户名都显示 */}
+              {username && (
                 <section className='mb-8 md:mb-10'>
                   <div className='mb-4 flex items-center justify-between'>
                     <SectionTitle
@@ -1649,45 +1649,43 @@ function HomeClient() {
                       AI 推荐
                     </span>
                   </div>
-                  <ScrollableRow>
-                    {aiRecommendations.map((item: any, index: number) => (
-                      <div
-                        key={index}
-                        className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
-                      >
-                        <VideoCard
-                          title={item.title || item}
-                          poster={item.poster || ''}
-                          year={item.year || ''}
-                          rate={item.rate || ''}
-                          from='douban'
-                          type={item.type || 'movie'}
-                        />
-                      </div>
-                    ))}
-                  </ScrollableRow>
-                </section>
-              )}
-              {username && aiRecommendLoading && (
-                <section className='mb-8 md:mb-10'>
-                  <div className='mb-4'>
-                    <SectionTitle
-                      title='猜你想看'
-                      icon={Sparkles}
-                      iconColor='text-purple-500'
-                    />
-                  </div>
-                  <div className='flex gap-4 overflow-hidden'>
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
-                      >
-                        <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
-                        <div className='mt-2 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4' />
-                      </div>
-                    ))}
-                  </div>
+                  {aiRecommendLoading ? (
+                    <ScrollableRow>
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'>
+                          <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
+                          <div className='mt-2 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4' />
+                        </div>
+                      ))}
+                    </ScrollableRow>
+                  ) : aiRecommendations.length > 0 ? (
+                    <ScrollableRow>
+                      {aiRecommendations.map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                        >
+                          <VideoCard
+                            title={item.title || item}
+                            poster={item.poster || ''}
+                            year={item.year || ''}
+                            rate={item.rate || ''}
+                            from='douban'
+                            source={item.source || 'douban'}
+                            id={item.id || ''}
+                            type={item.type || 'movie'}
+                          />
+                        </div>
+                      ))}
+                    </ScrollableRow>
+                  ) : (
+                    <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-8 text-center'>
+                      <Sparkles className='mx-auto mb-3 w-8 h-8 text-purple-400/50' />
+                      <p className='text-sm text-gray-500 dark:text-gray-400'>
+                        多看几部影片，AI 就会为你推荐
+                      </p>
+                    </div>
+                  )}
                 </section>
               )}
 
