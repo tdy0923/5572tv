@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 
 export const runtime = 'nodejs';
 
-// 从采集源获取热门内容
-export async function GET(request: NextRequest) {
-  const authInfo = await getAuthInfoFromCookie(request);
-  if (!authInfo || !authInfo.username) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+export async function GET(_request: NextRequest) {
   try {
     const config = await getConfig();
     const sources = config.SourceConfig || [];
