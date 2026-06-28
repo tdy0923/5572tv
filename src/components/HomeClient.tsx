@@ -1663,7 +1663,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       <ScrollableRow>
                         {aiRecommendations.map((item: any, index: number) => (
                           <div
-                            key={index}
+                            key={item.id || index}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <VideoCard
@@ -1870,7 +1870,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       : // 显示真实数据
                         hotMovies.map((movie, index) => (
                           <div
-                            key={index}
+                            key={movie.id}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <VideoCard
@@ -1915,7 +1915,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       : // 显示真实数据
                         hotTvShows.map((show, index) => (
                           <div
-                            key={index}
+                            key={show.id}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <VideoCard
@@ -2005,7 +2005,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       : // 显示真实数据
                         hotVarietyShows.map((show, index) => (
                           <div
-                            key={index}
+                            key={show.id}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <VideoCard
@@ -2050,7 +2050,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       : // 显示真实数据
                         hotShortDramas.map((drama, index) => (
                           <ShortDramaCard
-                            key={index}
+                            key={drama.id}
                             drama={drama}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                             disableEpisodeFetch
