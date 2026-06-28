@@ -115,7 +115,7 @@ export default function HeroSection({
                 </a>
               )}
               <span className='text-sm text-gray-500 self-center'>
-                v1.6.0 · 65MB
+                v1.7.0 · 65MB
               </span>
             </div>
           </div>

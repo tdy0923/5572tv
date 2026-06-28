@@ -183,7 +183,7 @@ export default function DownloadPage() {
                 </Link>
               </div>
               <p className='text-xs text-gray-500 mt-4 justify-center lg:justify-start flex'>
-                v1.6.0 · 65MB
+                v1.7.0 · 65MB
               </p>
             </div>
 
