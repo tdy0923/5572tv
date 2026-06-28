@@ -3,9 +3,9 @@
  * 视频缩略图本地化缓存
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
+import { mkdir, readFile, writeFile } from 'fs/promises';
+import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 
 export const runtime = 'nodejs';
@@ -24,7 +24,7 @@ function getCacheFileName(url: string): string {
   let hash = 0;
   for (let i = 0; i < url.length; i++) {
     const char = url.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return `${Math.abs(hash).toString(36)}.jpg`;
@@ -49,14 +49,16 @@ export async function GET(request: NextRequest) {
           'Content-Type': 'image/jpeg',
           'Cache-Control': 'public, max-age=2592000, s-maxage=2592000',
           'Access-Control-Allow-Origin': '*',
+          Vary: '',
         },
       });
     }
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'image/*,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Accept: 'image/*,*/*;q=0.8',
       },
       signal: AbortSignal.timeout(8000),
     });
@@ -66,7 +68,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.arrayBuffer();
-    
+
     if (data.byteLength < 1024 * 1024) {
       await writeFile(cacheFile, Buffer.from(data));
     }
@@ -76,6 +78,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': response.headers.get('content-type') || 'image/jpeg',
         'Cache-Control': 'public, max-age=2592000',
         'Access-Control-Allow-Origin': '*',
+        Vary: '',
       },
     });
   } catch {

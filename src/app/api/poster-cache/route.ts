@@ -4,9 +4,9 @@
  * 当有新海报时自动替换旧的
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { readFile, writeFile, mkdir, readdir, stat, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
+import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'fs/promises';
+import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 
 export const runtime = 'nodejs';
@@ -43,7 +43,7 @@ function getContentId(url: string): string {
   let hash = 0;
   for (let i = 0; i < url.length; i++) {
     const char = url.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return `hash_${Math.abs(hash).toString(36)}`;
@@ -63,7 +63,11 @@ function getReferer(url: string): string {
  * 保存海报并管理旧文件
  * 同一个contentId的新海报会自动替换旧的
  */
-async function savePoster(contentId: string, imageData: ArrayBuffer, url: string): Promise<string | null> {
+async function savePoster(
+  contentId: string,
+  imageData: ArrayBuffer,
+  url: string,
+): Promise<string | null> {
   try {
     // 根据内容类型确定扩展名
     let ext = '.jpg';
@@ -103,7 +107,11 @@ export async function GET(request: NextRequest) {
 
     // 按内容ID获取缓存文件名
     const contentId = getContentId(url);
-    const ext = url.includes('.webp') ? '.webp' : url.includes('.png') ? '.png' : '.jpg';
+    const ext = url.includes('.webp')
+      ? '.webp'
+      : url.includes('.png')
+        ? '.png'
+        : '.jpg';
     const cacheFile = join(CACHE_DIR, `${contentId}${ext}`);
 
     // 检查缓存是否存在
@@ -112,8 +120,10 @@ export async function GET(request: NextRequest) {
       return new NextResponse(data, {
         headers: {
           'Content-Type': 'image/jpeg',
-          'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
+          'Cache-Control':
+            'public, max-age=2592000, s-maxage=2592000, immutable',
           'Access-Control-Allow-Origin': '*',
+          Vary: '',
         },
       });
     }
@@ -126,12 +136,14 @@ export async function GET(request: NextRequest) {
         files.map(async (f) => ({
           name: f,
           mtime: (await stat(join(CACHE_DIR, f))).mtimeMs,
-        }))
+        })),
       );
       fileStats.sort((a, b) => a.mtime - b.mtime);
       const toDelete = fileStats.slice(0, Math.floor(files.length * 0.1));
       for (const f of toDelete) {
-        try { await unlink(join(CACHE_DIR, f.name)); } catch {}
+        try {
+          await unlink(join(CACHE_DIR, f.name));
+        } catch {}
       }
     }
 
@@ -139,9 +151,10 @@ export async function GET(request: NextRequest) {
     const referer = getReferer(url);
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Referer': referer,
-        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Referer: referer,
+        Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
       },
       signal: AbortSignal.timeout(10000),
     });
@@ -151,7 +164,7 @@ export async function GET(request: NextRequest) {
     }
 
     const imageData = await response.arrayBuffer();
-    
+
     // 保存海报（自动替换同ID旧文件）
     await savePoster(contentId, imageData, url);
 
@@ -160,6 +173,7 @@ export async function GET(request: NextRequest) {
         'Content-Type': response.headers.get('content-type') || 'image/jpeg',
         'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
         'Access-Control-Allow-Origin': '*',
+        Vary: '',
       },
     });
   } catch (error) {

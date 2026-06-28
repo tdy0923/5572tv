@@ -131,21 +131,21 @@
   }
 
   .ui-input {
-    @apply block w-full rounded-2xl border border-transparent bg-white/82 px-4 py-3.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-black/6 backdrop-blur-xl transition-all duration-300 placeholder:text-gray-400 hover:bg-white/92 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_34px_rgba(15,23,42,0.1)] focus:border-emerald-400/70 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/18 dark:bg-white/6 dark:text-gray-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_16px_36px_rgba(0,0,0,0.32)] dark:ring-white/10 dark:placeholder:text-gray-500 dark:hover:bg-white/8 dark:focus:border-emerald-300/60 dark:focus:bg-white/10 dark:focus:ring-emerald-400/16;
+    @apply block w-full rounded-2xl border border-transparent bg-white/82 px-4 py-3.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-black/6 backdrop-blur-xl transition-all duration-300 placeholder:text-gray-400 hover:bg-white/92 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_34px_rgba(15,23,42,0.1)] focus:border-primary-400/70 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-500/18 dark:bg-white/6 dark:text-gray-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_16px_36px_rgba(0,0,0,0.32)] dark:ring-white/10 dark:placeholder:text-gray-500 dark:hover:bg-white/8 dark:focus:border-primary-300/60 dark:focus:bg-white/10 dark:focus:ring-primary-400/16;
   }
 
   .ui-primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(16,185,129,0.32)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(16,185,129,0.4)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0 disabled:hover:shadow-[0_18px_40px_rgba(16,185,129,0.2)];
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-semibold text-gray-900 shadow-[0_18px_40px_rgba(244,194,77,0.32)] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(244,194,77,0.4)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0 disabled:hover:shadow-[0_18px_40px_rgba(244,194,77,0.2)];
     background-image: linear-gradient(
       135deg,
-      #0f9f6e 0%,
-      #10b981 48%,
-      #34d399 100%
+      #dba52b 0%,
+      #f4c24d 48%,
+      #ffd56f 100%
     );
   }
 
   .ui-secondary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-200/80 bg-white/70 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-[0_10px_28px_rgba(16,185,129,0.08)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-white/88 hover:shadow-[0_16px_36px_rgba(16,185,129,0.12)] active:translate-y-0 active:scale-[0.985] dark:border-emerald-400/20 dark:bg-emerald-500/8 dark:text-emerald-300 dark:hover:border-emerald-300/30 dark:hover:bg-emerald-400/12;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-200/80 bg-white/70 px-5 py-3 text-sm font-semibold text-primary-700 shadow-[0_10px_28px_rgba(244,194,77,0.08)] backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-primary-300 hover:bg-white/88 hover:shadow-[0_16px_36px_rgba(244,194,77,0.12)] active:translate-y-0 active:scale-[0.985] dark:border-primary-400/20 dark:bg-primary-500/8 dark:text-primary-300 dark:hover:border-primary-300/30 dark:hover:bg-primary-400/12;
   }
 
   .ui-menu-button {
