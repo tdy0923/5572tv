@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface ShortDramaConfigProps {
   config: AdminConfig | null;
@@ -12,11 +13,7 @@ interface ShortDramaConfigProps {
 }
 
 const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
 
   const [shortDramaSettings, setShortDramaSettings] = useState({
     primaryApiUrl: DEFAULT_SHORT_DRAMA_API,
@@ -35,12 +32,6 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
       });
     }
   }, [config]);
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   // 保存短剧配置
   const handleSave = async () => {
