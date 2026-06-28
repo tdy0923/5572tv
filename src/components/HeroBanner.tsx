@@ -454,34 +454,45 @@ function HeroBanner({
         </>
       )}
 
-      {/* 指示器 - Netflix风格：底部居中 */}
+      {/* 指示器 - 精致进度条风格 */}
       {showIndicators && items.length > 1 && (
-        <div className='absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-2 backdrop-blur-sm sm:bottom-6'>
+        <div className='absolute bottom-4 left-4 right-4 flex items-end gap-1.5 sm:bottom-6 sm:left-8 sm:right-8 md:left-12 md:right-12 lg:left-16 lg:right-16'>
           {items.map((_, index) => (
             <button
               key={index}
               onClick={() => handleIndicatorClick(index)}
-              className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all duration-300 ${
-                index === currentIndex
-                  ? 'w-8 sm:w-10 h-2 bg-white shadow-lg'
-                  : 'w-2 h-2 bg-white/50 hover:bg-white/75'
-              }`}
+              className='group relative flex-1 max-w-[80px]'
               aria-label={`跳转到第 ${index + 1} 张`}
-            />
+            >
+              <div className='h-[3px] w-full overflow-hidden rounded-full bg-white/20'>
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ease-out ${
+                    index === currentIndex
+                      ? 'bg-gradient-to-r from-[#f4c24d] to-[#ffe7a7] shadow-[0_0_8px_rgba(244,194,77,0.4)]'
+                      : index < currentIndex
+                        ? 'bg-white/50'
+                        : 'bg-transparent group-hover:bg-white/30'
+                  }`}
+                  style={{
+                    width: index === currentIndex ? '100%' : '0%',
+                  }}
+                />
+              </div>
+            </button>
           ))}
         </div>
       )}
 
       {/* Mobile swipe hint */}
       {showIndicators && items.length > 1 && (
-        <div className='absolute bottom-0 left-1/2 -translate-x-1/2 md:hidden mt-2 text-xs text-white/40 text-center'>
+        <div className='absolute bottom-10 left-0 right-0 md:hidden text-center text-[10px] text-white/30 pointer-events-none'>
           ← 滑动浏览 →
         </div>
       )}
 
       <div className='absolute right-4 top-4 sm:right-8 sm:top-6 md:right-12 md:top-8'>
-        <div className='rounded-full border border-white/16 bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm sm:text-sm'>
-          {currentIndex + 1} / {items.length}
+        <div className='rounded-full bg-black/30 px-2.5 py-1 text-[11px] font-medium text-white/70 backdrop-blur-md tabular-nums'>
+          {currentIndex + 1}/{items.length}
         </div>
       </div>
     </div>
