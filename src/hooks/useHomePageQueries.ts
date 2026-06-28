@@ -107,34 +107,22 @@ export function useHomePageQueries(): HomePageQueriesResult {
     queries: [
       {
         queryKey: ['trending-movies'],
-        queryFn: async () => {
-          const data = await fetchTrending();
-          return { data: data.movies };
-        },
+        queryFn: async () => (await fetchTrending()).movies,
         staleTime: 2 * 60 * 1000,
       },
       {
         queryKey: ['trending-tv'],
-        queryFn: async () => {
-          const data = await fetchTrending();
-          return { data: data.tvShows };
-        },
+        queryFn: async () => (await fetchTrending()).tvShows,
         staleTime: 2 * 60 * 1000,
       },
       {
         queryKey: ['trending-variety'],
-        queryFn: async () => {
-          const data = await fetchTrending();
-          return { data: data.variety };
-        },
+        queryFn: async () => (await fetchTrending()).variety,
         staleTime: 2 * 60 * 1000,
       },
       {
         queryKey: ['trending-anime'],
-        queryFn: async () => {
-          const data = await fetchTrending();
-          return { data: data.anime };
-        },
+        queryFn: async () => (await fetchTrending()).anime,
         staleTime: 2 * 60 * 1000,
       },
       {
@@ -142,7 +130,6 @@ export function useHomePageQueries(): HomePageQueriesResult {
         queryFn: () => getRecommendedShortDramas(20),
         staleTime: 5 * 60 * 1000,
       },
-      ,
     ],
     combine,
   });
