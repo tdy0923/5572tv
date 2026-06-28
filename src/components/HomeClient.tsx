@@ -496,6 +496,13 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | 'unsupported'
   >(() => getNotificationPermission());
+  const [historyTimeline, setHistoryTimeline] = useState<Record<string, any[]>>(
+    {},
+  );
+  const [favoriteGroups, setFavoriteGroups] = useState<string[]>(['默认']);
+  const [favoriteGroupFilter, setFavoriteGroupFilter] =
+    useState<string>('全部');
+  const [updateCount, setUpdateCount] = useState(0);
 
   useEffect(() => {
     if (activeTab === 'history') {
