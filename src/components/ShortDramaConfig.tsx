@@ -7,6 +7,8 @@ import { AdminConfig } from '@/lib/admin.types';
 import { DEFAULT_SHORT_DRAMA_API } from '@/lib/shortdrama-constants';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import Toggle from '@/components/Toggle';
+
 interface ShortDramaConfigProps {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
@@ -133,41 +135,17 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
 
         {/* 启用备用API开关 */}
         <div className='mb-6'>
-          <label className='flex items-center cursor-pointer'>
-            <input
-              type='checkbox'
-              className='sr-only'
-              checked={shortDramaSettings.enableAlternative}
-              onChange={(e) =>
-                setShortDramaSettings((prev) => ({
-                  ...prev,
-                  enableAlternative: e.target.checked,
-                }))
-              }
-              aria-label='启用备用API自动切换'
-            />
-            <div
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                shortDramaSettings.enableAlternative
-                  ? 'bg-green-600'
-                  : 'bg-gray-200 dark:bg-gray-600'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  shortDramaSettings.enableAlternative
-                    ? 'translate-x-6'
-                    : 'translate-x-1'
-                }`}
-              />
-            </div>
-            <span className='ml-3 text-sm font-medium text-gray-900 dark:text-gray-100'>
-              启用备用API自动切换
-            </span>
-          </label>
-          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
-            开启后，当主API失败时会自动尝试使用备用API解析视频
-          </p>
+          <Toggle
+            checked={shortDramaSettings.enableAlternative}
+            onChange={(checked) =>
+              setShortDramaSettings((prev) => ({
+                ...prev,
+                enableAlternative: checked,
+              }))
+            }
+            label='启用备用API自动切换'
+            description='开启后，当主API失败时会自动尝试使用备用API解析视频'
+          />
         </div>
 
         {/* 备用API地址 - 仅在启用时显示 */}
