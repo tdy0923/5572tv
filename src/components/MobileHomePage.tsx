@@ -1,25 +1,105 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { resolveCardPosterUrl } from '@/lib/utils';
+import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
 
-import MobileHeroBanner from '@/ui/mobile/components/MobileHeroBanner';
-import MobileVideoCard from '@/ui/mobile/components/MobileVideoCard';
-import MobileLayout from '@/ui/mobile/layouts/MobileLayout';
+function HeroSlide({
+  item,
+  onTouchStart,
+  onTouchEnd,
+}: {
+  item: {
+    poster: string;
+    title: string;
+    href: string;
+    subtitle?: string;
+    rate?: string;
+  };
+  onTouchStart: (e: React.TouchEvent) => void;
+  onTouchEnd: (e: React.TouchEvent) => void;
+}) {
+  return (
+    <Link href={item.href} className='block relative'>
+      <div
+        className='relative w-full h-[45vh] min-h-[280px] overflow-hidden'
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <Image
+          src={processImageUrl(item.poster)}
+          alt={item.title}
+          fill
+          className='object-cover'
+          priority
+        />
+        <div className='absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent' />
+        <div className='absolute bottom-0 left-0 right-0 p-5 pb-8'>
+          <div className='max-w-lg'>
+            {item.rate && (
+              <span className='inline-block px-2 py-0.5 bg-[#f4c24d]/20 text-[#f4c24d] text-xs font-medium rounded mb-2'>
+                ⭐ {item.rate}
+              </span>
+            )}
+            <h2 className='text-2xl font-bold text-white mb-2'>{item.title}</h2>
+            {item.subtitle && (
+              <p className='text-sm text-gray-300 mb-4'>{item.subtitle}</p>
+            )}
+            <span className='inline-flex items-center gap-2 px-5 py-2.5 bg-[#f4c24d] text-black rounded-xl font-semibold text-sm'>
+              ▶ 立即播放
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
-/**
- * 移动端首页 - Netflix风格
- * 垂直滚动 + 分类区块 + 横向卡片
- */
+function VideoCard({
+  title,
+  poster,
+  href,
+  subtitle,
+  priority,
+}: {
+  title: string;
+  poster: string;
+  href: string;
+  subtitle?: string;
+  priority?: boolean;
+}) {
+  return (
+    <Link href={href} className='flex-shrink-0 w-[42vw] snap-start block'>
+      <div className='relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5'>
+        <Image
+          src={resolveCardPosterUrl(poster)}
+          alt={title}
+          fill
+          className='object-cover'
+          sizes='168px'
+          priority={priority}
+        />
+      </div>
+      <p className='mt-1.5 text-sm text-white font-medium line-clamp-1'>
+        {title}
+      </p>
+      {subtitle && (
+        <p className='text-xs text-gray-500 line-clamp-1'>{subtitle}</p>
+      )}
+    </Link>
+  );
+}
+
 export default function MobileHomePage() {
   const { data, isLoading } = useHomePageQueries();
   const [upcoming, setUpcoming] = useState<any[]>([]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const touchStartX = useRef(0);
 
-  // 获取即将上映数据
   useEffect(() => {
     fetch('/api/release-calendar?limit=10')
       .then((res) => res.json())
@@ -27,7 +107,6 @@ export default function MobileHomePage() {
       .catch(() => {});
   }, []);
 
-  // Hero数据
   const heroItems = useMemo(() => {
     if (!data?.hotMovies) return [];
     return data.hotMovies.slice(0, 5).map((item) => ({
@@ -39,7 +118,33 @@ export default function MobileHomePage() {
     }));
   }, [data]);
 
-  // 内容区块
+  useEffect(() => {
+    if (heroItems.length <= 1) return;
+    const t = setInterval(
+      () => setHeroIndex((p) => (p + 1) % heroItems.length),
+      6000,
+    );
+    return () => clearInterval(t);
+  }, [heroItems.length]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const delta = touchStartX.current - e.changedTouches[0].clientX;
+      if (Math.abs(delta) > 60) {
+        setHeroIndex((p) =>
+          delta > 0
+            ? (p + 1) % heroItems.length
+            : (p - 1 + heroItems.length) % heroItems.length,
+        );
+      }
+    },
+    [heroItems.length],
+  );
+
   const sections = useMemo(() => {
     const result: {
       title: string;
@@ -51,7 +156,6 @@ export default function MobileHomePage() {
         subtitle?: string;
       }[];
     }[] = [];
-
     if (data?.hotMovies?.length) {
       result.push({
         title: '热门电影',
@@ -115,17 +219,60 @@ export default function MobileHomePage() {
     return result;
   }, [data, upcoming]);
 
-  return (
-    <MobileLayout>
-      {/* Hero */}
-      <MobileHeroBanner items={heroItems} />
+  if (isLoading && sections.length === 0) {
+    return (
+      <div className='px-4 py-4 space-y-6'>
+        <div className='w-full h-[45vh] min-h-[280px] bg-white/5 rounded-2xl animate-pulse' />
+        {[1, 2, 3].map((i) => (
+          <div key={i}>
+            <div className='h-5 w-24 bg-white/10 rounded mb-3' />
+            <div className='flex gap-3 overflow-hidden'>
+              {[1, 2, 3, 4].map((j) => (
+                <div key={j} className='flex-shrink-0 w-[42vw]'>
+                  <div className='w-full aspect-[2/3] bg-white/5 rounded-xl animate-pulse' />
+                  <div className='h-3 bg-white/5 rounded mt-2 w-3/4' />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-      {/* 分类区块 */}
+  return (
+    <div className='pb-20'>
+      {heroItems.length > 0 && (
+        <div className='relative'>
+          <HeroSlide
+            item={heroItems[heroIndex]}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          />
+          {heroItems.length > 1 && (
+            <div className='absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-1 z-30'>
+              {heroItems.map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === heroIndex
+                      ? 'w-1 h-5 bg-[#f4c24d]'
+                      : 'w-1 h-1 bg-white/40'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className='pb-4'>
         {sections.map((section, sIndex) => (
           <section key={sIndex} className='py-4'>
             <div className='flex items-center justify-between px-4 mb-3'>
-              <h2 className='text-lg font-bold text-white'>{section.title}</h2>
+              <h2 className='text-lg font-bold text-gray-900 dark:text-white'>
+                {section.title}
+              </h2>
               {section.href && (
                 <Link
                   href={section.href}
@@ -137,26 +284,19 @@ export default function MobileHomePage() {
             </div>
             <div className='flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide'>
               {section.items.map((item, iIndex) => (
-                <div key={iIndex} className='flex-shrink-0 w-[40vw] snap-start'>
-                  <MobileVideoCard
-                    title={item.title}
-                    poster={item.poster}
-                    href={item.href}
-                    subtitle={item.subtitle}
-                    priority={sIndex === 0 && iIndex < 3}
-                  />
-                </div>
+                <VideoCard
+                  key={iIndex}
+                  title={item.title}
+                  poster={item.poster}
+                  href={item.href}
+                  subtitle={item.subtitle}
+                  priority={sIndex === 0 && iIndex < 3}
+                />
               ))}
             </div>
           </section>
         ))}
       </div>
-
-      {isLoading && (
-        <div className='flex justify-center py-12'>
-          <div className='w-8 h-8 border-2 border-[#f4c24d] border-t-transparent rounded-full animate-spin' />
-        </div>
-      )}
-    </MobileLayout>
+    </div>
   );
 }

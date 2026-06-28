@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   viewportFit: 'cover',
-  themeColor: '#22c55e',
+  themeColor: '#f4c24d',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -198,7 +198,9 @@ export default async function RootLayout({
               position='top-center'
               richColors
               closeButton
-              toastOptions={{ style: { marginTop: 'env(safe-area-inset-top)' } }}
+              toastOptions={{
+                style: { marginTop: 'env(safe-area-inset-top)' },
+              }}
             />
           </DeviceProvider>
         </ThemeProvider>

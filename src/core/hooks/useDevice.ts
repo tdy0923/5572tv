@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 export type DeviceType = 'phone' | 'tablet' | 'tv' | 'desktop';
 
@@ -13,27 +13,38 @@ function detectPlatform(): 'android' | 'ios' | 'tv' | 'desktop' {
   return 'desktop';
 }
 
+function computeDevice() {
+  const platform = detectPlatform();
+  const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
+
+  let type: DeviceType = 'desktop';
+  if (platform === 'android' || platform === 'ios') {
+    type = width < 768 ? 'phone' : 'tablet';
+  } else if (platform === 'tv') {
+    type = 'tv';
+  }
+
+  return {
+    type,
+    isPhone: type === 'phone',
+    isTablet: type === 'tablet',
+    isTV: type === 'tv',
+    isDesktop: type === 'desktop',
+    isMobile: type === 'phone' || type === 'tablet',
+    width,
+  };
+}
+
 export function useDevice() {
-  const device = useMemo(() => {
-    const platform = detectPlatform();
-    const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
-    
-    let type: DeviceType = 'desktop';
-    if (platform === 'android' || platform === 'ios') {
-      type = width < 768 ? 'phone' : 'tablet';
-    } else if (platform === 'tv') {
-      type = 'tv';
-    }
-    
-    return {
-      type,
-      isPhone: type === 'phone',
-      isTablet: type === 'tablet',
-      isTV: type === 'tv',
-      isDesktop: type === 'desktop',
-      isMobile: type === 'phone' || type === 'tablet',
-      width,
+  const [device, setDevice] = useState(computeDevice);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDevice(computeDevice());
     };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return device;

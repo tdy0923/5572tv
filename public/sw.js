@@ -131,6 +131,12 @@ self.addEventListener('fetch', (event) => {
     return; // 让浏览器直接处理API请求
   }
 
+  // 页面导航请求：Network First，离线时用缓存或offline.html
+  if (event.request.mode === 'navigate') {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
   // 根据资源类型选择缓存策略
   if (isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(event.request));
@@ -190,7 +196,7 @@ function isApiRequest(pathname) {
 
 // 判断是否为图片请求
 function isImageRequest(pathname) {
-  return CACHE_STRATEGIES.images.some((ext) => pathname.includes(ext));
+  return CACHE_STRATEGIES.images.some((ext) => pathname.endsWith(ext));
 }
 
 // 判断是否为视频请求（直接放行，不缓存）
@@ -201,11 +207,6 @@ function isVideoRequest(pathname) {
     pathname.includes('/segment') ||
     pathname.includes('/stream')
   );
-}
-
-// 判断是否为图片请求
-function isImageRequest(pathname) {
-  return CACHE_STRATEGIES.images.some((ext) => pathname.endsWith(ext));
 }
 
 // 处理下载请求
