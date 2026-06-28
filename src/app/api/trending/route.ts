@@ -43,7 +43,7 @@ export async function GET(_request: NextRequest) {
     const [movieItems, tvItems, animeItems, showItems] = await Promise.all([
       fetchDouban('movie', '热门', 15),
       fetchDouban('tv', '热门', 15),
-      fetchDouban('tv', '动漫', 15),
+      fetchDouban('movie', '动画', 15),
       fetchDouban('tv', '综艺', 10),
     ]);
 
