@@ -4,15 +4,18 @@ import { AlertCircle, CheckCircle, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface TrustedNetworkConfigProps {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
 }
 
-const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+const TrustedNetworkConfig = ({
+  config,
+  refreshConfig,
+}: TrustedNetworkConfigProps) => {
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
 
   const [settings, setSettings] = useState({
     enabled: false,
@@ -52,12 +55,6 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
     fetchEnvConfig();
   }, []);
 
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
   // 验证 IP 地址或 CIDR 格式（支持 IPv4 和 IPv6）
   function isValidIPOrCIDR(ip: string): boolean {
     const trimmed = ip.trim();
@@ -67,7 +64,8 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
     const [ipPart, maskPart] = trimmed.split('/');
 
     const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    const ipv6Regex = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$|^::([0-9a-fA-F]{1,4}:){0,5}[0-9a-fA-F]{0,4}$|^([0-9a-fA-F]{1,4}:){1,6}:$|^::$/;
+    const ipv6Regex =
+      /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$|^::([0-9a-fA-F]{1,4}:){0,5}[0-9a-fA-F]{0,4}$|^([0-9a-fA-F]{1,4}:){1,6}:$|^::$/;
 
     const isIPv4 = ipv4Regex.test(ipPart);
     const isIPv6 = ipv6Regex.test(ipPart);
@@ -97,7 +95,10 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
     if (!newIP.trim()) return;
 
     if (!isValidIPOrCIDR(newIP.trim())) {
-      showMessage('error', '请输入有效的IP地址或CIDR格式 (例如: 192.168.0.0/16, 10.0.0.0/8, 2001:db8::/32)');
+      showMessage(
+        'error',
+        '请输入有效的IP地址或CIDR格式 (例如: 192.168.0.0/16, 10.0.0.0/8, 2001:db8::/32)',
+      );
       return;
     }
 
@@ -199,7 +200,8 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
               环境变量配置已检测
             </h4>
             <p className='text-xs text-blue-800 dark:text-blue-300 mb-2'>
-              当前通过环境变量 <code>TRUSTED_NETWORK_IPS</code> 配置了信任网络，优先级高于数据库配置。
+              当前通过环境变量 <code>TRUSTED_NETWORK_IPS</code>{' '}
+              配置了信任网络，优先级高于数据库配置。
             </p>
             <div className='space-y-1'>
               {envConfig.trustedIPs.map((ip, index) => (
@@ -327,7 +329,8 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
               )}
 
               <p className='text-xs text-gray-500 dark:text-gray-400'>
-                支持 IPv4 (192.168.1.100)、IPv6 (2001:db8::1) 和 CIDR 格式 (192.168.0.0/16, 10.0.0.0/8)
+                支持 IPv4 (192.168.1.100)、IPv6 (2001:db8::1) 和 CIDR 格式
+                (192.168.0.0/16, 10.0.0.0/8)
               </p>
 
               {/* 使用说明 */}
@@ -337,7 +340,8 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
                 </h4>
                 <ul className='text-xs text-gray-600 dark:text-gray-400 space-y-1'>
                   <li>
-                    &bull; <strong>数据库配置：</strong>在上方添加信任IP段后保存，立即生效
+                    &bull; <strong>数据库配置：</strong>
+                    在上方添加信任IP段后保存，立即生效
                   </li>
                   <li>
                     &bull; <strong>环境变量配置：</strong>设置{' '}
@@ -346,12 +350,8 @@ const TrustedNetworkConfig = ({ config, refreshConfig }: TrustedNetworkConfigPro
                     </code>{' '}
                     （优先级更高）
                   </li>
-                  <li>
-                    &bull; 信任IP段内的设备访问时将自动获得站长权限
-                  </li>
-                  <li>
-                    &bull; 非信任IP段的设备仍需正常登录
-                  </li>
+                  <li>&bull; 信任IP段内的设备访问时将自动获得站长权限</li>
+                  <li>&bull; 非信任IP段的设备仍需正常登录</li>
                 </ul>
               </div>
             </div>
