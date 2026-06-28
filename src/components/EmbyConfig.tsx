@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface EmbyConfigProps {
   config: AdminConfig | null;
@@ -13,11 +14,7 @@ interface EmbyConfigProps {
 }
 
 const EmbyConfig = ({ config, refreshConfig }: EmbyConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
   const [sources, setSources] = useState<any[]>([]);
   const [editingSource, setEditingSource] = useState<any | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -46,12 +43,6 @@ const EmbyConfig = ({ config, refreshConfig }: EmbyConfigProps) => {
       setSources(config.EmbyConfig.Sources);
     }
   }, [config]);
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   // 重置表单
   const resetForm = () => {
