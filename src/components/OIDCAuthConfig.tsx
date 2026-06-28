@@ -69,6 +69,11 @@ export function OIDCAuthConfig({
   } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+    if (type === 'success') setTimeout(() => setMessage(null), 3000);
+  };
+
   useEffect(() => {
     setLocalConfig(config);
     setLocalProviders(providers);
@@ -88,7 +93,7 @@ export function OIDCAuthConfig({
 
   const handleDiscover = async () => {
     if (!localConfig.issuer) {
-      setMessage({ type: 'error', text: '请先输入 Issuer URL' });
+      showMessage('error', '请先输入 Issuer URL');
       return;
     }
 
@@ -114,13 +119,9 @@ export function OIDCAuthConfig({
         tokenEndpoint: data.token_endpoint || '',
         userInfoEndpoint: data.userinfo_endpoint || '',
       });
-      setMessage({ type: 'success', text: '自动发现成功' });
-      setTimeout(() => setMessage(null), 3000);
+      showMessage('success', '自动发现成功');
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: `自动发现失败: ${(error as Error).message}`,
-      });
+      showMessage('error', `自动发现失败: ${(error as Error).message}`);
     } finally {
       setDiscovering(false);
     }
@@ -135,14 +136,10 @@ export function OIDCAuthConfig({
       } else {
         await onSave(localConfig);
       }
-      setMessage({ type: 'success', text: '保存成功' });
+      showMessage('success', '保存成功');
       setHasChanges(false);
-      setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: `保存失败: ${(error as Error).message}`,
-      });
+      showMessage('error', `保存失败: ${(error as Error).message}`);
     } finally {
       setSaving(false);
     }
@@ -662,8 +659,7 @@ export function OIDCAuthConfig({
                     navigator.clipboard.writeText(
                       `${window.location.origin}/api/auth/oidc/callback`,
                     );
-                    setMessage({ type: 'success', text: '已复制到剪贴板' });
-                    setTimeout(() => setMessage(null), 2000);
+                    showMessage('success', '已复制到剪贴板');
                   }
                 }}
                 className='absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors'
