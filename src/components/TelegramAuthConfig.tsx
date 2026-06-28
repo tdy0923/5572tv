@@ -3,6 +3,8 @@
 import { AlertCircle, CheckCircle2, Save, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { useConfigMessage } from '@/hooks/useConfigMessage';
+
 interface TelegramAuthConfigProps {
   config: {
     enabled: boolean;
@@ -16,10 +18,18 @@ interface TelegramAuthConfigProps {
   onSave: (config: TelegramAuthConfigProps['config']) => Promise<void>;
 }
 
-export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) {
+export function TelegramAuthConfig({
+  config,
+  onSave,
+}: TelegramAuthConfigProps) {
   const [localConfig, setLocalConfig] = useState(config);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const {
+    message,
+    isLoading: saving,
+    setIsLoading: setSaving,
+    showMessage,
+    clearMessage,
+  } = useConfigMessage();
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
@@ -33,17 +43,13 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
 
   const handleSave = async () => {
     setSaving(true);
-    setMessage(null);
+    clearMessage();
     try {
       await onSave(localConfig);
-      setMessage({ type: 'success', text: '保存成功' });
+      showMessage('success', '保存成功');
       setHasChanges(false);
-      setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: `保存失败: ${(error as Error).message}`,
-      });
+      showMessage('error', `保存失败: ${(error as Error).message}`);
     } finally {
       setSaving(false);
     }
@@ -69,13 +75,25 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
           <div className='text-sm text-blue-800 dark:text-blue-200 space-y-2'>
             <p className='font-semibold'>配置步骤：</p>
             <ol className='list-decimal list-inside space-y-1 ml-2'>
-              <li>与 <a href='https://t.me/botfather' target='_blank' rel='noopener noreferrer' className='underline hover:text-blue-600'>@BotFather</a> 对话创建 Bot</li>
+              <li>
+                与{' '}
+                <a
+                  href='https://t.me/botfather'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='underline hover:text-blue-600'
+                >
+                  @BotFather
+                </a>{' '}
+                对话创建 Bot
+              </li>
               <li>复制 Bot Token 和 Bot Username 填入下方</li>
               <li>启用自动注册（推荐）</li>
               <li>启用配置并保存</li>
             </ol>
             <p className='text-xs text-blue-600 dark:text-blue-300 mt-2'>
-              💡 工作原理：用户输入 Telegram 用户名后，系统会通过 Bot 发送登录链接到用户的 Telegram，用户点击链接即可登录
+              💡 工作原理：用户输入 Telegram 用户名后，系统会通过 Bot
+              发送登录链接到用户的 Telegram，用户点击链接即可登录
             </p>
           </div>
         </div>
@@ -88,9 +106,19 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
           <div className='text-sm text-yellow-800 dark:text-yellow-200 space-y-2'>
             <p className='font-semibold'>⚠️ 重要提示：Webhook 绑定限制</p>
             <ul className='list-disc list-inside space-y-1 ml-2'>
-              <li><strong>一个 Telegram Bot 只能绑定一个 Webhook URL（域名）</strong></li>
-              <li>如果您有多个部署（如 Vercel、自建服务器等），它们<strong>不能共用同一个 Bot</strong></li>
-              <li>解决方案：为每个部署创建独立的 Bot，或只在一个域名上启用 Telegram 登录</li>
+              <li>
+                <strong>
+                  一个 Telegram Bot 只能绑定一个 Webhook URL（域名）
+                </strong>
+              </li>
+              <li>
+                如果您有多个部署（如 Vercel、自建服务器等），它们
+                <strong>不能共用同一个 Bot</strong>
+              </li>
+              <li>
+                解决方案：为每个部署创建独立的 Bot，或只在一个域名上启用
+                Telegram 登录
+              </li>
               <li>系统会自动将 Webhook 设置到当前访问的域名</li>
             </ul>
           </div>
@@ -100,7 +128,10 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
       {/* 启用开关 */}
       <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
         <div>
-          <label htmlFor='enabled' className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+          <label
+            htmlFor='enabled'
+            className='text-sm font-medium text-gray-900 dark:text-gray-100'
+          >
             启用 Telegram 登录
           </label>
           <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
@@ -109,7 +140,9 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
         </div>
         <button
           type='button'
-          onClick={() => setLocalConfig({ ...localConfig, enabled: !localConfig.enabled })}
+          onClick={() =>
+            setLocalConfig({ ...localConfig, enabled: !localConfig.enabled })
+          }
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
             localConfig.enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
           }`}
@@ -125,14 +158,19 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
       {/* Bot 配置 */}
       <div className='space-y-4'>
         <div>
-          <label htmlFor='botToken' className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+          <label
+            htmlFor='botToken'
+            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
+          >
             Bot Token <span className='text-red-500'>*</span>
           </label>
           <input
             type='password'
             id='botToken'
             value={localConfig.botToken}
-            onChange={(e) => setLocalConfig({ ...localConfig, botToken: e.target.value })}
+            onChange={(e) =>
+              setLocalConfig({ ...localConfig, botToken: e.target.value })
+            }
             className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
             placeholder='1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
           />
@@ -142,14 +180,19 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
         </div>
 
         <div>
-          <label htmlFor='botUsername' className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+          <label
+            htmlFor='botUsername'
+            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
+          >
             Bot Username <span className='text-red-500'>*</span>
           </label>
           <input
             type='text'
             id='botUsername'
             value={localConfig.botUsername}
-            onChange={(e) => setLocalConfig({ ...localConfig, botUsername: e.target.value })}
+            onChange={(e) =>
+              setLocalConfig({ ...localConfig, botUsername: e.target.value })
+            }
             className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
             placeholder='YourBotUsername'
           />
@@ -161,11 +204,16 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
 
       {/* 用户管理配置 */}
       <div className='space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
-        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>用户管理</h3>
+        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+          用户管理
+        </h3>
 
         <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
           <div>
-            <label htmlFor='autoRegister' className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+            <label
+              htmlFor='autoRegister'
+              className='text-sm font-medium text-gray-900 dark:text-gray-100'
+            >
               自动注册新用户
             </label>
             <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
@@ -174,9 +222,16 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
           </div>
           <button
             type='button'
-            onClick={() => setLocalConfig({ ...localConfig, autoRegister: !localConfig.autoRegister })}
+            onClick={() =>
+              setLocalConfig({
+                ...localConfig,
+                autoRegister: !localConfig.autoRegister,
+              })
+            }
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              localConfig.autoRegister ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+              localConfig.autoRegister
+                ? 'bg-blue-600'
+                : 'bg-gray-200 dark:bg-gray-700'
             }`}
           >
             <span
@@ -187,7 +242,6 @@ export function TelegramAuthConfig({ config, onSave }: TelegramAuthConfigProps) 
           </button>
         </div>
       </div>
-
 
       {/* 消息提示 */}
       {message && (
