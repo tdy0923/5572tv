@@ -57,7 +57,7 @@ async function getInitialData(): Promise<HomePageData> {
   let hotShortDramas: ShortDramaItem[] = [];
   if (shortDramaRes.ok) {
     const shortData = await shortDramaRes.json();
-    hotShortDramas = shortData.items || shortData.results || [];
+    hotShortDramas = Array.isArray(shortData) ? shortData : [];
   }
 
   return { hotMovies, hotTvShows, hotVarietyShows, hotAnime, hotShortDramas };
