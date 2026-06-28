@@ -20,6 +20,27 @@ function getSearchCacheKey(username: string, query: string) {
   return `search:${username}:${query.trim().toLowerCase()}`;
 }
 
+// 热门搜索共享缓存 — 相同查询词所有用户共享结果
+const sharedCache = new Map<string, { data: unknown; expires: number }>();
+const SHARED_TTL = 120_000;
+
+function getSharedCache(query: string) {
+  const key = `search:shared:${query.trim().toLowerCase()}`;
+  const entry = sharedCache.get(key);
+  if (entry && entry.expires > Date.now()) return entry.data;
+  return null;
+}
+
+function setSharedCache(query: string, data: unknown) {
+  const key = `search:shared:${query.trim().toLowerCase()}`;
+  sharedCache.set(key, { data, expires: Date.now() + SHARED_TTL });
+  // LRU: 限制缓存条目数
+  if (sharedCache.size > 200) {
+    const firstKey = sharedCache.keys().next().value;
+    if (firstKey) sharedCache.delete(firstKey);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   const startMemory = process.memoryUsage().heapUsed;
@@ -84,6 +105,14 @@ export async function GET(request: NextRequest) {
   const cacheTime = await getCacheTime();
   const searchCacheTtl = Math.max(15, Math.min(cacheTime, 120));
   const searchCacheKey = getSearchCacheKey(authInfo.username, query);
+
+  // 先查共享缓存
+  const sharedResults = getSharedCache(query);
+  if (Array.isArray(sharedResults) && sharedResults.length > 0) {
+    return NextResponse.json({ results: sharedResults }, {
+      headers: { 'Cache-Control': `public, max-age=${searchCacheTtl}`, 'X-Cache': 'SHARED' },
+    });
+  }
 
   try {
     const cachedResults = await db.getCache(searchCacheKey);
@@ -242,6 +271,7 @@ export async function GET(request: NextRequest) {
 
     try {
       await db.setCache(searchCacheKey, flattenedResults, searchCacheTtl);
+      setSharedCache(query, flattenedResults);
     } catch (error) {
       console.warn('写入搜索缓存失败:', error);
     }

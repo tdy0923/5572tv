@@ -214,7 +214,17 @@ function HeroBanner({
   }, [currentItem, refreshedTrailerUrls, refreshTrailerUrl, enableVideo]);
 
   if (!hasItems || !currentItem) {
-    return null;
+    return (
+      <div className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden rounded-xl sm:rounded-[28px] bg-gray-200 dark:bg-gray-800 animate-pulse'>
+        <div className='absolute inset-0 flex items-end p-6 sm:p-10'>
+          <div className='space-y-3 w-1/2'>
+            <div className='h-4 bg-gray-300 dark:bg-gray-700 rounded-full w-3/4' />
+            <div className='h-3 bg-gray-300 dark:bg-gray-700 rounded-full w-1/2' />
+            <div className='h-8 bg-gray-300 dark:bg-gray-700 rounded-lg w-24 mt-4' />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       headers: {
         'Content-Type': 'application/java-archive',
         'Content-Length': jarInfo.size.toString(),
-        'Cache-Control': 'public, max-age=3600', // 1小时缓存
+        'Cache-Control': 'public, max-age=14400, s-maxage=14400, stale-while-revalidate=3600',
         'Access-Control-Allow-Origin': '*',
         'X-Spider-Source': jarInfo.source,
         'X-Spider-Success': jarInfo.success.toString(),
