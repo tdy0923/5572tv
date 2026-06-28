@@ -1,11 +1,6 @@
 'use client';
 
-/**
- * 首页数据获取 - 使用采集源（非豆瓣）
- */
-
-import { useQueries } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { getRecommendedShortDramas } from '@/lib/shortdrama.client';
 import { SearchResult, ShortDramaItem } from '@/lib/types';
@@ -27,7 +22,6 @@ export interface HomePageQueriesResult {
   refetch: () => void;
 }
 
-// 从采集源获取热门内容
 async function fetchTrending(): Promise<{
   movies: SearchResult[];
   tvShows: SearchResult[];
@@ -57,7 +51,6 @@ async function fetchTrending(): Promise<{
         type_name: item.type_name || '',
       }));
 
-      // 根据类型分类
       const sn = group.sourceName || '';
       const tn = items[0]?.type_name || '';
       if (sn.includes('电影') || tn.includes('电影') || tn.includes('动画')) {
@@ -85,69 +78,48 @@ async function fetchTrending(): Promise<{
 }
 
 export function useHomePageQueries(): HomePageQueriesResult {
-  const combine = useCallback((results: any[]) => {
-    const [
-      moviesResult,
-      tvResult,
-      varietyResult,
-      animeResult,
-      shortDramaResult,
-    ] = results;
-
-    return {
-      hotMovies: moviesResult?.data || [],
-      hotTvShows: tvResult?.data || [],
-      hotVarietyShows: varietyResult?.data || [],
-      hotAnime: animeResult?.data || [],
-      hotShortDramas: shortDramaResult?.data || [],
-    };
-  }, []);
-
-  const results = useQueries({
-    queries: [
-      {
-        queryKey: ['trending-movies'],
-        queryFn: async () => (await fetchTrending()).movies,
-        staleTime: 2 * 60 * 1000,
-      },
-      {
-        queryKey: ['trending-tv'],
-        queryFn: async () => (await fetchTrending()).tvShows,
-        staleTime: 2 * 60 * 1000,
-      },
-      {
-        queryKey: ['trending-variety'],
-        queryFn: async () => (await fetchTrending()).variety,
-        staleTime: 2 * 60 * 1000,
-      },
-      {
-        queryKey: ['trending-anime'],
-        queryFn: async () => (await fetchTrending()).anime,
-        staleTime: 2 * 60 * 1000,
-      },
-      {
-        queryKey: ['short-dramas'],
-        queryFn: () => getRecommendedShortDramas(20),
-        staleTime: 5 * 60 * 1000,
-      },
-    ],
-    combine,
+  const trendingQuery = useQuery({
+    queryKey: ['trending-homepage'],
+    queryFn: fetchTrending,
+    staleTime: 2 * 60 * 1000,
   });
 
-  const data = (results as any) || {
-    hotMovies: [],
-    hotTvShows: [],
-    hotVarietyShows: [],
-    hotAnime: [],
-    hotShortDramas: [],
+  const shortDramaQuery = useQuery({
+    queryKey: ['short-dramas-homepage'],
+    queryFn: () => getRecommendedShortDramas(20),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const trending = trendingQuery.data || {
+    movies: [],
+    tvShows: [],
+    variety: [],
+    anime: [],
   };
+
+  const data: HomePageData = {
+    hotMovies: trending.movies,
+    hotTvShows: trending.tvShows,
+    hotVarietyShows: trending.variety,
+    hotAnime: trending.anime,
+    hotShortDramas: shortDramaQuery.data || [],
+  };
+
+  const isLoading = trendingQuery.isLoading || shortDramaQuery.isLoading;
+  const isFetching = trendingQuery.isFetching || shortDramaQuery.isFetching;
+  const errors = [trendingQuery.error, shortDramaQuery.error].filter(
+    Boolean,
+  ) as Error[];
 
   return {
     data,
-    isLoading: (results as any)?.isLoading ?? true,
-    isFetching: (results as any)?.isFetching ?? true,
-    errors: (results as any)?.errors || [],
-    hasError: (results as any)?.hasError ?? false,
-    refetch: (results as any)?.refetch,
+    isLoading,
+    isFetching,
+    errors,
+    hasError: errors.length > 0,
+    refetch: () => {
+      trendingQuery.refetch();
+      shortDramaQuery.refetch();
+    },
   };
 }
