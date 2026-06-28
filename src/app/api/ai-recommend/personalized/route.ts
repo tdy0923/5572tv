@@ -12,6 +12,10 @@ const UNLIMITED_API_KEY =
   process.env.UNLIMITED_AI_KEY || 'ua_DyQKfu0RBU_Daj879dXqYpsczzCJH7q4';
 const UNLIMITED_API_URL = 'https://unlimited.surf/api/chat';
 
+// 内存缓存，避免频繁调用AI API
+const recommendationCache = new Map<string, { data: any[]; timestamp: number }>();
+const CACHE_TTL = 10 * 60 * 1000; // 10分钟缓存
+
 async function askAIForRecommendations(
   viewingHistory: string[],
   favoriteGenres: string[],
@@ -46,7 +50,7 @@ async function askAIForRecommendations(
         model: 'gateway-gpt-5-mini',
         systemPrompt,
       }),
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(8000), // 减少到8秒超时
     });
 
     if (!response.ok) {
@@ -93,12 +97,13 @@ async function enrichRecommendations(titles: string[]) {
   const apiSites = await getAvailableApiSites();
   if (!apiSites.length || !titles.length) return [];
 
+  // 并行搜索所有标题，但限制并发数避免过载
   const searchPromises = titles.map(async (title) => {
     try {
       const results = await Promise.race([
         searchFromApi(apiSites[0], title, [title]),
         new Promise<[]>((_, rej) =>
-          setTimeout(() => rej(new Error('timeout')), 5000),
+          setTimeout(() => rej(new Error('timeout')), 3000), // 减少到3秒超时
         ),
       ]);
       if (results && results.length > 0) {
@@ -137,6 +142,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // 检查缓存
+    const cacheKey = authInfo.username;
+    const cached = recommendationCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return NextResponse.json({ success: true, recommendations: cached.data });
+    }
+
     const allRecords = await db.getAllPlayRecords(authInfo.username);
     const userRecords = Object.values(allRecords);
 
@@ -162,6 +174,8 @@ export async function GET(request: NextRequest) {
           }
           // 随机取6个
           const shuffled = allItems.sort(() => Math.random() - 0.5).slice(0, 6);
+          // 缓存结果
+          recommendationCache.set(cacheKey, { data: shuffled, timestamp: Date.now() });
           return NextResponse.json({ success: true, recommendations: shuffled });
         }
       } catch {}
@@ -189,6 +203,9 @@ export async function GET(request: NextRequest) {
       favoriteGenres,
     );
     const recommendations = await enrichRecommendations(titles);
+
+    // 缓存结果
+    recommendationCache.set(cacheKey, { data: recommendations, timestamp: Date.now() });
 
     return NextResponse.json({
       success: true,

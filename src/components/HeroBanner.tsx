@@ -69,8 +69,11 @@ function HeroBanner({
   const refreshTrailerMutation = useRefreshTrailerUrlMutation();
   const clearTrailerMutation = useClearTrailerUrlMutation();
 
-  // 处理图片 URL，使用代理绕过防盗链
+  // 处理图片 URL，使用代理绕过防盗链（避免双重代理）
   const getProxiedImageUrl = (url: string) => {
+    if (!url) return url;
+    // 已经是代理URL，直接返回
+    if (url.startsWith('/api/image-proxy')) return url;
     if (url?.includes('douban') || url?.includes('doubanio')) {
       return `/api/image-proxy?url=${encodeURIComponent(url)}`;
     }
@@ -88,8 +91,11 @@ function HeroBanner({
       .replace('/l_ratio_poster/', '/m_ratio_poster/');
   };
 
-  // 处理视频 URL，使用代理绕过防盗链
+  // 处理视频 URL，使用代理绕过防盗链（避免双重代理）
   const getProxiedVideoUrl = (url: string) => {
+    if (!url) return url;
+    // 已经是代理URL，直接返回
+    if (url.startsWith('/api/video-proxy')) return url;
     if (url?.includes('douban') || url?.includes('doubanio')) {
       return `/api/video-proxy?url=${encodeURIComponent(url)}`;
     }

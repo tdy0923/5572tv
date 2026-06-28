@@ -1845,7 +1845,7 @@ function HomeClient() {
               )}
 
               {/* 热门电影 */}
-              <section className='mb-8 md:mb-10'>
+              <section className='mb-8 md:mb-10 home-section'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门电影'
@@ -1890,7 +1890,7 @@ function HomeClient() {
               </section>
 
               {/* 热门剧集 */}
-              <section className='mb-8 md:mb-10'>
+              <section className='mb-8 md:mb-10 home-section'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门剧集'
@@ -1935,7 +1935,7 @@ function HomeClient() {
               </section>
 
               {/* 每日新番放送 */}
-              <section className='mb-8 md:mb-10'>
+              <section className='mb-8 md:mb-10 home-section'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='新番放送'
@@ -1980,7 +1980,7 @@ function HomeClient() {
               </section>
 
               {/* 热门综艺 */}
-              <section className='mb-8 md:mb-10'>
+              <section className='mb-8 md:mb-10 home-section'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门综艺'
@@ -2025,7 +2025,7 @@ function HomeClient() {
               </section>
 
               {/* 热门短剧 */}
-              <section className='mb-8'>
+              <section className='mb-8 home-section'>
                 <div className='mb-4 flex items-center justify-between'>
                   <SectionTitle
                     title='热门短剧'

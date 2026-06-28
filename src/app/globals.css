@@ -631,3 +631,16 @@ html:not(.dark) .hover\:bg-slate-50:hover {
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/* 屏外section延迟渲染，提升首屏加载性能 */
+.home-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+
+/* 移动端减少每行卡片数量 */
+@media (max-width: 639px) {
+  .home-section {
+    contain-intrinsic-size: auto 600px;
+  }
+}
