@@ -47,29 +47,30 @@ async function fetchTrending(): Promise<{
     for (const group of data.results || []) {
       const items = (group.items || []).map((item: any) => ({
         id: item.vod_id || item.id,
-        title: item.vod_name || item.name,
-        poster: item.vod_pic || item.pic,
+        title: item.vod_name || item.title || item.name,
+        poster: item.vod_pic || item.pic || item.poster || '',
         source: group.source,
         source_name: group.sourceName,
-        year: item.vod_year || '',
+        year: item.vod_year || item.year || '',
+        rate: item.rate || '',
         episodes: item.vod_play_url ? item.vod_play_url.split('#') : [],
         type_name: item.type_name || '',
       }));
 
       // 根据类型分类
-      if (
-        group.sourceName?.includes('电影') ||
-        items[0]?.type_name?.includes('电影')
-      ) {
+      const sn = group.sourceName || '';
+      const tn = items[0]?.type_name || '';
+      if (sn.includes('电影') || tn.includes('电影') || tn.includes('动画')) {
         movies.push(...items);
-      } else if (
-        group.sourceName?.includes('剧集') ||
-        items[0]?.type_name?.includes('电视剧')
-      ) {
+      } else if (sn.includes('剧集') || tn.includes('电视剧')) {
         tvShows.push(...items);
-      } else if (group.sourceName?.includes('综艺')) {
+      } else if (sn.includes('综艺')) {
         variety.push(...items);
-      } else if (group.sourceName?.includes('动漫')) {
+      } else if (
+        sn.includes('动漫') ||
+        sn.includes('新番') ||
+        tn.includes('动漫')
+      ) {
         anime.push(...items);
       } else {
         movies.push(...items);
