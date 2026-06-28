@@ -2,7 +2,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { resolveCardPosterUrl } from '@/lib/utils';
 import { useHomePageQueries } from '@/hooks/useHomePageQueries';
@@ -17,6 +17,15 @@ import MobileLayout from '@/ui/mobile/layouts/MobileLayout';
  */
 export default function MobileHomePage() {
   const { data, isLoading } = useHomePageQueries();
+  const [upcoming, setUpcoming] = useState<any[]>([]);
+
+  // 获取即将上映数据
+  useEffect(() => {
+    fetch('/api/release-calendar?limit=10')
+      .then((res) => res.json())
+      .then((d) => setUpcoming(d.items || []))
+      .catch(() => {});
+  }, []);
 
   // Hero数据
   const heroItems = useMemo(() => {
@@ -91,8 +100,20 @@ export default function MobileHomePage() {
         })),
       });
     }
+    if (upcoming.length > 0) {
+      result.push({
+        title: '即将上映',
+        href: '/release-calendar',
+        items: upcoming.slice(0, 10).map((item: any) => ({
+          poster: resolveCardPosterUrl(item.cover || ''),
+          title: item.title || item.name,
+          href: `/play?source=douban&id=${item.id || ''}&title=${encodeURIComponent(item.title || item.name || '')}`,
+          subtitle: item.date || '',
+        })),
+      });
+    }
     return result;
-  }, [data]);
+  }, [data, upcoming]);
 
   return (
     <MobileLayout>
