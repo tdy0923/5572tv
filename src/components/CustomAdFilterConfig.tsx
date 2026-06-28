@@ -4,6 +4,7 @@ import { AlertCircle, CheckCircle, Code, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface CustomAdFilterConfigProps {
   config: AdminConfig | null;
@@ -14,11 +15,7 @@ const CustomAdFilterConfig = ({
   config,
   refreshConfig,
 }: CustomAdFilterConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
 
   const [filterSettings, setFilterSettings] = useState({
     customAdFilterCode: '',
@@ -34,12 +31,6 @@ const CustomAdFilterConfig = ({
       });
     }
   }, [config]);
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   // 保存配置
   const handleSave = async () => {
