@@ -97,6 +97,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   String _switchLoadingMessage = '切换播放源...';
   late AnimationController _switchLoadingAnimationController;
 
+  // 防抖：防止 onVideoCompleted 重复触发
+  bool _isAutoSwitching = false;
+
   // 投屏状态
   bool _isCasting = false;
   dynamic _dlnaDevice;
@@ -349,9 +352,17 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   void startPlay(int targetIndex, int playTime) {
+    if (currentDetail == null || currentDetail!.episodes.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = '无可用播放集数';
+          _showError = true;
+        });
+      }
+      return;
+    }
     if (targetIndex >= currentDetail!.episodes.length) {
       targetIndex = 0;
-      return;
     }
     if (mounted) {
       setState(() {
@@ -845,12 +856,16 @@ class _PlayerScreenState extends State<PlayerScreen>
   /// 处理视频播放完成
   void _onVideoCompleted() {
     if (currentDetail == null) return;
+    if (_isAutoSwitching) return;
 
     // 检查是否为最后一集
     if (currentEpisodeIndex >= currentDetail!.episodes.length - 1) {
       _showToast('播放完成');
       return;
     }
+
+    // 防抖标记
+    _isAutoSwitching = true;
 
     // 显示切换加载蒙版
     setState(() {
@@ -864,6 +879,11 @@ class _PlayerScreenState extends State<PlayerScreen>
     // 自动播放下一集
     final nextIndex = currentEpisodeIndex + 1;
     startPlay(nextIndex, 0);
+
+    // 重置防抖标记
+    Future.delayed(const Duration(seconds: 2), () {
+      _isAutoSwitching = false;
+    });
   }
 
   /// 显示Toast消息

@@ -49,8 +49,11 @@ export default function ShortDramaVerticalPlayer({
   const [showVolume, setShowVolume] = useState(false);
   const [swipeY, setSwipeY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(true);
+  const [videoError, setVideoError] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
 
@@ -61,7 +64,6 @@ export default function ShortDramaVerticalPlayer({
     lastTapRef.current = now;
 
     if (timeDiff < 300) {
-      // 双击 - 点赞
       setLiked(true);
       setLikeAnimation(true);
       setTimeout(() => setLikeAnimation(false), 800);
@@ -89,18 +91,14 @@ export default function ShortDramaVerticalPlayer({
       const deltaY = touch.clientY - touchStartRef.current.y;
       const deltaX = touch.clientX - touchStartRef.current.x;
 
-      // 垂直滑动 > 水平滑动时才处理
       if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 20) {
         setSwipeY(deltaY);
 
-        // 左侧上下滑动 = 亮度
         if (touchStartRef.current.x < window.innerWidth / 3) {
           setShowBrightness(true);
           const delta = (-deltaY / window.innerHeight) * 100;
           setBrightness((prev) => Math.max(0, Math.min(100, prev + delta)));
-        }
-        // 右侧上下滑动 = 音量
-        else if (touchStartRef.current.x > (window.innerWidth * 2) / 3) {
+        } else if (touchStartRef.current.x > (window.innerWidth * 2) / 3) {
           setShowVolume(true);
           const delta = (-deltaY / window.innerHeight) * 100;
           setVolume((prev) => Math.max(0, Math.min(100, prev + delta)));
@@ -113,12 +111,9 @@ export default function ShortDramaVerticalPlayer({
   // 触摸结束
   const handleTouchEnd = useCallback(() => {
     if (Math.abs(swipeY) > 100) {
-      // 上滑 = 下一集
       if (swipeY < 0 && currentIndex < episodes.length - 1) {
         onEpisodeChange(currentIndex + 1);
-      }
-      // 下滑 = 上一集
-      else if (swipeY > 0 && currentIndex > 0) {
+      } else if (swipeY > 0 && currentIndex > 0) {
         onEpisodeChange(currentIndex - 1);
       }
     }
@@ -155,6 +150,30 @@ export default function ShortDramaVerticalPlayer({
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // 音量变化时同步到视频元素
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume / 100;
+    }
+  }, [volume]);
+
+  // 静音变化时同步到视频元素
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  // 集数变化时自动播放
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.load();
+      videoRef.current.play().catch(() => {});
+    }
+  }, [currentIndex]);
+
+  const currentUrl = episodes[currentIndex] || '';
+
   return (
     <div
       ref={containerRef}
@@ -165,20 +184,45 @@ export default function ShortDramaVerticalPlayer({
       onTouchEnd={handleTouchEnd}
       onClick={handleTap}
     >
-      {/* 视频区域 - 占满屏幕 */}
+      {/* 视频区域 */}
       <div className='absolute inset-0 flex items-center justify-center'>
         <div className='w-full h-full max-w-[420px] mx-auto bg-gray-900 rounded-lg overflow-hidden'>
-          {/* 这里应该渲染实际的视频播放器 */}
-          {/* 通过 ArtPlayer 或 video 标签 */}
-          <div className='w-full h-full flex items-center justify-center text-gray-500'>
-            <div className='text-center'>
-              <div className='text-4xl mb-2'>🎬</div>
-              <div className='text-sm'>播放中...</div>
-              <div className='text-xs mt-1 text-gray-600'>
-                {episodesTitles[currentIndex] || `第 ${currentIndex + 1} 集`}
+          {currentUrl ? (
+            <video
+              ref={videoRef}
+              className='w-full h-full object-contain'
+              src={currentUrl}
+              poster={poster}
+              autoPlay
+              playsInline
+              preload='auto'
+              onWaiting={() => setVideoLoading(true)}
+              onCanPlay={() => setVideoLoading(false)}
+              onError={() => {
+                setVideoError(true);
+                setVideoLoading(false);
+              }}
+              onEnded={() => {
+                if (currentIndex < episodes.length - 1) {
+                  onEpisodeChange(currentIndex + 1);
+                }
+              }}
+            />
+          ) : (
+            <div className='w-full h-full flex items-center justify-center text-gray-500'>
+              <div className='text-center'>
+                <div className='text-4xl mb-2'>🎬</div>
+                <div className='text-sm'>暂无播放源</div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* 加载指示器 */}
+          {videoLoading && currentUrl && (
+            <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
+              <div className='w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            </div>
+          )}
         </div>
       </div>
 
@@ -243,7 +287,7 @@ export default function ShortDramaVerticalPlayer({
         </div>
       )}
 
-      {/* 右侧操作栏 - 大触摸目标 + safe area */}
+      {/* 右侧操作栏 */}
       {showControls && (
         <div className='absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 z-20'>
           <button
