@@ -1032,7 +1032,7 @@ function VideoCard({
           {!isLoading && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
           {/* 图片 */}
           <Image
-            src={processImageUrl(actualPoster)}
+            src={actualPoster}
             alt={actualTitle}
             fill
             sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
@@ -1044,7 +1044,7 @@ function VideoCard({
             priority={priority}
             quality={75}
             onLoad={() => {
-              loadedImageUrls.add(processImageUrl(actualPoster));
+              loadedImageUrls.add(actualPoster);
               if (!imageLoaded) {
                 setIsLoading(true);
                 setImageLoaded(true);
@@ -1062,8 +1062,8 @@ function VideoCard({
                 // 非直播内容重试一次
                 img.dataset.retried = 'true';
                 setTimeout(() => {
-                  if (img.src !== processImageUrl(actualPoster)) {
-                    img.src = processImageUrl(actualPoster);
+                  if (img.src !== actualPoster) {
+                    img.src = actualPoster;
                   }
                 }, 2000);
               } else {
@@ -1821,7 +1821,7 @@ function VideoCard({
         isOpen={showMobileActions}
         onClose={() => setShowMobileActions(false)}
         title={actualTitle}
-        poster={processImageUrl(actualPoster)}
+        poster={actualPoster}
         actions={mobileActions}
         sources={
           isAggregate && dynamicSourceNames
