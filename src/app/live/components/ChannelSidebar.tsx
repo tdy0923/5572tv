@@ -510,14 +510,23 @@ export default function ChannelSidebar({
                                   <span
                                     dangerouslySetInnerHTML={{
                                       __html: searchQuery
-                                        ? channel.name.replace(
-                                            new RegExp(
-                                              `(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-                                              'gi',
-                                            ),
-                                            '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
-                                          )
-                                        : channel.name,
+                                        ? channel.name
+                                            .replace(/&/g, '&amp;')
+                                            .replace(/</g, '&lt;')
+                                            .replace(/>/g, '&gt;')
+                                            .replace(/"/g, '&quot;')
+                                            .replace(
+                                              new RegExp(
+                                                `(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+                                                'gi',
+                                              ),
+                                              '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
+                                            )
+                                        : channel.name
+                                            .replace(/&/g, '&amp;')
+                                            .replace(/</g, '&lt;')
+                                            .replace(/>/g, '&gt;')
+                                            .replace(/"/g, '&quot;'),
                                     }}
                                   />
                                 </div>
@@ -703,13 +712,18 @@ export default function ChannelSidebar({
                           {sourceSearchQuery ? (
                             <span
                               dangerouslySetInnerHTML={{
-                                __html: source.name.replace(
-                                  new RegExp(
-                                    `(${sourceSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-                                    'gi',
+                                __html: source.name
+                                  .replace(/&/g, '&amp;')
+                                  .replace(/</g, '&lt;')
+                                  .replace(/>/g, '&gt;')
+                                  .replace(/"/g, '&quot;')
+                                  .replace(
+                                    new RegExp(
+                                      `(${sourceSearchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+                                      'gi',
+                                    ),
+                                    '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
                                   ),
-                                  '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
-                                ),
                               }}
                             />
                           ) : (
