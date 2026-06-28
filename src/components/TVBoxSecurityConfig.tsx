@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface TVBoxSecurityConfigProps {
   config: AdminConfig | null;
@@ -20,11 +21,7 @@ const TVBoxSecurityConfig = ({
   config,
   refreshConfig,
 }: TVBoxSecurityConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
 
   const [securitySettings, setSecuritySettings] = useState({
     enableAuth: false,
@@ -97,12 +94,6 @@ const TVBoxSecurityConfig = ({
     }
     return result;
   }
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   // 保存配置
   const handleSave = async () => {
