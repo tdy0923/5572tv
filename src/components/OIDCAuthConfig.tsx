@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import Toggle from '@/components/Toggle';
+
 interface OIDCProvider {
   id: string;
   name: string;
@@ -412,77 +414,21 @@ export function OIDCAuthConfig({
             </div>
           </div>
 
-          {/* 启用OIDC登录 */}
-          <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
-            <div>
-              <label
-                htmlFor='enableLogin'
-                className='text-sm font-medium text-gray-900 dark:text-gray-100'
-              >
-                启用 OIDC 登录
-              </label>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                开启后，登录页面将显示 OIDC 登录按钮
-              </p>
-            </div>
-            <button
-              type='button'
-              onClick={() =>
-                setLocalConfig({
-                  ...localConfig,
-                  enabled: !localConfig.enabled,
-                })
-              }
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                localConfig.enabled
-                  ? 'bg-purple-600'
-                  : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  localConfig.enabled ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
+          <Toggle
+            checked={localConfig.enabled}
+            onChange={(v) => setLocalConfig({ ...localConfig, enabled: v })}
+            label='启用 OIDC 登录'
+            description='开启后，登录页面将显示 OIDC 登录按钮'
+          />
 
-          {/* 启用OIDC注册 */}
-          <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
-            <div>
-              <label
-                htmlFor='enableRegistration'
-                className='text-sm font-medium text-gray-900 dark:text-gray-100'
-              >
-                启用 OIDC 注册
-              </label>
-              <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                允许通过 OIDC 登录时自动注册新用户
-              </p>
-            </div>
-            <button
-              type='button'
-              onClick={() =>
-                setLocalConfig({
-                  ...localConfig,
-                  enableRegistration: !localConfig.enableRegistration,
-                })
-              }
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                localConfig.enableRegistration
-                  ? 'bg-purple-600'
-                  : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  localConfig.enableRegistration
-                    ? 'translate-x-5'
-                    : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
+          <Toggle
+            checked={localConfig.enableRegistration}
+            onChange={(v) =>
+              setLocalConfig({ ...localConfig, enableRegistration: v })
+            }
+            label='启用 OIDC 注册'
+            description='允许通过 OIDC 登录时自动注册新用户'
+          />
 
           {/* OIDC Issuer */}
           <div>
@@ -963,71 +909,23 @@ function ProviderEditModal({
                 />
               </div>
 
-              {/* Enabled Toggle */}
-              <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
-                <div>
-                  <label className='text-sm font-medium text-gray-900 dark:text-gray-100'>
-                    启用此 Provider
-                  </label>
-                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                    开启后，登录页面将显示此 Provider
-                  </p>
-                </div>
-                <button
-                  type='button'
-                  onClick={() =>
-                    setLocalProvider({
-                      ...localProvider,
-                      enabled: !localProvider.enabled,
-                    })
-                  }
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                    localProvider.enabled
-                      ? 'bg-purple-600'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      localProvider.enabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
+              <Toggle
+                checked={localProvider.enabled}
+                onChange={(v) =>
+                  setLocalProvider({ ...localProvider, enabled: v })
+                }
+                label='启用此 Provider'
+                description='开启后，登录页面将显示此 Provider'
+              />
 
-              {/* Enable Registration Toggle */}
-              <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
-                <div>
-                  <label className='text-sm font-medium text-gray-900 dark:text-gray-100'>
-                    允许注册
-                  </label>
-                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                    允许通过此 Provider 自动注册新用户
-                  </p>
-                </div>
-                <button
-                  type='button'
-                  onClick={() =>
-                    setLocalProvider({
-                      ...localProvider,
-                      enableRegistration: !localProvider.enableRegistration,
-                    })
-                  }
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                    localProvider.enableRegistration
-                      ? 'bg-purple-600'
-                      : 'bg-gray-200 dark:bg-gray-700'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      localProvider.enableRegistration
-                        ? 'translate-x-5'
-                        : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
+              <Toggle
+                checked={localProvider.enableRegistration}
+                onChange={(v) =>
+                  setLocalProvider({ ...localProvider, enableRegistration: v })
+                }
+                label='允许注册'
+                description='允许通过此 Provider 自动注册新用户'
+              />
 
               {/* Issuer */}
               <div>

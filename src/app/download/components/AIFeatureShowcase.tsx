@@ -33,9 +33,9 @@ export default function AIFeatureShowcase() {
           核心功能
         </h2>
         <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
-          {features.map((f, i) => (
+          {features.map((f) => (
             <div
-              key={i}
+              key={f.title}
               className='flex flex-col items-center text-center p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-[#f4c24d]/20 transition-all'
             >
               <div className='w-16 h-16 mb-4 rounded-2xl overflow-hidden'>

@@ -117,8 +117,8 @@ export default function DownloadPage() {
                   { value: '100万+', label: '影视资源' },
                   { value: '50+', label: '播放源' },
                   { value: '24h', label: '实时更新' },
-                ].map((stat, i) => (
-                  <div key={i} className='text-center'>
+                ].map((stat) => (
+                  <div key={stat.label} className='text-center'>
                     <div className='text-xl font-bold text-[#f4c24d]'>
                       {stat.value}
                     </div>
@@ -207,9 +207,9 @@ export default function DownloadPage() {
             <p className='text-gray-400'>为极致观影体验而生</p>
           </div>
           <div className='grid grid-cols-2 lg:grid-cols-4 gap-6'>
-            {features.map((f, i) => (
+            {features.map((f) => (
               <div
-                key={i}
+                key={f.title}
                 className='relative p-6 rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden group hover:border-[#f4c24d]/30 transition-all duration-300 hover:scale-105'
               >
                 <div className='absolute inset-0 bg-gradient-to-br from-[#f4c24d]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500' />
@@ -254,7 +254,7 @@ export default function DownloadPage() {
                       '安装完成，打开使用',
                     ]
                 ).map((step, i) => (
-                  <div key={i} className='flex items-center gap-4'>
+                  <div key={`step-${i}`} className='flex items-center gap-4'>
                     <span className='w-8 h-8 rounded-full bg-[#f4c24d]/20 text-[#f4c24d] flex items-center justify-center text-sm font-bold flex-shrink-0'>
                       {i + 1}
                     </span>
@@ -272,9 +272,9 @@ export default function DownloadPage() {
                   '弹幕互动',
                   '离线缓存',
                   '多端同步',
-                ].map((feature, i) => (
+                ].map((feature) => (
                   <div
-                    key={i}
+                    key={feature}
                     className='flex items-center gap-3 text-gray-300'
                   >
                     <Check className='w-5 h-5 text-[#f4c24d] flex-shrink-0' />

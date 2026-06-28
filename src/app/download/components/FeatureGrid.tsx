@@ -11,9 +11,9 @@ export default function FeatureGrid() {
   return (
     <section className='py-16 px-4 bg-[#111] border-t border-white/5'>
       <div className='max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4'>
-        {features.map((f, i) => (
+        {features.map((f) => (
           <div
-            key={i}
+            key={f.title}
             className='p-5 rounded-2xl bg-white/[0.02] border border-white/5'
           >
             <span className='text-2xl'>{f.icon}</span>

@@ -88,9 +88,9 @@ export default function PhonePreview() {
                     color: 'from-purple-600/40 to-blue-600/40',
                   },
                   { title: '三体', color: 'from-cyan-600/40 to-blue-600/40' },
-                ].map((item, i) => (
+                ].map((item) => (
                   <div
-                    key={i}
+                    key={item.title}
                     className={`flex-1 p-2 rounded-lg bg-gradient-to-r ${item.color}`}
                   >
                     <div className='w-full h-16 sm:h-20 rounded bg-white/10 mb-1.5' />
@@ -104,8 +104,11 @@ export default function PhonePreview() {
             <div className='px-1'>
               <div className='text-xs text-white/50 mb-2'>热门推荐</div>
               <div className='space-y-2'>
-                {['繁花', '玫瑰的故事'].map((title, i) => (
-                  <div key={i} className='flex gap-2 p-2 rounded-lg bg-white/5'>
+                {['繁花', '玫瑰的故事'].map((title) => (
+                  <div
+                    key={title}
+                    className='flex gap-2 p-2 rounded-lg bg-white/5'
+                  >
                     <div className='w-10 h-14 rounded bg-gradient-to-br from-yellow-600/30 to-orange-600/30 flex-shrink-0' />
                     <div className='flex-1'>
                       <div className='text-xs font-medium text-white'>
@@ -128,9 +131,9 @@ export default function PhonePreview() {
               { icon: '🔍', label: '搜索', active: false },
               { icon: '⭐', label: '收藏', active: false },
               { icon: '👤', label: '我的', active: false },
-            ].map((item, i) => (
+            ].map((item) => (
               <div
-                key={i}
+                key={item.label}
                 className={`flex flex-col items-center gap-0.5 ${item.active ? 'text-[#f4c24d]' : 'text-white/40'}`}
               >
                 <span className='text-base sm:text-lg'>{item.icon}</span>
