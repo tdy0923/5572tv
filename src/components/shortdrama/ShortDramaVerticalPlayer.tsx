@@ -158,7 +158,7 @@ export default function ShortDramaVerticalPlayer({
   return (
     <div
       ref={containerRef}
-      className='relative w-full h-screen bg-black overflow-hidden select-none'
+      className='relative w-full h-screen h-dvh bg-black overflow-hidden select-none'
       style={{ filter: `brightness(${brightness / 100})` }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -243,21 +243,37 @@ export default function ShortDramaVerticalPlayer({
         </div>
       )}
 
-      {/* 右侧操作栏 */}
+      {/* 右侧操作栏 - 大触摸目标 + safe area */}
       {showControls && (
-        <div className='absolute right-3 top-1/2 -translate-y-1/2 flex flex-col items-center gap-5 z-20'>
+        <div className='absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4 z-20'>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFullscreen();
+            }}
+            className='flex flex-col items-center min-h-[56px] min-w-[56px]'
+          >
+            <div className='p-4 rounded-full bg-black/30 backdrop-blur-sm'>
+              {isFullscreen ? (
+                <Minimize className='w-6 h-6 text-white' />
+              ) : (
+                <Maximize className='w-6 h-6 text-white' />
+              )}
+            </div>
+          </button>
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               onFavorite?.();
             }}
-            className='flex flex-col items-center'
+            className='flex flex-col items-center min-h-[56px] min-w-[56px]'
           >
             <div
-              className={`p-3 rounded-full ${liked ? 'bg-red-500/20' : 'bg-black/30'} backdrop-blur-sm`}
+              className={`p-4 rounded-full ${liked ? 'bg-red-500/20' : 'bg-black/30'} backdrop-blur-sm`}
             >
               <Heart
-                className={`w-7 h-7 ${liked ? 'text-red-500 fill-red-500' : 'text-white'}`}
+                className={`w-6 h-6 ${liked ? 'text-red-500 fill-red-500' : 'text-white'}`}
               />
             </div>
             <span className='text-white text-xs mt-1'>收藏</span>
@@ -268,10 +284,10 @@ export default function ShortDramaVerticalPlayer({
               e.stopPropagation();
               onShare?.();
             }}
-            className='flex flex-col items-center'
+            className='flex flex-col items-center min-h-[56px] min-w-[56px]'
           >
-            <div className='p-3 rounded-full bg-black/30 backdrop-blur-sm'>
-              <Share2 className='w-7 h-7 text-white' />
+            <div className='p-4 rounded-full bg-black/30 backdrop-blur-sm'>
+              <Share2 className='w-6 h-6 text-white' />
             </div>
             <span className='text-white text-xs mt-1'>分享</span>
           </button>
@@ -281,10 +297,10 @@ export default function ShortDramaVerticalPlayer({
               e.stopPropagation();
               onDownload?.();
             }}
-            className='flex flex-col items-center'
+            className='flex flex-col items-center min-h-[56px] min-w-[56px]'
           >
-            <div className='p-3 rounded-full bg-black/30 backdrop-blur-sm'>
-              <Download className='w-7 h-7 text-white' />
+            <div className='p-4 rounded-full bg-black/30 backdrop-blur-sm'>
+              <Download className='w-6 h-6 text-white' />
             </div>
             <span className='text-white text-xs mt-1'>下载</span>
           </button>
@@ -294,36 +310,17 @@ export default function ShortDramaVerticalPlayer({
               e.stopPropagation();
               setIsMuted(!isMuted);
             }}
-            className='flex flex-col items-center'
+            className='flex flex-col items-center min-h-[56px] min-w-[56px]'
           >
-            <div className='p-3 rounded-full bg-black/30 backdrop-blur-sm'>
+            <div className='p-4 rounded-full bg-black/30 backdrop-blur-sm'>
               {isMuted ? (
-                <VolumeX className='w-7 h-7 text-white' />
+                <VolumeX className='w-6 h-6 text-white' />
               ) : (
-                <Volume2 className='w-7 h-7 text-white' />
+                <Volume2 className='w-6 h-6 text-white' />
               )}
             </div>
             <span className='text-white text-xs mt-1'>
               {isMuted ? '取消静音' : '静音'}
-            </span>
-          </button>
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFullscreen();
-            }}
-            className='flex flex-col items-center'
-          >
-            <div className='p-3 rounded-full bg-black/30 backdrop-blur-sm'>
-              {isFullscreen ? (
-                <Minimize className='w-7 h-7 text-white' />
-              ) : (
-                <Maximize className='w-7 h-7 text-white' />
-              )}
-            </div>
-            <span className='text-white text-xs mt-1'>
-              {isFullscreen ? '退出' : '全屏'}
             </span>
           </button>
         </div>
