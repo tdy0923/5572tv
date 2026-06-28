@@ -4,6 +4,21 @@ export const runtime = 'nodejs';
 
 const DOUBAN_API = 'https://movie.douban.com/j/search_subjects';
 
+// 内存缓存 — trending数据5分钟内不重复请求豆瓣API
+const cache = new Map<string, { data: unknown; expires: number }>();
+const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_KEY = 'trending:all';
+
+function getCached() {
+  const entry = cache.get(CACHE_KEY);
+  if (entry && entry.expires > Date.now()) return entry.data;
+  return null;
+}
+
+function setCache(data: unknown) {
+  cache.set(CACHE_KEY, { data, expires: Date.now() + CACHE_TTL });
+}
+
 interface DoubanItem {
   rate: string;
   cover: string;
@@ -40,6 +55,17 @@ async function fetchDouban(
 
 export async function GET(_request: NextRequest) {
   try {
+    // 优先返回缓存
+    const cached = getCached();
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
     const [movieItems, tvItems, animeItems, showItems] = await Promise.all([
       fetchDouban('movie', '热门', 15),
       fetchDouban('tv', '热门', 15),
@@ -59,7 +85,7 @@ export async function GET(_request: NextRequest) {
         type_name: source,
       }));
 
-    return NextResponse.json({
+    const result = {
       results: [
         {
           source: 'douban',
@@ -82,6 +108,15 @@ export async function GET(_request: NextRequest) {
           items: toItems(showItems, 'douban'),
         },
       ],
+    };
+
+    setCache(result);
+
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
+        'X-Cache': 'MISS',
+      },
     });
   } catch (error) {
     console.error('获取热门内容失败:', error);

@@ -30,17 +30,28 @@ export async function GET(request: NextRequest) {
 
   try {
     const data = await fetchWithRetry(url, 2);
+    const contentType = detectImageType(data);
     return new NextResponse(data, {
       headers: {
-        'Content-Type': 'image/jpeg',
+        'Content-Type': contentType,
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
-        'Vary': '',
+        'Vary': 'Accept',
       },
     });
   } catch {
     return new NextResponse('Image fetch failed', { status: 502 });
   }
+}
+
+function detectImageType(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer.slice(0, 12));
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8) return 'image/jpeg';
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46) return 'image/webp';
+  if (bytes[0] === 0x66 && bytes[1] === 0x74 && bytes[2] === 0x79 && bytes[3] === 0x70) return 'image/avif';
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'image/gif';
+  return 'image/jpeg';
 }
 
 async function fetchWithRetry(url: string, retries: number): Promise<ArrayBuffer> {

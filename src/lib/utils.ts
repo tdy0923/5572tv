@@ -189,6 +189,11 @@ export function processImageUrl(originalUrl: string): string {
     return originalUrl;
   }
 
+  // 防止双重代理：如果URL已经是代理URL，直接返回
+  if (originalUrl.includes('/api/image-proxy') || originalUrl.includes('/api/poster-cache')) {
+    return originalUrl;
+  }
+
   if (originalUrl.startsWith('//')) {
     return processImageUrl(`https:${originalUrl}`);
   }

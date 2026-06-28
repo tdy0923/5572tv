@@ -63,7 +63,7 @@ function ShortDramaCard({
     drama.episode_count > 1,
   ); // 如果初始集数>1就显示
   const [imageLoaded, setImageLoaded] = useState(() =>
-    loadedImageUrls.has(processImageUrl(resolveCardPosterUrl(drama.cover))),
+    loadedImageUrls.has(resolveCardPosterUrl(drama.cover)),
   ); // 图片加载状态，初始化时检查缓存
   const [favorited, setFavorited] = useState(false); // 收藏状态
   const [showMobileActions, setShowMobileActions] = useState(false); // 移动端操作面板
@@ -346,7 +346,7 @@ function ShortDramaCard({
         {/* 封面图片 - 代理图片不能用next/image */}
         <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-black/6 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/6'>
           <img
-            src={processImageUrl(posterUrl)}
+            src={posterUrl}
             alt={drama.name}
             className={`h-full w-full object-cover transition-all duration-700 ease-out ${
               imageLoaded
@@ -356,7 +356,7 @@ function ShortDramaCard({
             referrerPolicy='no-referrer'
             loading={priority ? undefined : 'lazy'}
             onLoad={() => {
-              loadedImageUrls.add(processImageUrl(posterUrl));
+              loadedImageUrls.add(posterUrl);
               setImageLoaded(true);
             }}
             onError={(e) => {
