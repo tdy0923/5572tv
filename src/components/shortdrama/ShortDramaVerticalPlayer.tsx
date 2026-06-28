@@ -34,7 +34,6 @@ export default function ShortDramaVerticalPlayer({
   title,
   poster,
   onFavorite,
-  isFavorited = false,
   onShare,
   onDownload,
 }: ShortDramaVerticalPlayerProps) {
@@ -51,25 +50,71 @@ export default function ShortDramaVerticalPlayer({
   const [isDragging, setIsDragging] = useState(false);
   const [videoLoading, setVideoLoading] = useState(true);
   const [videoError, setVideoError] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [episodeSwitching, setEpisodeSwitching] = useState(false);
+  const [seekIndicator, setSeekIndicator] = useState<{
+    time: number;
+    side: 'left' | 'right';
+  } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
+  const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  // 双击点赞
-  const handleDoubleTap = useCallback(() => {
-    const now = Date.now();
-    const timeDiff = now - lastTapRef.current;
-    lastTapRef.current = now;
+  // 集数变化时重置状态
+  const handleEpisodeChange = useCallback(
+    (index: number) => {
+      setVideoError(false);
+      setVideoLoading(true);
+      setEpisodeSwitching(true);
+      onEpisodeChange(index);
+      setTimeout(() => setEpisodeSwitching(false), 300);
+    },
+    [onEpisodeChange],
+  );
 
-    if (timeDiff < 300) {
-      setLiked(true);
-      setLikeAnimation(true);
-      setTimeout(() => setLikeAnimation(false), 800);
-      onFavorite?.();
+  // 自动隐藏控制栏（3秒后）
+  useEffect(() => {
+    if (showControls) {
+      controlsTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
     }
-  }, [onFavorite]);
+    return () => {
+      if (controlsTimerRef.current) {
+        clearTimeout(controlsTimerRef.current);
+      }
+    };
+  }, [showControls, currentIndex]);
+
+  // 双击快进/快退（左侧快退5秒，右侧快进5秒）
+  const handleDoubleTap = useCallback(
+    (clientX?: number) => {
+      const now = Date.now();
+      const timeDiff = now - lastTapRef.current;
+      lastTapRef.current = now;
+
+      if (timeDiff < 300) {
+        if (videoRef.current) {
+          const isLeftSide = clientX ? clientX < window.innerWidth / 2 : false;
+          const seekDelta = isLeftSide ? -5 : 5;
+          videoRef.current.currentTime = Math.max(
+            0,
+            Math.min(duration, videoRef.current.currentTime + seekDelta),
+          );
+          setSeekIndicator({
+            time: videoRef.current.currentTime,
+            side: isLeftSide ? 'left' : 'right',
+          });
+          setTimeout(() => setSeekIndicator(null), 800);
+        }
+      }
+    },
+    [duration],
+  );
 
   // 触摸开始
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -109,25 +154,34 @@ export default function ShortDramaVerticalPlayer({
   );
 
   // 触摸结束
-  const handleTouchEnd = useCallback(() => {
-    if (Math.abs(swipeY) > 100) {
-      if (swipeY < 0 && currentIndex < episodes.length - 1) {
-        onEpisodeChange(currentIndex + 1);
-      } else if (swipeY > 0 && currentIndex > 0) {
-        onEpisodeChange(currentIndex - 1);
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (Math.abs(swipeY) > 100) {
+        if (swipeY < 0 && currentIndex < episodes.length - 1) {
+          handleEpisodeChange(currentIndex + 1);
+        } else if (swipeY > 0 && currentIndex > 0) {
+          handleEpisodeChange(currentIndex - 1);
+        }
       }
-    }
-    setIsDragging(false);
-    setSwipeY(0);
-    setShowBrightness(false);
-    setShowVolume(false);
-  }, [swipeY, currentIndex, episodes.length, onEpisodeChange]);
+      setIsDragging(false);
+      setSwipeY(0);
+      setShowBrightness(false);
+      setShowVolume(false);
+      handleDoubleTap(e.changedTouches[0]?.clientX);
+    },
+    [
+      swipeY,
+      currentIndex,
+      episodes.length,
+      handleEpisodeChange,
+      handleDoubleTap,
+    ],
+  );
 
   // 点击切换控制栏
   const handleTap = useCallback(() => {
-    handleDoubleTap();
     setShowControls((prev) => !prev);
-  }, [handleDoubleTap]);
+  }, []);
 
   // 全屏切换
   const toggleFullscreen = useCallback(() => {
@@ -185,7 +239,9 @@ export default function ShortDramaVerticalPlayer({
       onClick={handleTap}
     >
       {/* 视频区域 */}
-      <div className='absolute inset-0 flex items-center justify-center'>
+      <div
+        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${episodeSwitching ? 'opacity-0' : 'opacity-100'}`}
+      >
         <div className='w-full h-full max-w-[420px] mx-auto bg-gray-900 rounded-lg overflow-hidden'>
           {currentUrl ? (
             <video
@@ -196,6 +252,12 @@ export default function ShortDramaVerticalPlayer({
               autoPlay
               playsInline
               preload='auto'
+              onTimeUpdate={() => {
+                if (videoRef.current) {
+                  setCurrentTime(videoRef.current.currentTime);
+                  setDuration(videoRef.current.duration || 0);
+                }
+              }}
               onWaiting={() => setVideoLoading(true)}
               onCanPlay={() => setVideoLoading(false)}
               onError={() => {
@@ -204,7 +266,7 @@ export default function ShortDramaVerticalPlayer({
               }}
               onEnded={() => {
                 if (currentIndex < episodes.length - 1) {
-                  onEpisodeChange(currentIndex + 1);
+                  handleEpisodeChange(currentIndex + 1);
                 }
               }}
             />
@@ -218,9 +280,44 @@ export default function ShortDramaVerticalPlayer({
           )}
 
           {/* 加载指示器 */}
-          {videoLoading && currentUrl && (
+          {videoLoading && currentUrl && !videoError && (
             <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
               <div className='w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            </div>
+          )}
+
+          {/* 错误重试 */}
+          {videoError && (
+            <div className='absolute inset-0 flex items-center justify-center bg-black/60 z-30'>
+              <div className='text-center'>
+                <div className='text-4xl mb-3'>😞</div>
+                <p className='text-white text-sm mb-4'>视频加载失败</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setVideoError(false);
+                    setVideoLoading(true);
+                    videoRef.current?.load();
+                    videoRef.current?.play().catch(() => {});
+                  }}
+                  className='px-6 py-2 bg-white text-black rounded-full text-sm font-medium'
+                >
+                  点击重试
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 快进/快退指示器 */}
+          {seekIndicator && (
+            <div
+              className={`absolute ${seekIndicator.side === 'left' ? 'left-1/4' : 'right-1/4'} top-1/2 -translate-y-1/2 z-30 pointer-events-none animate-fade-out`}
+            >
+              <div className='flex flex-col items-center'>
+                <div className='text-white text-3xl font-bold'>
+                  {seekIndicator.side === 'left' ? '-5s' : '+5s'}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -309,6 +406,9 @@ export default function ShortDramaVerticalPlayer({
           <button
             onClick={(e) => {
               e.stopPropagation();
+              setLiked(!liked);
+              setLikeAnimation(true);
+              setTimeout(() => setLikeAnimation(false), 800);
               onFavorite?.();
             }}
             className='flex flex-col items-center min-h-[56px] min-w-[56px]'
@@ -387,26 +487,37 @@ export default function ShortDramaVerticalPlayer({
       {/* 底部信息栏 */}
       {showControls && (
         <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent z-20'>
-          {/* 进度条 */}
-          <div className='mb-3'>
-            <div className='h-1 bg-white/30 rounded-full overflow-hidden'>
+          {/* 真实视频进度条 */}
+          <div className='mb-3' onClick={(e) => e.stopPropagation()}>
+            <div
+              className='h-1 bg-white/30 rounded-full overflow-hidden cursor-pointer'
+              onClick={(e) => {
+                if (videoRef.current && duration > 0) {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const pos = (e.clientX - rect.left) / rect.width;
+                  videoRef.current.currentTime = pos * duration;
+                }
+              }}
+            >
               <div
                 className='h-full bg-white rounded-full transition-all'
                 style={{
-                  width: `${((currentIndex + 1) / episodes.length) * 100}%`,
+                  width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
                 }}
               />
             </div>
           </div>
 
-          {/* 集数指示 */}
+          {/* 时间和集数指示 */}
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
               <span className='text-white text-sm font-medium'>
                 {currentIndex + 1} / {episodes.length}
               </span>
               <span className='text-white/60 text-xs'>
-                {episodesTitles[currentIndex] || ''}
+                {duration > 0
+                  ? `${formatTime(currentTime)} / ${formatTime(duration)}`
+                  : ''}
               </span>
             </div>
 
@@ -416,7 +527,7 @@ export default function ShortDramaVerticalPlayer({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEpisodeChange(currentIndex - 1);
+                    handleEpisodeChange(currentIndex - 1);
                   }}
                   className='p-2 rounded-full bg-white/20 backdrop-blur-sm'
                 >
@@ -427,7 +538,7 @@ export default function ShortDramaVerticalPlayer({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEpisodeChange(currentIndex + 1);
+                    handleEpisodeChange(currentIndex + 1);
                   }}
                   className='p-2 rounded-full bg-white/20 backdrop-blur-sm'
                 >
@@ -449,4 +560,13 @@ export default function ShortDramaVerticalPlayer({
       )}
     </div>
   );
+}
+
+function formatTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0)
+    return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
