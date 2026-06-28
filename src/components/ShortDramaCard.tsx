@@ -28,7 +28,7 @@ import {
   SHORTDRAMA_CACHE_EXPIRE,
 } from '@/lib/shortdrama-cache';
 import { ShortDramaItem } from '@/lib/types';
-import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
+import { resolveCardPosterUrl } from '@/lib/utils';
 import { useToggleFavoriteMutation } from '@/hooks/useFavoritesMutations';
 import { useLongPress } from '@/hooks/useLongPress';
 
@@ -83,10 +83,11 @@ function ShortDramaCard({
 
   // 检查收藏状态
   useEffect(() => {
+    let mounted = true;
     const fetchFavoriteStatus = async () => {
       try {
         const fav = await isFavorited(source, id);
-        setFavorited(fav);
+        if (mounted) setFavorited(fav);
       } catch (err) {
         console.error('检查收藏状态失败:', err);
       }
@@ -100,11 +101,14 @@ function ShortDramaCard({
       'favoritesUpdated',
       (newFavorites: Record<string, any>) => {
         const isNowFavorited = !!newFavorites[storageKey];
-        setFavorited(isNowFavorited);
+        if (mounted) setFavorited(isNowFavorited);
       },
     );
 
-    return unsubscribe;
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, [source, id]);
 
   // AI 功能状态通过初始化值获取，避免 effect 内同步 setState

@@ -237,6 +237,7 @@ function VideoCard({
   useEffect(() => {
     if (!actualSource || !actualId) return;
 
+    let mounted = true;
     const fetchStatus = async () => {
       try {
         // 🔥 修复：检查是否是"新上映"的内容
@@ -248,14 +249,16 @@ function VideoCard({
         if (shouldShowBell) {
           // 即将上映或新上映 → 检查提醒状态
           const rem = await isReminded(actualSource, actualId);
-          setReminded(rem);
+          if (mounted) setReminded(rem);
         } else {
           // 已上映 → 检查收藏状态
           const fav = await isFavorited(actualSource, actualId);
-          if (from === 'search') {
-            setSearchFavorited(fav);
-          } else {
-            setFavorited(fav);
+          if (mounted) {
+            if (from === 'search') {
+              setSearchFavorited(fav);
+            } else {
+              setFavorited(fav);
+            }
           }
         }
       } catch (err) {
@@ -289,6 +292,7 @@ function VideoCard({
     );
 
     return () => {
+      mounted = false;
       unsubscribeFavorites();
       unsubscribeReminders();
     };
