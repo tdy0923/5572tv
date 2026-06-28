@@ -112,8 +112,7 @@ const WebSRSettingsPanel = dynamic(
   () => import('@/components/play/WebSRSettingsPanel'),
   { ssr: false },
 );
-import DeviceRouter from '@/components/DeviceRouter';
-import MobilePlayWrapper from '@/components/MobilePlayWrapper';
+
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import SkipController, {
   SkipSettingsButton,
@@ -7186,23 +7185,7 @@ export default function PlayPage() {
 
 function PlayPageClientWrapper() {
   const searchParams = useSearchParams();
-  // Fix: Only remount when source+id actually changes, NOT on every URL param update
-  // Using full searchParams.toString() caused infinite remount loop with replaceState
   const key = `${searchParams.get('source') || ''}+${searchParams.get('id') || ''}`;
 
-  return (
-    <DeviceRouter
-      mobile={
-        <MobilePlayWrapper
-          title=''
-          episodes={[]}
-          currentEpisode={0}
-          onEpisodeChange={() => {}}
-        >
-          <PlayPageClient key={key} />
-        </MobilePlayWrapper>
-      }
-      desktop={<PlayPageClient key={key} />}
-    />
-  );
+  return <PlayPageClient key={key} />;
 }

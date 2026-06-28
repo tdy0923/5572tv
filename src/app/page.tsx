@@ -51,9 +51,7 @@ import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
-import DeviceRouter from '@/components/DeviceRouter';
 import HeroBanner from '@/components/HeroBanner';
-import MobileHomePage from '@/components/MobileHomePage';
 import PageLayout from '@/components/PageLayout';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -2172,16 +2170,7 @@ function HomeClient() {
 export default function Home() {
   return (
     <Suspense>
-      <DeviceRouter mobile={<MobileHomePage />} desktop={<HomeClient />} />
-    </Suspense>
-  );
-}
-
-// 移动端首页包装器
-export function MobileHome() {
-  return (
-    <Suspense>
-      <MobileHomePage />
+      <HomeClient />
     </Suspense>
   );
 }
