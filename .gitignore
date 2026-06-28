@@ -29,6 +29,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# APK downloads
+public/download/5572tv-android.apk
+
 # vercel
 .vercel
 
