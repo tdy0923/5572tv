@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface WatchRoomConfigProps {
   config: AdminConfig | null;
@@ -31,12 +32,8 @@ interface ServerStats {
 }
 
 const WatchRoomConfig = ({ config, refreshConfig }: WatchRoomConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
   const [isTesting, setIsTesting] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
   const [testResult, setTestResult] = useState<{
     success: boolean;
     message: string;
@@ -64,12 +61,6 @@ const WatchRoomConfig = ({ config, refreshConfig }: WatchRoomConfigProps) => {
 
   // 保存的配置（用于自动刷新统计）
   const savedConfig = config?.WatchRoomConfig;
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 5000);
-  };
 
   // 测试连接
   const handleTestConnection = async () => {
