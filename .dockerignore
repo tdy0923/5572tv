@@ -5,4 +5,3 @@ node_modules
 .gitignore
 Dockerfile
 .dockerignore
-public/download/5572tv-android.apk
