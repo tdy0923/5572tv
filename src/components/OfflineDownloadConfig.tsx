@@ -4,6 +4,7 @@ import { Download } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 interface DownloadConfigProps {
   config: AdminConfig | null;
@@ -15,11 +16,12 @@ const DownloadConfig: React.FC<DownloadConfigProps> = ({
   refreshConfig,
 }) => {
   const [enabled, setEnabled] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const {
+    message,
+    isLoading: isSaving,
+    setIsLoading: setIsSaving,
+    showMessage,
+  } = useConfigMessage();
 
   useEffect(() => {
     if (config?.DownloadConfig) {
@@ -29,7 +31,6 @@ const DownloadConfig: React.FC<DownloadConfigProps> = ({
 
   const handleSave = async () => {
     setIsSaving(true);
-    setMessage(null);
 
     try {
       const response = await fetch('/api/admin/download-config', {
@@ -43,15 +44,10 @@ const DownloadConfig: React.FC<DownloadConfigProps> = ({
         throw new Error(errorData.error || '保存失败');
       }
 
-      setMessage({ type: 'success', text: '下载配置保存成功！' });
+      showMessage('success', '下载配置保存成功！');
       await refreshConfig();
-
-      setTimeout(() => setMessage(null), 3000);
     } catch (err) {
-      setMessage({
-        type: 'error',
-        text: err instanceof Error ? err.message : '保存失败',
-      });
+      showMessage('error', err instanceof Error ? err.message : '保存失败');
     } finally {
       setIsSaving(false);
     }
