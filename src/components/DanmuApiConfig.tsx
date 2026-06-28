@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { useConfigMessage } from '@/hooks/useConfigMessage';
 
 // 默认弹幕API配置
 const DEFAULT_DANMU_API_URL = 'https://smonedanmu.vercel.app';
@@ -20,11 +21,7 @@ interface DanmuApiConfigProps {
 }
 
 const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const { message, isLoading, setIsLoading, showMessage } = useConfigMessage();
   const [testResult, setTestResult] = useState<{
     success: boolean;
     message: string;
@@ -52,12 +49,6 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
       });
     }
   }, [config]);
-
-  // 显示消息
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
 
   // 获取当前使用的 API 地址和 Token
   const getCurrentApiConfig = () => {
