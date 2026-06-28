@@ -1,47 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getConfig } from '@/lib/config';
-
 export const runtime = 'nodejs';
+
+const DOUBAN_API = 'https://movie.douban.com/j/search_subjects';
+
+interface DoubanItem {
+  rate: string;
+  cover: string;
+  title: string;
+  url: string;
+  id: string;
+  episodes_info: string;
+}
+
+async function fetchDouban(
+  type: string,
+  tag: string,
+  limit = 15,
+): Promise<DoubanItem[]> {
+  try {
+    const res = await fetch(
+      `${DOUBAN_API}?type=${type}&tag=${encodeURIComponent(tag)}&sort=recommend&page_limit=${limit}&page_start=0`,
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          Referer: 'https://movie.douban.com/',
+        },
+        signal: AbortSignal.timeout(8000),
+      },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.subjects || [];
+  } catch {
+    return [];
+  }
+}
 
 export async function GET(_request: NextRequest) {
   try {
-    const config = await getConfig();
-    const sources = config.SourceConfig || [];
+    const [movieItems, tvItems, animeItems, showItems] = await Promise.all([
+      fetchDouban('movie', '热门', 15),
+      fetchDouban('tv', '热门', 15),
+      fetchDouban('tv', '动漫', 15),
+      fetchDouban('tv', '综艺', 10),
+    ]);
 
-    // 获取前5个源的热门内容
-    const enabledSources = sources.filter((s: any) => !s.disabled).slice(0, 5);
-    const results: any[] = [];
+    const toItems = (items: DoubanItem[], source: string) =>
+      items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        poster: item.cover,
+        source,
+        source_name: source,
+        year: '',
+        rate: item.rate,
+        type_name: source,
+      }));
 
-    for (const source of enabledSources) {
-      try {
-        // ac=detail 返回完整信息含海报URL
-        const response = await fetch(`${source.api}?ac=detail&pg=1`, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          },
-          signal: AbortSignal.timeout(5000),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.list && data.list.length > 0) {
-            results.push({
-              source: source.key,
-              sourceName: source.name,
-              items: data.list.slice(0, 10),
-            });
-          }
-        }
-      } catch (error) {
-        // 忽略单个源的错误
-      }
-    }
-
-    return NextResponse.json({ results });
+    return NextResponse.json({
+      results: [
+        {
+          source: 'douban',
+          sourceName: '热门电影',
+          items: toItems(movieItems, 'douban'),
+        },
+        {
+          source: 'douban',
+          sourceName: '热门剧集',
+          items: toItems(tvItems, 'douban'),
+        },
+        {
+          source: 'douban',
+          sourceName: '新番放送',
+          items: toItems(animeItems, 'douban'),
+        },
+        {
+          source: 'douban',
+          sourceName: '热门综艺',
+          items: toItems(showItems, 'douban'),
+        },
+      ],
+    });
   } catch (error) {
     console.error('获取热门内容失败:', error);
-    return NextResponse.json({ error: '获取热门内容失败' }, { status: 500 });
+    return NextResponse.json({ results: [] });
   }
 }
