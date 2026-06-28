@@ -15,8 +15,8 @@ export async function GET(_request: NextRequest) {
 
     for (const source of enabledSources) {
       try {
-        // 使用CMS代理获取视频列表
-        const response = await fetch(`${source.api}?ac=list&pg=1`, {
+        // ac=detail 返回完整信息含海报URL
+        const response = await fetch(`${source.api}?ac=detail&pg=1`, {
           headers: {
             'User-Agent':
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
