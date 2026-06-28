@@ -140,12 +140,32 @@ export async function GET(request: NextRequest) {
     const allRecords = await db.getAllPlayRecords(authInfo.username);
     const userRecords = Object.values(allRecords);
 
+    // 没有播放记录时，从热门数据中随机推荐
     if (userRecords.length === 0) {
-      return NextResponse.json({
-        success: true,
-        recommendations: [],
-        message: '暂无观看记录，无法生成推荐',
-      });
+      try {
+        const trendingRes = await fetch(`${new URL(request.url).origin}/api/trending`);
+        if (trendingRes.ok) {
+          const trending = await trendingRes.json();
+          const allItems: any[] = [];
+          for (const group of trending.results || []) {
+            for (const item of group.items || []) {
+              allItems.push({
+                title: item.title || item.vod_name,
+                poster: item.poster || item.vod_pic || '',
+                year: item.year || '',
+                rate: item.rate || '',
+                source: item.source || 'douban',
+                id: item.id || '',
+                type: item.type_name || 'movie',
+              });
+            }
+          }
+          // 随机取6个
+          const shuffled = allItems.sort(() => Math.random() - 0.5).slice(0, 6);
+          return NextResponse.json({ success: true, recommendations: shuffled });
+        }
+      } catch {}
+      return NextResponse.json({ success: true, recommendations: [] });
     }
 
     const viewingHistory = userRecords
