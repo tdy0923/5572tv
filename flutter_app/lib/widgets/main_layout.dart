@@ -890,6 +890,7 @@ class _MainLayoutState extends State<MainLayout> {
       {'icon': LucideIcons.cat, 'label': '动漫'},
       {'icon': LucideIcons.clover, 'label': '综艺'},
       {'icon': LucideIcons.radio, 'label': '直播'},
+      {'icon': LucideIcons.play, 'label': '短剧'},
     ];
 
     final isTablet = DeviceUtils.isTablet(context);

@@ -223,6 +223,45 @@ class _PlayerScreenState extends State<PlayerScreen>
     // 初始化参数
     initParam();
 
+    // 短剧特殊处理：直接使用短剧详情API
+    if (widget.source == 'shortdrama' && widget.id != null) {
+      updateLoadingMessage('正在获取短剧详情...');
+      updateLoadingProgress(0.5);
+      updateLoadingEmoji('🎬');
+      final detail = await ApiService.getShortDramaDetail(widget.id!);
+      if (!_isActiveLoad(loadGeneration)) return;
+      if (detail == null) {
+        showError('未找到短剧详情');
+        return;
+      }
+      currentDetail = detail;
+      allSources = [detail];
+      setInfosByDetail(detail);
+
+      // 检查收藏状态
+      _checkFavoriteStatus();
+
+      // 获取播放记录
+      int playEpisodeIndex = 0;
+      int playTime = 0;
+      if (mounted) {
+        final allPlayRecords = await PageCacheService().getPlayRecords(context);
+        if (!_isActiveLoad(loadGeneration)) return;
+        if (allPlayRecords.success && allPlayRecords.data != null) {
+          final matchingRecords = allPlayRecords.data!.where(
+              (r) => r.id == widget.id && r.source == 'shortdrama');
+          if (matchingRecords.isNotEmpty) {
+            final record = matchingRecords.first;
+            playEpisodeIndex = record.index - 1;
+            playTime = record.playTime;
+          }
+        }
+      }
+
+      startPlay(playEpisodeIndex, playTime);
+      return;
+    }
+
     // 执行查询
     allSources = await fetchSourcesData(
         (searchTitle.isNotEmpty) ? searchTitle : videoTitle);
@@ -653,19 +692,36 @@ class _PlayerScreenState extends State<PlayerScreen>
   Future<void> updateVideoUrl(String newUrl, {Duration? startAt}) async {
     print("newUrl: $newUrl, startAt: $startAt");
     try {
+      String finalUrl = newUrl;
+
+      // 短剧播放地址解析：shortdrama:id:episode → 实际视频URL
+      if (newUrl.startsWith('shortdrama:')) {
+        final parts = newUrl.split(':');
+        if (parts.length >= 3) {
+          final dramaId = parts[1];
+          final episodeNum = int.tryParse(parts[2]) ?? 1;
+          updateLoadingMessage('正在解析短剧播放地址...');
+          final resolvedUrl = await ApiService.parseShortDramaEpisode(
+            dramaId,
+            episodeNum,
+          );
+          if (resolvedUrl != null) {
+            finalUrl = resolvedUrl;
+          } else {
+            throw Exception('无法解析短剧播放地址');
+          }
+        }
+      }
+
       // 获取 M3U8 代理 URL
       final m3u8ProxyUrl = await UserDataService.getM3u8ProxyUrl();
 
       // 如果代理 URL 不为空，则将 newUrl encode 后拼接到代理 URL 后面
-      String finalUrl = newUrl;
-      if (m3u8ProxyUrl.isNotEmpty && !newUrl.startsWith('http')) {
-        // 如果是相对URL，使用代理
-        final encodedUrl = Uri.encodeComponent(newUrl);
+      if (m3u8ProxyUrl.isNotEmpty && !finalUrl.startsWith('http')) {
+        final encodedUrl = Uri.encodeComponent(finalUrl);
         finalUrl = '$m3u8ProxyUrl$encodedUrl';
         print("使用 M3U8 代理: $finalUrl");
-      } else if (newUrl.startsWith('http')) {
-        // 如果已经是完整URL，直接使用
-        finalUrl = newUrl;
+      } else if (finalUrl.startsWith('http')) {
         print("直接使用URL: $finalUrl");
       }
 

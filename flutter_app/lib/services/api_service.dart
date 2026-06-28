@@ -799,4 +799,96 @@ class ApiService {
 
     return cookies.join('; ');
   }
+
+  // ============ 短剧相关 API ============
+
+  /// 获取短剧分类列表
+  static Future<List<Map<String, dynamic>>> getShortDramaCategories() async {
+    try {
+      final url = await _buildUrl('/api/shortdrama/categories');
+      final headers = await _buildHeaders();
+      final response = await http.get(Uri.parse(url), headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(data as List);
+      }
+      return [];
+    } catch (e) {
+      print('获取短剧分类失败: $e');
+      return [];
+    }
+  }
+
+  /// 获取分类下的短剧列表
+  static Future<List<SearchResult>> getShortDramaList(
+      {int? categoryId, int page = 1, int size = 20}) async {
+    try {
+      final params = <String, String>{
+        'page': page.toString(),
+        'size': size.toString(),
+      };
+      if (categoryId != null) params['categoryId'] = categoryId.toString();
+      final uri = Uri.parse(await _buildUrl('/api/shortdrama/list'))
+          .replace(queryParameters: params);
+      final headers = await _buildHeaders();
+      final response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final items = (data['items'] ?? data['results'] ?? []) as List;
+        return items
+            .map((item) => SearchResult.fromJson({
+                  ...Map<String, dynamic>.from(item as Map),
+                  'source': 'shortdrama',
+                  'source_name': '短剧',
+                }))
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      print('获取短剧列表失败: $e');
+      return [];
+    }
+  }
+
+  /// 获取短剧详情（包含所有集数URL）
+  static Future<SearchResult?> getShortDramaDetail(String id) async {
+    try {
+      final uri = Uri.parse(await _buildUrl('/api/shortdrama/detail'))
+          .replace(queryParameters: {'id': id, 'episode': '1'});
+      final headers = await _buildHeaders();
+      final response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return SearchResult.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('获取短剧详情失败: $e');
+      return null;
+    }
+  }
+
+  /// 解析短剧集数的播放地址
+  static Future<String?> parseShortDramaEpisode(
+      String id, int episode, {String? name}) async {
+    try {
+      final params = <String, String>{
+        'id': id,
+        'episode': episode.toString(),
+      };
+      if (name != null) params['name'] = name;
+      final uri = Uri.parse(await _buildUrl('/api/shortdrama/parse'))
+          .replace(queryParameters: params);
+      final headers = await _buildHeaders();
+      final response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        return data['url'] as String?;
+      }
+      return null;
+    } catch (e) {
+      print('解析短剧播放地址失败: $e');
+      return null;
+    }
+  }
 }
