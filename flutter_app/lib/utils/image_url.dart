@@ -13,40 +13,11 @@ bool _needsProxy(String url, String? source) {
   return false;
 }
 
-String _getContentId(String url) {
-  final doubanMatch = RegExp(r'/public/(p\d+)\.').firstMatch(url);
-  if (doubanMatch != null) {
-    return doubanMatch.group(1)!;
-  }
-  final manmankanMatch =
-      RegExp(r'/([^/]+)\.(jpg|jpeg|png|webp)', caseSensitive: false)
-          .firstMatch(url);
-  if (manmankanMatch != null) {
-    return manmankanMatch.group(1)!;
-  }
-  int hash = 0;
-  for (int i = 0; i < url.length; i++) {
-    final char = url.codeUnitAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return 'hash_${(hash.abs()).toRadixString(36)}';
-}
-
-String _getExtension(String url) {
-  if (url.contains('.webp')) return '.webp';
-  if (url.contains('.png')) return '.png';
-  return '.jpg';
-}
-
-/// 处理图片URL
-/// 豆瓣/manmankan图片通过CDN缓存的静态路径加载
+/// 处理图片URL，豆瓣/manmankan图片通过API代理加载
 String getImageUrlSync(String originalUrl, String? source) {
   if (originalUrl.isEmpty) return originalUrl;
   if (_needsProxy(originalUrl, source)) {
-    final contentId = _getContentId(originalUrl);
-    final ext = _getExtension(originalUrl);
-    return '$_apiBaseUrl/poster-cache/$contentId$ext';
+    return '$_apiBaseUrl/api/poster-cache?url=${Uri.encodeComponent(originalUrl)}';
   }
   return originalUrl;
 }
