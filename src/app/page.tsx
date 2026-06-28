@@ -331,8 +331,6 @@ function HomeClient() {
     return cached;
   }, [homeData?.hotShortDramas, state.hotShortDramas]);
 
-  const bangumiCalendarData: any[] = [];
-
   // 🚀 计算 loading 状态：首次加载时显示 loading
   const loading = homeLoading;
 
@@ -348,22 +346,6 @@ function HomeClient() {
     else if (hour < 18) setGreeting('下午好');
     else setGreeting('晚上好');
   }, []);
-
-  // 🎯 优化：缓存今日番剧计算
-  const [currentWeekday, setCurrentWeekday] = useState<string>('');
-
-  useEffect(() => {
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    setCurrentWeekday(weekdays[new Date().getDay()]);
-  }, []);
-
-  const todayAnimes = useMemo(() => {
-    if (!currentWeekday) return [];
-    return (
-      bangumiCalendarData.find((item) => item.weekday.en === currentWeekday)
-        ?.items || []
-    );
-  }, [bangumiCalendarData, currentWeekday]);
 
   // 🎯 优化：缓存今天的日期（用于上映日期计算）
   const [today, setToday] = useState('');
@@ -1976,29 +1958,23 @@ function HomeClient() {
                       Array.from({ length: 4 }).map((_, index) => (
                         <SkeletonCard key={index} />
                       ))
-                    : // 展示当前日期的番剧
-                      todayAnimes.map((anime, index) => (
+                    : // 展示动漫推荐
+                      hotAnime.map((anime, index) => (
                         <div
                           key={`${anime.id}-${index}`}
                           className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                         >
                           <VideoCard
                             from='douban'
-                            source='bangumi'
-                            id={anime.id.toString()}
-                            source_name='Bangumi'
-                            title={anime.name_cn || anime.name}
-                            poster={resolveCardPosterUrl(
-                              anime.images?.large,
-                              anime.images?.common,
-                              anime.images?.medium,
-                              anime.images?.small,
-                              anime.images?.grid,
-                            )}
-                            douban_id={anime.id}
-                            rate={anime.rating?.score?.toFixed(1) || ''}
-                            year={anime.air_date?.split('-')?.[0] || ''}
-                            isBangumi={true}
+                            source='douban'
+                            id={anime.id}
+                            source_name='豆瓣'
+                            title={anime.title}
+                            poster={resolveCardPosterUrl(anime.poster)}
+                            douban_id={Number(anime.id)}
+                            rate={(anime as any).rate || ''}
+                            year={anime.year}
+                            type='movie'
                           />
                         </div>
                       ))}
