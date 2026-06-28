@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
+import { getAvailableApiSites } from '@/lib/config';
 import { db } from '@/lib/db';
+import { searchFromApi } from '@/lib/downstream';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -87,6 +89,47 @@ async function askAIForRecommendations(
   }
 }
 
+async function enrichRecommendations(titles: string[]) {
+  const apiSites = await getAvailableApiSites();
+  if (!apiSites.length || !titles.length) return [];
+
+  const searchPromises = titles.map(async (title) => {
+    try {
+      const results = await Promise.race([
+        searchFromApi(apiSites[0], title, [title]),
+        new Promise<[]>((_, rej) =>
+          setTimeout(() => rej(new Error('timeout')), 5000),
+        ),
+      ]);
+      if (results && results.length > 0) {
+        const match =
+          results.find((r: any) => r.title && r.title.includes(title)) ||
+          results[0];
+        return {
+          title: match.title || title,
+          poster: match.poster || '',
+          year: match.year || '',
+          rate: (match as any).rate || '',
+          source: match.source || '',
+          id: match.id || '',
+          type: (match as any).type_name || 'movie',
+        };
+      }
+    } catch {}
+    return {
+      title,
+      poster: '',
+      year: '',
+      rate: '',
+      source: '',
+      id: '',
+      type: 'movie',
+    };
+  });
+
+  return Promise.all(searchPromises);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authInfo = await getAuthInfoFromCookie(request);
@@ -94,7 +137,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 获取用户播放记录
     const allRecords = await db.getAllPlayRecords(authInfo.username);
     const userRecords = Object.values(allRecords);
 
@@ -106,13 +148,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 提取观看历史（标题列表）
     const viewingHistory = userRecords
       .slice(0, 20)
       .map((record: any) => record.title)
       .filter(Boolean);
 
-    // 提取偏好类型
     const typeCounts: Record<string, number> = {};
     userRecords.forEach((record: any) => {
       if (record.type_name) {
@@ -124,11 +164,11 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([type]) => type);
 
-    // 调用 AI 获取推荐
-    const recommendations = await askAIForRecommendations(
+    const titles = await askAIForRecommendations(
       viewingHistory,
       favoriteGenres,
     );
+    const recommendations = await enrichRecommendations(titles);
 
     return NextResponse.json({
       success: true,

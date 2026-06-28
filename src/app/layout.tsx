@@ -133,6 +133,18 @@ export default async function RootLayout({
         {/* 将配置序列化后直接写入脚本，浏览器端可通过 window.RUNTIME_CONFIG 获取 */}
         <script
           dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('theme');
+                if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme:dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                }
+              } catch(e) {}
+            `,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
