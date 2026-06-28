@@ -53,6 +53,7 @@ import CapsuleSwitch from '@/components/CapsuleSwitch';
 import ContinueWatching from '@/components/ContinueWatching';
 import HeroBanner from '@/components/HeroBanner';
 import PageLayout from '@/components/PageLayout';
+import PullToRefresh from '@/components/PullToRefresh';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
@@ -849,6 +850,7 @@ function HomeClient() {
       {/* Telegram 新用户欢迎弹窗 */}
       <TelegramWelcomeModal />
 
+      <PullToRefresh onRefresh={async () => { refetchHomeData(); }} threshold={100}>
       <div className='overflow-visible mt-0 pb-20 md:pb-safe-bottom'>
         <div className='mb-8 space-y-4'>
           <SiteAdSlot position='home_hero' />
@@ -2122,6 +2124,7 @@ function HomeClient() {
           </div>,
           document.body,
         )}
+      </PullToRefresh>
 
       {/* "继续观看"浮动按钮 */}
       {showContinueWatching && activeTab === 'home' && (
