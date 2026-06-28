@@ -3,16 +3,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <!-- 本地网络发现权限 -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- 震动权限 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- 存储权限 - 用于保存图片到相册 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!-- Android 13+ 媒体权限 -->
+    <!-- Android 13+ 媒体权限 (替代旧版READ/WRITE_EXTERNAL_STORAGE) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     
     <application
