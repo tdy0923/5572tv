@@ -134,7 +134,7 @@ export function useHomePageQueries(): HomePageQueriesResult {
     combine,
   });
 
-  const data = (results as any).data || {
+  const data = (results as any) || {
     hotMovies: [],
     hotTvShows: [],
     hotVarietyShows: [],
@@ -144,10 +144,10 @@ export function useHomePageQueries(): HomePageQueriesResult {
 
   return {
     data,
-    isLoading: (results as any).isLoading,
-    isFetching: (results as any).isFetching,
-    errors: (results as any).errors,
-    hasError: (results as any).hasError,
-    refetch: (results as any).refetch,
+    isLoading: (results as any)?.isLoading ?? true,
+    isFetching: (results as any)?.isFetching ?? true,
+    errors: (results as any)?.errors || [],
+    hasError: (results as any)?.hasError ?? false,
+    refetch: (results as any)?.refetch,
   };
 }
