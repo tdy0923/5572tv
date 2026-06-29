@@ -41,6 +41,7 @@ class VideoCard extends StatefulWidget {
 
 class _VideoCardState extends State<VideoCard> {
   bool _isHovered = false;
+  bool _isFocused = false;
   bool _isPlayButtonHovered = false;
   bool _isDeleteButtonHovered = false;
   bool _isFavoriteButtonHovered = false;
@@ -605,8 +606,22 @@ class _VideoCardState extends State<VideoCard> {
               );
             }
 
-            // 非PC平台，添加GestureDetector
-            return GestureDetector(
+            // 非PC平台，添加GestureDetector + Focus支持
+            return Focus(
+              onFocusChange: (focused) {
+                setState(() => _isFocused = focused);
+              },
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.select ||
+                      event.logicalKey == LogicalKeyboardKey.enter) {
+                    widget.onTap?.call();
+                    return KeyEventResult.handled;
+                  }
+                }
+                return KeyEventResult.ignored;
+              },
+              child: GestureDetector(
               onTap: widget.onTap,
               onLongPress: (widget.from == 'playrecord' ||
                       widget.from == 'douban' ||
@@ -645,7 +660,26 @@ class _VideoCardState extends State<VideoCard> {
                   : null,
               // 设置手势行为，确保长按优先级
               behavior: HitTestBehavior.opaque,
-              child: cardContent,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: _isFocused
+                      ? Border.all(color: const Color(0xFF22C55E), width: 3)
+                      : null,
+                  boxShadow: _isFocused
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF22C55E).withOpacity(0.4),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                  : null,
+                ),
+                child: cardContent,
+              ),
+            ),
             );
           },
         );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../services/search_service.dart';
@@ -928,7 +929,6 @@ class _MainLayoutState extends State<MainLayout> {
             Map<String, dynamic> item = entry.value;
             bool isSelected =
                 !widget.isSearchMode && widget.currentBottomNavIndex == index;
-            bool isHovered = DeviceUtils.isPC() && _hoveredNavIndex == index;
 
             return [
               MouseRegion(
@@ -949,47 +949,71 @@ class _MainLayoutState extends State<MainLayout> {
                         });
                       }
                     : null,
-                child: GestureDetector(
-                  onTap: () {
-                    widget.onBottomNavChanged(index);
+                child: Focus(
+                  onFocusChange: (focused) {
+                    if (focused) {
+                      setState(() => _hoveredNavIndex = index);
+                    }
                   },
-                  behavior: HitTestBehavior.opaque, // 确保整个区域都可以点击
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 16 : 12,
-                      vertical: 8,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          item['icon'],
-                          color: isSelected
-                              ? const Color(0xFF27ae60)
-                              : isHovered
-                                  ? const Color(0xFF52c77a) // hover 时的浅绿色
-                                  : themeService.isDarkMode
-                                      ? const Color(0xFFb0b0b0)
-                                      : const Color(0xFF7f8c8d),
-                          size: 24,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item['label'],
-                          style: FontUtils.poppins(
-                            fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                  onKeyEvent: (node, event) {
+                    if (event is KeyDownEvent) {
+                      if (event.logicalKey == LogicalKeyboardKey.select ||
+                          event.logicalKey == LogicalKeyboardKey.enter) {
+                        widget.onBottomNavChanged(index);
+                        return KeyEventResult.handled;
+                      }
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      widget.onBottomNavChanged(index);
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 16 : 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _hoveredNavIndex == index
+                            ? const Color(0xFF22C55E).withOpacity(0.15)
+                            : null,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item['icon'],
                             color: isSelected
                                 ? const Color(0xFF27ae60)
-                                : isHovered
-                                    ? const Color(0xFF52c77a) // hover 时的浅绿色
+                                : _hoveredNavIndex == index
+                                    ? const Color(0xFF52c77a)
                                     : themeService.isDarkMode
                                         ? const Color(0xFFb0b0b0)
                                         : const Color(0xFF7f8c8d),
+                            size: 24,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            item['label'],
+                            style: FontUtils.poppins(
+                              fontSize: 12,
+                              fontWeight:
+                                  isSelected ? FontWeight.w600 : FontWeight.w400,
+                              color: isSelected
+                                  ? const Color(0xFF27ae60)
+                                  : _hoveredNavIndex == index
+                                      ? const Color(0xFF52c77a)
+                                      : themeService.isDarkMode
+                                          ? const Color(0xFFb0b0b0)
+                                          : const Color(0xFF7f8c8d),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -63,13 +63,15 @@ class _TVRemoteAdapterState extends State<TVRemoteAdapter> {
         widget.onPlayPause?.call();
         return KeyEventResult.handled;
 
+      // Arrow keys: let the focus traversal system handle them
+      // Only intercept if no focused widget exists (fallback)
       case LogicalKeyboardKey.arrowRight:
         widget.onNext?.call();
-        return KeyEventResult.handled;
+        return KeyEventResult.ignored;
 
       case LogicalKeyboardKey.arrowLeft:
         widget.onPrevious?.call();
-        return KeyEventResult.handled;
+        return KeyEventResult.ignored;
 
       default:
         return KeyEventResult.ignored;
