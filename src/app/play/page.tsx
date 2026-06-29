@@ -29,6 +29,7 @@ import { useDeviceInfo } from './hooks/useDeviceInfo';
 import { useEpisodeHandlers } from './hooks/useEpisodeHandlers';
 import { useFavorites } from './hooks/useFavorites';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useLoadingState } from './hooks/useLoadingState';
 import { useNetdiskSearch } from './hooks/useNetdiskSearch';
 import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
@@ -155,12 +156,15 @@ function PlayPageClient() {
   // -----------------------------------------------------------------------------
   // 状态变量（State）
   // -----------------------------------------------------------------------------
-  const [loading, setLoading] = useState(true);
-  const [loadingStage, setLoadingStage] = useState<
-    'searching' | 'preferring' | 'fetching' | 'ready'
-  >('searching');
-  const [loadingMessage, setLoadingMessage] = useState('正在搜索播放源...');
-  const [error, setError] = useState<string | null>(null);
+  const {
+    loading,
+    loadingStage,
+    loadingMessage,
+    error,
+    setStage: setLoadingStage,
+    setError,
+    setReady: setReadyLoading,
+  } = useLoadingState();
   const [detail, setDetail] = useState<SearchResult | null>(null);
 
   // 返回顶部按钮显示状态
@@ -399,7 +403,7 @@ function PlayPageClient() {
       setCurrentId(newId);
       setCurrentEpisodeIndex(newIndex);
       setError(null);
-      setLoading(true);
+      setLoadingStage('searching');
       setNeedPrefer(false);
 
       // 触发重新加载（通过更新 reloadTrigger 来触发 initAll 重新执行）
@@ -1391,14 +1395,13 @@ function PlayPageClient() {
     const initAll = async () => {
       if (!currentSource && !currentId && !videoTitle && !searchTitle) {
         setError('缺少必要参数');
-        setLoading(false);
+        setReadyLoading();
         return;
       }
       // 切换视频时重置源重试状态，避免上一部视频的失败标记影响当前播放
       resetSourceState();
-      setLoading(true);
-      setLoadingStage(currentSource && currentId ? 'fetching' : 'searching');
-      setLoadingMessage(
+      setLoadingStage(
+        currentSource && currentId ? 'fetching' : 'searching',
         currentSource && currentId
           ? '🎬 正在获取视频详情...'
           : '🔍 正在搜索播放源...',
@@ -1557,7 +1560,7 @@ function PlayPageClient() {
               ? '该影片尚未上映或暂无播放源'
               : '未找到严格匹配结果',
         );
-        setLoading(false);
+        setReadyLoading();
         return;
       }
 
@@ -1614,7 +1617,7 @@ function PlayPageClient() {
               setNeedPrefer(true);
             } else {
               setError('当前线路已失效，且未找到其他严格匹配的可用线路');
-              setLoading(false);
+              setReadyLoading();
               return;
             }
           }
@@ -1626,8 +1629,7 @@ function PlayPageClient() {
         (!currentSource || !currentId || needPreferRef.current) &&
         optimizationEnabled
       ) {
-        setLoadingStage('preferring');
-        setLoadingMessage('⚡ 正在优选最佳播放源...');
+        setLoadingStage('preferring', '⚡ 正在优选最佳播放源...');
 
         // 过滤掉 emby 源，它们不参与测速
         const sourcesToTest = sourcesInfo.filter((s) => {
@@ -1659,7 +1661,7 @@ function PlayPageClient() {
               ? '当前线路已失效，且未找到其他严格匹配的可用线路'
               : '未找到严格匹配结果',
           );
-          setLoading(false);
+          setReadyLoading();
           return;
         }
       }
@@ -1725,12 +1727,11 @@ function PlayPageClient() {
         window.history.replaceState({ __NA: true }, '', newUrlStr);
       }
 
-      setLoadingStage('ready');
-      setLoadingMessage('✨ 准备就绪，即将开始播放...');
+      setLoadingStage('ready', '✨ 准备就绪，即将开始播放...');
 
       // 短暂延迟让用户看到完成状态
       setTimeout(() => {
-        setLoading(false);
+        setReadyLoading();
       }, 1000);
     };
 
