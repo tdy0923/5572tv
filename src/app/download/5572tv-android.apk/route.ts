@@ -4,7 +4,7 @@ import { join } from 'path';
 
 const APK_PATH = join(
   process.cwd(),
-  'public',
+  'static',
   'download',
   '5572tv-android.apk',
 );

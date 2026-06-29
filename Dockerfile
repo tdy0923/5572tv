@@ -65,8 +65,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 # 从构建器中复制 start.js
 COPY --from=builder --chown=nextjs:nodejs /app/start.js ./start.js
-# 从构建器中复制 public 和 .next/static 目录
+# 从构建器中复制 public、static 和 .next/static 目录
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/static ./static
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # 安装 serverExternalPackages 中声明的外部依赖
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/redis ./node_modules/redis
