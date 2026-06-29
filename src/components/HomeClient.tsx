@@ -167,6 +167,59 @@ const allRemindersOptions = () =>
     gcTime: 10 * 60 * 1000,
   });
 
+const aiRecommendOptions = (enabled: boolean) =>
+  queryOptions({
+    queryKey: ['ai-recommendations'],
+    queryFn: async () => {
+      const res = await fetch('/api/ai-recommend/personalized');
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      return data.recommendations || [];
+    },
+    enabled,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+const historyTimelineOptions = (enabled: boolean) =>
+  queryOptions({
+    queryKey: ['history-timeline'],
+    queryFn: async () => {
+      const res = await fetch('/api/play-history/timeline');
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      return data.timeline || {};
+    },
+    enabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
+const favoriteGroupsOptions = (enabled: boolean) =>
+  queryOptions({
+    queryKey: ['favorite-groups'],
+    queryFn: async () => {
+      const res = await fetch('/api/favorites/groups');
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      return data.groups || ['默认'];
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
+const favoriteUpdatesOptions = (enabled: boolean) =>
+  queryOptions({
+    queryKey: ['favorite-updates'],
+    queryFn: async () => {
+      const res = await fetch('/api/favorites/updates');
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      return data.count || 0;
+    },
+    enabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
 export interface HomeClientProps {
   initialTrendingData?: HomePageData;
 }
@@ -231,29 +284,8 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   }, []);
 
   // AI 个性化推荐
-  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
-  const [aiRecommendLoading, setAiRecommendLoading] = useState(false);
-
-  useEffect(() => {
-    // 登录用户才加载推荐
-    if (!username) return;
-    const controller = new AbortController();
-    const loadRecommendations = async () => {
-      setAiRecommendLoading(true);
-      try {
-        const res = await fetch('/api/ai-recommend/personalized', {
-          signal: controller.signal,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setAiRecommendations(data.recommendations || []);
-        }
-      } catch {}
-      setAiRecommendLoading(false);
-    };
-    loadRecommendations();
-    return () => controller.abort();
-  }, [username]);
+  const { data: aiRecommendations = [], isLoading: aiRecommendLoading } =
+    useQuery(aiRecommendOptions(!!username));
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
@@ -476,24 +508,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   const [notifPermission, setNotifPermission] = useState<
     NotificationPermission | 'unsupported'
   >(() => getNotificationPermission());
-  const [historyTimeline, setHistoryTimeline] = useState<Record<string, any[]>>(
-    {},
-  );
-  const [favoriteGroups, setFavoriteGroups] = useState<string[]>(['默认']);
   const [favoriteGroupFilter, setFavoriteGroupFilter] =
     useState<string>('全部');
-  const [updateCount, setUpdateCount] = useState(0);
 
-  useEffect(() => {
-    if (activeTab === 'history') {
-      const controller = new AbortController();
-      fetch('/api/play-history/timeline', { signal: controller.signal })
-        .then((r) => r.json())
-        .then((data) => setHistoryTimeline(data.timeline || {}))
-        .catch(() => {});
-      return () => controller.abort();
-    }
-  }, [activeTab]);
+  const { data: historyTimeline = {} } = useQuery(
+    historyTimelineOptions(activeTab === 'history'),
+  );
 
   // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
@@ -548,37 +568,13 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     };
   }, []);
 
-  // 加载收藏分组（仅在收藏tab激活时加载）
-
-  useEffect(() => {
-    if (activeTab !== 'favorites') return;
-    const controller = new AbortController();
-    const loadGroups = async () => {
-      try {
-        const res = await fetch('/api/favorites/groups', {
-          signal: controller.signal,
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setFavoriteGroups(data.groups || ['默认']);
-        }
-      } catch {}
-    };
-    loadGroups();
-    return () => controller.abort();
-  }, [activeTab]);
-
-  // 加载收藏更新数（仅在收藏tab激活时加载）
-
-  useEffect(() => {
-    if (activeTab !== 'favorites') return;
-    const controller = new AbortController();
-    fetch('/api/favorites/updates', { signal: controller.signal })
-      .then((r) => r.json())
-      .then((data) => setUpdateCount(data.count || 0))
-      .catch(() => {});
-    return () => controller.abort();
-  }, [activeTab]);
+  // 收藏分组和更新数（TanStack Query）
+  const { data: favoriteGroups = ['默认'] } = useQuery(
+    favoriteGroupsOptions(activeTab === 'favorites'),
+  );
+  const { data: updateCount = 0 } = useQuery(
+    favoriteUpdatesOptions(activeTab === 'favorites'),
+  );
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
   // Only refetch once, not repeatedly - track if we've already tried
