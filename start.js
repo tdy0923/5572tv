@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console,@typescript-eslint/no-var-requires */
+/* eslint-disable no-console */
 const http = require('http');
+const fs = require('fs');
 const path = require('path');
 
 // 调用 generate-manifest.js 生成 manifest.json
@@ -12,7 +13,7 @@ function generateManifest() {
     const generateManifestScript = path.join(
       __dirname,
       'scripts',
-      'generate-manifest.js'
+      'generate-manifest.js',
     );
     require(generateManifestScript);
   } catch (error) {
@@ -23,12 +24,46 @@ function generateManifest() {
 
 generateManifest();
 
+// APK 下载路径映射
+const APK_PATH = path.join(
+  __dirname,
+  'static',
+  'download',
+  '5572tv-android.apk',
+);
+
+// 在 standalone server 启动前拦截 APK 下载请求
+const originalCreateServer = http.createServer;
+http.createServer = function (options, requestListener) {
+  const wrappedListener = (req, res) => {
+    if (req.url && req.url.startsWith('/download/5572tv-android.apk')) {
+      try {
+        const stat = fs.statSync(APK_PATH);
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.android.package-archive',
+          'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
+          'Content-Length': String(stat.size),
+          'Cache-Control': 'public, max-age=86400',
+        });
+        fs.createReadStream(APK_PATH).pipe(res);
+      } catch {
+        res.writeHead(404);
+        res.end('Not Found');
+      }
+      return;
+    }
+    requestListener(req, res);
+  };
+  return originalCreateServer.call(http, options, wrappedListener);
+};
+
 // 直接在当前进程中启动 standalone Server（`server.js`）
 require('./server.js');
 
 // 每 1 秒轮询一次，直到请求成功
-const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000
-  }/login`;
+const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${
+  process.env.PORT || 3000
+}/login`;
 
 const intervalId = setInterval(() => {
   console.log(`Fetching ${TARGET_URL} ...`);
@@ -45,9 +80,12 @@ const intervalId = setInterval(() => {
       }, 30000);
 
       // 然后设置每小时执行一次 cron 任务
-      setInterval(() => {
-        executeCronJob();
-      }, 60 * 60 * 1000); // 每小时执行一次
+      setInterval(
+        () => {
+          executeCronJob();
+        },
+        60 * 60 * 1000,
+      ); // 每小时执行一次
     }
   });
 
@@ -58,8 +96,9 @@ const intervalId = setInterval(() => {
 
 // 执行 cron 任务的函数
 function executeCronJob() {
-  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000
-    }/api/cron`;
+  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${
+    process.env.PORT || 3000
+  }/api/cron`;
 
   console.log(`Executing cron job: ${cronUrl}`);
 
