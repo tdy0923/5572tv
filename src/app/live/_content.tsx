@@ -7,16 +7,9 @@
 import Hls from 'hls.js';
 import { ChevronDown, ChevronUp, Heart, Radio, Tv, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { debounce } from '@/lib/channel-search';
-import {
-  deleteFavorite,
-  generateStorageKey,
-  isFavorited as checkIsFavorited,
-  saveFavorite,
-  subscribeToDataUpdates,
-} from '@/lib/db.client';
 import { parseCustomTimeFormat } from '@/lib/time';
 import { devicePerformance, isMobile, isSafari } from '@/lib/utils';
 import { useLiveSync } from '@/hooks/useLiveSync';
@@ -27,18 +20,12 @@ import PageLayout from '@/components/PageLayout';
 
 import ChannelSidebar from './components/ChannelSidebar';
 import GroupSelectorModal from './components/GroupSelectorModal';
-import type {
-  ChannelHealthInfo,
-  GroupSortMode,
-  LiveChannel,
-  LiveSource,
-} from './types';
-import {
-  deriveHealthStatus,
-  detectTypeFromUrl,
-  normalizeStreamType,
-  parseStoredStringArray,
-} from './utils';
+import { useAutoRefresh } from './hooks/useAutoRefresh';
+import { useChannelHealth } from './hooks/useChannelHealth';
+import { useCorsDetection } from './hooks/useCorsDetection';
+import { useLiveFavorites } from './hooks/useLiveFavorites';
+import type { GroupSortMode, LiveChannel, LiveSource } from './types';
+import { parseStoredStringArray } from './utils';
 
 // 扩展 HTMLVideoElement 类型以支持 hls 和 flv 属性
 declare global {
@@ -52,8 +39,6 @@ declare global {
 const RECENT_GROUPS_STORAGE_KEY = 'liveRecentGroups';
 const PINNED_GROUPS_STORAGE_KEY = 'livePinnedGroups';
 const MAX_RECENT_GROUPS = 8;
-const HEALTH_CHECK_CACHE_MS = 3 * 60 * 1000;
-const HEALTH_CHECK_BATCH_SIZE = 12;
 
 function LivePageClient() {
   // -----------------------------------------------------------------------------
@@ -73,6 +58,7 @@ function LivePageClient() {
   const [liveSources, setLiveSources] = useState<LiveSource[]>([]);
   const [currentSource, setCurrentSource] = useState<LiveSource | null>(null);
   const currentSourceRef = useRef<LiveSource | null>(null);
+  const refreshLiveSourcesRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     currentSourceRef.current = currentSource;
   }, [currentSource]);
@@ -99,49 +85,14 @@ function LivePageClient() {
 
   // 刷新相关状态
   const [isRefreshingSource, setIsRefreshingSource] = useState(false);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('live-auto-refresh-enabled');
-      return saved ? JSON.parse(saved) : false;
-    }
-    return false;
-  });
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('live-auto-refresh-interval');
-      return saved ? parseInt(saved) : 30; // 默认30分钟
-    }
-    return 30;
-  });
-  const autoRefreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 🚀 直连模式相关状态
   const [directPlaybackEnabled, setDirectPlaybackEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('live-direct-playback-enabled');
-      return saved ? JSON.parse(saved) : false; // 默认关闭，使用代理
+      return saved ? JSON.parse(saved) : false;
     }
     return false;
-  });
-  const [corsSupport, setCorsSupport] = useState<Map<string, boolean>>(
-    new Map(),
-  );
-  const corsSupportRef = useRef<Map<string, boolean>>(new Map());
-  const [playbackMode, setPlaybackMode] = useState<'direct' | 'proxy'>('proxy');
-
-  // 📊 CORS 检测统计（管理员用）
-  const [corsStats, setCorsStats] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('live-cors-stats');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          return { directCount: 0, proxyCount: 0, totalChecked: 0 };
-        }
-      }
-    }
-    return { directCount: 0, proxyCount: 0, totalChecked: 0 };
   });
 
   // 分组相关
@@ -180,14 +131,6 @@ function LivePageClient() {
   const [recentGroups, setRecentGroups] = useState<string[]>([]);
   const [pinnedGroups, setPinnedGroups] = useState<string[]>([]);
 
-  // 新增：频道健康检测状态
-  const [channelHealthMap, setChannelHealthMap] = useState<
-    Record<string, ChannelHealthInfo>
-  >({});
-  const channelHealthMapRef = useRef<Record<string, ChannelHealthInfo>>({});
-  const healthByUrlCacheRef = useRef<Record<string, ChannelHealthInfo>>({});
-  const healthCheckingRef = useRef<Set<string>>(new Set());
-
   // 节目单信息
   const [epgData, setEpgData] = useState<{
     tvgId: string;
@@ -204,9 +147,6 @@ function LivePageClient() {
   // EPG 数据加载状态
   const [isEpgLoading, setIsEpgLoading] = useState(false);
 
-  // 收藏状态
-  const [favorited, setFavorited] = useState(false);
-  const favoritedRef = useRef(false);
   const currentChannelRef = useRef<LiveChannel | null>(null);
 
   // 待同步的频道ID（用于跨直播源切换）
@@ -223,6 +163,34 @@ function LivePageClient() {
   const [dvrDetected, setDvrDetected] = useState(false);
   const [dvrSeekableRange, setDvrSeekableRange] = useState(0);
   const [enableDvrMode, setEnableDvrMode] = useState(false); // 用户手动启用DVR模式
+
+  // Hook calls - placed after all state/ref declarations
+  const {
+    autoRefreshEnabled,
+    setAutoRefreshEnabled,
+    autoRefreshInterval,
+    setAutoRefreshInterval,
+  } = useAutoRefresh({ onRefreshRef: refreshLiveSourcesRef });
+
+  const {
+    corsSupport,
+    playbackMode,
+    corsStats,
+    testCORSSupport,
+    shouldUseDirectPlayback,
+  } = useCorsDetection({ directPlaybackEnabled });
+
+  const { channelHealthMap, checkChannelHealth } = useChannelHealth({
+    currentSource,
+    currentSourceRef,
+  });
+
+  const { favorited, handleToggleFavorite } = useLiveFavorites({
+    currentSource,
+    currentChannel,
+    currentSourceRef,
+    currentChannelRef,
+  });
 
   // EPG数据清洗函数 - 去除重叠的节目，保留时间较短的，只显示今日节目
   const cleanEpgData = (
@@ -397,6 +365,7 @@ function LivePageClient() {
   const refreshLiveSources = async () => {
     if (isRefreshingSource) return;
 
+    refreshLiveSourcesRef.current = refreshLiveSources;
     setIsRefreshingSource(true);
     try {
       //       // // console.log('开始刷新直播源...');
@@ -431,26 +400,6 @@ function LivePageClient() {
   };
 
   // 设置自动刷新
-  const setupAutoRefresh = () => {
-    // 清除现有定时器
-    if (autoRefreshTimerRef.current) {
-      clearInterval(autoRefreshTimerRef.current);
-      autoRefreshTimerRef.current = null;
-    }
-
-    if (autoRefreshEnabled) {
-      const intervalMs = autoRefreshInterval * 60 * 1000; // 转换为毫秒
-      autoRefreshTimerRef.current = setInterval(() => {
-        //         // // console.log(`自动刷新直播源 (间隔: ${autoRefreshInterval}分钟)`);
-        refreshLiveSources();
-      }, intervalMs);
-
-      //       // // console.log(`自动刷新已启用，间隔: ${autoRefreshInterval}分钟`);
-    } else {
-      //       // // console.log('自动刷新已禁用');
-    }
-  };
-
   // 获取直播源列表
   const fetchLiveSources = async () => {
     try {
@@ -704,185 +653,6 @@ function LivePageClient() {
     }
   };
 
-  // 🚀 CORS 智能检测函数（带持久化和统计）
-  const testCORSSupport = async (url: string): Promise<boolean> => {
-    // 0. 🔐 Mixed Content 检测：HTTPS页面不能加载HTTP资源
-    if (
-      typeof window !== 'undefined' &&
-      window.location.protocol === 'https:' &&
-      url.startsWith('http:')
-    ) {
-      //       // // console.log(
-      //         `🔐 Mixed Content: ${url.substring(0, 50)}... => ❌ 需要代理 (HTTPS页面不能加载HTTP资源)`,
-      //       );
-      // 直接返回false，不浪费时间检测，也不计入统计
-      corsSupportRef.current.set(url, false);
-      setCorsSupport(new Map(corsSupportRef.current));
-      return false;
-    }
-
-    // 1. 检查内存缓存
-    if (corsSupportRef.current.has(url)) {
-      return corsSupportRef.current.get(url)!;
-    }
-
-    // 2. 检查 localStorage 持久化缓存（7天有效期）
-    if (typeof window !== 'undefined') {
-      try {
-        const cacheKey = `cors-cache-${btoa(url).substring(0, 50)}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { supports, timestamp } = JSON.parse(cached);
-          const age = Date.now() - timestamp;
-          const MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7天
-
-          if (age < MAX_AGE) {
-            // 缓存有效，直接使用
-            corsSupportRef.current.set(url, supports);
-            setCorsSupport(new Map(corsSupportRef.current));
-            //             // // console.log(
-            //               `💾 CORS缓存命中: ${url.substring(0, 50)}... => ${supports ? '✅ 直连' : '❌ 代理'} (${Math.floor(age / 86400000)}天前检测)`,
-            //             );
-            return supports;
-          }
-        }
-      } catch (error) {
-        // 缓存读取失败，继续检测
-      }
-    }
-
-    // 3. 执行实际检测
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时
-
-      const response = await fetch(url, {
-        method: 'HEAD',
-        signal: controller.signal,
-        cache: 'no-cache',
-      });
-
-      clearTimeout(timeoutId);
-
-      const supports = response.ok;
-
-      // 4. 保存到内存缓存
-      corsSupportRef.current.set(url, supports);
-      setCorsSupport(new Map(corsSupportRef.current));
-
-      // 5. 保存到 localStorage（7天有效）
-      if (typeof window !== 'undefined') {
-        try {
-          const cacheKey = `cors-cache-${btoa(url).substring(0, 50)}`;
-          localStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              supports,
-              timestamp: Date.now(),
-              url: url.substring(0, 100), // 保存URL前缀便于调试
-            }),
-          );
-        } catch (error) {
-          // localStorage 满了或其他错误，忽略
-        }
-      }
-
-      // 6. 更新统计数据
-      setCorsStats((prev) => {
-        const newStats = {
-          directCount: prev.directCount + (supports ? 1 : 0),
-          proxyCount: prev.proxyCount + (supports ? 0 : 1),
-          totalChecked: prev.totalChecked + 1,
-        };
-        // 保存统计到 localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('live-cors-stats', JSON.stringify(newStats));
-        }
-        return newStats;
-      });
-
-      //       // // console.log(
-      //         `🔍 CORS检测: ${url.substring(0, 50)}... => ${supports ? '✅ 支持直连' : '❌ 需要代理'}`,
-      //       );
-
-      return supports;
-    } catch (error) {
-      // CORS 错误、Mixed Content 或超时，标记为不支持
-      const supports = false;
-
-      corsSupportRef.current.set(url, supports);
-      setCorsSupport(new Map(corsSupportRef.current));
-
-      // 保存到 localStorage
-      if (typeof window !== 'undefined') {
-        try {
-          const cacheKey = `cors-cache-${btoa(url).substring(0, 50)}`;
-          localStorage.setItem(
-            cacheKey,
-            JSON.stringify({
-              supports,
-              timestamp: Date.now(),
-              url: url.substring(0, 100),
-            }),
-          );
-        } catch (e) {
-          //           // // console.log('Live error:', e);
-        }
-      }
-
-      // 更新统计数据
-      setCorsStats((prev) => {
-        const newStats = {
-          directCount: prev.directCount,
-          proxyCount: prev.proxyCount + 1,
-          totalChecked: prev.totalChecked + 1,
-        };
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('live-cors-stats', JSON.stringify(newStats));
-        }
-        return newStats;
-      });
-
-      // 优化错误信息显示
-      let errorMsg = '网络错误';
-      if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch')) {
-          errorMsg = 'CORS限制';
-        } else if (error.name === 'AbortError') {
-          errorMsg = '超时';
-        } else {
-          errorMsg = error.message;
-        }
-      }
-
-      //       // // console.log(
-      //         `🔍 CORS检测: ${url.substring(0, 50)}... => ❌ 需要代理 (${errorMsg})`,
-      //       );
-
-      return false;
-    }
-  };
-
-  // 🚀 决定是否使用直连播放
-  const shouldUseDirectPlayback = async (url: string): Promise<boolean> => {
-    // 如果用户未启用直连模式，始终使用代理
-    if (!directPlaybackEnabled) {
-      setPlaybackMode('proxy');
-      return false;
-    }
-
-    // 智能检测 CORS 支持
-    const supportsCORS = await testCORSSupport(url);
-
-    if (supportsCORS) {
-      setPlaybackMode('direct');
-      return true;
-    } else {
-      setPlaybackMode('proxy');
-      return false;
-    }
-  };
-
   // 切换频道
   const handleChannelChange = async (channel: LiveChannel) => {
     // 如果正在切换直播源，则禁用频道切换
@@ -1072,126 +842,6 @@ function LivePageClient() {
     }
   };
 
-  // 新增：设置频道健康信息
-  const setChannelHealth = (channelId: string, info: ChannelHealthInfo) => {
-    setChannelHealthMap((prevMap) => ({
-      ...prevMap,
-      [channelId]: info,
-    }));
-    channelHealthMapRef.current[channelId] = info;
-  };
-
-  // 新增：检测频道健康状态
-  const checkChannelHealth = useCallback(
-    async (
-      channel: LiveChannel,
-      options?: { force?: boolean },
-    ): Promise<ChannelHealthInfo> => {
-      const sourceKey = currentSource?.key || currentSourceRef.current?.key;
-      const fallbackType = detectTypeFromUrl(channel.url);
-      const now = Date.now();
-
-      const fallbackInfo: ChannelHealthInfo = {
-        type: fallbackType,
-        status: 'unknown',
-        checkedAt: now,
-      };
-
-      if (!sourceKey) {
-        setChannelHealth(channel.id, fallbackInfo);
-        return fallbackInfo;
-      }
-
-      const cacheKey = `${sourceKey}:${channel.url}`;
-      const cachedInfo = healthByUrlCacheRef.current[cacheKey];
-      if (
-        !options?.force &&
-        cachedInfo &&
-        now - cachedInfo.checkedAt < HEALTH_CHECK_CACHE_MS
-      ) {
-        setChannelHealth(channel.id, cachedInfo);
-        return cachedInfo;
-      }
-
-      if (healthCheckingRef.current.has(cacheKey)) {
-        return (
-          channelHealthMapRef.current[channel.id] || {
-            ...fallbackInfo,
-            status: 'checking',
-          }
-        );
-      }
-
-      healthCheckingRef.current.add(cacheKey);
-      const checkingInfo: ChannelHealthInfo = {
-        type: fallbackType,
-        status: 'checking',
-        checkedAt: now,
-      };
-      setChannelHealth(channel.id, checkingInfo);
-
-      try {
-        const startedAt =
-          typeof performance !== 'undefined' ? performance.now() : 0;
-        const precheckUrl = `/api/live/precheck?url=${encodeURIComponent(
-          channel.url,
-        )}&5572tv-source=${sourceKey}`;
-        const response = await fetch(precheckUrl, { cache: 'no-store' });
-        const elapsedMs =
-          typeof performance !== 'undefined'
-            ? Math.round(performance.now() - startedAt)
-            : undefined;
-
-        if (!response.ok) {
-          const unreachableInfo: ChannelHealthInfo = {
-            type: fallbackType,
-            status: 'unreachable',
-            latencyMs: elapsedMs,
-            checkedAt: Date.now(),
-            message: `HTTP ${response.status}`,
-          };
-          healthByUrlCacheRef.current[cacheKey] = unreachableInfo;
-          setChannelHealth(channel.id, unreachableInfo);
-          return unreachableInfo;
-        }
-
-        const result = await response.json();
-        const detectedType = normalizeStreamType(result?.type);
-        const finalType =
-          detectedType === 'unknown' ? fallbackType : detectedType;
-        const latencyMs =
-          typeof result?.latencyMs === 'number'
-            ? result.latencyMs
-            : elapsedMs || undefined;
-        const healthy = Boolean(result?.success);
-
-        const healthInfo: ChannelHealthInfo = {
-          type: finalType,
-          status: deriveHealthStatus(healthy, latencyMs),
-          latencyMs,
-          checkedAt: Date.now(),
-          message: healthy ? undefined : result?.error || '预检查失败',
-        };
-        healthByUrlCacheRef.current[cacheKey] = healthInfo;
-        setChannelHealth(channel.id, healthInfo);
-        return healthInfo;
-      } catch (error) {
-        const unreachableInfo: ChannelHealthInfo = {
-          type: fallbackType,
-          status: 'unreachable',
-          checkedAt: Date.now(),
-          message: error instanceof Error ? error.message : '网络异常',
-        };
-        healthByUrlCacheRef.current[cacheKey] = unreachableInfo;
-        setChannelHealth(channel.id, unreachableInfo);
-        return unreachableInfo;
-      } finally {
-        healthCheckingRef.current.delete(cacheKey);
-      }
-    },
-    [currentSource],
-  );
-
   // 新增：持久化最近访问分组
   const persistRecentGroups = (nextGroups: string[]) => {
     if (typeof window === 'undefined') return;
@@ -1334,53 +984,6 @@ function LivePageClient() {
   };
 
   // 切换收藏
-  const handleToggleFavorite = async () => {
-    if (!currentSourceRef.current || !currentChannelRef.current) return;
-
-    try {
-      const currentFavorited = favoritedRef.current;
-      const newFavorited = !currentFavorited;
-
-      // 立即更新状态
-      setFavorited(newFavorited);
-      favoritedRef.current = newFavorited;
-
-      // 异步执行收藏操作
-      try {
-        if (newFavorited) {
-          // 如果未收藏，添加收藏
-          await saveFavorite(
-            `live_${currentSourceRef.current.key}`,
-            `live_${currentChannelRef.current.id}`,
-            {
-              title: currentChannelRef.current.name,
-              source_name: currentSourceRef.current.name,
-              year: '',
-              cover: `/api/proxy/logo?url=${encodeURIComponent(currentChannelRef.current.logo)}&source=${currentSourceRef.current.key}`,
-              total_episodes: 1,
-              save_time: Date.now(),
-              search_title: '',
-              origin: 'live',
-            },
-          );
-        } else {
-          // 如果已收藏，删除收藏
-          await deleteFavorite(
-            `live_${currentSourceRef.current.key}`,
-            `live_${currentChannelRef.current.id}`,
-          );
-        }
-      } catch (err) {
-        console.error('收藏操作失败:', err);
-        // 如果操作失败，回滚状态
-        setFavorited(currentFavorited);
-        favoritedRef.current = currentFavorited;
-      }
-    } catch (err) {
-      console.error('切换收藏失败:', err);
-    }
-  };
-
   // 初始化
   useEffect(() => {
     fetchLiveSources();
@@ -1413,77 +1016,6 @@ function LivePageClient() {
       searchLiveSources(sourceSearchQuery);
     }
   }, [liveSources]);
-
-  // 检查收藏状态
-  useEffect(() => {
-    if (!currentSource || !currentChannel) return;
-    (async () => {
-      try {
-        const fav = await checkIsFavorited(
-          `live_${currentSource.key}`,
-          `live_${currentChannel.id}`,
-        );
-        setFavorited(fav);
-        favoritedRef.current = fav;
-      } catch (err) {
-        console.error('检查收藏状态失败:', err);
-      }
-    })();
-  }, [currentSource, currentChannel]);
-
-  // 批量检测已移除，改用滚动到可见时自动检测（IntersectionObserver）
-
-  // 监听收藏数据更新事件
-  useEffect(() => {
-    if (!currentSource || !currentChannel) return;
-
-    const unsubscribe = subscribeToDataUpdates(
-      'favoritesUpdated',
-      (favorites: Record<string, any>) => {
-        const key = generateStorageKey(
-          `live_${currentSource.key}`,
-          `live_${currentChannel.id}`,
-        );
-        const isFav = !!favorites[key];
-        setFavorited(isFav);
-        favoritedRef.current = isFav;
-      },
-    );
-
-    return unsubscribe;
-  }, [currentSource, currentChannel]);
-
-  // 监听自动刷新设置变化
-  useEffect(() => {
-    setupAutoRefresh();
-
-    // 清理函数
-    return () => {
-      if (autoRefreshTimerRef.current) {
-        clearInterval(autoRefreshTimerRef.current);
-        autoRefreshTimerRef.current = null;
-      }
-    };
-  }, [autoRefreshEnabled, autoRefreshInterval]);
-
-  // 保存自动刷新配置到localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        'live-auto-refresh-enabled',
-        JSON.stringify(autoRefreshEnabled),
-      );
-    }
-  }, [autoRefreshEnabled]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        'live-auto-refresh-interval',
-        autoRefreshInterval.toString(),
-      );
-    }
-  }, [autoRefreshInterval]);
 
   // 当分组切换时，将激活的分组标签滚动到视口中间
   useEffect(() => {

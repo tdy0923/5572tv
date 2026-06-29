@@ -1,14 +1,7 @@
 /* eslint-disable no-console */
 'use client';
 
-import {
-  type ChangeEventHandler,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   deleteSkipConfig,
@@ -17,62 +10,10 @@ import {
   saveSkipConfig,
   SkipSegment,
 } from '@/lib/db.client';
+import { formatTime, secondsToTime, timeToSeconds } from '@/lib/time-utils';
 
-// 跳过预设（片头片尾模板）
-interface SkipPreset {
-  id: string;
-  name: string;
-  openingEnd: number; // 片头结束时间（秒），0 表示不跳片头
-  endingStart: number; // 片尾提前时间（秒，剩余模式），0 表示不跳片尾
-}
-
-const SKIP_PRESETS_KEY = '5572tv_skip_presets';
-const LEGACY_SKIP_PRESETS_KEY = 'moontv_skip_presets';
-const MAX_PRESET_COUNT = 20;
-
-function sanitizePresetList(input: unknown[]): SkipPreset[] {
-  return input
-    .map((item): SkipPreset | null => {
-      if (!item || typeof item !== 'object') return null;
-      const p = item as Record<string, unknown>;
-      const name = typeof p.name === 'string' ? p.name.trim().slice(0, 30) : '';
-      if (!name) return null;
-      const openingEnd = Math.max(0, Number(p.openingEnd) || 0);
-      const endingStart = Math.max(0, Number(p.endingStart) || 0);
-      // 至少要有一个有效值
-      if (openingEnd <= 0 && endingStart <= 0) return null;
-      return {
-        id: typeof p.id === 'string' && p.id ? p.id : Date.now().toString(),
-        name,
-        openingEnd,
-        endingStart,
-      };
-    })
-    .filter((item): item is SkipPreset => item !== null)
-    .slice(0, MAX_PRESET_COUNT);
-}
-
-function loadSkipPresets(): SkipPreset[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw =
-      localStorage.getItem(SKIP_PRESETS_KEY) ||
-      localStorage.getItem(LEGACY_SKIP_PRESETS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? sanitizePresetList(parsed) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveSkipPresetsToStorage(presets: SkipPreset[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(
-    SKIP_PRESETS_KEY,
-    JSON.stringify(presets.slice(0, MAX_PRESET_COUNT)),
-  );
-}
+import { useDraggable } from '@/components/play/hooks/useDraggable';
+import { useSkipPresets } from '@/components/play/hooks/useSkipPresets';
 
 interface SkipControllerProps {
   source: string;
@@ -104,26 +45,6 @@ export default function SkipController({
   const [currentSkipSegment, setCurrentSkipSegment] =
     useState<SkipSegment | null>(null);
   const [newSegment, setNewSegment] = useState<Partial<SkipSegment>>({});
-
-  // 跳过预设状态
-  const [skipPresets, setSkipPresets] = useState<SkipPreset[]>(loadSkipPresets);
-  const [newPresetName, setNewPresetName] = useState('');
-  const [selectedPresetId, setSelectedPresetId] = useState('');
-
-  // 导入/导出相关状态
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [pendingImportedPresets, setPendingImportedPresets] = useState<
-    SkipPreset[]
-  >([]);
-  const [presetFeedback, setPresetFeedback] = useState('');
-  const importInputRef = useRef<HTMLInputElement | null>(null);
-
-  // 反馈信息自动清除
-  useEffect(() => {
-    if (!presetFeedback) return;
-    const timer = setTimeout(() => setPresetFeedback(''), 3000);
-    return () => clearTimeout(timer);
-  }, [presetFeedback]);
 
   // 新增状态：批量设置模式 - 支持分:秒格式
   // 🔑 初始化时直接从 localStorage 读取用户设置，避免重新挂载时重置为默认值
@@ -227,140 +148,31 @@ export default function SkipController({
   }, [batchSettings]);
 
   // 拖动相关状态
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState(() => {
-    // 从 localStorage 读取保存的位置
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('skipControllerPosition');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('解析保存的位置失败:', e);
-        }
-      }
-    }
-    // 默认左下角
-    return { x: 16, y: window.innerHeight - 200 };
-  });
-  const dragStartPos = useRef({ x: 0, y: 0 });
-  const panelRef = useRef<HTMLDivElement>(null);
+  const { isDragging, position, panelRef, handleMouseDown, handleTouchStart } =
+    useDraggable('skipControllerPosition');
 
-  // 拖动处理函数
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      // 只在点击顶部标题栏时触发拖动
-      if ((e.target as HTMLElement).closest('.drag-handle')) {
-        setIsDragging(true);
-        dragStartPos.current = {
-          x: e.clientX - position.x,
-          y: e.clientY - position.y,
-        };
-      }
-    },
-    [position],
-  );
-
-  // 触摸开始
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      if ((e.target as HTMLElement).closest('.drag-handle')) {
-        setIsDragging(true);
-        const touch = e.touches[0];
-        dragStartPos.current = {
-          x: touch.clientX - position.x,
-          y: touch.clientY - position.y,
-        };
-      }
-    },
-    [position],
-  );
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!isDragging) return;
-
-      const newX = e.clientX - dragStartPos.current.x;
-      const newY = e.clientY - dragStartPos.current.y;
-
-      const maxX = window.innerWidth - (panelRef.current?.offsetWidth || 200);
-      const maxY = window.innerHeight - (panelRef.current?.offsetHeight || 200);
-
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY)),
-      });
-    },
-    [isDragging],
-  );
-
-  // 触摸移动
-  const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (!isDragging) return;
-
-      const touch = e.touches[0];
-      const newX = touch.clientX - dragStartPos.current.x;
-      const newY = touch.clientY - dragStartPos.current.y;
-
-      const maxX = window.innerWidth - (panelRef.current?.offsetWidth || 200);
-      const maxY = window.innerHeight - (panelRef.current?.offsetHeight || 200);
-
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY)),
-      });
-    },
-    [isDragging],
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('skipControllerPosition', JSON.stringify(position));
-    }
-  }, [position]);
-
-  // 添加全局事件监听
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleTouchMove);
-      window.addEventListener('touchend', handleMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-        window.removeEventListener('touchmove', handleTouchMove);
-        window.removeEventListener('touchend', handleMouseUp);
-      };
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove]);
-
-  // 时间格式转换函数
-  const timeToSeconds = useCallback((timeStr: string): number => {
-    if (!timeStr || timeStr.trim() === '') return 0;
-
-    // 支持多种格式: "2:10", "2:10.5", "130", "130.5"
-    if (timeStr.includes(':')) {
-      const parts = timeStr.split(':');
-      const minutes = parseInt(parts[0]) || 0;
-      const seconds = parseFloat(parts[1]) || 0;
-      return minutes * 60 + seconds;
-    } else {
-      return parseFloat(timeStr) || 0;
-    }
-  }, []);
-
-  const secondsToTime = useCallback((seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const decimal = seconds % 1;
-    if (decimal > 0) {
-      return `${mins}:${secs.toString().padStart(2, '0')}.${Math.floor(decimal * 10)}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }, []);
+  // 跳过预设状态
+  const {
+    skipPresets,
+    newPresetName,
+    setNewPresetName,
+    selectedPresetId,
+    setSelectedPresetId,
+    isImportDialogOpen,
+    setIsImportDialogOpen,
+    pendingImportedPresets,
+    setPendingImportedPresets,
+    presetFeedback,
+    importInputRef,
+    handleCreatePreset,
+    handleApplyPreset,
+    handleDeletePreset,
+    handleUpdatePreset,
+    handleExportPresets,
+    handleImportPresets,
+    handleConfirmImport,
+    MAX_PRESET_COUNT,
+  } = useSkipPresets({ batchSettings, setBatchSettings });
 
   // 快速标记当前时间为片头结束
   const markCurrentAsOpeningEnd = useCallback(() => {
@@ -914,13 +726,6 @@ export default function SkipController({
     [skipConfig, source, id],
   );
 
-  // 格式化时间显示
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   // 计算实际的 segments（处理 remaining 模式）
   const actualSegments = useMemo(() => {
     if (!skipConfig?.segments) return [];
@@ -1114,178 +919,6 @@ export default function SkipController({
       window.removeEventListener('keydown', handleEscKey);
     };
   }, [isSettingMode, handleCloseDialog]);
-
-  // 跳过预设 - 从当前配置新建预设
-  const handleCreatePreset = useCallback(() => {
-    const name = newPresetName.trim().slice(0, 30);
-    if (!name) {
-      setPresetFeedback('请输入预设名称');
-      return;
-    }
-    if (skipPresets.length >= MAX_PRESET_COUNT) {
-      setPresetFeedback(`最多只能添加 ${MAX_PRESET_COUNT} 个预设`);
-      return;
-    }
-    if (skipPresets.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
-      setPresetFeedback('预设名称已存在');
-      return;
-    }
-    const openingEnd = timeToSeconds(batchSettings.openingEnd);
-    const endingStart =
-      batchSettings.endingMode === 'remaining'
-        ? timeToSeconds(batchSettings.endingStart)
-        : 0; // 绝对模式暂不存入预设
-    if (openingEnd <= 0 && endingStart <= 0) {
-      setPresetFeedback('当前片头片尾都为 0，无法创建预设');
-      return;
-    }
-    const preset: SkipPreset = {
-      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      name,
-      openingEnd,
-      endingStart,
-    };
-    const updated = [...skipPresets, preset];
-    setSkipPresets(updated);
-    saveSkipPresetsToStorage(updated);
-    setNewPresetName('');
-    setSelectedPresetId(preset.id);
-    setPresetFeedback(`已创建预设「${name}」`);
-  }, [newPresetName, skipPresets, batchSettings, timeToSeconds]);
-
-  // 跳过预设 - 套用到当前 batchSettings
-  const handleApplyPreset = useCallback(() => {
-    const preset = skipPresets.find((p) => p.id === selectedPresetId);
-    if (!preset) {
-      setPresetFeedback('请先选择一个预设');
-      return;
-    }
-    setBatchSettings((prev) => ({
-      ...prev,
-      openingStart: '0:00',
-      openingEnd: secondsToTime(preset.openingEnd),
-      endingMode: 'remaining',
-      endingStart:
-        preset.endingStart > 0
-          ? secondsToTime(preset.endingStart)
-          : prev.endingStart,
-      endingEnd: '',
-    }));
-    setPresetFeedback(`已套用预设「${preset.name}」`);
-  }, [skipPresets, selectedPresetId, secondsToTime]);
-
-  // 跳过预设 - 删除选中预设
-  const handleDeletePreset = useCallback(() => {
-    if (!selectedPresetId) {
-      setPresetFeedback('请先选择一个预设');
-      return;
-    }
-    const preset = skipPresets.find((p) => p.id === selectedPresetId);
-    const updated = skipPresets.filter((p) => p.id !== selectedPresetId);
-    setSkipPresets(updated);
-    saveSkipPresetsToStorage(updated);
-    setSelectedPresetId(updated[0]?.id || '');
-    if (preset) setPresetFeedback(`已删除预设「${preset.name}」`);
-  }, [skipPresets, selectedPresetId]);
-
-  // 跳过预设 - 用当前配置覆盖选中预设
-  const handleUpdatePreset = useCallback(() => {
-    const preset = skipPresets.find((p) => p.id === selectedPresetId);
-    if (!preset) {
-      setPresetFeedback('请先选择一个预设');
-      return;
-    }
-    const openingEnd = timeToSeconds(batchSettings.openingEnd);
-    const endingStart =
-      batchSettings.endingMode === 'remaining'
-        ? timeToSeconds(batchSettings.endingStart)
-        : 0;
-    const updated = skipPresets.map((p) =>
-      p.id === selectedPresetId ? { ...p, openingEnd, endingStart } : p,
-    );
-    setSkipPresets(updated);
-    saveSkipPresetsToStorage(updated);
-    setPresetFeedback(`已更新预设「${preset.name}」`);
-  }, [skipPresets, selectedPresetId, batchSettings, timeToSeconds]);
-
-  // 跳过预设 - 导出
-  const handleExportPresets = useCallback(() => {
-    if (skipPresets.length === 0) {
-      setPresetFeedback('没有预设可导出');
-      return;
-    }
-    const payload = JSON.stringify(skipPresets, null, 2);
-    const blob = new Blob([payload], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const date = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = `5572tv-skip-presets-${date}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setPresetFeedback('预设已导出');
-  }, [skipPresets]);
-
-  // 跳过预设 - 导入（选择文件后触发）
-  const handleImportPresets: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      file.text().then((text) => {
-        try {
-          const parsed = JSON.parse(text);
-          if (!Array.isArray(parsed)) {
-            setPresetFeedback('导入失败：文件格式无效');
-            return;
-          }
-          const imported = sanitizePresetList(parsed);
-          if (imported.length === 0) {
-            setPresetFeedback('导入失败：未识别到有效预设');
-            return;
-          }
-          setPendingImportedPresets(imported);
-          setIsImportDialogOpen(true);
-        } catch {
-          setPresetFeedback('导入失败：文件内容无法解析');
-        }
-      });
-      event.target.value = '';
-    },
-    [],
-  );
-
-  // 跳过预设 - 确认导入
-  const handleConfirmImport = useCallback(
-    (mode: 'merge' | 'overwrite') => {
-      const byName = (name: string) => name.trim().toLowerCase();
-
-      const finalPresets =
-        mode === 'overwrite'
-          ? sanitizePresetList(pendingImportedPresets)
-          : sanitizePresetList([
-              ...pendingImportedPresets,
-              ...skipPresets.filter(
-                (local) =>
-                  !pendingImportedPresets.some(
-                    (imp) =>
-                      imp.id === local.id ||
-                      byName(imp.name) === byName(local.name),
-                  ),
-              ),
-            ]);
-
-      setSkipPresets(finalPresets);
-      saveSkipPresetsToStorage(finalPresets);
-      setSelectedPresetId(finalPresets[0]?.id || '');
-      setPresetFeedback(`已导入 ${pendingImportedPresets.length} 条预设`);
-      setPendingImportedPresets([]);
-      setIsImportDialogOpen(false);
-    },
-    [pendingImportedPresets, skipPresets],
-  );
 
   return (
     <div className='skip-controller'>
