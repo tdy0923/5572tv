@@ -1,3 +1,48 @@
+## [1.6.0] - 2026-06-29
+
+### Added
+
+- ✨ Android TV Leanback 支持（manifest 配置 + LEANBACK_LAUNCHER）
+- ✨ D-pad 导航支持（TVFocusable 组件 + 底部导航焦点 + 视频卡片焦点高亮）
+- ✨ 视频网格 FocusTraversalGroup（8处 GridView 焦点遍历优化）
+- ✨ 播放页 loading state useReducer（4个 useState 合并为 1 个 reducer）
+- ✨ Token 播销机制（Redis-backed，登出时自动撤销）
+- ✨ SSRF DNS 二次校验（isUrlSafeDeep 防 DNS rebinding）
+- ✨ AI 推荐 prompt 注入防护（sanitizeForPrompt 过滤危险指令）
+- ✨ CSS 注入防护增强（ThemeEditor 新增 behavior:/-moz-blocking/data: URI 屏蔽）
+- ✨ 共享 CDN 镜像常量 DOUBAN_CDN_MIRRORS（统一客户端/服务端 CDN 映射）
+
+### Changed
+
+- 🔧 首页 4 个 raw fetch useEffect 迁移到 TanStack Query（AI推荐/历史时间线/收藏分组/收藏更新数）
+- 🔧 play-stats/search/tvbox 三大页面拆分为独立 hooks（+1756/-1429 行）
+- 🔧 播放页 3 个重型组件改为 dynamic import（SkipController 1682行/VideoInfoSection 812行/SiteAdSlot 202行）
+- 🔧 Emby 季数发现添加并发控制（每批3个请求，避免无限并发）
+- 🔧 36 文件 Toggle 组件统一替换 + index key 唯一化
+- 🔧 Favorite/Reminder 类型去重（db.client.ts 统一使用 types.ts 定义）
+- 🔧 origin 字段扩展 'shortdrama' 到 VideoCardProps/ReminderItem/MobileActionSheet
+- 🔧 版本号 Web 1.6.0 / Flutter 1.8.0
+
+### Fixed
+
+- 🐛 httpOnly: true 回退为 false（客户端 document.cookie 读取被阻断，15+ 调用点失效）
+- 🐛 login 路由移除"未配置 PASSWORD 直接放行"导致本地开发登录失败
+- 🐛 Worker catch 块 error.message 泄露（2处）
+- 🐛 5 个 API 路由 error.message 泄露替换为通用错误消息
+- 🐛 image-proxy 无 body size 限制（添加 10MB 上限防止内存耗尽）
+- 🐛 视频代理路由无速率限制（启用 checkRateLimit，30 req/min/IP）
+- 🐛 getClientIP x-forwarded-for 死代码移除
+- 🐛 首页 3 个 useEffect 缺少 AbortController（组件卸载后 setState）
+- 🐛 useTvboxValidation catch 块 error 变量未定义
+- 🐛 ThemeEditor CSS sanitizer 不完整（补全 behavior/-moz-binding/data: URI）
+
+### Security
+
+- 🔒 Proxy 路由启用速率限制（video-proxy/image-proxy/video-cache）
+- 🔒 登出时自动撤销 token（Redis-backed revocation）
+- 🔒 AI 推荐输入清洗（长度限制 + 关键词过滤）
+- 🔒 SSRF 防护增强（DNS 解析二次校验）
+
 ## [1.4.0] - 2026-05-27
 
 ### Changed
