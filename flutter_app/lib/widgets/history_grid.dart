@@ -179,20 +179,22 @@ class _HistoryGridState extends State<HistoryGrid>
           final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
           final double itemHeight = itemWidth * 2.0;
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: itemWidth / itemHeight,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: isTablet ? 0 : 16,
+          return FocusTraversalGroup(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: itemWidth / itemHeight,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: isTablet ? 0 : 16,
+              ),
+              itemCount: isTablet ? crossAxisCount * 2 : 6,
+              itemBuilder: (context, index) {
+                return _buildSkeletonCard(itemWidth);
+              },
             ),
-            itemCount: isTablet ? crossAxisCount * 2 : 6,
-            itemBuilder: (context, index) {
-              return _buildSkeletonCard(itemWidth);
-            },
           );
         },
       ),
@@ -338,32 +340,35 @@ class _HistoryGridState extends State<HistoryGrid>
           final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
           final double itemHeight = itemWidth * 2.0;
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: itemWidth / itemHeight,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: isTablet ? 0 : 16,
-            ),
-            itemCount: _playRecords.length,
-            itemBuilder: (context, index) {
-              final playRecord = _playRecords[index];
+          return FocusTraversalGroup(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: itemWidth / itemHeight,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: isTablet ? 0 : 16,
+              ),
+              itemCount: _playRecords.length,
+              itemBuilder: (context, index) {
+                final playRecord = _playRecords[index];
 
-              return VideoCard(
-                videoInfo: VideoInfo.fromPlayRecord(playRecord),
-                onTap: () => widget.onVideoTap(playRecord),
-                from: 'playrecord',
-                cardWidth: itemWidth,
-                onGlobalMenuAction: widget.onGlobalMenuAction != null
-                    ? (action) => widget.onGlobalMenuAction!(playRecord, action)
-                    : null,
-                isFavorited: _cacheService.isFavoritedSync(
-                    playRecord.source, playRecord.id),
-              );
-            },
+                return VideoCard(
+                  videoInfo: VideoInfo.fromPlayRecord(playRecord),
+                  onTap: () => widget.onVideoTap(playRecord),
+                  from: 'playrecord',
+                  cardWidth: itemWidth,
+                  onGlobalMenuAction: widget.onGlobalMenuAction != null
+                      ? (action) =>
+                          widget.onGlobalMenuAction!(playRecord, action)
+                      : null,
+                  isFavorited: _cacheService.isFavoritedSync(
+                      playRecord.source, playRecord.id),
+                );
+              },
+            ),
           );
         },
       ),

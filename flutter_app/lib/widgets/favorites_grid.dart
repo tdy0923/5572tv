@@ -302,20 +302,22 @@ class _FavoritesGridState extends State<FavoritesGrid>
           final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
           final double itemHeight = itemWidth * 2.0; // 增加高度比例，确保有足够空间避免溢出
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: itemWidth / itemHeight, // 精确计算宽高比
-              crossAxisSpacing: spacing, // 列间距
-              mainAxisSpacing: isTablet ? 0 : 16, // 行间距
+          return FocusTraversalGroup(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: itemWidth / itemHeight,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: isTablet ? 0 : 16,
+              ),
+              itemCount: isTablet ? crossAxisCount * 2 : 6,
+              itemBuilder: (context, index) {
+                return _buildSkeletonCard(itemWidth);
+              },
             ),
-            itemCount: isTablet ? crossAxisCount * 2 : 6, // 平板显示2行，手机显示6个骨架卡片
-            itemBuilder: (context, index) {
-              return _buildSkeletonCard(itemWidth);
-            },
           );
         },
       ),
@@ -466,33 +468,35 @@ class _FavoritesGridState extends State<FavoritesGrid>
           final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
           final double itemHeight = itemWidth * 2.0; // 增加高度比例，确保有足够空间避免溢出
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: itemWidth / itemHeight, // 精确计算宽高比
-              crossAxisSpacing: spacing, // 列间距
-              mainAxisSpacing: isTablet ? 0 : 16, // 行间距
-            ),
-            itemCount: _favorites.length,
-            itemBuilder: (context, index) {
-              final favorite = _favorites[index];
-              final playRecord = _favoriteToPlayRecord(favorite);
+          return FocusTraversalGroup(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: itemWidth / itemHeight,
+                crossAxisSpacing: spacing,
+                mainAxisSpacing: isTablet ? 0 : 16,
+              ),
+              itemCount: _favorites.length,
+              itemBuilder: (context, index) {
+                final favorite = _favorites[index];
+                final playRecord = _favoriteToPlayRecord(favorite);
 
-              return VideoCard(
-                videoInfo: VideoInfo.fromPlayRecord(playRecord),
-                onTap: () => widget.onVideoTap(playRecord),
-                from: 'favorite', // 统一设置为收藏场景
-                cardWidth: itemWidth, // 传递计算出的宽度
-                onGlobalMenuAction: widget.onGlobalMenuAction != null
-                    ? (action) => widget.onGlobalMenuAction!(
-                        VideoInfo.fromPlayRecord(playRecord), action)
-                    : null,
-                isFavorited: true, // 收藏页面默认已收藏
-              );
-            },
+                return VideoCard(
+                  videoInfo: VideoInfo.fromPlayRecord(playRecord),
+                  onTap: () => widget.onVideoTap(playRecord),
+                  from: 'favorite',
+                  cardWidth: itemWidth,
+                  onGlobalMenuAction: widget.onGlobalMenuAction != null
+                      ? (action) => widget.onGlobalMenuAction!(
+                          VideoInfo.fromPlayRecord(playRecord), action)
+                      : null,
+                  isFavorited: true,
+                );
+              },
+            ),
           );
         },
       ),

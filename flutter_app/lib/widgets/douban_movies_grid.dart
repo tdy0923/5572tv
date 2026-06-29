@@ -178,7 +178,7 @@ class DoubanMoviesGrid extends StatelessWidget {
         // 平板模式根据宽度动态展示6～9列，手机模式3列
         final int crossAxisCount = DeviceUtils.getTabletColumnCount(context);
         final isTablet = DeviceUtils.isTablet(context);
-        
+
         final double screenWidth = constraints.maxWidth;
         const double padding = 16.0;
         const double spacing = 12.0;
@@ -187,31 +187,33 @@ class DoubanMoviesGrid extends StatelessWidget {
         final double calculatedItemWidth = availableWidth / crossAxisCount;
         final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
         final double itemHeight = itemWidth * 2.0;
-        
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: itemWidth / itemHeight,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: isTablet ? 0 : 6,
+
+        return FocusTraversalGroup(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: itemWidth / itemHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: isTablet ? 0 : 6,
+            ),
+            itemCount: movies!.length,
+            itemBuilder: (context, index) {
+              final movie = movies![index];
+              final videoInfo = movie.toVideoInfo();
+
+              return VideoCard(
+                videoInfo: videoInfo,
+                onTap: () => onVideoTap(videoInfo),
+                from: 'douban',
+                cardWidth: itemWidth,
+                onGlobalMenuAction: onGlobalMenuAction != null ? (action) => onGlobalMenuAction!(videoInfo, action) : null,
+                isFavorited: false,
+              );
+            },
           ),
-          itemCount: movies!.length,
-          itemBuilder: (context, index) {
-            final movie = movies![index];
-            final videoInfo = movie.toVideoInfo();
-            
-            return VideoCard(
-              videoInfo: videoInfo,
-              onTap: () => onVideoTap(videoInfo),
-              from: 'douban',
-              cardWidth: itemWidth,
-              onGlobalMenuAction: onGlobalMenuAction != null ? (action) => onGlobalMenuAction!(videoInfo, action) : null,
-              isFavorited: false, 
-            );
-          },
         );
       },
     );

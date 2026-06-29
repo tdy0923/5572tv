@@ -59,20 +59,22 @@ class BangumiGrid extends StatelessWidget {
         final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
         final double itemHeight = itemWidth * 2.0;
         
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: itemWidth / itemHeight,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: isTablet ? 0 : 6,
+        return FocusTraversalGroup(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: itemWidth / itemHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: isTablet ? 0 : 6,
+            ),
+            itemCount: isTablet ? crossAxisCount * 2 : 6,
+            itemBuilder: (context, index) {
+              return _buildSkeletonCard(itemWidth);
+            },
           ),
-          itemCount: isTablet ? crossAxisCount * 2 : 6, // 平板显示2行，手机显示6个骨架卡片
-          itemBuilder: (context, index) {
-            return _buildSkeletonCard(itemWidth);
-          },
         );
       },
     );
@@ -188,30 +190,34 @@ class BangumiGrid extends StatelessWidget {
         final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
         final double itemHeight = itemWidth * 2.0;
         
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: itemWidth / itemHeight,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: isTablet ? 0 : 6,
+        return FocusTraversalGroup(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: itemWidth / itemHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: isTablet ? 0 : 6,
+            ),
+            itemCount: bangumiItems!.length,
+            itemBuilder: (context, index) {
+              final bangumiItem = bangumiItems![index];
+              final videoInfo = bangumiItem.toVideoInfo();
+
+              return VideoCard(
+                videoInfo: videoInfo,
+                onTap: () => onVideoTap(videoInfo),
+                from: 'bangumi',
+                cardWidth: itemWidth,
+                onGlobalMenuAction: onGlobalMenuAction != null
+                    ? (action) => onGlobalMenuAction!(videoInfo, action)
+                    : null,
+                isFavorited: false,
+              );
+            },
           ),
-          itemCount: bangumiItems!.length,
-          itemBuilder: (context, index) {
-            final bangumiItem = bangumiItems![index];
-            final videoInfo = bangumiItem.toVideoInfo();
-            
-            return VideoCard(
-              videoInfo: videoInfo,
-              onTap: () => onVideoTap(videoInfo),
-              from: 'bangumi',
-              cardWidth: itemWidth,
-              onGlobalMenuAction: onGlobalMenuAction != null ? (action) => onGlobalMenuAction!(videoInfo, action) : null,
-              isFavorited: false, 
-            );
-          },
         );
       },
     );

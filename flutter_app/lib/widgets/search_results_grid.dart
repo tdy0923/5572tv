@@ -69,39 +69,41 @@ class _SearchResultsGridState extends State<SearchResultsGrid>
         final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
         final double itemHeight = itemWidth * 2.0; // 增加高度比例，确保有足够空间避免溢出
 
-        return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: itemWidth / itemHeight, // 精确计算宽高比
-            crossAxisSpacing: spacing, // 列间距
-            mainAxisSpacing: mainAxisSpacing, // 行间距
-          ),
-          itemCount: widget.results.length,
-          itemBuilder: (context, index) {
-            final result = widget.results[index];
-            final videoInfo = result.toVideoInfo();
+        return FocusTraversalGroup(
+          child: GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: itemWidth / itemHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: mainAxisSpacing,
+            ),
+            itemCount: widget.results.length,
+            itemBuilder: (context, index) {
+              final result = widget.results[index];
+              final videoInfo = result.toVideoInfo();
 
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: VideoCard(
-                key: ValueKey(
-                    '${result.id}_${result.source}'), // 为每个卡片添加唯一key
-                videoInfo: videoInfo,
-                onTap: widget.onVideoTap != null
-                    ? () => widget.onVideoTap!(videoInfo)
-                    : null,
-                from: 'search',
-                cardWidth: itemWidth, // 传递计算出的宽度
-                onGlobalMenuAction: widget.onGlobalMenuAction != null
-                    ? (action) => widget.onGlobalMenuAction!(videoInfo, action)
-                    : null,
-                isFavorited: _cacheService.isFavoritedSync(
-                    videoInfo.source, videoInfo.id), // 同步检查收藏状态
-              ),
-            );
-          },
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: VideoCard(
+                  key: ValueKey('${result.id}_${result.source}'),
+                  videoInfo: videoInfo,
+                  onTap: widget.onVideoTap != null
+                      ? () => widget.onVideoTap!(videoInfo)
+                      : null,
+                  from: 'search',
+                  cardWidth: itemWidth,
+                  onGlobalMenuAction: widget.onGlobalMenuAction != null
+                      ? (action) =>
+                          widget.onGlobalMenuAction!(videoInfo, action)
+                      : null,
+                  isFavorited: _cacheService.isFavoritedSync(
+                      videoInfo.source, videoInfo.id),
+                ),
+              );
+            },
+          ),
         );
       },
     );
