@@ -20,6 +20,23 @@ import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
+function QrCode({ text }: { text: string }) {
+  return (
+    <div className='flex flex-col items-center gap-2'>
+      <div className='p-3 bg-white rounded-xl'>
+        <img
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(text)}`}
+          alt='扫码下载'
+          className='w-[120px] h-[120px]'
+          width={120}
+          height={120}
+        />
+      </div>
+      <span className='text-xs text-gray-500'>手机扫码下载</span>
+    </div>
+  );
+}
+
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
   const [showGuide, setShowGuide] = useState(false);
@@ -150,37 +167,42 @@ export default function DownloadPage() {
                 ))}
               </div>
 
-              <div className='flex flex-col sm:flex-row gap-3 justify-center lg:justify-start'>
-                {selectedPlatform === 'ios' ? (
-                  <button
-                    onClick={() => setShowGuide(true)}
-                    className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
+              <div className='flex flex-col sm:flex-row gap-4 items-center lg:items-start justify-center lg:justify-start'>
+                <div className='flex flex-col sm:flex-row gap-3'>
+                  {selectedPlatform === 'ios' ? (
+                    <button
+                      onClick={() => setShowGuide(true)}
+                      className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
+                    >
+                      添加到主屏幕
+                    </button>
+                  ) : (
+                    <a
+                      href='/download/5572tv-android.apk'
+                      download='5572tv-android.apk'
+                      onClick={(e) => {
+                        e.preventDefault();
+                        browserDownload(
+                          '/download/5572tv-android.apk',
+                          '5572tv-android.apk',
+                        );
+                      }}
+                      className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
+                    >
+                      <Download className='w-5 h-5' />
+                      下载 {selectedPlatform === 'android' ? 'Android' : 'TV'}
+                    </a>
+                  )}
+                  <Link
+                    href='/'
+                    className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors min-h-[56px]'
                   >
-                    添加到主屏幕
-                  </button>
-                ) : (
-                  <a
-                    href='/download/5572tv-android.apk'
-                    download='5572tv-android.apk'
-                    onClick={(e) => {
-                      e.preventDefault();
-                      browserDownload(
-                        '/download/5572tv-android.apk',
-                        '5572tv-android.apk',
-                      );
-                    }}
-                    className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
-                  >
-                    <Download className='w-5 h-5' />
-                    下载 {selectedPlatform === 'android' ? 'Android' : 'TV'}
-                  </a>
+                    网页版体验
+                  </Link>
+                </div>
+                {selectedPlatform !== 'ios' && (
+                  <QrCode text='https://www.5572.net/download/5572tv-android.apk' />
                 )}
-                <Link
-                  href='/'
-                  className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors min-h-[56px]'
-                >
-                  网页版体验
-                </Link>
               </div>
               <p className='text-xs text-gray-500 mt-4 justify-center lg:justify-start flex'>
                 v1.7.0 · 65MB
