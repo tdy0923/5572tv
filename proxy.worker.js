@@ -22,8 +22,8 @@ async function handleRequest(request) {
 
     // 其他请求返回404
     return jsonResponse({ error: 'Not found' }, 404);
-  } catch (error) {
-    return jsonResponse({ error: error.message }, 500);
+  } catch {
+    return jsonResponse({ error: 'Internal error' }, 500);
   }
 }
 
@@ -79,8 +79,8 @@ async function handleTrailerCache(request, url) {
       status: response.status,
       headers,
     });
-  } catch (error) {
-    return jsonResponse({ error: 'Fetch failed: ' + error.message }, 502);
+  } catch {
+    return jsonResponse({ error: 'Fetch failed' }, 502);
   }
 }
 

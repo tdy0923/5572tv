@@ -27,7 +27,7 @@ export interface ReminderItem {
   episodes: number;
   source_name: string;
   search_title?: string;
-  origin?: 'vod' | 'live';
+  origin?: 'vod' | 'live' | 'shortdrama';
   type?: string;
   releaseDate?: string;
   remarks?: string;

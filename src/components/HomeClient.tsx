@@ -237,10 +237,13 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   useEffect(() => {
     // 登录用户才加载推荐
     if (!username) return;
+    const controller = new AbortController();
     const loadRecommendations = async () => {
       setAiRecommendLoading(true);
       try {
-        const res = await fetch('/api/ai-recommend/personalized');
+        const res = await fetch('/api/ai-recommend/personalized', {
+          signal: controller.signal,
+        });
         if (res.ok) {
           const data = await res.json();
           setAiRecommendations(data.recommendations || []);
@@ -249,6 +252,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
       setAiRecommendLoading(false);
     };
     loadRecommendations();
+    return () => controller.abort();
   }, [username]);
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
@@ -482,10 +486,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
   useEffect(() => {
     if (activeTab === 'history') {
-      fetch('/api/play-history/timeline')
+      const controller = new AbortController();
+      fetch('/api/play-history/timeline', { signal: controller.signal })
         .then((r) => r.json())
         .then((data) => setHistoryTimeline(data.timeline || {}))
         .catch(() => {});
+      return () => controller.abort();
     }
   }, [activeTab]);
 
@@ -546,9 +552,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
   useEffect(() => {
     if (activeTab !== 'favorites') return;
+    const controller = new AbortController();
     const loadGroups = async () => {
       try {
-        const res = await fetch('/api/favorites/groups');
+        const res = await fetch('/api/favorites/groups', {
+          signal: controller.signal,
+        });
         if (res.ok) {
           const data = await res.json();
           setFavoriteGroups(data.groups || ['默认']);
@@ -556,16 +565,19 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
       } catch {}
     };
     loadGroups();
+    return () => controller.abort();
   }, [activeTab]);
 
   // 加载收藏更新数（仅在收藏tab激活时加载）
 
   useEffect(() => {
     if (activeTab !== 'favorites') return;
-    fetch('/api/favorites/updates')
+    const controller = new AbortController();
+    fetch('/api/favorites/updates', { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => setUpdateCount(data.count || 0))
       .catch(() => {});
+    return () => controller.abort();
   }, [activeTab]);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）

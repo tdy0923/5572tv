@@ -18,7 +18,7 @@
 
 import { getAuthInfoFromBrowserCookie } from './auth';
 import { BoundedMap } from './bounded-map';
-import type { PlayRecord } from './types';
+import type { Favorite, PlayRecord, Reminder } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
 import { generateStorageKey } from './utils';
 // watching-updates 已移除，保留空函数以避免编译错误
@@ -41,37 +41,8 @@ function triggerGlobalError(message: string) {
 // 为了向后兼容，保留UserStats类型别名
 export type UserStats = UserPlayStat;
 
-// ---- 收藏类型 ----
-export interface Favorite {
-  title: string;
-  source_name: string;
-  year: string;
-  cover: string;
-  total_episodes: number;
-  save_time: number;
-  search_title?: string;
-  origin?: 'vod' | 'live';
-  type?: string; // 内容类型（movie/tv/variety/shortdrama等）
-  releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
-  remarks?: string; // 备注信息（如"X天后上映"、"已上映"等）
-  group?: string; // 收藏分组
-  douban_id?: number; // 豆瓣ID（用于准确识别视频）
-}
-
-// ---- 提醒类型 ----
-export interface Reminder {
-  title: string;
-  source_name: string;
-  year: string;
-  cover: string;
-  total_episodes: number;
-  save_time: number;
-  search_title?: string;
-  origin?: 'vod' | 'live';
-  type?: string; // 内容类型（movie/tv/variety/shortdrama等）
-  releaseDate: string; // 上映日期 (YYYY-MM-DD)，提醒必须有上映日期
-  remarks?: string; // 备注信息（如"X天后上映"、"今日上映"等）
-}
+// ---- 收藏类型（统一使用 types.ts 定义） ----
+export type { Favorite, Reminder } from './types';
 
 // ---- 缓存数据结构 ----
 interface CacheData<T> {
