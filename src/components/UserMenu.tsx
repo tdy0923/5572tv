@@ -932,14 +932,14 @@ export const UserMenu: React.FC = () => {
 
       {/* 修改密码面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-45 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
+        className='fixed top-1/2 left-1/2 z-45 w-full max-w-md max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='修改密码'
       >
         {/* 内容容器 - 独立的滚动区域 */}
         <div
-          className='h-full p-6'
+          className='h-full p-6 overflow-y-auto'
           data-panel-content
           onTouchMove={(e) => {
             // 阻止事件冒泡到遮罩层，但允许内部滚动

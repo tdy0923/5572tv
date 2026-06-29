@@ -991,7 +991,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               .getElementById('continue-watching')
               ?.scrollIntoView({ behavior: 'smooth' });
           }}
-          className='fixed bottom-24 md:bottom-6 right-6 z-[600] flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
+          className='fixed bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-[600] flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
         >
           <span className='text-sm font-medium'>继续观看</span>
           <span className='text-xs'>↓</span>

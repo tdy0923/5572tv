@@ -55,7 +55,7 @@
 
 @layer utilities {
   .ui-shell {
-    @apply relative overflow-hidden;
+    @apply relative overflow-x-hidden;
   }
 
   @media (min-width: 768px) {

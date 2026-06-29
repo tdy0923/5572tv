@@ -143,7 +143,7 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
   return (
     <div
       ref={panelRef}
-      className={`fixed right-2 bottom-20 z-60 w-[calc(100vw-1rem)] max-w-80 overflow-hidden transition-all sm:right-4 ${
+      className={`fixed right-2 bottom-20 z-60 w-[calc(100vw-1rem)] max-w-80 transition-all sm:right-4 ${
         prefersReducedMotion ? 'duration-0' : 'duration-500'
       } ${
         isVisible
@@ -223,7 +223,7 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
       </div>
 
       {/* 内容区域 */}
-      <div className='px-5 py-4 space-y-4 overflow-hidden'>
+      <div className='px-5 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-4 max-h-[70vh] overflow-y-auto'>
         {/* WebGPU 不支持提示 */}
         {!webGPUSupported && (
           <div

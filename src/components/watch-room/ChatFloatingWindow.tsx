@@ -181,7 +181,7 @@ export default function ChatFloatingWindow() {
   // 悬浮按钮组
   if (!isOpen && !showRoomInfo) {
     return (
-      <div className='fixed bottom-20 right-4 z-700 flex flex-col gap-2 sm:gap-3 sm:bottom-24 sm:right-6 md:bottom-24'>
+      <div className='fixed bottom-[calc(80px+env(safe-area-inset-bottom))] right-4 z-700 flex flex-col gap-2 sm:gap-3 sm:bottom-24 sm:right-6 md:bottom-24'>
         {/* 房间信息按钮 */}
         <button
           onClick={() => setShowRoomInfo(true)}
@@ -213,7 +213,7 @@ export default function ChatFloatingWindow() {
   // 房间信息面板
   if (showRoomInfo) {
     return (
-      <div className='fixed inset-x-4 bottom-20 z-700 rounded-t-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-80 sm:rounded-2xl bg-white dark:bg-gray-800 shadow-2xl max-h-[70vh] sm:max-h-[600px] flex flex-col'>
+      <div className='fixed inset-x-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-700 rounded-t-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-80 sm:rounded-2xl bg-white dark:bg-gray-800 shadow-2xl max-h-[70vh] sm:max-h-[600px] flex flex-col'>
         {/* 头部 - Fixed */}
         <div className='shrink-0 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-3 sm:p-4'>
           <div className='flex items-center gap-2'>
@@ -345,7 +345,7 @@ export default function ChatFloatingWindow() {
   // 聊天窗口
   return (
     <div
-      className='fixed inset-x-4 bottom-20 z-700 flex flex-col rounded-t-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-80 sm:rounded-2xl bg-white dark:bg-gray-800 shadow-2xl'
+      className='fixed inset-x-4 bottom-[calc(80px+env(safe-area-inset-bottom))] z-700 flex flex-col rounded-t-2xl sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-80 sm:rounded-2xl bg-white dark:bg-gray-800 shadow-2xl'
       style={{ height: 'min(500px, 70vh)' }}
     >
       {/* 头部 - Fixed */}
