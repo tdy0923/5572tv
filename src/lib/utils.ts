@@ -175,6 +175,13 @@ function getDoubanImageProxyConfig(): {
   };
 }
 
+// 共享的豆瓣 CDN 镜像映射
+export const DOUBAN_CDN_MIRRORS = {
+  img3: 'img3.doubanio.com',
+  cmliussssNet: 'img.doubanio.cmliussss.net',
+  cmliussssCom: 'img.doubanio.cmliussss.com',
+} as const;
+
 /**
  * 处理图片 URL，如果设置了图片代理则使用代理
  */
@@ -190,7 +197,10 @@ export function processImageUrl(originalUrl: string): string {
   }
 
   // 防止双重代理：如果URL已经是代理URL，直接返回
-  if (originalUrl.includes('/api/image-proxy') || originalUrl.includes('/api/poster-cache')) {
+  if (
+    originalUrl.includes('/api/image-proxy') ||
+    originalUrl.includes('/api/poster-cache')
+  ) {
     return originalUrl;
   }
 
@@ -222,25 +232,24 @@ export function processImageUrl(originalUrl: string): string {
     return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
   }
 
-  const { proxyType, proxyUrl } = getDoubanImageProxyConfig();
-  // 🛡️ 豆瓣图片始终通过代理，确保浏览器能正常加载
+  const { proxyType } = getDoubanImageProxyConfig();
+  // 豆瓣图片始终通过代理，确保浏览器能正常加载
+  let targetHost: string | null = null;
   switch (proxyType) {
-    case 'server':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
     case 'img3':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img3.doubanio.com'))}`;
+      targetHost = DOUBAN_CDN_MIRRORS.img3;
+      break;
     case 'cmliussss-cdn-tencent':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img.doubanio.cmliussss.net'))}`;
+      targetHost = DOUBAN_CDN_MIRRORS.cmliussssNet;
+      break;
     case 'cmliussss-cdn-ali':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl.replace(/img\d+\.doubanio\.com/g, 'img.doubanio.cmliussss.com'))}`;
-    case 'baidu':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
-    case 'custom':
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
-    case 'direct':
-    default:
-      return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
+      targetHost = DOUBAN_CDN_MIRRORS.cmliussssCom;
+      break;
   }
+  const proxiedUrl = targetHost
+    ? normalizedUrl.replace(/img\d+\.doubanio\.com/g, targetHost)
+    : normalizedUrl;
+  return `/api/image-proxy?url=${encodeURIComponent(proxiedUrl)}`;
 }
 
 export function resolvePosterUrl(
