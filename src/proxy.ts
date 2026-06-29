@@ -15,14 +15,18 @@ let trustedNetworkVersion = ''; // 跟踪配置版本，用于立即失效缓存
 
 const CACHE_TTL = 86400000; // 24 小时缓存（配置变化时通过 cookie 版本号立即刷新）
 
-// Simple in-memory rate limiter
+// Simple in-memory rate limiter with per-route-type limits
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
-const API_RATE_LIMIT = 30;
-const PAGE_RATE_LIMIT = 60;
+const RATE_LIMITS: Record<string, number> = {
+  'video-proxy': 30,
+  'image-proxy': 120, // higher limit — pages can load 20+ images
+  'video-cache': 30,
+};
+const DEFAULT_API_LIMIT = 30;
 let lastRateLimitCleanup = 0;
 
-function checkRateLimit(ip: string, isApi: boolean): boolean {
+function checkRateLimit(ip: string, routeType: string): boolean {
   const now = Date.now();
 
   // Periodic cleanup every 60s
@@ -33,8 +37,8 @@ function checkRateLimit(ip: string, isApi: boolean): boolean {
     }
   }
 
-  const key = `${ip}:${isApi ? 'api' : 'page'}`;
-  const limit = isApi ? API_RATE_LIMIT : PAGE_RATE_LIMIT;
+  const key = `${ip}:${routeType}`;
+  const limit = RATE_LIMITS[routeType] ?? DEFAULT_API_LIMIT;
 
   const entry = rateLimitStore.get(key);
   if (!entry || now > entry.resetTime) {
@@ -250,11 +254,11 @@ export async function proxy(request: NextRequest) {
 
   // Rate limiting for high-abuse proxy routes
   const ip = getClientIP(request);
-  const isProxyRoute =
-    pathname.startsWith('/api/video-proxy') ||
-    pathname.startsWith('/api/image-proxy') ||
-    pathname.startsWith('/api/video-cache');
-  if (isProxyRoute && !checkRateLimit(ip, true)) {
+  let routeType = '';
+  if (pathname.startsWith('/api/video-proxy')) routeType = 'video-proxy';
+  else if (pathname.startsWith('/api/image-proxy')) routeType = 'image-proxy';
+  else if (pathname.startsWith('/api/video-cache')) routeType = 'video-cache';
+  if (routeType && !checkRateLimit(ip, routeType)) {
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 
