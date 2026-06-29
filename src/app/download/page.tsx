@@ -20,19 +20,27 @@ import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
-function QrCode({ text }: { text: string }) {
+const APK_SIZE = '63.1';
+const APK_VERSION = 'v1.8.0';
+
+function DownloadCard() {
   return (
-    <div className='flex flex-col items-center gap-2'>
-      <div className='p-3 bg-white rounded-xl'>
+    <div className='flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm'>
+      <div className='p-2 bg-white rounded-xl shadow-lg shadow-[#f4c24d]/10'>
         <img
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(text)}`}
-          alt='扫码下载'
-          className='w-[120px] h-[120px]'
-          width={120}
-          height={120}
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent('https://www.5572.net/download/5572tv-android.apk')}`}
+          alt='扫码下载 APK'
+          className='w-[140px] h-[140px]'
+          width={140}
+          height={140}
         />
       </div>
-      <span className='text-xs text-gray-500'>手机扫码下载</span>
+      <div className='text-center'>
+        <p className='text-sm text-gray-300 font-medium'>手机扫码下载</p>
+        <p className='text-xs text-gray-500 mt-1'>
+          {APK_VERSION} · {APK_SIZE} MB · Android 5.0+
+        </p>
+      </div>
     </div>
   );
 }
@@ -167,8 +175,8 @@ export default function DownloadPage() {
                 ))}
               </div>
 
-              <div className='flex flex-col sm:flex-row gap-4 items-center lg:items-start justify-center lg:justify-start'>
-                <div className='flex flex-col sm:flex-row gap-3'>
+              <div className='flex flex-col gap-6 justify-center lg:justify-start'>
+                <div className='flex flex-col sm:flex-row gap-3 items-center lg:items-start'>
                   {selectedPlatform === 'ios' ? (
                     <button
                       onClick={() => setShowGuide(true)}
@@ -200,13 +208,8 @@ export default function DownloadPage() {
                     网页版体验
                   </Link>
                 </div>
-                {selectedPlatform !== 'ios' && (
-                  <QrCode text='https://www.5572.net/download/5572tv-android.apk' />
-                )}
+                {selectedPlatform !== 'ios' && <DownloadCard />}
               </div>
-              <p className='text-xs text-gray-500 mt-4 justify-center lg:justify-start flex'>
-                v1.7.0 · 65MB
-              </p>
             </div>
 
             {/* 右侧手机预览 */}
