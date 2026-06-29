@@ -5,125 +5,113 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// 调用 generate-manifest.js 生成 manifest.json
 function generateManifest() {
   console.log('Generating manifest.json for Docker deployment...');
-
   try {
-    const generateManifestScript = path.join(
-      __dirname,
-      'scripts',
-      'generate-manifest.js',
-    );
-    require(generateManifestScript);
+    require(path.join(__dirname, 'scripts', 'generate-manifest.js'));
   } catch (error) {
-    console.error('❌ Error calling generate-manifest.js:', error);
+    console.error('Error calling generate-manifest.js:', error);
     throw error;
   }
 }
 
 generateManifest();
 
-// APK 下载路径映射
 const APK_PATH = path.join(
   __dirname,
   'static',
   'download',
   '5572tv-android.apk',
 );
+const PUBLIC_PORT = parseInt(process.env.PORT || '3000', 10);
+const INTERNAL_PORT = PUBLIC_PORT + 1;
+const HOSTNAME = process.env.HOSTNAME || 'localhost';
 
-// 在 standalone server 启动前拦截 APK 下载请求
-const originalCreateServer = http.createServer;
-http.createServer = function (options, requestListener) {
-  const wrappedListener = (req, res) => {
-    if (req.url && req.url.startsWith('/download/5572tv-android.apk')) {
-      try {
-        const stat = fs.statSync(APK_PATH);
-        res.writeHead(200, {
-          'Content-Type': 'application/vnd.android.package-archive',
-          'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
-          'Content-Length': String(stat.size),
-          'Cache-Control': 'public, max-age=86400',
-        });
-        fs.createReadStream(APK_PATH).pipe(res);
-      } catch {
-        res.writeHead(404);
-        res.end('Not Found');
-      }
-      return;
-    }
-    requestListener(req, res);
-  };
-  return originalCreateServer.call(http, options, wrappedListener);
-};
-
-// 直接在当前进程中启动 standalone Server（`server.js`）
+// Start Next.js on internal port
+process.env.PORT = String(INTERNAL_PORT);
 require('./server.js');
 
-// 每 1 秒轮询一次，直到请求成功
-const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${
-  process.env.PORT || 3000
-}/login`;
+// Proxy server on public port
+const server = http.createServer((req, res) => {
+  const url = req.url || '';
 
+  // Serve APK directly
+  if (url.startsWith('/download/5572tv-android.apk')) {
+    try {
+      const stat = fs.statSync(APK_PATH);
+      res.writeHead(200, {
+        'Content-Type': 'application/vnd.android.package-archive',
+        'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
+        'Content-Length': String(stat.size),
+        'Cache-Control': 'public, max-age=86400',
+      });
+      fs.createReadStream(APK_PATH).pipe(res);
+    } catch {
+      res.writeHead(404);
+      res.end('Not Found');
+    }
+    return;
+  }
+
+  // Proxy everything else to Next.js
+  const proxyReq = http.request(
+    {
+      hostname: '127.0.0.1',
+      port: INTERNAL_PORT,
+      path: url,
+      method: req.method,
+      headers: { ...req.headers, host: req.headers.host },
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    },
+  );
+  proxyReq.on('error', () => {
+    res.writeHead(502);
+    res.end('Bad Gateway');
+  });
+  req.pipe(proxyReq);
+});
+
+server.listen(PUBLIC_PORT, HOSTNAME, () => {
+  console.log(
+    `5572tv listening on ${HOSTNAME}:${PUBLIC_PORT} (proxying to :${INTERNAL_PORT})`,
+  );
+});
+
+// Health check polling
 const intervalId = setInterval(() => {
-  console.log(`Fetching ${TARGET_URL} ...`);
-
-  const req = http.get(TARGET_URL, (res) => {
-    // 当返回 2xx 状态码时认为成功，然后停止轮询
+  const req = http.get(`http://127.0.0.1:${INTERNAL_PORT}/login`, (res) => {
     if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-      console.log('Server is up, stop polling.');
+      console.log('Next.js server is ready.');
       clearInterval(intervalId);
-
-      setTimeout(() => {
-        // 服务器启动后，立即执行一次 cron 任务
-        executeCronJob();
-      }, 30000);
-
-      // 然后设置每小时执行一次 cron 任务
-      setInterval(
-        () => {
-          executeCronJob();
-        },
-        60 * 60 * 1000,
-      ); // 每小时执行一次
+      setTimeout(executeCronJob, 30000);
+      setInterval(executeCronJob, 60 * 60 * 1000);
     }
   });
-
-  req.setTimeout(2000, () => {
-    req.destroy();
-  });
+  req.setTimeout(2000, () => req.destroy());
+  req.on('error', () => {});
 }, 1000);
 
-// 执行 cron 任务的函数
 function executeCronJob() {
-  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${
-    process.env.PORT || 3000
-  }/api/cron`;
-
+  const cronUrl = `http://127.0.0.1:${INTERNAL_PORT}/api/cron`;
   console.log(`Executing cron job: ${cronUrl}`);
-
   const req = http.get(cronUrl, (res) => {
     let data = '';
-
     res.on('data', (chunk) => {
       data += chunk;
     });
-
     res.on('end', () => {
-      if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+      if (res.statusCode >= 200 && res.statusCode < 300) {
         console.log('Cron job executed successfully:', data);
       } else {
         console.error('Cron job failed:', res.statusCode, data);
       }
     });
   });
-
-  req.on('error', (err) => {
-    console.error('Error executing cron job:', err);
-  });
-
+  req.on('error', (err) => console.error('Cron job error:', err));
   req.setTimeout(300000, () => {
-    console.error('Cron job timeout (5 minutes)');
     req.destroy();
   });
 }
