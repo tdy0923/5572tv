@@ -1651,7 +1651,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                       <ScrollableRow>
                         {[1, 2, 3, 4].map((i) => (
                           <div
-                            key={i}
+                            key={`skeleton-${i}`}
                             className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                           >
                             <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />

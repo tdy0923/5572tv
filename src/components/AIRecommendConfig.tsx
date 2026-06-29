@@ -613,7 +613,7 @@ const AIRecommendConfig = ({
                 <div className='flex flex-wrap gap-2'>
                   {MODEL_EXAMPLES.map((example, index) => (
                     <button
-                      key={index}
+                      key={example}
                       type='button'
                       onClick={() => {
                         const modelName = example.split(' (')[0];
@@ -876,7 +876,7 @@ const AIRecommendConfig = ({
 
                           return (
                             <div
-                              key={index}
+                              key={key}
                               className='bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/10 dark:to-blue-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-3'
                             >
                               <div className='flex items-center justify-between mb-2'>

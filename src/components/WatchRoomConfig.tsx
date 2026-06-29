@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react';
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import Toggle from '@/components/Toggle';
+
 interface WatchRoomConfigProps {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
@@ -284,23 +286,11 @@ const WatchRoomConfig = ({ config, refreshConfig }: WatchRoomConfigProps) => {
       </div>
 
       {/* 启用开关 */}
-      <div className='flex items-center gap-3'>
-        <label className='relative inline-flex items-center cursor-pointer'>
-          <input
-            type='checkbox'
-            checked={settings.enabled}
-            onChange={(e) =>
-              setSettings({ ...settings, enabled: e.target.checked })
-            }
-            aria-label='启用观影室功能'
-            className='sr-only peer'
-          />
-          <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-        </label>
-        <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-          启用观影室功能
-        </span>
-      </div>
+      <Toggle
+        checked={settings.enabled}
+        onChange={(checked) => setSettings({ ...settings, enabled: checked })}
+        label='启用观影室功能'
+      />
 
       {/* 服务器地址 */}
       <div>

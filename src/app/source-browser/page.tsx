@@ -1266,7 +1266,7 @@ export default function SourceBrowserPage() {
                                   {previewBangumi.infobox
                                     .slice(0, 10)
                                     .map((info, idx: number) => (
-                                      <div key={idx}>
+                                      <div key={info.key}>
                                         {info.key}：
                                         {Array.isArray(info.value)
                                           ? info.value

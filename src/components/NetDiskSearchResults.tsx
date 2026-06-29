@@ -570,7 +570,7 @@ export default function NetDiskSearchResults({
 
                   return (
                     <div
-                      key={index}
+                      key={linkKey}
                       className='p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors'
                     >
                       <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0'>

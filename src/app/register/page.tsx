@@ -283,7 +283,7 @@ function RegisterPageClient() {
               <div className='flex gap-1 mb-1'>
                 {[1, 2, 3].map((i) => (
                   <div
-                    key={i}
+                    key={`strength-${i}`}
                     className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`}
                   />
                 ))}

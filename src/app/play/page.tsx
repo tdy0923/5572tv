@@ -4855,7 +4855,7 @@ function PlayPageClient() {
                         <div className='flex flex-wrap gap-1.5'>
                           {aiSummary.highlights.map((h, i) => (
                             <span
-                              key={i}
+                              key={h}
                               className='px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs'
                             >
                               {h}

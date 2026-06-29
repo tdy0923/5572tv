@@ -359,7 +359,7 @@ function AdminPageClient() {
             <div className='space-y-6'>
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
-                  key={index}
+                  key={`skeleton-${index}`}
                   className='relative h-24 bg-linear-to-r from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-xl overflow-hidden'
                 >
                   <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>

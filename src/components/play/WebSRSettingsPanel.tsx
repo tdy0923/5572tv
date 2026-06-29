@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import Toggle from '@/components/Toggle';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -245,34 +247,11 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
         {/* 启用超分主开关 */}
         <div className='flex items-center justify-between py-1'>
           <span className='text-sm font-medium text-gray-200'>启用AI超分</span>
-          <button
-            onClick={() => handleUpdate('enabled', !settings.enabled)}
+          <Toggle
+            checked={settings.enabled}
+            onChange={(v) => handleUpdate('enabled', v)}
             disabled={!webGPUSupported}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 ${
-              webGPUSupported
-                ? 'active:scale-90'
-                : 'opacity-50 cursor-not-allowed'
-            }`}
-            style={{
-              background: settings.enabled
-                ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
-                : '#4b5563',
-              boxShadow: settings.enabled
-                ? '0 0 16px rgba(139, 92, 246, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2)'
-                : 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
-              transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
-          >
-            <span
-              className='inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-all duration-300'
-              style={{
-                transform: settings.enabled
-                  ? 'translateX(22px)'
-                  : 'translateX(2px)',
-                transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-            />
-          </button>
+          />
         </div>
 
         {/* 只有启用超分后才显示其他设置 */}
@@ -460,32 +439,10 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
                   画面对比
                 </span>
               </div>
-              <button
-                onClick={() =>
-                  handleUpdate('compareEnabled', !settings.compareEnabled)
-                }
-                className='relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 active:scale-90'
-                style={{
-                  background: settings.compareEnabled
-                    ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
-                    : '#4b5563',
-                  boxShadow: settings.compareEnabled
-                    ? '0 0 16px rgba(139, 92, 246, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.2)'
-                    : 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
-                  transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
-              >
-                <span
-                  className='inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-all duration-300'
-                  style={{
-                    transform: settings.compareEnabled
-                      ? 'translateX(22px)'
-                      : 'translateX(2px)',
-                    transitionTimingFunction:
-                      'cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  }}
-                />
-              </button>
+              <Toggle
+                checked={settings.compareEnabled}
+                onChange={(v) => handleUpdate('compareEnabled', v)}
+              />
             </div>
 
             {/* 对比位置滑块 */}

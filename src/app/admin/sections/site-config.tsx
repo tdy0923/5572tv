@@ -13,6 +13,8 @@ import {
 } from '@/lib/ad-settings';
 import { AdminConfig } from '@/lib/admin.types';
 
+import Toggle from '@/components/Toggle';
+
 import {
   buttonStyles,
   showError,
@@ -353,24 +355,10 @@ export default function SiteConfigComponent({
               开启后，用户可在播放页面使用外部播放器（PotPlayer、VLC、MPV等）打开视频
             </p>
           </div>
-          <button
-            onClick={() =>
-              setS('EnableExternalPlayer', !S.EnableExternalPlayer)
-            }
-            className='relative inline-flex h-6 w-11 items-center rounded-full transition-colors'
-            style={{
-              backgroundColor: S.EnableExternalPlayer ? '#22c55e' : '#d1d5db',
-            }}
-          >
-            <span
-              className='inline-block h-4 w-4 transform rounded-full bg-white transition-transform'
-              style={{
-                transform: S.EnableExternalPlayer
-                  ? 'translateX(22px)'
-                  : 'translateX(2px)',
-              }}
-            />
-          </button>
+          <Toggle
+            checked={S.EnableExternalPlayer}
+            onChange={(v) => setS('EnableExternalPlayer', v)}
+          />
         </div>
       </div>
       <button

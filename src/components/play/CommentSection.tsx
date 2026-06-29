@@ -40,7 +40,10 @@ const CommentSection = memo(function CommentSection({
       </div>
       <div className='space-y-4'>
         {comments.slice(0, 10).map((comment: any, index: number) => (
-          <CommentItem key={index} comment={comment} />
+          <CommentItem
+            key={comment.id || `comment-${index}`}
+            comment={comment}
+          />
         ))}
       </div>
 

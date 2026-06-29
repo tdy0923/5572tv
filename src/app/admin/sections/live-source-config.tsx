@@ -204,7 +204,7 @@ export default function LiveSourceConfig({
       <div className='space-y-2'>
         {liveSources.map((source, i) => (
           <div
-            key={i}
+            key={source.key}
             className='flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border rounded-lg'
           >
             <span

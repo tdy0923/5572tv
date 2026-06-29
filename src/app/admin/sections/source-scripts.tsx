@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import Toggle from '@/components/Toggle';
+
 import {
   buttonStyles,
   showError,
@@ -309,22 +311,10 @@ export default function SourceScripts() {
           >
             <div className='flex items-center gap-3 p-3'>
               {/* Toggle */}
-              <button
-                onClick={() => handleToggle(script)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  script.enabled
-                    ? buttonStyles.toggleOn
-                    : buttonStyles.toggleOff
-                }`}
-              >
-                <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full transition-transform ${buttonStyles.toggleThumb} ${
-                    script.enabled
-                      ? buttonStyles.toggleThumbOn
-                      : buttonStyles.toggleThumbOff
-                  }`}
-                />
-              </button>
+              <Toggle
+                checked={script.enabled}
+                onChange={() => handleToggle(script)}
+              />
 
               <div className='flex-1 min-w-0'>
                 <div className='text-sm font-medium text-gray-900 dark:text-gray-100 truncate'>

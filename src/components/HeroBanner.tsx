@@ -475,7 +475,7 @@ function HeroBanner({
         <div className='absolute bottom-4 left-4 right-4 flex items-end gap-1.5 sm:bottom-6 sm:left-8 sm:right-8 md:left-12 md:right-12 lg:left-16 lg:right-16'>
           {items.map((_, index) => (
             <button
-              key={index}
+              key={`indicator-${index}`}
               onClick={() => handleIndicatorClick(index)}
               className='group relative flex-1 max-w-[80px]'
               aria-label={`跳转到第 ${index + 1} 张`}

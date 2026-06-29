@@ -12,6 +12,8 @@ import { useEffect, useState } from 'react';
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import Toggle from '@/components/Toggle';
+
 interface TVBoxSecurityConfigProps {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
@@ -394,30 +396,18 @@ const TVBoxSecurityConfig = ({
       <div className='space-y-6'>
         {/* Token验证 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex items-start sm:items-center justify-between gap-3 mb-4'>
-            <div className='min-w-0 flex-1'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                Token 验证
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                要求TVBox在URL中携带token参数才能访问
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={securitySettings.enableAuth}
-                onChange={(e) =>
-                  setSecuritySettings((prev) => ({
-                    ...prev,
-                    enableAuth: e.target.checked,
-                  }))
-                }
-                aria-label='启用访问认证'
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={securitySettings.enableAuth}
+              onChange={(checked) =>
+                setSecuritySettings((prev) => ({
+                  ...prev,
+                  enableAuth: checked,
+                }))
+              }
+              label='Token 验证'
+              description='要求TVbox在URL中携带token参数才能访问'
+            />
           </div>
 
           {securitySettings.enableAuth && (
@@ -493,29 +483,18 @@ const TVBoxSecurityConfig = ({
 
         {/* IP白名单 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex items-start sm:items-center justify-between gap-3 mb-4'>
-            <div className='min-w-0 flex-1'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                IP 白名单
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                只允许指定IP地址访问TVBox接口
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={securitySettings.enableIpWhitelist}
-                onChange={(e) =>
-                  setSecuritySettings((prev) => ({
-                    ...prev,
-                    enableIpWhitelist: e.target.checked,
-                  }))
-                }
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={securitySettings.enableIpWhitelist}
+              onChange={(checked) =>
+                setSecuritySettings((prev) => ({
+                  ...prev,
+                  enableIpWhitelist: checked,
+                }))
+              }
+              label='IP 白名单'
+              description='只允许指定IP地址访问TVbox接口'
+            />
           </div>
 
           {securitySettings.enableIpWhitelist && (
@@ -542,7 +521,7 @@ const TVBoxSecurityConfig = ({
                 <div className='space-y-2'>
                   {securitySettings.allowedIPs.map((ip, index) => (
                     <div
-                      key={index}
+                      key={ip}
                       className='flex items-center justify-between gap-2 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded'
                     >
                       <span className='text-gray-900 dark:text-gray-100 break-all min-w-0 flex-1 text-sm'>
@@ -569,29 +548,18 @@ const TVBoxSecurityConfig = ({
 
         {/* 频率限制 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex items-start sm:items-center justify-between gap-3 mb-4'>
-            <div className='min-w-0 flex-1'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                访问频率限制
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                限制每个IP每分钟的访问次数，防止滥用
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={securitySettings.enableRateLimit}
-                onChange={(e) =>
-                  setSecuritySettings((prev) => ({
-                    ...prev,
-                    enableRateLimit: e.target.checked,
-                  }))
-                }
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={securitySettings.enableRateLimit}
+              onChange={(checked) =>
+                setSecuritySettings((prev) => ({
+                  ...prev,
+                  enableRateLimit: checked,
+                }))
+              }
+              label='访问频率限制'
+              description='限制每个IP每分钟的访问次数，防止滥用'
+            />
           </div>
 
           {securitySettings.enableRateLimit && (
@@ -621,29 +589,18 @@ const TVBoxSecurityConfig = ({
 
         {/* CDN代理配置 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex items-start sm:items-center justify-between gap-3 mb-4'>
-            <div className='min-w-0 flex-1'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                Cloudflare Worker 代理
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                为TVBox配置启用Cloudflare全球CDN加速
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={proxySettings.enabled}
-                onChange={(e) =>
-                  setProxySettings((prev) => ({
-                    ...prev,
-                    enabled: e.target.checked,
-                  }))
-                }
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={proxySettings.enabled}
+              onChange={(checked) =>
+                setProxySettings((prev) => ({
+                  ...prev,
+                  enabled: checked,
+                }))
+              }
+              label='Cloudflare Worker 代理'
+              description='为TVbox配置启用Cloudflare全球CDN加速'
+            />
           </div>
 
           {proxySettings.enabled && (
@@ -1030,7 +987,7 @@ const TVBoxSecurityConfig = ({
                   </div>
                   <ul className='list-disc list-inside space-y-1 text-yellow-800 dark:text-yellow-400'>
                     {diagnoseResult.issues.map((issue: string, idx: number) => (
-                      <li key={idx}>{issue}</li>
+                      <li key={`issue-${idx}`}>{issue}</li>
                     ))}
                   </ul>
                 </div>

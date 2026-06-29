@@ -137,7 +137,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           <div className='flex ml-2 gap-0.5'>
                             {[...Array(5)].map((_, i) => (
                               <svg
-                                key={i}
+                                key={`bangumi-star-${i}`}
                                 className={`w-4 h-4 transition-all duration-300 ${
                                   i <
                                   Math.floor(
@@ -166,7 +166,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           ? info.value.map((v: any) => v.v || v).join('、')
                           : info.value;
                         return (
-                          <div key={index}>
+                          <div key={`bangumi-${info.key}`}>
                             <span className='font-semibold text-gray-700 dark:text-gray-300'>
                               导演:{' '}
                             </span>
@@ -181,7 +181,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           ? info.value.map((v: any) => v.v || v).join('、')
                           : info.value;
                         return (
-                          <div key={index}>
+                          <div key={`bangumi-${info.key}`}>
                             <span className='font-semibold text-gray-700 dark:text-gray-300'>
                               制作:{' '}
                             </span>
@@ -213,7 +213,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                         .slice(0, 4)
                         .map((tag: any, index: number) => (
                           <span
-                            key={index}
+                            key={tag.name}
                             className='relative group bg-linear-to-r from-blue-500/90 to-indigo-500/90 dark:from-blue-600/90 dark:to-indigo-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105'
                           >
                             <span className='absolute inset-0 bg-linear-to-r from-blue-400 to-indigo-400 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity duration-300'></span>
@@ -250,7 +250,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           <div className='flex ml-2 gap-0.5'>
                             {[...Array(5)].map((_, i) => (
                               <svg
-                                key={i}
+                                key={`douban-star-${i}`}
                                 className={`w-4 h-4 transition-all duration-300 ${
                                   i <
                                   Math.floor(parseFloat(movieDetails.rate) / 2)
@@ -326,7 +326,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                         .slice(0, 2)
                         .map((country: string, index: number) => (
                           <span
-                            key={index}
+                            key={`country-${country}`}
                             className='relative group bg-linear-to-r from-blue-500/90 to-cyan-500/90 dark:from-blue-600/90 dark:to-cyan-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105'
                           >
                             <span className='absolute inset-0 bg-linear-to-r from-blue-400 to-cyan-400 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity duration-300'></span>
@@ -338,7 +338,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                         .slice(0, 2)
                         .map((language: string, index: number) => (
                           <span
-                            key={index}
+                            key={`language-${language}`}
                             className='relative group bg-linear-to-r from-purple-500/90 to-pink-500/90 dark:from-purple-600/90 dark:to-pink-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105'
                           >
                             <span className='absolute inset-0 bg-linear-to-r from-purple-400 to-pink-400 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity duration-300'></span>

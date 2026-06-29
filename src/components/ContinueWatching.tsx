@@ -193,7 +193,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
           ? // 加载状态显示灰色占位数据
             Array.from({ length: 6 }).map((_, index) => (
               <div
-                key={index}
+                key={`skeleton-${index}`}
                 className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
               >
                 <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 animate-pulse dark:bg-gray-800'>

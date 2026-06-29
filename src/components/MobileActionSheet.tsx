@@ -349,7 +349,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
               <div className='grid grid-cols-2 gap-2'>
                 {sources.map((source, index) => (
                   <div
-                    key={index}
+                    key={source}
                     className='flex items-center gap-2 py-2 px-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/30 dark:bg-gray-800/30'
                   >
                     <div className='w-1 h-1 bg-gray-400 dark:bg-gray-500 rounded-full shrink-0' />

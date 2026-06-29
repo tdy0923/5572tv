@@ -978,7 +978,7 @@ export default function PerformanceMonitor() {
                       const isError = request.statusCode >= 400;
 
                       return (
-                        <tr key={index}>
+                        <tr key={request.timestamp + '-' + index}>
                           <td className='px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100'>
                             {new Date(request.timestamp).toLocaleString(
                               'zh-CN',

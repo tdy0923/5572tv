@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import Toggle from '@/components/Toggle';
+
 interface TrustedNetworkConfigProps {
   config: AdminConfig | null;
   refreshConfig: () => Promise<void>;
@@ -206,7 +208,7 @@ const TrustedNetworkConfig = ({
             <div className='space-y-1'>
               {envConfig.trustedIPs.map((ip, index) => (
                 <div
-                  key={index}
+                  key={ip}
                   className='text-xs text-blue-700 dark:text-blue-400 font-mono'
                 >
                   {ip}
@@ -218,29 +220,18 @@ const TrustedNetworkConfig = ({
 
         {/* 启用开关 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4'>
-            <div className='flex-1 min-w-0'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                启用信任网络模式
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                来自信任IP段的访问将自动跳过登录认证，适用于内网部署场景
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={settings.enabled}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    enabled: e.target.checked,
-                  }))
-                }
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={settings.enabled}
+              onChange={(checked) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  enabled: checked,
+                }))
+              }
+              label='启用信任网络模式'
+              description='来自信任IP段的访问将自动跳过登录认证，适用于内网部署场景'
+            />
           </div>
 
           {settings.enabled && (
@@ -311,7 +302,7 @@ const TrustedNetworkConfig = ({
                 <div className='space-y-2'>
                   {settings.trustedIPs.map((ip, index) => (
                     <div
-                      key={index}
+                      key={ip}
                       className='flex items-center justify-between bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded gap-2'
                     >
                       <span className='text-gray-900 dark:text-gray-100 font-mono text-xs sm:text-sm break-all'>

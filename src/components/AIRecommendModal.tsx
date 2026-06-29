@@ -91,7 +91,7 @@ const MessageItem = memo(
                             const title = match[1];
                             return (
                               <span
-                                key={i}
+                                key={`text-part-${i}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleTitleClick(title);
@@ -128,7 +128,7 @@ const MessageItem = memo(
                             const title = match[1];
                             return (
                               <span
-                                key={i}
+                                key={`text-part-${i}`}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleTitleClick(title);
@@ -194,7 +194,7 @@ const MessageItem = memo(
               </div>
               {message.recommendations.map((movie, idx) => (
                 <div
-                  key={idx}
+                  key={movie.title}
                   onClick={() => handleMovieSelect(movie)}
                   className='@container p-3 bg-white dark:bg-gray-700 border border-gray-200/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-400 dark:hover:border-blue-500 hover:scale-[1.02] transition-all duration-200 group active:scale-[0.98]'
                 >
@@ -251,7 +251,7 @@ const MessageItem = memo(
               </div>
               {message.youtubeVideos.map((video, idx) => (
                 <div
-                  key={idx}
+                  key={video.id}
                   className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden'
                 >
                   {playingVideoId === video.id ? (
@@ -335,7 +335,7 @@ const MessageItem = memo(
               </div>
               {message.videoLinks.map((video, idx) => (
                 <div
-                  key={idx}
+                  key={video.videoId}
                   className='border rounded-lg p-4 bg-gray-50 dark:bg-gray-800'
                 >
                   {video.playable ? (
@@ -1074,7 +1074,7 @@ export default function AIRecommendModal({
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto'>
                     {AI_RECOMMEND_PRESETS.map((preset, index) => (
                       <button
-                        key={index}
+                        key={preset.title}
                         onClick={() => handlePresetClick(preset)}
                         className='p-3 text-left bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all group'
                         disabled={isPending}
@@ -1092,7 +1092,7 @@ export default function AIRecommendModal({
           {/* ⚡ 优化：使用记忆化的消息组件 */}
           {messages.map((message, index) => (
             <MessageItem
-              key={index}
+              key={`message-${index}`}
               message={message}
               index={index}
               handleTitleClick={handleTitleClick}

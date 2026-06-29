@@ -280,7 +280,7 @@ export default function ShortDramaPage() {
                   <div className='flex flex-wrap gap-2'>
                     {searchHistory.map((item, index) => (
                       <button
-                        key={index}
+                        key={item}
                         onClick={() => {
                           setSearchQuery(item);
                           handleSearch(item);
@@ -444,7 +444,10 @@ export default function ShortDramaPage() {
               </div>
               <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
                 {Array.from({ length: 12 }).map((_, index) => (
-                  <div key={index} className='relative overflow-hidden'>
+                  <div
+                    key={`skeleton-${index}`}
+                    className='relative overflow-hidden'
+                  >
                     <div className='aspect-[2/3] w-full rounded-lg bg-linear-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'>
                       <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
                     </div>

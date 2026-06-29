@@ -11,6 +11,8 @@ import { useEffect, useState } from 'react';
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import Toggle from '@/components/Toggle';
+
 // 默认弹幕API配置
 const DEFAULT_DANMU_API_URL = 'https://smonedanmu.vercel.app';
 const DEFAULT_DANMU_API_TOKEN = 'smonetv';
@@ -206,30 +208,18 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
 
         {/* 启用开关 */}
         <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4'>
-            <div className='flex-1 min-w-0'>
-              <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                启用弹幕功能
-              </h3>
-              <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                启用后播放器可以加载外部弹幕数据
-              </p>
-            </div>
-            <label className='relative inline-flex items-center cursor-pointer flex-shrink-0'>
-              <input
-                type='checkbox'
-                checked={settings.enabled}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    enabled: e.target.checked,
-                  }))
-                }
-                aria-label='启用外部弹幕数据'
-                className='sr-only peer'
-              />
-              <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-            </label>
+          <div className='mb-4'>
+            <Toggle
+              checked={settings.enabled}
+              onChange={(checked) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  enabled: checked,
+                }))
+              }
+              label='启用弹幕功能'
+              description='启用后播放器可以加载外部弹幕数据'
+            />
           </div>
 
           {settings.enabled && (
@@ -245,31 +235,17 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
               </div>
 
               {/* 使用自定义 API 开关 */}
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h4 className='text-sm font-medium text-gray-900 dark:text-gray-100'>
-                    使用自定义API
-                  </h4>
-                  <p className='text-xs text-gray-500 dark:text-gray-400'>
-                    关闭则使用默认弹幕服务
-                  </p>
-                </div>
-                <label className='relative inline-flex items-center cursor-pointer'>
-                  <input
-                    type='checkbox'
-                    checked={settings.useCustomApi}
-                    onChange={(e) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        useCustomApi: e.target.checked,
-                      }))
-                    }
-                    aria-label='使用自定义API'
-                    className='sr-only peer'
-                  />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-                </label>
-              </div>
+              <Toggle
+                checked={settings.useCustomApi}
+                onChange={(checked) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    useCustomApi: checked,
+                  }))
+                }
+                label='使用自定义API'
+                description='关闭则使用默认弹幕服务'
+              />
 
               {/* 自定义 API 配置 */}
               {settings.useCustomApi && (

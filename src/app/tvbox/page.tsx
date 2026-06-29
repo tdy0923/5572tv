@@ -1477,7 +1477,7 @@ export default function TVBoxConfigPage() {
                                 {diagnosisResult.spider_candidates.map(
                                   (candidate, idx) => (
                                     <div
-                                      key={idx}
+                                      key={`spider-candidate-${idx}`}
                                       className='font-mono text-xs text-gray-600 dark:text-gray-400 break-all pl-4 border-l-2 border-gray-300 dark:border-gray-600'
                                     >
                                       {idx + 1}. {candidate}
@@ -1497,7 +1497,7 @@ export default function TVBoxConfigPage() {
                               </h3>
                               <ul className='text-sm text-orange-700 dark:text-orange-300 space-y-1'>
                                 {diagnosisResult.issues.map((issue, idx) => (
-                                  <li key={idx}>• {issue}</li>
+                                  <li key={`issue-${idx}`}>• {issue}</li>
                                 ))}
                               </ul>
                             </div>
@@ -1641,7 +1641,7 @@ export default function TVBoxConfigPage() {
                             {smartHealthResult.reachability.tests.map(
                               (test, idx) => (
                                 <div
-                                  key={idx}
+                                  key={test.url}
                                   className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600'
                                 >
                                   <div className='flex items-center gap-2 flex-1 min-w-0'>
@@ -1694,7 +1694,7 @@ export default function TVBoxConfigPage() {
                             {smartHealthResult.recommendations.map(
                               (rec, idx) => (
                                 <li
-                                  key={idx}
+                                  key={`recommendation-${idx}`}
                                   className='text-sm text-purple-700 dark:text-purple-300 flex items-start gap-2'
                                 >
                                   <span className='shrink-0 mt-1'>•</span>
@@ -1789,7 +1789,7 @@ export default function TVBoxConfigPage() {
                             {jarFixResult.emergency_recommendations.map(
                               (rec, idx) => (
                                 <li
-                                  key={idx}
+                                  key={`emergency-rec-${idx}`}
                                   className='text-red-600 dark:text-red-400'
                                 >
                                   • {rec}
@@ -1881,7 +1881,7 @@ export default function TVBoxConfigPage() {
                               {jarFixResult.recommended_sources.map(
                                 (source, idx) => (
                                   <div
-                                    key={idx}
+                                    key={source.name}
                                     className='p-3 bg-white dark:bg-gray-800 rounded border border-green-200 dark:border-green-700'
                                   >
                                     <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1'>
@@ -1916,7 +1916,7 @@ export default function TVBoxConfigPage() {
                           <div className='space-y-2 max-h-64 overflow-y-auto'>
                             {jarFixResult.test_results.map((test, idx) => (
                               <div
-                                key={idx}
+                                key={test.name}
                                 className={`p-2 rounded border ${
                                   test.success
                                     ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'
@@ -1969,7 +1969,7 @@ export default function TVBoxConfigPage() {
                                 {jarFixResult.recommendations.immediate.map(
                                   (rec, idx) => (
                                     <li
-                                      key={idx}
+                                      key={`immediate-${idx}`}
                                       className='text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2'
                                     >
                                       <span className='shrink-0 mt-1'>•</span>
@@ -1992,7 +1992,7 @@ export default function TVBoxConfigPage() {
                                 {jarFixResult.recommendations.configuration.map(
                                   (rec, idx) => (
                                     <li
-                                      key={idx}
+                                      key={`config-${idx}`}
                                       className='text-sm text-purple-700 dark:text-purple-300 flex items-start gap-2'
                                     >
                                       <span className='shrink-0 mt-1'>•</span>
@@ -2015,7 +2015,7 @@ export default function TVBoxConfigPage() {
                                 {jarFixResult.recommendations.troubleshooting.map(
                                   (rec, idx) => (
                                     <li
-                                      key={idx}
+                                      key={`troubleshoot-${idx}`}
                                       className='text-sm text-yellow-700 dark:text-yellow-300 flex items-start gap-2'
                                     >
                                       <span className='shrink-0 mt-1'>•</span>
@@ -2038,7 +2038,7 @@ export default function TVBoxConfigPage() {
                               {jarFixResult.fixed_config_urls.map(
                                 (url, idx) => (
                                   <div
-                                    key={idx}
+                                    key={url}
                                     className='p-2 bg-white dark:bg-gray-800 rounded border border-green-200 dark:border-green-700'
                                   >
                                     <div className='text-xs font-mono text-gray-600 dark:text-gray-400 break-all'>
@@ -2311,7 +2311,7 @@ export default function TVBoxConfigPage() {
                             {deepDiagnosticResult.recommendations.map(
                               (rec: string, idx: number) => (
                                 <li
-                                  key={idx}
+                                  key={`deep-rec-${idx}`}
                                   className='text-sm text-yellow-700 dark:text-yellow-300 break-words [overflow-wrap:anywhere]'
                                 >
                                   {rec}
@@ -2330,7 +2330,7 @@ export default function TVBoxConfigPage() {
                             {deepDiagnosticResult.jarTests.map(
                               (test: any, idx: number) => (
                                 <div
-                                  key={idx}
+                                  key={test.name}
                                   className={`p-3 rounded border ${
                                     test.status === 'success'
                                       ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'

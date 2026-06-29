@@ -43,7 +43,7 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
               <div className='flex items-center px-1 py-0.5'>
                 {[...Array(5)].map((_, i) => (
                   <svg
-                    key={i}
+                    key={`star-${i}`}
                     className={`w-4 h-4 ${
                       i < comment.rating
                         ? 'text-yellow-400'

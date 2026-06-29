@@ -231,7 +231,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
               <ul className='space-y-1'>
                 {entry.added.map((item, index) => (
                   <li
-                    key={index}
+                    key={`${entry.version}-added-${index}`}
                     className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
                   >
                     <span className='w-1.5 h-1.5 bg-green-500 rounded-full mt-2 shrink-0'></span>
@@ -251,7 +251,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
               <ul className='space-y-1'>
                 {entry.changed.map((item, index) => (
                   <li
-                    key={index}
+                    key={`${entry.version}-changed-${index}`}
                     className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
                   >
                     <span className='w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 shrink-0'></span>
@@ -271,7 +271,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
               <ul className='space-y-1'>
                 {entry.fixed.map((item, index) => (
                   <li
-                    key={index}
+                    key={`${entry.version}-fixed-${index}`}
                     className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
                   >
                     <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 shrink-0'></span>
@@ -485,7 +485,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                       })
                       .map((entry, index) => (
                         <div
-                          key={index}
+                          key={entry.version}
                           className={`rounded-3xl border p-4 ${
                             entry.version === latestVersion
                               ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'

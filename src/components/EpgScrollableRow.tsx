@@ -241,7 +241,7 @@ export default function EpgScrollableRow({
 
             return (
               <div
-                key={index}
+                key={`program-${index}`}
                 className={`shrink-0 w-36 sm:w-48 p-2 sm:p-3 rounded-lg border transition-all duration-200 flex flex-col min-h-[100px] sm:min-h-[120px] ${
                   isPlaying
                     ? 'bg-green-500/10 dark:bg-green-500/20 border-green-500/30'
