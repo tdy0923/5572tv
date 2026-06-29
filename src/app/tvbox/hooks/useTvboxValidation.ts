@@ -166,7 +166,7 @@ export function useTvboxValidation({
       };
 
       setCustomJarTestResult(result);
-    } catch {
+    } catch (error) {
       setCustomJarTestResult({
         success: false,
         url: customJarUrl,

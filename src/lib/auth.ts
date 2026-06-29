@@ -2,6 +2,46 @@
 
 import { NextRequest } from 'next/server';
 
+// ── Token Revocation (Redis-backed) ──
+
+async function getRevocationClient() {
+  try {
+    const { Redis } = await import('@upstash/redis');
+    const url = process.env.UPSTASH_URL;
+    const token = process.env.UPSTASH_TOKEN;
+    if (!url || !token) return null;
+    return new Redis({ url, token });
+  } catch {
+    return null;
+  }
+}
+
+function tokenKey(username: string, timestamp: number): string {
+  return `revoked:${username}:${timestamp}`;
+}
+
+export async function revokeToken(
+  username: string,
+  timestamp: number,
+): Promise<void> {
+  const client = await getRevocationClient();
+  if (!client) return;
+  const key = tokenKey(username, timestamp);
+  const SEVEN_DAYS = 7 * 24 * 60 * 60;
+  await client.set(key, '1', { ex: SEVEN_DAYS });
+}
+
+export async function isTokenRevoked(
+  username: string,
+  timestamp: number,
+): Promise<boolean> {
+  const client = await getRevocationClient();
+  if (!client) return false;
+  const key = tokenKey(username, timestamp);
+  const result = await client.get(key);
+  return result === '1';
+}
+
 function getPasswordSecret(): string {
   const pwd = process.env.PASSWORD;
   if (!pwd) {
@@ -116,6 +156,12 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
         '[Auth] Cookie signature verification failed:',
         authData.username,
       );
+      return null;
+    }
+
+    // Check token revocation (e.g., after password change or forced logout)
+    if (await isTokenRevoked(authData.username, authData.timestamp)) {
+      console.warn('[Auth] Token revoked:', authData.username);
       return null;
     }
 

@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: '视频解析服务异常',
-        details: error instanceof Error ? error.message : String(error),
+        details: '请稍后重试',
       },
       { status: 500 },
     );

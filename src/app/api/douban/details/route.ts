@@ -374,7 +374,7 @@ async function tryFetchWithAntiCrawler(
     console.log('[Douban] ❌ 反爬验证失败:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: '反爬验证失败，请稍后重试',
     };
   }
 }

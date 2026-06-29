@@ -25,10 +25,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('获取用户 Emby 配置失败:', error);
-    return NextResponse.json(
-      { error: error.message || '获取配置失败' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: '获取配置失败' }, { status: 500 });
   }
 }
 
@@ -79,10 +76,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('保存用户 Emby 配置失败:', error);
-    return NextResponse.json(
-      { error: error.message || '保存配置失败' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: '保存配置失败' }, { status: 500 });
   }
 }
 
@@ -109,9 +103,6 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('删除用户 Emby 配置失败:', error);
-    return NextResponse.json(
-      { error: error.message || '删除配置失败' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: '删除配置失败' }, { status: 500 });
   }
 }
