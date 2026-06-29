@@ -132,7 +132,7 @@ export default function PlaylistManager({
 
   return (
     <div
-      className='fixed inset-0 z-9999 flex items-end justify-center bg-black/55 backdrop-blur-sm md:items-center md:p-4'
+      className='fixed inset-0 z-50 flex items-end justify-center bg-black/55 backdrop-blur-sm md:items-center md:p-4'
       onClick={onClose}
     >
       <div

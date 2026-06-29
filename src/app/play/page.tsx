@@ -5207,7 +5207,7 @@ function PlayPageClient() {
       {/* 网盘资源模态框 */}
       {showNetdiskModal && (
         <div
-          className='fixed inset-0 z-9999 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm md:items-center md:p-4'
+          className='fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-0 backdrop-blur-sm md:items-center md:p-4'
           onClick={() => setShowNetdiskModal(false)}
         >
           <div
@@ -5563,7 +5563,7 @@ function PlayPageClient() {
       {/* 键盘快捷键帮助面板 */}
       {showShortcutsHelp && (
         <div
-          className='fixed inset-0 z-9999 flex items-center justify-center bg-black/55 backdrop-blur-sm'
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm'
           onClick={() => setShowShortcutsHelp(false)}
         >
           <div

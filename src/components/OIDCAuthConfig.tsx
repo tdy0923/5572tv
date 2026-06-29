@@ -788,7 +788,7 @@ function ProviderEditModal({
         />
 
         {/* 模态框内容 */}
-        <div className='relative bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-xl shadow-2xl w-full md:w-auto md:min-w-[600px] md:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden'>
+        <div className='relative bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-xl shadow-2xl w-full md:w-auto md:min-w-[min(600px,90vw)] md:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden'>
           {/* Header - Fixed */}
           <div className='flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 shrink-0'>
             <h3 className='text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100'>

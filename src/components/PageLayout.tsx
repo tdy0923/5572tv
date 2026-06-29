@@ -141,7 +141,7 @@ const PageLayout = ({
 
           {/* 主内容 */}
           <main
-            className='flex-1 md:min-h-0 mb-14 md:mb-0 md:mt-0 mt-12'
+            className='flex-1 md:min-h-0 mb-14 md:mb-0 md:mt-0 mt-14'
             style={{
               // 悬浮胶囊导航栏高度约 56px + 底部 1rem 间距 + 安全区
               paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))',

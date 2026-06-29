@@ -207,7 +207,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       role='navigation'
       aria-label='主导航'
       className={cn(
-        'md:hidden fixed left-0 right-0 z-600',
+        'md:hidden fixed left-0 right-0 z-30',
         'bg-white/92 dark:bg-[#0b0b0b]/96',
         'backdrop-blur-lg',
         'border-t border-black/5 dark:border-white/8 shadow-[0_-20px_40px_rgba(0,0,0,0.22)]',

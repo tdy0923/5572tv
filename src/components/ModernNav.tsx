@@ -191,7 +191,7 @@ export default function ModernNav({
   return (
     <>
       {/* Desktop Top Navigation */}
-      <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-50'>
+      <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-30'>
         <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
@@ -337,7 +337,7 @@ export default function ModernNav({
 
       {/* Mobile Bottom Navigation - Netflix Full-Width Style with Light Mode Support */}
       <nav
-        className='md:hidden fixed left-0 right-0 z-40 bg-white/80 dark:bg-black/95 backdrop-blur-lg border-t border-black/5 dark:border-white/5 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
+        className='md:hidden fixed left-0 right-0 z-30 bg-white/80 dark:bg-black/95 backdrop-blur-lg border-t border-black/5 dark:border-white/5 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
         style={{
           bottom: 0,
           paddingBottom: 'env(safe-area-inset-bottom)',

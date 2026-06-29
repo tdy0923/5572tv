@@ -279,7 +279,7 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
   return (
     <div
       ref={panelRef}
-      className={`fixed right-2 bottom-20 z-60 w-[calc(100vw-1rem)] max-w-80 transition-all sm:right-4 ${
+      className={`fixed right-2 bottom-20 z-60 w-[calc(100vw-1rem)] max-w-full transition-all sm:right-4 ${
         prefersReducedMotion
           ? 'duration-0' // 无动画模式
           : 'duration-500' // Spring模拟动画

@@ -936,7 +936,7 @@ export default function SourceBrowserPage() {
         {/* 预览弹层 */}
         {previewOpen && (
           <div
-            className='fixed inset-0 z-1000 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fadeIn sm:p-4 md:pb-4'
+            className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fadeIn sm:p-4 md:pb-4'
             role='dialog'
             aria-modal='true'
             onClick={() => setPreviewOpen(false)}

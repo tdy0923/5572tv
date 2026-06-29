@@ -443,7 +443,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
 
       {/* 设置面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-45 flex max-h-[90dvh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        className='fixed top-1/2 left-1/2 z-50 flex max-h-[90dvh] w-full max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='本地设置'

@@ -2163,7 +2163,7 @@ function SearchPageClient() {
       {/* 返回顶部悬浮按钮 */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
+        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] right-6 z-70 flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
           showBackToTop
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-4 pointer-events-none'

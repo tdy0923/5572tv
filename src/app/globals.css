@@ -51,9 +51,60 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
   --color-gray-950: #030712;
+
+  /* ============================================
+     Z-Index Token System
+     z-10: Sidebar
+     z-20: MobileHeader
+     z-30: Nav bar (desktop + mobile)
+     z-40: Overlay backdrops
+     z-50: Modals/dialogs
+     z-60: Floating panels/settings
+     z-70: FABs (floating action buttons)
+     z-80: Toasts/notifications
+     z-90: Highest priority (error indicators)
+     ============================================ */
+  --z-sidebar: 10;
+  --z-mobile-header: 20;
+  --z-nav: 30;
+  --z-backdrop: 40;
+  --z-modal: 50;
+  --z-panel: 60;
+  --z-fab: 70;
+  --z-toast: 80;
+  --z-error: 90;
 }
 
 @layer utilities {
+  /* Z-Index Token Classes - use these instead of arbitrary z-values */
+  .z-sidebar {
+    z-index: var(--z-sidebar);
+  }
+  .z-mobile-header {
+    z-index: var(--z-mobile-header);
+  }
+  .z-nav {
+    z-index: var(--z-nav);
+  }
+  .z-backdrop {
+    z-index: var(--z-backdrop);
+  }
+  .z-modal {
+    z-index: var(--z-modal);
+  }
+  .z-panel {
+    z-index: var(--z-panel);
+  }
+  .z-fab {
+    z-index: var(--z-fab);
+  }
+  .z-toast {
+    z-index: var(--z-toast);
+  }
+  .z-error {
+    z-index: var(--z-error);
+  }
+
   .ui-shell {
     @apply relative overflow-x-hidden;
   }

@@ -27,7 +27,7 @@ export function DownloadSettingsModal({
   };
 
   return (
-    <div className='fixed inset-0 z-[10000] overflow-y-auto'>
+    <div className='fixed inset-0 z-50 overflow-y-auto'>
       <div className='flex items-center justify-center min-h-screen p-4'>
         {/* 背景遮罩 */}
         <div

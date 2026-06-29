@@ -689,7 +689,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 菜单面板 */}
       <div
-        className='fixed top-16 right-4 w-60 max-h-[calc(100vh-5rem)] overflow-y-auto ui-surface z-45 select-none'
+        className='fixed top-16 right-4 w-60 max-h-[calc(100vh-5rem)] overflow-y-auto ui-surface z-50 select-none'
         role='dialog'
         aria-modal='true'
         aria-label='用户菜单'
@@ -932,7 +932,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 修改密码面板 */}
       <div
-        className='fixed top-1/2 left-1/2 z-45 w-full max-w-md max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
+        className='fixed top-1/2 left-1/2 z-50 w-full max-w-md max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='修改密码'
@@ -1056,7 +1056,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 更新弹窗 */}
       <div
-        className='fixed top-1/2 left-1/2 z-45 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
+        className='fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-full max-w-4xl -translate-x-1/2 -translate-y-1/2 flex-col ui-surface'
         role='dialog'
         aria-modal='true'
         aria-label='更新提醒'
@@ -1292,7 +1292,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 继续观看弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 z-45 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
+        className='fixed inset-x-4 top-1/2 z-50 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
@@ -1396,7 +1396,7 @@ export const UserMenu: React.FC = () => {
 
       {/* 收藏弹窗 */}
       <div
-        className='fixed inset-x-4 top-1/2 z-45 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
+        className='fixed inset-x-4 top-1/2 z-50 mx-auto max-h-[80vh] max-w-4xl -translate-y-1/2 overflow-y-auto ui-surface'
         onClick={(e) => e.stopPropagation()}
         role='dialog'
         aria-modal='true'
