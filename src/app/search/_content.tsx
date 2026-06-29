@@ -4,209 +4,26 @@
 
 'use client';
 
-import {
-  experimental_streamedQuery as streamedQuery,
-  useQuery,
-} from '@tanstack/react-query';
 import { ChevronUp, Grid2x2, List, Play, Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, {
   Suspense,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 
 import { isAdSettingRenderable } from '@/lib/ad-settings';
-import {
-  addSearchHistory,
-  clearSearchHistory,
-  deleteSearchHistory,
-  getSearchHistory,
-  subscribeToDataUpdates,
-} from '@/lib/db.client';
-import { SearchResult } from '@/lib/types';
-import { resolvePosterUrl } from '@/lib/utils';
-
-import { useSite } from '@/components/SiteProvider';
-
-// ─── streamedQuery 类型 ───────────────────────────────────────────────────────
-
-type SSEChunk =
-  | { type: 'start'; totalSources: number }
-  | { type: 'source_result'; results: SearchResult[] } // 80ms 批量
-  | { type: 'source_progress' } // 进度 +1（无数据）
-  | { type: 'source_error' }
-  | { type: 'complete'; completedSources: number };
-
-type StreamedState = {
-  results: SearchResult[];
-  totalSources: number;
-  completedSources: number;
-};
-
-const STREAMED_INITIAL: StreamedState = {
-  results: [],
-  totalSources: 0,
-  completedSources: 0,
-};
-
-/**
- * 将 EventSource 包装为 AsyncIterable<SSEChunk>
- *
- * 缓冲策略：
- * - source_result 数据积入 pending，每 80ms 批量 yield 一次
- * - complete 到达时同步 flush pending，确保数据不丢失
- * - 进度（completedSources）通过独立的 source_progress chunk 实时更新
- */
-function eventSourceIterable(
-  url: string,
-  signal?: AbortSignal,
-): AsyncIterable<SSEChunk> {
-  return {
-    [Symbol.asyncIterator]() {
-      type Item =
-        | { value: SSEChunk; done: false }
-        | { value: undefined; done: true };
-      const queue: Item[] = [];
-      let waiting: ((item: Item) => void) | null = null;
-      let closed = false;
-
-      let pending: SearchResult[] = [];
-      let flushTimer: ReturnType<typeof setTimeout> | null = null;
-
-      const enqueue = (chunk: SSEChunk) => {
-        if (closed) return;
-        const item: Item = { value: chunk, done: false };
-        if (waiting) {
-          const w = waiting;
-          waiting = null;
-          w(item);
-        } else queue.push(item);
-      };
-
-      const flushPending = () => {
-        flushTimer = null;
-        if (pending.length === 0) return;
-        enqueue({ type: 'source_result', results: pending });
-        pending = [];
-      };
-
-      const close = (completedSources?: number) => {
-        if (closed) return;
-        // 同步 flush 剩余缓冲
-        if (flushTimer !== null) {
-          clearTimeout(flushTimer);
-          flushTimer = null;
-        }
-        if (pending.length > 0) {
-          enqueue({ type: 'source_result', results: pending });
-          pending = [];
-        }
-        if (completedSources !== undefined) {
-          enqueue({ type: 'complete', completedSources });
-        }
-        closed = true;
-        const done: Item = { value: undefined, done: true };
-        if (waiting) {
-          const w = waiting;
-          waiting = null;
-          w(done);
-        } else queue.push(done);
-      };
-
-      const es = new EventSource(url);
-
-      es.onmessage = (event) => {
-        if (!event.data || closed) return;
-        try {
-          const payload = JSON.parse(event.data);
-          switch (payload.type) {
-            case 'start':
-              enqueue({
-                type: 'start',
-                totalSources: payload.totalSources || 0,
-              });
-              break;
-            case 'source_result':
-              // 进度立即更新
-              enqueue({ type: 'source_progress' });
-              // 数据缓冲 80ms 批量
-              if (
-                Array.isArray(payload.results) &&
-                payload.results.length > 0
-              ) {
-                pending.push(...(payload.results as SearchResult[]));
-                if (flushTimer === null) {
-                  flushTimer = setTimeout(flushPending, 80);
-                }
-              }
-              break;
-            case 'source_error':
-              enqueue({ type: 'source_error' });
-              break;
-            case 'complete':
-              try {
-                es.close();
-              } catch (e) {
-                //                 // console.log('Search parse error:', e);
-              }
-              close(payload.completedSources ?? 0);
-              break;
-          }
-        } catch (e) {
-          //           // console.log('Search parse error:', e);
-        }
-      };
-
-      es.onerror = () => {
-        try {
-          es.close();
-        } catch (e) {
-          //           // console.log('Search parse error:', e);
-        }
-        close();
-      };
-
-      signal?.addEventListener('abort', () => {
-        try {
-          es.close();
-        } catch (e) {
-          //           // console.log('Search parse error:', e);
-        }
-        close();
-      });
-
-      return {
-        next(): Promise<IteratorResult<SSEChunk>> {
-          if (queue.length > 0) return Promise.resolve(queue.shift()!);
-          if (closed) return Promise.resolve({ value: undefined, done: true });
-          return new Promise((resolve) => {
-            waiting = resolve;
-          });
-        },
-      };
-    },
-  };
-}
-
-function pickGroupPoster(group: SearchResult[]): string {
-  return resolvePosterUrl(...group.map((item) => item.poster));
-}
-
-import stcasc from 'switch-chinese';
 
 import AcgSearch from '@/components/AcgSearch';
 import ImageViewer from '@/components/ImageViewer';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
 import PageLayout from '@/components/PageLayout';
-import SearchResultFilter, {
-  SearchFilterCategory,
-} from '@/components/SearchResultFilter';
+import SearchResultFilter from '@/components/SearchResultFilter';
 import SearchSuggestions from '@/components/SearchSuggestions';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
+import { useSite } from '@/components/SiteProvider';
 import TMDBFilterPanel, { TMDBFilterState } from '@/components/TMDBFilterPanel';
 import {
   GlassPanel,
@@ -214,10 +31,12 @@ import {
   PillButton,
   PillGroup,
 } from '@/components/ui-surface';
-import VideoCard, { VideoCardHandle } from '@/components/VideoCard';
+import VideoCard from '@/components/VideoCard';
 import VirtualGrid from '@/components/VirtualGrid';
 
-const chineseConverter = stcasc();
+import { useSearchFilters } from './hooks/useSearchFilters';
+import { useSearchHistory } from './hooks/useSearchHistory';
+import { useSearchResults } from './hooks/useSearchResults';
 
 function SearchPageClient() {
   // 根据 type_name 推断内容类型的辅助函数
@@ -439,9 +258,34 @@ function SearchPageClient() {
     );
   };
 
-  // 搜索历史
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  // 返回顶部按钮显示状态
+  const {
+    searchHistory,
+    addSearchHistory,
+    clearSearchHistory,
+    deleteSearchHistory,
+  } = useSearchHistory();
+
+  const {
+    exactSearch,
+    setExactSearch,
+    useVirtualization,
+    toggleVirtualization,
+    viewMode,
+    setViewMode,
+    resultDisplayMode,
+    setResultDisplayMode,
+    filterAll,
+    setFilterAll,
+    filterAgg,
+    setFilterAgg,
+    expandedSourceTags,
+    setExpandedSourceTags,
+    previewImage,
+    setPreviewImage,
+    compareYear,
+    titleContainsQuery,
+  } = useSearchFilters();
+
   const [showBackToTop, setShowBackToTop] = useState(false);
   const { adSettings } = useSite();
 
@@ -453,14 +297,10 @@ function SearchPageClient() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [useFluidSearch, setUseFluidSearch] = useState(true);
-  // 虚拟化开关状态
-  const [useVirtualization, setUseVirtualization] = useState(true);
 
   const [searchPrefsLoaded, setSearchPrefsLoaded] = useState(false);
 
   const hasSearchSidebarAd = isAdSettingRenderable(adSettings?.search_sidebar);
-  // 精确搜索开关
-  const [exactSearch, setExactSearch] = useState(true);
 
   // 网盘搜索相关状态 - 从 URL 参数初始化
   const [searchType, setSearchType] = useState<
@@ -527,492 +367,39 @@ function SearchPageClient() {
 
   // TMDB筛选面板显示状态
   const [tmdbFilterVisible, setTmdbFilterVisible] = useState(false);
-  // 聚合卡片 refs 与聚合统计缓存
-  const groupRefs = useRef<Map<string, React.RefObject<VideoCardHandle>>>(
-    new Map(),
-  );
-  const groupStatsRef = useRef<
-    Map<
-      string,
-      { douban_id?: number; episodes?: number; source_names: string[] }
-    >
-  >(new Map());
 
-  const getGroupRef = (key: string) => {
-    let ref = groupRefs.current.get(key);
-    if (!ref) {
-      ref = React.createRef<VideoCardHandle>();
-      groupRefs.current.set(key, ref);
-    }
-    return ref;
-  };
+  const trimmedQuery = (searchParams.get('q') || '').trim();
 
-  const computeGroupStats = (group: SearchResult[]) => {
-    const episodes = (() => {
-      const countMap = new Map<number, number>();
-      group.forEach((g) => {
-        const len = g.episodes?.length || 0;
-        if (len > 0) countMap.set(len, (countMap.get(len) || 0) + 1);
-      });
-      let max = 0;
-      let res = 0;
-      countMap.forEach((v, k) => {
-        if (v > max) {
-          max = v;
-          res = k;
-        }
-      });
-      return res;
-    })();
-    const source_names = Array.from(
-      new Set(group.map((g) => g.source_name).filter(Boolean)),
-    ) as string[];
-
-    const douban_id = (() => {
-      const countMap = new Map<number, number>();
-      group.forEach((g) => {
-        if (g.douban_id && g.douban_id > 0) {
-          countMap.set(g.douban_id, (countMap.get(g.douban_id) || 0) + 1);
-        }
-      });
-      let max = 0;
-      let res: number | undefined;
-      countMap.forEach((v, k) => {
-        if (v > max) {
-          max = v;
-          res = k;
-        }
-      });
-      return res;
-    })();
-
-    return { episodes, source_names, douban_id };
-  };
-  // 过滤器：非聚合与聚合
-  const [filterAll, setFilterAll] = useState<{
-    source: string;
-    title: string;
-    year: string;
-    yearOrder: 'none' | 'asc' | 'desc';
-  }>({
-    source: 'all',
-    title: 'all',
-    year: 'all',
-    yearOrder: 'none',
+  const {
+    searchResults,
+    totalSources,
+    completedSources,
+    isLoading,
+    traditionalSearchError,
+    aggregatedResults,
+    computeGroupStats,
+    pickGroupPoster,
+    groupRefs,
+    groupStatsRef,
+    getGroupRef,
+    filterOptions,
+    filteredAllResults,
+    filteredAggResults,
+  } = useSearchResults({
+    trimmedQuery,
+    searchQuery,
+    filterAll,
+    filterAgg,
+    exactSearch,
+    useFluidSearch,
+    currentQuery: currentQueryRef.current,
+    titleContainsQuery,
+    compareYear,
   });
-  const [filterAgg, setFilterAgg] = useState<{
-    source: string;
-    title: string;
-    year: string;
-    yearOrder: 'none' | 'asc' | 'desc';
-  }>({
-    source: 'all',
-    title: 'all',
-    year: 'all',
-    yearOrder: 'none',
-  });
-
-  const [viewMode, setViewMode] = useState<'agg' | 'all'>('agg');
-  const [resultDisplayMode, setResultDisplayMode] = useState<'card' | 'list'>(
-    'card',
-  );
-  const [expandedSourceTags, setExpandedSourceTags] = useState<
-    Record<string, boolean>
-  >({});
-  const [previewImage, setPreviewImage] = useState<{
-    url: string;
-    alt: string;
-  } | null>(null);
-
-  // Load saved search preferences from localStorage after mount
-  useEffect(() => {
-    try {
-      const savedVirtualization = localStorage.getItem('useVirtualization');
-      if (savedVirtualization !== null) {
-        setUseVirtualization(JSON.parse(savedVirtualization));
-      }
-      const savedAggregate = localStorage.getItem('defaultAggregateSearch');
-      if (savedAggregate !== null) {
-        setViewMode(JSON.parse(savedAggregate) ? 'agg' : 'all');
-      }
-      const savedDisplayMode = localStorage.getItem('searchResultDisplayMode');
-      if (savedDisplayMode === 'card' || savedDisplayMode === 'list') {
-        setResultDisplayMode(savedDisplayMode);
-      }
-    } catch {}
-  }, []);
-
-  // 保存虚拟化设置
-  const toggleVirtualization = () => {
-    const newValue = !useVirtualization;
-    setUseVirtualization(newValue);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('useVirtualization', JSON.stringify(newValue));
-    }
-  };
-
-  // 简化的年份排序：unknown/空值始终在最后
-  const compareYear = (
-    aYear: string,
-    bYear: string,
-    order: 'none' | 'asc' | 'desc',
-  ) => {
-    // 如果是无排序状态，返回0（保持原顺序）
-    if (order === 'none') return 0;
-
-    // 处理空值和unknown
-    const aIsEmpty = !aYear || aYear === 'unknown';
-    const bIsEmpty = !bYear || bYear === 'unknown';
-
-    if (aIsEmpty && bIsEmpty) return 0;
-    if (aIsEmpty) return 1; // a 在后
-    if (bIsEmpty) return -1; // b 在后
-
-    // 都是有效年份，按数字比较
-    const aNum = parseInt(aYear, 10);
-    const bNum = parseInt(bYear, 10);
-
-    return order === 'asc' ? aNum - bNum : bNum - aNum;
-  };
-
-  // 辅助函数：检查标题是否包含搜索词（用于精确搜索）
-  const titleContainsQuery = (title: string, query: string): boolean => {
-    if (!exactSearch) return true;
-    if (!query || !title) return true;
-
-    const normalizedTitle = title.toLowerCase();
-    const normalizedQuery = query.toLowerCase();
-
-    if (normalizedTitle.includes(normalizedQuery)) return true;
-
-    // 繁简互转匹配：仅当输入为繁体时，转换为简体再匹配
-    if (chineseConverter.detect(normalizedQuery) === 1) {
-      const simplifiedQuery = chineseConverter.simplized(normalizedQuery);
-      return normalizedTitle.includes(simplifiedQuery);
-    }
-
-    return false;
-  };
-
-  // ─── TanStack Query 驱动搜索 ────────────────────────────────────────────────
-  const trimmedQuery = useMemo(
-    () => (searchParams.get('q') || '').trim(),
-    [searchParams],
-  );
-
-  // 流式搜索
-  const streamedSearchQuery = useQuery<StreamedState>({
-    queryKey: ['search', 'streamed', trimmedQuery],
-    queryFn: streamedQuery<SSEChunk, StreamedState>({
-      streamFn: (ctx) =>
-        eventSourceIterable(
-          `/api/search/ws?q=${encodeURIComponent(trimmedQuery)}`,
-          ctx.signal,
-        ),
-      refetchMode: 'reset',
-      reducer: (acc: StreamedState, chunk: SSEChunk): StreamedState => {
-        switch (chunk.type) {
-          case 'start':
-            return {
-              results: [],
-              totalSources: chunk.totalSources,
-              completedSources: 0,
-            };
-          case 'source_result':
-            return { ...acc, results: acc.results.concat(chunk.results) };
-          case 'source_progress':
-            return { ...acc, completedSources: acc.completedSources + 1 };
-          case 'source_error':
-            return { ...acc, completedSources: acc.completedSources + 1 };
-          case 'complete':
-            return {
-              ...acc,
-              completedSources: chunk.completedSources || acc.totalSources,
-            };
-        }
-      },
-      initialValue: STREAMED_INITIAL,
-    }),
-    enabled: !!trimmedQuery && useFluidSearch,
-    staleTime: 0,
-    gcTime: 0,
-  });
-
-  // 传统搜索
-  const traditionalSearchQuery = useQuery<SearchResult[]>({
-    queryKey: ['search', 'traditional', trimmedQuery],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(trimmedQuery)}`,
-      );
-      const data = await res.json();
-      return Array.isArray(data.results)
-        ? (data.results as SearchResult[])
-        : [];
-    },
-    enabled: !!trimmedQuery && !useFluidSearch,
-    staleTime: 0,
-    gcTime: 0,
-  });
-
-  // 派生统一搜索状态
-  const searchResults: SearchResult[] = useFluidSearch
-    ? (streamedSearchQuery.data?.results ?? [])
-    : (traditionalSearchQuery.data ?? []);
-  const totalSources = useFluidSearch
-    ? (streamedSearchQuery.data?.totalSources ?? 0)
-    : 1;
-  const completedSources = useFluidSearch
-    ? (streamedSearchQuery.data?.completedSources ?? 0)
-    : traditionalSearchQuery.isSuccess
-      ? 1
-      : 0;
-  const isLoading = useFluidSearch
-    ? streamedSearchQuery.isFetching
-    : traditionalSearchQuery.isFetching;
-  const traditionalSearchError =
-    traditionalSearchQuery.error instanceof Error
-      ? traditionalSearchQuery.error.message
-      : null;
-
-  // 聚合后的结果（按标题和年份分组）
-  const aggregatedResults = useMemo(() => {
-    // 首先应用精确搜索过滤
-    const filteredResults = exactSearch
-      ? searchResults.filter((item) =>
-          titleContainsQuery(item.title, currentQueryRef.current),
-        )
-      : searchResults;
-
-    const map = new Map<string, SearchResult[]>();
-    const keyOrder: string[] = []; // 记录键出现的顺序
-
-    filteredResults.forEach((item) => {
-      // 使用 title + year + type 作为键，year 必然存在，但依然兜底 'unknown'
-      const key = `${item.title.replaceAll(' ', '')}-${
-        item.year || 'unknown'
-      }-${item.episodes.length === 1 ? 'movie' : 'tv'}`;
-      const arr = map.get(key) || [];
-
-      // 如果是新的键，记录其顺序
-      if (arr.length === 0) {
-        keyOrder.push(key);
-      }
-
-      arr.push(item);
-      map.set(key, arr);
-    });
-
-    // 按出现顺序返回聚合结果
-    return keyOrder.map(
-      (key) => [key, map.get(key)!] as [string, SearchResult[]],
-    );
-  }, [searchResults, exactSearch]);
-
-  // 当聚合结果变化时，如果某个聚合已存在，则调用其卡片 ref 的 set 方法增量更新
-  useEffect(() => {
-    aggregatedResults.forEach(([mapKey, group]) => {
-      const stats = computeGroupStats(group);
-      const prev = groupStatsRef.current.get(mapKey);
-      if (!prev) {
-        // 第一次出现，记录初始值，不调用 ref（由初始 props 渲染）
-        groupStatsRef.current.set(mapKey, stats);
-        return;
-      }
-      // 对比变化并调用对应的 set 方法
-      const ref = groupRefs.current.get(mapKey);
-      if (ref && ref.current) {
-        if (prev.episodes !== stats.episodes) {
-          ref.current.setEpisodes(stats.episodes);
-        }
-        const prevNames = (prev.source_names || []).join('|');
-        const nextNames = (stats.source_names || []).join('|');
-        if (prevNames !== nextNames) {
-          ref.current.setSourceNames(stats.source_names);
-        }
-        if (prev.douban_id !== stats.douban_id) {
-          ref.current.setDoubanId(stats.douban_id);
-        }
-        groupStatsRef.current.set(mapKey, stats);
-      }
-    });
-  }, [aggregatedResults]);
-
-  // 构建筛选选项
-  const filterOptions = useMemo(() => {
-    const sourcesSet = new Map<string, string>();
-    const titlesSet = new Set<string>();
-    const yearsSet = new Set<string>();
-
-    searchResults.forEach((item) => {
-      if (item.source && item.source_name) {
-        sourcesSet.set(item.source, item.source_name);
-      }
-      if (item.title) titlesSet.add(item.title);
-      if (item.year) yearsSet.add(item.year);
-    });
-
-    const sourceOptions: { label: string; value: string }[] = [
-      { label: '全部来源', value: 'all' },
-      ...Array.from(sourcesSet.entries())
-        .sort((a, b) => a[1].localeCompare(b[1]))
-        .map(([value, label]) => ({ label, value })),
-    ];
-
-    const titleOptions: { label: string; value: string }[] = [
-      { label: '全部标题', value: 'all' },
-      ...Array.from(titlesSet.values())
-        .sort((a, b) => a.localeCompare(b))
-        .map((t) => ({ label: t, value: t })),
-    ];
-
-    // 年份: 将 unknown 放末尾
-    const years = Array.from(yearsSet.values());
-    const knownYears = years
-      .filter((y) => y !== 'unknown')
-      .sort((a, b) => parseInt(b) - parseInt(a));
-    const hasUnknown = years.includes('unknown');
-    const yearOptions: { label: string; value: string }[] = [
-      { label: '全部年份', value: 'all' },
-      ...knownYears.map((y) => ({ label: y, value: y })),
-      ...(hasUnknown ? [{ label: '未知', value: 'unknown' }] : []),
-    ];
-
-    const categoriesAll: SearchFilterCategory[] = [
-      { key: 'source', label: '来源', options: sourceOptions },
-      { key: 'title', label: '标题', options: titleOptions },
-      { key: 'year', label: '年份', options: yearOptions },
-    ];
-
-    const categoriesAgg: SearchFilterCategory[] = [
-      { key: 'source', label: '来源', options: sourceOptions },
-      { key: 'title', label: '标题', options: titleOptions },
-      { key: 'year', label: '年份', options: yearOptions },
-    ];
-
-    return { categoriesAll, categoriesAgg };
-  }, [searchResults]);
-
-  // 非聚合：应用筛选与排序
-  const filteredAllResults = useMemo(() => {
-    const { source, title, year, yearOrder } = filterAll;
-
-    // 首先应用精确搜索过滤
-    const exactSearchFiltered = exactSearch
-      ? searchResults.filter((item) =>
-          titleContainsQuery(item.title, currentQueryRef.current),
-        )
-      : searchResults;
-
-    const filtered = exactSearchFiltered.filter((item) => {
-      if (source !== 'all' && item.source !== source) return false;
-      if (title !== 'all' && item.title !== title) return false;
-      if (year !== 'all' && item.year !== year) return false;
-      return true;
-    });
-
-    // 如果是无排序状态，按精确匹配优先+年份倒序排列（保留来源到达顺序的相对位置）
-    if (yearOrder === 'none') {
-      const q = currentQueryRef.current.trim();
-      return filtered.slice().sort((a, b) => {
-        const aExact = (a.title || '').trim() === q;
-        const bExact = (b.title || '').trim() === q;
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
-        const aNum = Number.parseInt(a.year as any, 10);
-        const bNum = Number.parseInt(b.year as any, 10);
-        const aValid = !Number.isNaN(aNum);
-        const bValid = !Number.isNaN(bNum);
-        if (aValid && !bValid) return -1;
-        if (!aValid && bValid) return 1;
-        if (aValid && bValid) return bNum - aNum;
-        return 0;
-      });
-    }
-
-    // 简化排序：1. 年份排序，2. 年份相同时精确匹配在前，3. 标题排序
-    return filtered.sort((a, b) => {
-      // 首先按年份排序
-      const yearComp = compareYear(a.year, b.year, yearOrder);
-      if (yearComp !== 0) return yearComp;
-
-      // 年份相同时，精确匹配在前
-      const aExactMatch = a.title === searchQuery.trim();
-      const bExactMatch = b.title === searchQuery.trim();
-      if (aExactMatch && !bExactMatch) return -1;
-      if (!aExactMatch && bExactMatch) return 1;
-
-      // 最后按标题排序，正序时字母序，倒序时反字母序
-      return yearOrder === 'asc'
-        ? a.title.localeCompare(b.title)
-        : b.title.localeCompare(a.title);
-    });
-  }, [searchResults, filterAll, searchQuery, exactSearch]);
-
-  // 聚合：应用筛选与排序
-  const filteredAggResults = useMemo(() => {
-    const { source, title, year, yearOrder } = filterAgg as any;
-    const filtered = aggregatedResults.filter(([_, group]) => {
-      const gTitle = group[0]?.title ?? '';
-      const gYear = group[0]?.year ?? 'unknown';
-      const hasSource =
-        source === 'all' ? true : group.some((item) => item.source === source);
-      if (!hasSource) return false;
-      if (title !== 'all' && gTitle !== title) return false;
-      if (year !== 'all' && gYear !== year) return false;
-      return true;
-    });
-
-    // 如果是无排序状态，按精确匹配优先+年份倒序排列
-    if (yearOrder === 'none') {
-      const q = currentQueryRef.current.trim();
-      return filtered.slice().sort((a, b) => {
-        const aTitle = (a[1][0]?.title || '').trim();
-        const bTitle = (b[1][0]?.title || '').trim();
-        const aExact = aTitle === q;
-        const bExact = bTitle === q;
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
-        const aNum = Number.parseInt(a[1][0]?.year as any, 10);
-        const bNum = Number.parseInt(b[1][0]?.year as any, 10);
-        const aValid = !Number.isNaN(aNum);
-        const bValid = !Number.isNaN(bNum);
-        if (aValid && !bValid) return -1;
-        if (!aValid && bValid) return 1;
-        if (aValid && bValid) return bNum - aNum;
-        return 0;
-      });
-    }
-
-    // 简化排序：1. 年份排序，2. 年份相同时精确匹配在前，3. 标题排序
-    return filtered.sort((a, b) => {
-      // 首先按年份排序
-      const aYear = a[1][0].year;
-      const bYear = b[1][0].year;
-      const yearComp = compareYear(aYear, bYear, yearOrder);
-      if (yearComp !== 0) return yearComp;
-
-      // 年份相同时，精确匹配在前
-      const aExactMatch = a[1][0].title === searchQuery.trim();
-      const bExactMatch = b[1][0].title === searchQuery.trim();
-      if (aExactMatch && !bExactMatch) return -1;
-      if (!aExactMatch && bExactMatch) return 1;
-
-      // 最后按标题排序，正序时字母序，倒序时反字母序
-      const aTitle = a[1][0].title;
-      const bTitle = b[1][0].title;
-      return yearOrder === 'asc'
-        ? aTitle.localeCompare(bTitle)
-        : bTitle.localeCompare(aTitle);
-    });
-  }, [aggregatedResults, filterAgg, searchQuery]);
 
   useEffect(() => {
     // 无搜索参数时聚焦搜索框
     !searchParams.get('q') && document.getElementById('searchInput')?.focus();
-
-    // 初始加载搜索历史
-    getSearchHistory().then(setSearchHistory);
 
     // 检查URL参数并处理初始搜索
     const initialQuery = searchParams.get('q');
@@ -1044,14 +431,6 @@ function SearchPageClient() {
       setSearchPrefsLoaded(true);
     }
 
-    // 监听搜索历史更新事件
-    const unsubscribe = subscribeToDataUpdates(
-      'searchHistoryUpdated',
-      (newHistory: string[]) => {
-        setSearchHistory(newHistory);
-      },
-    );
-
     const handleScroll = () => {
       const scrollTop =
         window.scrollY || document.documentElement.scrollTop || 0;
@@ -1062,7 +441,6 @@ function SearchPageClient() {
     handleScroll();
 
     return () => {
-      unsubscribe();
       window.removeEventListener('scroll', handleScroll);
     };
   }, [searchPrefsLoaded]);

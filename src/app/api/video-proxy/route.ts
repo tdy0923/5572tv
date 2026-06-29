@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import { createReadStream } from 'fs';
 import { NextResponse } from 'next/server';
 
-import { isUrlSafe } from '@/lib/ssrf-protection';
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT, getRandomUserAgent } from '@/lib/user-agent';
 import {
   cacheTrailerUrl,
@@ -38,8 +38,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Missing video URL' }, { status: 400 });
   }
 
-  // URL 格式验证 + SSRF protection
-  if (!isUrlSafe(videoUrl)) {
+  // URL 格式验证 + SSRF protection (with DNS rebinding defense)
+  if (!(await isUrlSafeDeep(videoUrl))) {
     return NextResponse.json(
       { error: '禁止访问内部地址或无效URL' },
       { status: 403 },
@@ -346,8 +346,8 @@ export async function HEAD(request: Request) {
     return new NextResponse(null, { status: 400 });
   }
 
-  // SSRF protection: block internal/private IPs
-  if (!isUrlSafe(videoUrl)) {
+  // SSRF protection: block internal/private IPs (with DNS rebinding defense)
+  if (!(await isUrlSafeDeep(videoUrl))) {
     return new NextResponse(null, { status: 403 });
   }
 

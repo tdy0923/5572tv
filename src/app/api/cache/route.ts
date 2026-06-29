@@ -4,14 +4,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { db } from '@/lib/db';
 
-async function requireAuth(request: NextRequest): Promise<boolean> {
+async function requireOwner(request: NextRequest): Promise<boolean> {
   const auth = await getAuthInfoFromCookie(request);
-  // 允许所有已登录用户访问cache API
-  return !!auth;
+  // 仅允许 owner 或 admin 角色操作缓存 API
+  return !!auth && (auth.role === 'owner' || auth.role === 'admin');
 }
 
 export async function GET(request: NextRequest) {
-  if (!(await requireAuth(request))) {
+  if (!(await requireOwner(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await requireAuth(request))) {
+  if (!(await requireOwner(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!(await requireAuth(request))) {
+  if (!(await requireOwner(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {

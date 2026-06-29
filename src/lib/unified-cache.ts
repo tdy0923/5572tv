@@ -22,10 +22,31 @@ class UnifiedCache {
   private memoryCache = new Map<string, CacheEntry<any>>();
   private maxMemoryEntries = 100; // 最大内存缓存条目数
   private cleanupInterval: NodeJS.Timeout | null = null;
+  private initialized = false;
 
   constructor() {
-    // 启动定期清理（每5分钟）
+    // 懒启动：推迟到首次操作时再初始化
+  }
+
+  private ensureInitialized(): void {
+    if (this.initialized) return;
+    this.initialized = true;
     this.startAutoCleanup();
+
+    // HMR 清理：模块热替换时清理定时器
+    if (typeof module !== 'undefined' && 'hot' in module) {
+      const m = module as { hot?: { dispose: (cb: () => void) => void } };
+      m.hot?.dispose(() => this.destroy());
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.memoryCache.clear();
+    this.initialized = false;
   }
 
   /**
@@ -34,6 +55,7 @@ class UnifiedCache {
    * @returns 缓存数据或 null
    */
   get<T>(key: string): T | null {
+    this.ensureInitialized();
     const now = Date.now();
 
     // 1. 优先从内存缓存读取 (~0ms)
@@ -79,6 +101,7 @@ class UnifiedCache {
    * @param ttl 过期时间（秒），默认 3600 秒 (1小时)
    */
   set<T>(key: string, data: T, ttl = 3600): void {
+    this.ensureInitialized();
     const now = Date.now();
     const entry: CacheEntry<T> = {
       data,

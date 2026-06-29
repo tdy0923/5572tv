@@ -136,19 +136,8 @@ function getClientIP(request: NextRequest): string {
     return realIP;
   }
 
-  // x-forwarded-for仅在反代层已清洗时使用（避免伪造）
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const firstIP = forwardedFor.split(',')[0].trim();
-    // 拒绝私有IP作为客户端IP（防止伪造绕过）
-    if (
-      !/^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254\.)/.test(
-        firstIP,
-      )
-    ) {
-      return firstIP;
-    }
-  }
+  // 注意：不使用 x-forwarded-for，因为客户端可伪造该头
+  // 如需在非 Cloudflare 环境下获取真实 IP，请在反代层设置 x-real-ip
 
   return 'unknown';
 }

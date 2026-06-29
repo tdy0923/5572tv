@@ -2,6 +2,8 @@
  * SSRF Protection utility — blocks requests to internal/private IPs
  */
 
+import dns from 'dns/promises';
+
 function isPrivateIP(hostname: string): boolean {
   // IPv4 private ranges
   if (
@@ -63,5 +65,42 @@ export function getSsrfBlockReason(targetUrl: string): string | null {
     return null;
   } catch {
     return 'Invalid URL';
+  }
+}
+
+/**
+ * Enhanced SSRF check with DNS resolution.
+ * Performs both hostname string matching AND DNS resolution to defend against DNS rebinding.
+ * Returns true if the URL is safe, false if it should be blocked.
+ */
+export async function isUrlSafeDeep(targetUrl: string): Promise<boolean> {
+  // First pass: fast string-based check
+  if (!isUrlSafe(targetUrl)) return false;
+
+  // Second pass: DNS resolution check
+  try {
+    const parsed = new URL(targetUrl);
+    const hostname = parsed.hostname;
+
+    // Skip DNS check for bare IP addresses (already checked by isUrlSafe)
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) return true;
+    if (/^\[?[0-9a-f:]+\]?$/i.test(hostname)) return true;
+
+    // Resolve IPv4 addresses
+    const addresses = await dns.resolve4(hostname).catch(() => []);
+    for (const ip of addresses) {
+      if (isPrivateIP(ip)) return false;
+    }
+
+    // Resolve IPv6 addresses
+    const v6addresses = await dns.resolve6(hostname).catch(() => []);
+    for (const ip of v6addresses) {
+      if (isPrivateIP(ip)) return false;
+    }
+
+    return true;
+  } catch {
+    // DNS resolution failure — allow through (conservative: don't block on DNS failure)
+    return true;
   }
 }

@@ -76,9 +76,21 @@ export default function ThemeEditor({
     setPreviewCSS('');
   };
 
+  // CSS 注入防护：移除危险内容
+  const sanitizeCSS = (css: string): string => {
+    return css
+      .replace(/javascript\s*:/gi, '/* blocked */')
+      .replace(/expression\s*\(/gi, '/* blocked */')
+      .replace(/url\s*\(\s*['"]?javascript/gi, '/* blocked */')
+      .replace(/@import\s+url\s*\(/gi, '/* blocked */')
+      .replace(/behavior\s*:/gi, '/* blocked */')
+      .replace(/-moz-binding\s*:/gi, '/* blocked */')
+      .replace(/url\s*\(\s*['"]?data\s*:/gi, '/* blocked */');
+  };
+
   return (
     <div className='space-y-4'>
-      <style dangerouslySetInnerHTML={{ __html: previewCSS }} />
+      <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(previewCSS) }} />
 
       <div className='flex items-center justify-between'>
         <div>

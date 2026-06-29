@@ -5,7 +5,7 @@ const nextConfig = {
   // 本地开发时（NODE_ENV !== 'production'）不使用 standalone
   ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
 
-  reactStrictMode: false,
+  reactStrictMode: true,
 
   // Puppeteer/Chromium 相关包不进行 bundle（用于 Vercel serverless）
   serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core', 'redis'],

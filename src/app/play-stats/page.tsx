@@ -1,29 +1,19 @@
-/* eslint-disable no-console */
 /* eslint-disable unused-imports/no-unused-vars */
 
 'use client';
 
 import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 
-import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import { PlayRecord } from '@/lib/types';
-import {
-  forceClearWatchingUpdatesCache,
-  markUpdatesAsViewed,
-} from '@/lib/watching-updates';
-import {
-  useAdminStatsQuery,
-  useInvalidatePlayStats,
-  usePlayStatsWatchingUpdatesQuery,
-  useUpcomingReleasesQuery,
-  useUserStatsQuery,
-} from '@/hooks/usePlayStatsQueries';
 
 import PageLayout from '@/components/PageLayout';
 import VideoCard from '@/components/VideoCard';
+
+import { useContinueWatching } from './hooks/useContinueWatching';
+import { usePlayStatsData } from './hooks/usePlayStatsData';
+import { usePlayStatsFilters } from './hooks/usePlayStatsFilters';
 
 // 用户等级系统
 const USER_LEVELS = [
@@ -141,364 +131,42 @@ function formatLoginDisplay(loginCount: number) {
 }
 
 const PlayStatsPage: React.FC = () => {
-  const router = useRouter();
-  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
-  const [authInfo, setAuthInfo] = useState<{
-    username?: string;
-    role?: string;
-  } | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  const [showWatchingUpdates, setShowWatchingUpdates] = useState(false);
-  const [activeTab, setActiveTab] = useState<'admin' | 'personal'>('admin'); // 新增Tab状态
-
-  // 客户端初始化认证信息（避免 hydration mismatch）
-  useEffect(() => {
-    const auth = getAuthInfoFromBrowserCookie();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAuthInfo(auth);
-
-    setIsAdmin(auth?.role === 'admin' || auth?.role === 'owner');
-  }, []);
-
-  // 🚀 TanStack Query - 管理员统计数据
   const {
-    data: statsData = null,
-    error: adminError,
-    isLoading: adminLoading,
-  } = useAdminStatsQuery(!!authInfo && isAdmin);
+    authInfo,
+    isAdmin,
+    statsData,
+    userStats,
+    upcomingReleases,
+    upcomingInitialized,
+    upcomingLoading,
+    loading,
+    error,
+    storageType,
+    router,
+    formatTime,
+    formatDateTime,
+    formatDate,
+    handleRefreshClick,
+    getProgressPercentage,
+    handlePlayRecord,
+  } = usePlayStatsData();
 
-  // 🚀 TanStack Query - 用户个人统计数据
   const {
-    data: userStats = null,
-    error: userError,
-    isLoading: userLoading,
-  } = useUserStatsQuery(!!authInfo);
+    activeTab,
+    setActiveTab,
+    expandedUsers,
+    toggleUserExpanded,
+    showBackToTop,
+    scrollToTop,
+  } = usePlayStatsFilters();
 
-  // 🚀 TanStack Query - 追番更新
-  const { data: watchingUpdates = null } =
-    usePlayStatsWatchingUpdatesQuery(!!authInfo);
-
-  // 🚀 TanStack Query - 即将上映
-  const { data: upcomingReleases = [], isLoading: upcomingLoading } =
-    useUpcomingReleasesQuery(!!authInfo);
-
-  // 🚀 TanStack Query - 刷新所有数据
-  const invalidatePlayStats = useInvalidatePlayStats();
-
-  // 兼容旧代码的loading和error状态
-  const loading = isAdmin ? adminLoading || userLoading : userLoading;
-  const error = adminError?.message || userError?.message || null;
-  const upcomingInitialized = !upcomingLoading;
-
-  // 检查用户权限
-  useEffect(() => {
-    if (!authInfo || !authInfo.username) {
-      router.push('/login');
-    }
-  }, [authInfo, router]);
-
-  // 时间格式化函数
-  const formatTime = (seconds: number): string => {
-    if (seconds === 0) return '00:00';
-
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = Math.round(seconds % 60);
-
-    if (hours === 0) {
-      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
-        .toString()
-        .padStart(2, '0')}`;
-    } else {
-      return `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
-  };
-
-  const formatDateTime = (timestamp: number): string => {
-    if (!timestamp) return '未知时间';
-
-    const date = new Date(timestamp);
-    if (isNaN(date.getTime())) return '时间格式错误';
-
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
-  };
-
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('zh-CN', {
-      month: '2-digit',
-      day: '2-digit',
-    });
-  };
-
-  // 🚀 数据获取由 TanStack Query 自动管理
-
-  // 清理过期缓存
-  const cleanExpiredCache = useCallback(() => {
-    const CACHE_DURATION = 2 * 60 * 60 * 1000; // 2小时
-    const now = Date.now();
-
-    // 检查即将上映缓存
-    const cacheTimeKey = 'upcoming_releases_cache_time';
-    const cachedTime = localStorage.getItem(cacheTimeKey);
-
-    if (cachedTime) {
-      const age = now - parseInt(cachedTime);
-      if (age >= CACHE_DURATION) {
-        localStorage.removeItem('upcoming_releases_cache');
-        localStorage.removeItem(cacheTimeKey);
-        //         console.log('已清理过期的即将上映缓存');
-      }
-    }
-
-    // 清理其他可能过期的缓存项
-    const keysToCheck = [
-      '5572tv_watching_updates',
-      '5572tv_last_update_check',
-      'moontv_watching_updates',
-      'moontv_last_update_check',
-      'release_calendar_all_data',
-      'release_calendar_all_data_time',
-    ];
-
-    // 检查追番更新缓存（这个有不同的过期时间）
-    const watchingUpdateTime =
-      localStorage.getItem('5572tv_last_update_check') ||
-      localStorage.getItem('moontv_last_update_check');
-    if (watchingUpdateTime) {
-      const WATCHING_CACHE_DURATION = 30 * 60 * 1000; // 30分钟
-      const age = now - parseInt(watchingUpdateTime);
-      if (age >= WATCHING_CACHE_DURATION) {
-        localStorage.removeItem('5572tv_watching_updates');
-        localStorage.removeItem('5572tv_last_update_check');
-        localStorage.removeItem('moontv_watching_updates');
-        localStorage.removeItem('moontv_last_update_check');
-        //         console.log('已清理过期的追番更新缓存');
-      }
-    }
-
-    // 检查发布日历缓存
-    keysToCheck.forEach((key) => {
-      if (key.endsWith('_time')) {
-        const timeStr = localStorage.getItem(key);
-        if (timeStr) {
-          const age = now - parseInt(timeStr);
-          if (age >= CACHE_DURATION) {
-            const dataKey = key.replace('_time', '');
-            localStorage.removeItem(dataKey);
-            localStorage.removeItem(key);
-            //             console.log(`已清理过期缓存: ${dataKey}`);
-          }
-        }
-      }
-    });
-  }, []);
-
-  // 🚀 即将上映由 TanStack Query 自动管理
-
-  // 处理刷新按钮点击
-  const handleRefreshClick = async () => {
-    //     console.log('刷新按钮被点击');
-    try {
-      await invalidatePlayStats();
-      //       console.log('所有数据已刷新');
-    } catch (error) {
-      console.error('刷新数据失败:', error);
-    }
-  };
-
-  // 切换用户详情展开状态（仅管理员）
-  const toggleUserExpanded = (username: string) => {
-    setExpandedUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(username)) {
-        newSet.delete(username);
-      } else {
-        newSet.add(username);
-      }
-      return newSet;
-    });
-  };
-
-  // 获取进度百分比
-  const getProgressPercentage = (
-    playTime: number,
-    totalTime: number,
-  ): number => {
-    if (!totalTime || totalTime === 0) return 0;
-    return Math.min(Math.round((playTime / totalTime) * 100), 100);
-  };
-
-  // 跳转到播放页面
-  const handlePlayRecord = (record: PlayRecord) => {
-    const searchTitle = record.search_title || record.title;
-    const params = new URLSearchParams({
-      title: record.title,
-      year: record.year,
-      stitle: searchTitle,
-      stype: record.total_episodes > 1 ? 'tv' : 'movie',
-    });
-
-    requestAnimationFrame(() => {
-      router.push(`/play?${params.toString()}&_reload=${Date.now()}`);
-    });
-  };
-
-  // 检查是否支持播放统计
-  const storageType =
-    typeof window !== 'undefined' &&
-    (window as any).RUNTIME_CONFIG?.STORAGE_TYPE
-      ? (window as any).RUNTIME_CONFIG.STORAGE_TYPE
-      : 'localstorage';
-
-  // 🚀 数据获取由 TanStack Query 的 enabled 选项自动控制
-  // 当 authInfo 和 isAdmin 变化时，queries 自动重新执行
-
-  // 处理401重定向
-  useEffect(() => {
-    if (
-      adminError?.message === 'UNAUTHORIZED' ||
-      userError?.message === 'UNAUTHORIZED'
-    ) {
-      router.push('/login');
-    }
-  }, [adminError, userError, router]);
-
-  // 监听播放记录更新事件，刷新追番数据
-  useEffect(() => {
-    if (!authInfo) return;
-
-    let updateTimeout: ReturnType<typeof setTimeout> | null = null;
-    const handlePlayRecordsUpdate = () => {
-      //       console.log('播放记录更新，重新检查 watchingUpdates');
-
-      // 🔧 防抖：避免无限循环，1秒内只执行一次
-      if (updateTimeout) {
-        //         console.log('⏸️ 防抖：跳过本次更新请求');
-        return;
-      }
-
-      updateTimeout = setTimeout(() => {
-        updateTimeout = null;
-      }, 1000);
-
-      forceClearWatchingUpdatesCache();
-      invalidatePlayStats();
-    };
-
-    window.addEventListener('playRecordsUpdated', handlePlayRecordsUpdate);
-
-    return () => {
-      window.removeEventListener('playRecordsUpdated', handlePlayRecordsUpdate);
-      if (updateTimeout) {
-        clearTimeout(updateTimeout);
-      }
-    };
-  }, [authInfo, invalidatePlayStats]);
-
-  // 处理追番更新卡片点击
-  const handleWatchingUpdatesClick = () => {
-    //     console.log('点击追番卡片，watchingUpdates:', watchingUpdates);
-    //     console.log('updatedCount:', watchingUpdates?.updatedCount);
-    //     console.log(
-    //       'continueWatchingCount:',
-    //       watchingUpdates?.continueWatchingCount,
-    //     );
-
-    if (
-      watchingUpdates &&
-      ((watchingUpdates.updatedCount || 0) > 0 ||
-        (watchingUpdates.continueWatchingCount || 0) > 0)
-    ) {
-      //       console.log('条件满足，显示弹窗');
-      setShowWatchingUpdates(true);
-      //       console.log('setShowWatchingUpdates(true) 已调用');
-
-      // 强制刷新状态
-      setTimeout(() => {
-        setShowWatchingUpdates((prev) => {
-          //           console.log('强制状态更新，当前值:', prev);
-          return true;
-        });
-      }, 100);
-    } else {
-      //       console.log('条件不满足，不显示弹窗');
-    }
-  };
-
-  // 测试函数：强制显示弹窗
-  const forceShowPopup = () => {
-    //     console.log('强制显示弹窗');
-    setShowWatchingUpdates(true);
-  };
-
-  // 关闭追番更新详情
-  const handleCloseWatchingUpdates = () => {
-    setShowWatchingUpdates(false);
-    markUpdatesAsViewed();
-  };
-
-  // 格式化更新时间
-  const formatLastUpdate = (timestamp: number): string => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / (1000 * 60));
-
-    if (minutes < 1) return '刚刚更新';
-    if (minutes < 60) return `${minutes}分钟前`;
-
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}小时前`;
-
-    const days = Math.floor(hours / 24);
-    return `${days}天前`;
-  };
-
-  // 监听滚动位置，显示/隐藏回到顶部按钮
-  useEffect(() => {
-    // 获取滚动位置的函数
-    const getScrollTop = () => {
-      return document.body.scrollTop || document.documentElement.scrollTop || 0;
-    };
-
-    // 滚动事件处理
-    const handleScroll = () => {
-      const scrollTop = getScrollTop();
-      setShowBackToTop(scrollTop > 300);
-    };
-
-    // 监听 body 元素的滚动事件（参考搜索页面的实现方式）
-    document.body.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => {
-      document.body.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // 返回顶部功能
-  const scrollToTop = () => {
-    try {
-      // 根据搜索页面的调试结果，真正的滚动容器是 document.body
-      document.body.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    } catch (error) {
-      // 如果平滑滚动完全失败，使用立即滚动
-      document.body.scrollTop = 0;
-    }
-  };
+  const {
+    watchingUpdates,
+    showWatchingUpdates,
+    handleWatchingUpdatesClick,
+    handleCloseWatchingUpdates,
+    formatLastUpdate,
+  } = useContinueWatching(!!authInfo);
 
   // 未授权时显示加载
   if (!authInfo) {

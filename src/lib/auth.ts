@@ -3,7 +3,14 @@
 import { NextRequest } from 'next/server';
 
 function getPasswordSecret(): string {
-  return process.env.PASSWORD || '';
+  const pwd = process.env.PASSWORD;
+  if (!pwd) {
+    console.error(
+      '[CRITICAL] PASSWORD environment variable is not set! ' +
+        'Authentication will be disabled. Set a strong PASSWORD in production.',
+    );
+  }
+  return pwd || '';
 }
 
 // Verify HMAC signature to prevent cookie forgery

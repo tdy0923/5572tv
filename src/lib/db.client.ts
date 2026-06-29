@@ -537,70 +537,7 @@ class HybridCacheManager {
   // ---- 豆瓣数据缓存方法 ----
 
   // 注意：以下豆瓣缓存相关方法已废弃，豆瓣缓存已迁移到统一存储系统
-  // 这些方法保留是为了向后兼容，但不再使用
-
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  private isDoubanCacheValid<T>(
-    cache: CacheData<T>,
-    type: 'details' | 'lists',
-  ): boolean {
-    return false; // 始终返回false，强制使用新的缓存系统
-  }
-
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  getDoubanDetails(id: string): any | null {
-    return null; // 不再使用本地缓存，返回null强制使用新系统
-  }
-
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  setDoubanDetails(id: string, data: any): void {
-    // 不再使用本地缓存，空实现
-  }
-
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  getDoubanList(cacheKey: string): any | null {
-    return null; // 不再使用本地缓存，返回null强制使用新系统
-  }
-
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  setDoubanList(cacheKey: string, data: any): void {
-    // 不再使用本地缓存，空实现
-  }
-
-  /**
-   * 生成豆瓣列表缓存键
-   */
-  static generateDoubanListKey(
-    type: string,
-    tag: string,
-    pageStart: number,
-    pageSize: number,
-  ): string {
-    return `${type}:${tag}:${pageStart}:${pageSize}`;
-  }
-
-  /**
-   * 清除豆瓣缓存
-   */
-  /**
-   * @deprecated 豆瓣缓存已迁移到统一存储，请使用 douban.client.ts 中的方法
-   */
-  clearDoubanCache(): void {
-    // 不再使用本地缓存，空实现
-  }
+  // ── 已废弃的豆瓣缓存方法已删除，请使用 douban.client.ts ──
 }
 
 // 获取缓存管理器实例

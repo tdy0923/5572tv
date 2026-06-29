@@ -21,193 +21,64 @@ import { useCallback, useEffect, useState } from 'react';
 
 import PageLayout from '@/components/PageLayout';
 
-interface SecurityConfig {
-  enableAuth: boolean;
-  token: string;
-  enableIpWhitelist: boolean;
-  allowedIPs: string[];
-  enableRateLimit: boolean;
-  rateLimit: number;
-}
-
-interface Source {
-  key: string;
-  name: string;
-}
-
-interface DiagnosisResult {
-  spider?: string;
-  spiderPrivate?: boolean;
-  spiderReachable?: boolean;
-  spiderStatus?: number;
-  spiderSizeKB?: number;
-  spiderLastModified?: string;
-  contentLength?: string;
-  lastModified?: string;
-  spider_url?: string;
-  spider_md5?: string;
-  spider_cached?: boolean;
-  spider_real_size?: number;
-  spider_tried?: number;
-  spider_success?: boolean;
-  spider_backup?: string;
-  spider_candidates?: string[];
-  status?: number;
-  contentType?: string;
-  hasJson?: boolean;
-  receivedToken?: string;
-  size?: number;
-  sitesCount?: number;
-  livesCount?: number;
-  parsesCount?: number;
-  privateApis?: number;
-  configUrl?: string;
-  issues?: string[];
-  pass?: boolean;
-  error?: string;
-}
-
-// 智能健康检查结果
-interface SmartHealthResult {
-  success: boolean;
-  timestamp: number;
-  executionTime: number;
-  network: {
-    environment: 'domestic' | 'international';
-    region: string;
-    detectionMethod: string;
-    optimized: boolean;
-  };
-  spider: {
-    current: {
-      success: boolean;
-      source: string;
-      size: number;
-      md5: string;
-      cached: boolean;
-      tried_sources: number;
-    };
-    cached: any;
-  };
-  reachability: {
-    total_tested: number;
-    successful: number;
-    health_score: number;
-    tests: Array<{
-      url: string;
-      success: boolean;
-      responseTime: number;
-      statusCode?: number;
-      error?: string;
-      size?: number;
-    }>;
-  };
-  recommendations: string[];
-  status: {
-    overall: 'excellent' | 'good' | 'needs_attention';
-    spider_available: boolean;
-    network_stable: boolean;
-    recommendations_count: number;
-  };
-  error?: string;
-}
-
-// JAR源修复结果
-interface JarFixResult {
-  success: boolean;
-  timestamp: number;
-  executionTime: number;
-  summary: {
-    total_tested: number;
-    successful: number;
-    failed: number;
-    user_region: 'domestic' | 'international';
-    avg_response_time: number;
-  };
-  test_results: Array<{
-    url: string;
-    name: string;
-    success: boolean;
-    responseTime: number;
-    size?: number;
-    error?: string;
-    statusCode?: number;
-  }>;
-  recommended_sources: Array<{
-    url: string;
-    name: string;
-    success: boolean;
-    responseTime: number;
-    size?: number;
-  }>;
-  recommendations: {
-    immediate: string[];
-    configuration: string[];
-    troubleshooting: string[];
-  };
-  fixed_config_urls: string[];
-  status: {
-    jar_available: boolean;
-    network_quality: 'good' | 'fair' | 'poor';
-    needs_troubleshooting: boolean;
-  };
-  error?: string;
-  emergency_recommendations?: string[];
-}
+import { useTvboxHistory } from './hooks/useTvboxHistory';
+import { useTvboxPresets } from './hooks/useTvboxPresets';
+import { useTvboxValidation } from './hooks/useTvboxValidation';
+import type { DiagnosticTab, SecurityConfig, Source } from './types';
 
 export default function TVBoxConfigPage() {
   const [copied, setCopied] = useState(false);
-  const [format, setFormat] = useState<'json' | 'base64'>('json');
-  const [configMode, setConfigMode] = useState<
-    'standard' | 'safe' | 'fast' | 'yingshicang'
-  >('standard');
-
-  // 🎯 智能搜索和过滤控制
-  const [enableAdultFilter, setEnableAdultFilter] = useState(true); // 默认启用过滤
-  const [enableSmartProxy, setEnableSmartProxy] = useState(true); // 默认启用智能搜索
-  const [enableStrictMode, setEnableStrictMode] = useState(false); // 默认不启用严格模式
-
   const [securityConfig, setSecurityConfig] = useState<SecurityConfig | null>(
     null,
   );
   const [siteName, setSiteName] = useState('5572影视');
   const [loading, setLoading] = useState(true);
-  const [diagnosing, setDiagnosing] = useState(false);
-  const [diagnosisResult, setDiagnosisResult] =
-    useState<DiagnosisResult | null>(null);
-  const [refreshingJar, setRefreshingJar] = useState(false);
-  const [jarRefreshMsg, setJarRefreshMsg] = useState<string | null>(null);
-
-  // 🔑 新增：用户专属配置状态
   const [userToken, setUserToken] = useState('');
   const [userEnabledSources, setUserEnabledSources] = useState<string[]>([]);
   const [allSources, setAllSources] = useState<Source[]>([]);
+  const [activeTab, setActiveTab] = useState<DiagnosticTab>('basic');
 
-  // 智能健康检查状态
-  const [smartHealthResult, setSmartHealthResult] =
-    useState<SmartHealthResult | null>(null);
-  const [smartHealthLoading, setSmartHealthLoading] = useState(false);
+  const {
+    format,
+    setFormat,
+    configMode,
+    setConfigMode,
+    enableAdultFilter,
+    setEnableAdultFilter,
+    enableSmartProxy,
+    setEnableSmartProxy,
+    enableStrictMode,
+    setEnableStrictMode,
+    getConfigUrl,
+  } = useTvboxPresets({ securityConfig, userToken });
 
-  // JAR源修复状态
-  const [jarFixResult, setJarFixResult] = useState<JarFixResult | null>(null);
-  const [jarFixLoading, setJarFixLoading] = useState(false);
+  const {
+    diagnosing,
+    diagnosisResult,
+    handleDiagnose,
+    refreshingJar,
+    jarRefreshMsg,
+    handleRefreshJar,
+    smartHealthResult,
+    smartHealthLoading,
+    handleSmartHealthCheck,
+    jarFixResult,
+    jarFixLoading,
+    handleJarFix,
+    deepDiagnosticResult,
+    deepDiagnosticLoading,
+    handleDeepDiagnostic,
+    customJarUrl,
+    setCustomJarUrl,
+    customJarTestResult,
+    customJarTestLoading,
+    handleTestCustomJar,
+    hasCustomJarConfig,
+    fetchCustomJarConfig,
+  } = useTvboxValidation({ securityConfig });
 
-  // 深度诊断状态
-  const [deepDiagnosticResult, setDeepDiagnosticResult] = useState<any>(null);
-  const [deepDiagnosticLoading, setDeepDiagnosticLoading] = useState(false);
+  const { history, addHistory, clearHistory } = useTvboxHistory();
 
-  // 自定义 JAR URL 测试状态
-  const [customJarUrl, setCustomJarUrl] = useState('');
-  const [customJarTestResult, setCustomJarTestResult] = useState<any>(null);
-  const [customJarTestLoading, setCustomJarTestLoading] = useState(false);
-  const [hasCustomJarConfig, setHasCustomJarConfig] = useState(false); // 是否有管理员配置的自定义 JAR
-
-  // Tab状态
-  const [activeTab, setActiveTab] = useState<
-    'basic' | 'smart-health' | 'jar-fix' | 'deep-diagnostic'
-  >('basic');
-
-  // 获取安全配置（使用普通用户可访问的接口）
   const fetchSecurityConfig = useCallback(async () => {
     try {
       const response = await fetch('/api/tvbox-config');
@@ -215,7 +86,6 @@ export default function TVBoxConfigPage() {
         const data = await response.json();
         setSecurityConfig(data.securityConfig || null);
         setSiteName(data.siteName || '5572影视');
-        // 🔑 新增：设置用户专属配置
         setUserToken(data.userToken || '');
         setUserEnabledSources(data.userEnabledSources || []);
         setAllSources(data.allSources || []);
@@ -229,74 +99,14 @@ export default function TVBoxConfigPage() {
 
   useEffect(() => {
     fetchSecurityConfig();
-    fetchCustomJarConfig(); // 获取自定义 JAR 配置
-  }, [fetchSecurityConfig]);
+    fetchCustomJarConfig();
+  }, [fetchSecurityConfig, fetchCustomJarConfig]);
 
-  // 获取自定义 JAR 配置
-  const fetchCustomJarConfig = async () => {
-    try {
-      const response = await fetch('/api/tvbox/custom-jar');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.enabled && data.jarUrl) {
-          setCustomJarUrl(data.jarUrl);
-          setHasCustomJarConfig(true);
-        }
-      }
-    } catch (error) {
-      console.error('获取自定义 JAR 配置失败:', error);
-    }
-  };
-
-  const getConfigUrl = useCallback(() => {
-    if (typeof window === 'undefined') return '';
-    const baseUrl = window.location.origin;
-    const params = new URLSearchParams();
-
-    params.append('format', format);
-
-    // 🔑 优先使用用户专属 Token，如果没有则使用全局 Token
-    if (userToken) {
-      params.append('token', userToken);
-    } else if (securityConfig?.enableAuth && securityConfig.token) {
-      params.append('token', securityConfig.token);
-    }
-
-    // 添加配置模式参数
-    if (configMode !== 'standard') {
-      params.append('mode', configMode);
-    }
-
-    // 🎯 智能搜索和过滤参数
-    if (!enableAdultFilter) {
-      params.append('filter', 'off');
-    }
-    if (!enableSmartProxy) {
-      params.append('proxy', 'off');
-    }
-    if (enableStrictMode) {
-      params.append('strict', '1');
-    }
-
-    return `${baseUrl}/api/tvbox?${params.toString()}`;
-  }, [
-    format,
-    configMode,
-    securityConfig,
-    userToken,
-    enableAdultFilter,
-    enableSmartProxy,
-    enableStrictMode,
-  ]);
-
-  // 通用复制函数，支持 HTTP 和 HTTPS
   const copyToClipboard = async (text: string) => {
     try {
-      // 尝试使用现代 Clipboard API（仅在 HTTPS 或 localhost 下可用）
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(text);
       } else {
-        // 备用方案：使用传统方法支持 HTTP
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
@@ -322,149 +132,6 @@ export default function TVBoxConfigPage() {
     if (success) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const handleDiagnose = async () => {
-    setDiagnosing(true);
-    setDiagnosisResult(null);
-    try {
-      const params = new URLSearchParams();
-      if (securityConfig?.enableAuth && securityConfig.token) {
-        params.append('token', securityConfig.token);
-      }
-      const response = await fetch(`/api/tvbox/diagnose?${params.toString()}`);
-      const data = await response.json();
-      setDiagnosisResult(data);
-    } catch (error) {
-      setDiagnosisResult({ error: '诊断失败，请稍后重试' });
-    } finally {
-      setDiagnosing(false);
-    }
-  };
-
-  const handleRefreshJar = async () => {
-    setRefreshingJar(true);
-    setJarRefreshMsg(null);
-    try {
-      const response = await fetch('/api/tvbox/spider-status', {
-        method: 'POST',
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        setJarRefreshMsg(
-          `✓ JAR 缓存已刷新 (${data.jar_status.source.split('/').pop()})`,
-        );
-        // 如果当前有诊断结果，重新诊断
-        if (diagnosisResult) {
-          setTimeout(() => handleDiagnose(), 500);
-        }
-      } else {
-        setJarRefreshMsg(`✗ 刷新失败: ${data.error}`);
-      }
-    } catch (error) {
-      setJarRefreshMsg('✗ 刷新失败，请稍后重试');
-    } finally {
-      setRefreshingJar(false);
-      setTimeout(() => setJarRefreshMsg(null), 5000);
-    }
-  };
-
-  // 智能健康检查
-  const handleSmartHealthCheck = async () => {
-    setSmartHealthLoading(true);
-    setSmartHealthResult(null);
-    try {
-      const response = await fetch('/api/tvbox/smart-health');
-      const data = await response.json();
-      setSmartHealthResult(data);
-    } catch (error) {
-      setSmartHealthResult({
-        success: false,
-        error: '智能健康检查失败，请稍后重试',
-      } as SmartHealthResult);
-    } finally {
-      setSmartHealthLoading(false);
-    }
-  };
-
-  // JAR源修复诊断
-  const handleJarFix = async () => {
-    setJarFixLoading(true);
-    setJarFixResult(null);
-    try {
-      const response = await fetch('/api/tvbox/jar-fix');
-      const data = await response.json();
-      setJarFixResult(data);
-    } catch (error) {
-      setJarFixResult({
-        success: false,
-        error: 'JAR源修复诊断失败，请稍后重试',
-      } as JarFixResult);
-    } finally {
-      setJarFixLoading(false);
-    }
-  };
-
-  // 深度诊断
-  const handleDeepDiagnostic = async () => {
-    setDeepDiagnosticLoading(true);
-    setDeepDiagnosticResult(null);
-    try {
-      const response = await fetch('/api/tvbox/jar-diagnostic');
-      const data = await response.json();
-      setDeepDiagnosticResult(data);
-    } catch (error) {
-      setDeepDiagnosticResult({
-        error: '深度诊断失败，请稍后重试',
-      });
-    } finally {
-      setDeepDiagnosticLoading(false);
-    }
-  };
-
-  // 测试自定义 JAR URL 通过代理
-  const handleTestCustomJar = async () => {
-    if (!customJarUrl.trim()) {
-      alert('请输入 JAR URL');
-      return;
-    }
-
-    setCustomJarTestLoading(true);
-    setCustomJarTestResult(null);
-
-    try {
-      const startTime = Date.now();
-      // 通过本地代理测试自定义 JAR
-      const proxyUrl = `/api/proxy/spider.jar?url=${encodeURIComponent(customJarUrl)}&refresh=1`;
-      const response = await fetch(proxyUrl, { method: 'HEAD' });
-      const responseTime = Date.now() - startTime;
-
-      const result = {
-        success: response.ok,
-        url: customJarUrl,
-        proxyUrl: proxyUrl,
-        statusCode: response.status,
-        responseTime: responseTime,
-        size: response.headers.get('content-length'),
-        source: response.headers.get('x-spider-source'),
-        cached: response.headers.get('x-spider-cached'),
-        spiderSuccess: response.headers.get('x-spider-success'),
-        error: response.ok
-          ? null
-          : `HTTP ${response.status}: ${response.statusText}`,
-      };
-
-      setCustomJarTestResult(result);
-    } catch (error) {
-      setCustomJarTestResult({
-        success: false,
-        url: customJarUrl,
-        error: error instanceof Error ? error.message : '未知错误',
-      });
-    } finally {
-      setCustomJarTestLoading(false);
     }
   };
 

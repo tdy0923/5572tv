@@ -131,7 +131,9 @@ export async function fetchWithRetry(
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {}
+        } catch {
+          /* URL parse or fetch error — safe to skip */
+        }
       },
     });
     attempts.push({ ua: DEFAULT_USER_AGENT, via: 'direct' });
@@ -145,7 +147,9 @@ export async function fetchWithRetry(
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {}
+        } catch {
+          /* URL parse or fetch error — safe to skip */
+        }
       },
     });
     attempts.push({
@@ -156,7 +160,9 @@ export async function fetchWithRetry(
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {}
+        } catch {
+          /* URL parse or fetch error — safe to skip */
+        }
       },
     });
     attempts.push({ ua: getRandomUserAgent(), via: 'proxy' });
@@ -225,13 +231,17 @@ export async function fetchWithRetry(
               if (domain) reportCdnResult(domain, true, a.via);
               return retryResp;
             }
-          } catch {}
+          } catch {
+            /* URL parse or fetch error — safe to skip */
+          }
         }
 
         // Continue to next attempt
         try {
           response.body?.cancel();
-        } catch {}
+        } catch {
+          /* URL parse or fetch error — safe to skip */
+        }
         continue;
       }
 
