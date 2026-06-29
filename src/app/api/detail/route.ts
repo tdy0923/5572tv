@@ -183,12 +183,16 @@ export async function GET(request: NextRequest) {
           })),
         };
       } else if (item.Type === 'Series') {
-        // 剧集 - 获取所有季和集（并行获取各季）
+        // 剧集 - 获取所有季和集（分批并发获取各季）
         const seasons = await client.getSeasons(item.Id);
-        const seasonPromises = seasons.map((season: any) =>
-          client.getEpisodes(item.Id, season.Id),
-        );
-        const seasonEpisodes = await Promise.all(seasonPromises);
+        const seasonEpisodes: any[][] = [];
+        for (let i = 0; i < seasons.length; i += 3) {
+          const batch = seasons.slice(i, i + 3);
+          const batchResults = await Promise.all(
+            batch.map((season: any) => client.getEpisodes(item.Id, season.Id)),
+          );
+          seasonEpisodes.push(...batchResults);
+        }
         const allEpisodes = seasonEpisodes.flat();
 
         // 按季和集排序

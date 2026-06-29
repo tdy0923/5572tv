@@ -102,7 +102,10 @@ const SourceSwitchDialog = dynamic(
   { ssr: false },
 );
 import VideoCoverDisplay from '@/components/play/VideoCoverDisplay';
-import VideoInfoSection from '@/components/play/VideoInfoSection';
+const VideoInfoSection = dynamic(
+  () => import('@/components/play/VideoInfoSection'),
+  { ssr: false },
+);
 const VideoLoadingOverlay = dynamic(
   () => import('@/components/play/VideoLoadingOverlay'),
   { ssr: false },
@@ -112,10 +115,17 @@ const WebSRSettingsPanel = dynamic(
   { ssr: false },
 );
 
-import { SiteAdSlot } from '@/components/SiteAdSlot';
-import SkipController, {
-  SkipSettingsButton,
-} from '@/components/SkipController';
+const SiteAdSlot = dynamic(
+  () => import('@/components/SiteAdSlot').then((m) => m.SiteAdSlot),
+  { ssr: false },
+);
+const SkipController = dynamic(() => import('@/components/SkipController'), {
+  ssr: false,
+});
+const SkipSettingsButton = dynamic(
+  () => import('@/components/SkipController').then((m) => m.SkipSettingsButton),
+  { ssr: false },
+);
 
 import { useDownload } from '@/contexts/DownloadContext';
 
