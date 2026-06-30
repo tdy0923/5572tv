@@ -14,6 +14,7 @@ RUN pnpm store prune && pnpm install --frozen-lockfile
 
 # ---- 第 2 阶段：构建项目 ----
 FROM node:22-alpine AS builder
+ARG CACHE_BUST=1
 # 安装构建工具以编译原生模块
 RUN apk add --no-cache python3 make g++
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -27,8 +28,8 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
 # 复制全部源代码
 COPY . .
-# 验证 APK 存在（调试用）
-RUN ls -la /app/static/download/ 2>/dev/null || echo "static/download not found in builder"
+# 验证 static 目录存在
+RUN ls -la /app/static/download/ || echo "MISSING: static/download"
 
 # 在构建阶段设置 DOCKER_BUILD，启用 standalone 输出
 ENV DOCKER_BUILD=true
