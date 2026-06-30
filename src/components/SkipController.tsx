@@ -1553,7 +1553,7 @@ export default function SkipController({
             cursor: isDragging ? 'grabbing' : 'default',
             userSelect: isDragging ? 'none' : 'auto',
           }}
-          className='z-50 max-w-sm bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
+          className='z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
         >
           <div className='p-3'>
             <h4 className='drag-handle font-medium mb-2 text-gray-900 dark:text-gray-100 text-sm flex items-center cursor-move select-none'>
@@ -1597,7 +1597,7 @@ export default function SkipController({
                   </span>
                   <button
                     onClick={() => handleDeleteSegment(index)}
-                    className='px-1.5 py-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-xs transition-colors shrink-0'
+                    className='px-3 py-2 min-w-[44px] min-h-[44px] bg-red-500 hover:bg-red-600 text-white rounded text-xs transition-colors shrink-0 flex items-center justify-center'
                     title='删除'
                   >
                     ×
@@ -1674,7 +1674,7 @@ export function SkipSettingsButton({ onClick }: { onClick: () => void }) {
           d='M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'
         />
       </svg>
-      <span className='text-sm font-medium text-white drop-shadow-lg transition-all duration-300 hidden sm:inline'>
+      <span className='text-sm font-medium text-white drop-shadow-lg transition-all duration-300 inline'>
         跳过设置
       </span>
     </button>

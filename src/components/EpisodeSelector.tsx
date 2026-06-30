@@ -113,6 +113,9 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
   // 是否倒序显示
   const [descending, setDescending] = useState<boolean>(false);
 
+  // 触摸设备 tooltip 状态 - 点击切换显示
+  const [tooltipIndex, setTooltipIndex] = useState<number | null>(null);
+
   // 根据 descending 状态计算实际显示的分页索引
   const displayPage = useMemo(() => {
     if (descending) {
@@ -610,14 +613,22 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                         {/* 信息区域 */}
                         <div className='flex-1 min-w-0 flex flex-col justify-between h-16 sm:h-20'>
                           {/* 标题和分辨率 - 顶部 */}
-                          <div className='flex items-start justify-between gap-2 sm:gap-3 h-5 sm:h-6'>
+                          <div className='flex items-start justify-between gap-2 sm:gap-3 h-6 sm:h-7 overflow-x-auto whitespace-normal break-words'>
                             <div className='flex-1 min-w-0 relative group/title'>
-                              <h3 className='font-medium text-sm sm:text-base truncate text-gray-900 dark:text-gray-100 leading-none'>
+                              <h3
+                                className='font-medium text-sm sm:text-base break-words whitespace-normal text-gray-900 dark:text-gray-100 leading-none cursor-pointer'
+                                title={source.title}
+                                onClick={() =>
+                                  setTooltipIndex(
+                                    tooltipIndex === index ? null : index,
+                                  )
+                                }
+                              >
                                 {source.title}
                               </h3>
-                              {/* 标题级别的 tooltip - 第一个元素不显示 */}
-                              {index !== 0 && (
-                                <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md shadow-lg opacity-0 invisible group-hover/title:opacity-100 group-hover/title:visible transition-all duration-200 ease-out delay-100 whitespace-nowrap z-60 pointer-events-none'>
+                              {/* 标题级别的 tooltip - 点击/长按显示，兼容触摸设备 */}
+                              {tooltipIndex === index && (
+                                <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-800 text-white text-xs rounded-md shadow-lg whitespace-nowrap z-60 pointer-events-none'>
                                   {source.title}
                                   <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800'></div>
                                 </div>

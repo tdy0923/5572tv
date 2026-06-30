@@ -4610,7 +4610,7 @@ function PlayPageClient() {
                 className={`grid gap-4 lg:h-[500px] xl:h-[650px] 2xl:h-[750px] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
-                    : 'grid-cols-1 md:grid-cols-4'
+                    : 'grid-cols-1 lg:grid-cols-4'
                 }`}
               >
                 {/* 播放器 */}
@@ -4619,7 +4619,7 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[50vh] min-h-[280px] sm:h-[360px] md:h-[420px] lg:h-full'>
+                  <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[480px] xl:h-[560px] min-h-[200px] sm:min-h-[240px] max-h-[calc(100vh-300px)]'>
                     <div
                       ref={artRef}
                       className='bg-black w-full h-full rounded-xl overflow-hidden shadow-lg'
@@ -4771,14 +4771,14 @@ function PlayPageClient() {
                       <button
                         onClick={handlePreviousEpisode}
                         disabled={currentEpisodeIndex <= 0}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1 flex items-center justify-center gap-1.5 py-3.5 sm:py-4 min-h-[44px] rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
                       >
                         <span>◀</span> 上一集
                       </button>
                       <button
                         onClick={handleNextEpisode}
                         disabled={currentEpisodeIndex >= totalEpisodes - 1}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1 flex items-center justify-center gap-1.5 py-3.5 sm:py-4 min-h-[44px] rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
                       >
                         下一集 <span>▶</span>
                       </button>

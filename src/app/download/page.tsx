@@ -30,9 +30,9 @@ function DownloadCard() {
         <img
           src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent('https://www.5572.net/download/5572tv-android.apk')}`}
           alt='扫码下载 APK'
-          className='w-[140px] h-[140px]'
-          width={140}
-          height={140}
+          className='w-[100px] h-[100px] sm:w-[120px] sm:h-[120px]'
+          width={100}
+          height={100}
         />
       </div>
       <div className='text-center'>
@@ -87,7 +87,7 @@ export default function DownloadPage() {
   return (
     <div className='min-h-screen bg-black text-white'>
       {/* Hero Section */}
-      <section className='relative min-h-screen flex items-center bg-black'>
+      <section className='relative min-h-[100dvh] flex items-center bg-black'>
         <div className='absolute inset-0'>
           <Image
             src='/images/agnes/epic-bg.png'
@@ -231,7 +231,7 @@ export default function DownloadPage() {
             </h2>
             <p className='text-gray-400'>为极致观影体验而生</p>
           </div>
-          <div className='grid grid-cols-2 lg:grid-cols-4 gap-6'>
+          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
             {features.map((f) => (
               <div
                 key={f.title}

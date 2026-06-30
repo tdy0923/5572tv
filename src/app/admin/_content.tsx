@@ -418,8 +418,8 @@ function AdminPageClient() {
             )}
           </div>
 
-          <div className='grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]'>
-            <aside className='ui-surface sticky top-24 h-fit overflow-y-auto max-h-[calc(100vh-6rem)] p-4'>
+          <div className='grid gap-6 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]'>
+            <aside className='ui-screen lg:sticky lg:top-24 h-fit overflow-y-auto max-h-[calc(100vh-6rem)] p-4'>
               <div className='mb-4'>
                 <div className='text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
                   Admin Console

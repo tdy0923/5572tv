@@ -973,7 +973,7 @@ function VideoCard({
   return (
     <>
       <div
-        className='@container group relative w-full rounded-[12px] bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 hover:scale-[1.03]'
+        className='@container group relative w-full overflow-hidden rounded-[12px] bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 hover:scale-[1.03]'
         onClick={handleClick}
         onMouseEnter={handlePrefetch}
         onFocus={handlePrefetch}
@@ -1445,7 +1445,7 @@ function VideoCard({
           {/* 评分徽章 - 动态颜色 - 🎯 使用容器查询替代媒体查询 */}
           {config.showRating && rate && ratingBadgeStyle && (
             <div
-              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-hover:scale-110 @[180px]:h-10 @[180px]:w-10`}
+              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-hover:scale-110 @[140px]:top-1 @[140px]:right-1 @[140px]:h-8 @[140px]:w-8`}
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1528,7 +1528,7 @@ function VideoCard({
 
               return (
                 <div
-                  className='absolute bottom-2 right-2 opacity-0 transition-all duration-300 ease-in-out delay-75 sm:group-hover:opacity-100'
+                  className='absolute bottom-2 right-2 sm:group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out delay-75 @[140px]:bottom-1 @[140px]:right-1'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1578,7 +1578,7 @@ function VideoCard({
           {aiEnabled && actualTitle && (
             <div
               className={`
-                hidden md:block absolute
+                sm:block absolute
                 ${hasRightBottomButtons ? 'left-1/3 -translate-x-1/2' : 'left-1/2 -translate-x-1/2'}
                 ${hasBottomTags ? 'bottom-14' : 'bottom-4'}
                 opacity-0 translate-y-2

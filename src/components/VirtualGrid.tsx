@@ -42,6 +42,8 @@ export default function VirtualGrid<T>({
 
   // Detect column count from a hidden probe row that shares the same grid CSS
   const probeRef = useRef<HTMLDivElement>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const rafIdRef = useRef<number>(0);
 
   const detectColumns = useCallback(() => {
     if (!probeRef.current) return;
@@ -54,10 +56,20 @@ export default function VirtualGrid<T>({
   }, []);
 
   useEffect(() => {
-    detectColumns();
-    const ro = new ResizeObserver(detectColumns);
-    if (probeRef.current) ro.observe(probeRef.current);
-    return () => ro.disconnect();
+    const timeoutId = setTimeout(() => {
+      detectColumns();
+      const ro = new ResizeObserver(() => {
+        if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = requestAnimationFrame(detectColumns);
+      });
+      if (probeRef.current) ro.observe(probeRef.current);
+      resizeObserverRef.current = ro;
+    }, 100);
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserverRef.current?.disconnect();
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+    };
   }, [detectColumns]);
 
   const rowCount = Math.ceil(items.length / columns);

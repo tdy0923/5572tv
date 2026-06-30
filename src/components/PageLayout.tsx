@@ -60,7 +60,7 @@ const PageLayout = ({
               {['/play', '/live'].includes(activePath) ? (
                 <BackButton />
               ) : (
-                <div className='text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent'>
+                <div className='flex-1 text-center max-w-[50%] text-sm sm:text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent truncate'>
                   {siteName}
                 </div>
               )}
@@ -141,7 +141,7 @@ const PageLayout = ({
 
           {/* 主内容 */}
           <main
-            className='flex-1 md:min-h-0 mb-14 md:mb-0 md:mt-0 mt-14'
+            className='flex-1 md:min-h-0 mb-14 pt-[44px] md:pt-16'
             style={{
               // 悬浮胶囊导航栏高度约 56px + 底部 1rem 间距 + 安全区
               paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))',
