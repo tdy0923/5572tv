@@ -51,7 +51,7 @@ const server = http.createServer((req, res) => {
         'Content-Type': 'application/vnd.android.package-archive',
         'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
         'Content-Length': String(stat.size),
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       });
       fs.createReadStream(apkFile).pipe(res);
     } else {
