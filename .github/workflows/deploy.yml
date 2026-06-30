@@ -21,17 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Copy APK to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: root
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          source: "static/download/5572tv-android.apk"
-          target: "/app/apk-download/5572tv-android.apk"
-
-      - name: Deploy latest image to server
+      - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -46,6 +36,18 @@ jobs:
             fi
 
             docker pull ghcr.io/${{ github.repository_owner }}/5572tv:latest
+
+            # 从 GitHub 下载最新 APK
+            mkdir -p /app/apk-download
+            APK_URL=$(curl -sL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/contents/static/download/5572tv-android.apk" \
+              | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('download_url',''))" 2>/dev/null)
+            if [ -n "$APK_URL" ]; then
+              curl -sL -o /app/apk-download/5572tv-android.apk "$APK_URL"
+              echo "APK downloaded: $(ls -la /app/apk-download/5572tv-android.apk)"
+            else
+              echo "Failed to get APK download URL, keeping existing file"
+            fi
 
             docker stop 5572tv-core || true
             docker rm 5572tv-core || true
