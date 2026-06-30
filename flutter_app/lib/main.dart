@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
@@ -8,12 +7,9 @@ import 'services/user_data_service.dart';
 import 'services/api_service.dart';
 import 'services/theme_service.dart';
 import 'services/douban_cache_service.dart';
-import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await NotificationService.initialize();
   MediaKit.ensureInitialized();
 
   final cacheService = DoubanCacheService();
