@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy latest image to server
+      - name: Copy APK to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -29,8 +29,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
           source: "static/download/5572tv-android.apk"
-          target: "/app/apk-download/"
-          strip_components: 2
+          target: "/app/apk-download/5572tv-android.apk"
 
       - name: Deploy latest image to server
         uses: appleboy/ssh-action@v1.0.3
