@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
@@ -7,9 +8,19 @@ import 'services/user_data_service.dart';
 import 'services/api_service.dart';
 import 'services/theme_service.dart';
 import 'services/douban_cache_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase 可选初始化（需要 google-services.json）
+  try {
+    await Firebase.initializeApp();
+    await NotificationService.initialize();
+  } catch (_) {
+    // Firebase 未配置时静默跳过
+  }
+
   MediaKit.ensureInitialized();
 
   final cacheService = DoubanCacheService();
