@@ -17,9 +17,12 @@ function generateManifest() {
 
 generateManifest();
 
-const APK_PATH = path.join(
+const APK_DIR = path.join(__dirname, 'static', 'download');
+const APK_PATH = path.join(APK_DIR, '5572tv-android.apk');
+// 备用路径：旧部署可能在 public/download 有文件
+const APK_FALLBACK = path.join(
   __dirname,
-  'static',
+  'public',
   'download',
   '5572tv-android.apk',
 );
@@ -37,16 +40,21 @@ const server = http.createServer((req, res) => {
 
   // Serve APK directly
   if (url.startsWith('/download/5572tv-android.apk')) {
-    try {
-      const stat = fs.statSync(APK_PATH);
+    const apkFile = fs.existsSync(APK_PATH)
+      ? APK_PATH
+      : fs.existsSync(APK_FALLBACK)
+        ? APK_FALLBACK
+        : null;
+    if (apkFile) {
+      const stat = fs.statSync(apkFile);
       res.writeHead(200, {
         'Content-Type': 'application/vnd.android.package-archive',
         'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
         'Content-Length': String(stat.size),
         'Cache-Control': 'public, max-age=86400',
       });
-      fs.createReadStream(APK_PATH).pipe(res);
-    } catch {
+      fs.createReadStream(apkFile).pipe(res);
+    } else {
       res.writeHead(404);
       res.end('Not Found');
     }
