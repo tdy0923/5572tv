@@ -22,6 +22,17 @@ jobs:
 
     steps:
       - name: Deploy latest image to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          source: "static/download/5572tv-android.apk"
+          target: "/app/apk-download/"
+          strip_components: 2
+
+      - name: Deploy latest image to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -53,11 +64,8 @@ jobs:
               -e GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}' \
               -e NVIDIA_API_KEY='${{ secrets.NVIDIA_API_KEY }}' \
               -v /app/video-cache:/app/video-cache \
+              -v /app/apk-download:/app/static/download:ro \
               --restart unless-stopped \
               ghcr.io/${{ github.repository_owner }}/5572tv:latest
-
-            # 验证容器内APK文件大小
-            sleep 5
-            docker exec 5572tv-core ls -la /app/static/download/5572tv-android.apk || echo "APK not found in container"
 
             docker image prune -f
