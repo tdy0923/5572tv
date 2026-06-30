@@ -2,7 +2,6 @@
 
 /* eslint-disable no-console */
 const http = require('http');
-const fs = require('fs');
 const path = require('path');
 
 function generateManifest() {
@@ -17,82 +16,15 @@ function generateManifest() {
 
 generateManifest();
 
-const APK_DIR = path.join(__dirname, 'static', 'download');
-const APK_PATH = path.join(APK_DIR, '5572tv-android.apk');
-// 备用路径：旧部署可能在 public/download 有文件
-const APK_FALLBACK = path.join(
-  __dirname,
-  'public',
-  'download',
-  '5572tv-android.apk',
-);
-const PUBLIC_PORT = parseInt(process.env.PORT || '3000', 10);
-const INTERNAL_PORT = PUBLIC_PORT + 1;
-const HOSTNAME = process.env.HOSTNAME || 'localhost';
-
-// Start Next.js on internal port
-process.env.PORT = String(INTERNAL_PORT);
 require('./server.js');
 
-// Proxy server on public port
-const server = http.createServer((req, res) => {
-  const url = req.url || '';
+const TARGET_URL = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000}/login`;
 
-  // Serve APK directly
-  if (url.startsWith('/download/5572tv-android.apk')) {
-    const apkFile = fs.existsSync(APK_PATH)
-      ? APK_PATH
-      : fs.existsSync(APK_FALLBACK)
-        ? APK_FALLBACK
-        : null;
-    if (apkFile) {
-      const stat = fs.statSync(apkFile);
-      res.writeHead(200, {
-        'Content-Type': 'application/vnd.android.package-archive',
-        'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
-        'Content-Length': String(stat.size),
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-      });
-      fs.createReadStream(apkFile).pipe(res);
-    } else {
-      res.writeHead(404);
-      res.end('Not Found');
-    }
-    return;
-  }
-
-  // Proxy everything else to Next.js
-  const proxyReq = http.request(
-    {
-      hostname: '127.0.0.1',
-      port: INTERNAL_PORT,
-      path: url,
-      method: req.method,
-      headers: { ...req.headers, host: req.headers.host },
-    },
-    (proxyRes) => {
-      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
-      proxyRes.pipe(res);
-    },
-  );
-  proxyReq.on('error', () => {
-    res.writeHead(502);
-    res.end('Bad Gateway');
-  });
-  req.pipe(proxyReq);
-});
-
-server.listen(PUBLIC_PORT, HOSTNAME, () => {
-  console.log(
-    `5572tv listening on ${HOSTNAME}:${PUBLIC_PORT} (proxying to :${INTERNAL_PORT})`,
-  );
-});
-
-// Health check polling
 const intervalId = setInterval(() => {
-  const req = http.get(`http://127.0.0.1:${INTERNAL_PORT}/login`, (res) => {
+  console.log(`Fetching ${TARGET_URL} ...`);
+  const req = http.get(TARGET_URL, (res) => {
     if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-      console.log('Next.js server is ready.');
+      console.log('Server is up, stop polling.');
       clearInterval(intervalId);
       setTimeout(executeCronJob, 30000);
       setInterval(executeCronJob, 60 * 60 * 1000);
@@ -103,7 +35,7 @@ const intervalId = setInterval(() => {
 }, 1000);
 
 function executeCronJob() {
-  const cronUrl = `http://127.0.0.1:${INTERNAL_PORT}/api/cron`;
+  const cronUrl = `http://${process.env.HOSTNAME || 'localhost'}:${process.env.PORT || 3000}/api/cron`;
   console.log(`Executing cron job: ${cronUrl}`);
   const req = http.get(cronUrl, (res) => {
     let data = '';
