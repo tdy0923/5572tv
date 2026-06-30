@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "999658455743",
+    "project_id": "tv-62519",
+    "storage_bucket": "tv-62519.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:999658455743:android:4b398ad7b9cd052b52bc0a",
+        "android_client_info": {
+          "package_name": "com.media5572.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkSOSxwtanF-mbJJjWVhM-a_3lSdB6RC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
