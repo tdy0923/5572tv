@@ -834,7 +834,7 @@ class ApiService {
       final response = await http.get(uri, headers: headers);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final items = (data['items'] ?? data['results'] ?? []) as List;
+        final items = (data['list'] ?? data['items'] ?? data['results'] ?? []) as List;
         return items
             .map((item) => SearchResult.fromJson({
                   ...Map<String, dynamic>.from(item as Map),

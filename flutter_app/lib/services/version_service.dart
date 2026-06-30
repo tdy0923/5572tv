@@ -26,9 +26,8 @@ class VersionService {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final tagName = data['tag_name'] as String;
-        final latestVersion = tagName.startsWith('v') ? tagName.substring(1) : tagName;
-        final releaseNotes = data['body'] as String? ?? '';
+        final latestVersion = data['version'] as String? ?? '';
+        final releaseNotes = data['releaseNotes'] as String? ?? '';
         
         // 比较版本号
         if (_isNewerVersion(currentVersion, latestVersion)) {

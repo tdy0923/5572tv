@@ -47,7 +47,7 @@ class AnnouncementDialog extends StatelessWidget {
                   child: SizedBox(
                     width: double.infinity, height: 40,
                     child: ElevatedButton(
-                      onPressed: () { AnnouncementService.dismiss(); Navigator.pop(context); },
+                      onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF27AE60), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       child: Text('我知道了', style: FontUtils.poppins(fontWeight: FontWeight.w600)),
                     ),
