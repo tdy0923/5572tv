@@ -14,12 +14,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await MediaKit.ensureInitialized().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () {
-        debugPrint('MediaKit initialization timed out after 5 seconds');
-      },
-    );
+    await Future.wait([
+      Future.sync(() => MediaKit.ensureInitialized()),
+      Future.delayed(const Duration(seconds: 5)).then((_) => throw TimeoutException('MediaKit initialization timed out')),
+    ]);
   } catch (e) {
     debugPrint('MediaKit initialization failed: $e');
   }
