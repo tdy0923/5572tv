@@ -37,10 +37,6 @@ jobs:
 
             docker pull ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
-            # 下载最新APK
-            mkdir -p /app/public/download
-            curl -sL https://github.com/${{ github.repository }}/releases/latest/download/5572tv-android.apk -o /app/public/download/5572tv-android.apk || true
-
             docker stop 5572tv-core || true
             docker rm 5572tv-core || true
 
@@ -56,7 +52,7 @@ jobs:
               -e KVROCKS_URL='redis://:Danny0923@kvrocks:6666' \
               -e GROQ_API_KEY='${{ secrets.GROQ_API_KEY }}' \
               -e NVIDIA_API_KEY='${{ secrets.NVIDIA_API_KEY }}' \
-              -v /app/public/download:/app/public/download \
+              -v /app/video-cache:/app/video-cache \
               --restart unless-stopped \
               ghcr.io/${{ github.repository_owner }}/5572tv:latest
 

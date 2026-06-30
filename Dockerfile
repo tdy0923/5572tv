@@ -27,8 +27,8 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
 # 复制全部源代码
 COPY . .
-# 构建时间戳 - 使 GHA 缓存失效
-RUN echo "Build at $(date +%s)" > /app/.build-time
+# 验证 APK 存在（调试用）
+RUN ls -la /app/static/download/ 2>/dev/null || echo "static/download not found in builder"
 
 # 在构建阶段设置 DOCKER_BUILD，启用 standalone 输出
 ENV DOCKER_BUILD=true
