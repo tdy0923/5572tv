@@ -112,8 +112,8 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   var url = new URL(event.request.url);
 
-  // 处理下载请求
-  if (url.pathname.startsWith('/download/')) {
+  // 处理下载请求（APK 等静态文件直接放行）
+  if (url.pathname.startsWith('/download/') && !url.pathname.endsWith('.apk')) {
     event.respondWith(handleDownload(url));
     return;
   }
