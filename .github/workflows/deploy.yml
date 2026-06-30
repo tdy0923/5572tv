@@ -58,6 +58,18 @@ jobs:
 
             docker image prune -f
 
-            # 检查容器是否正常启动
-            sleep 10
-            docker logs 5572tv-core --tail 30 2>&1 || echo "No logs available"
+      - name: Purge Cloudflare cache
+        run: |
+          ZONE=$(curl -s -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+            "https://api.cloudflare.com/client/v4/zones?name=www.5572.net" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['result'][0]['id'])" 2>/dev/null)
+          if [ -n "$ZONE" ]; then
+            curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
+              -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              --data '{"files":["https://www.5572.net/download/5572tv-android.apk"]}'
+            echo "Cloudflare cache purged for APK"
+          else
+            echo "Failed to get Cloudflare zone ID"
+          fi
+        shell: bash
