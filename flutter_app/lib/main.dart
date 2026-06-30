@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +12,58 @@ import 'services/douban_cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
+
+  try {
+    await MediaKit.ensureInitialized().timeout(
+      const Duration(seconds: 5),
+      onTimeout: () {
+        debugPrint('MediaKit initialization timed out after 5 seconds');
+      },
+    );
+  } catch (e) {
+    debugPrint('MediaKit initialization failed: $e');
+  }
 
   final cacheService = DoubanCacheService();
   await cacheService.init();
   cacheService.startPeriodicCleanup();
+
+  ErrorWidget.builder = (errorDetails) {
+    debugPrint('Flutter error: ${errorDetails.exception}');
+    return Material(
+      child: Container(
+        color: const Color(0xFF1a1a1a),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  '页面加载异常',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  errorDetails.exceptionAsString(),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  };
 
   runApp(const Media5572App());
 }
