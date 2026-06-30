@@ -56,4 +56,8 @@ jobs:
               --restart unless-stopped \
               ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
+            # 验证容器内APK文件大小
+            sleep 5
+            docker exec 5572tv-core ls -la /app/static/download/5572tv-android.apk || echo "APK not found in container"
+
             docker image prune -f
