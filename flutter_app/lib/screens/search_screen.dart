@@ -332,7 +332,7 @@ class _SearchScreenState extends State<SearchScreen>
                   // 标题
                   Text(
                     '清空搜索历史',
-                    style: FontUtils.poppins(
+                    style: FontUtils.systemFont(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
@@ -344,7 +344,7 @@ class _SearchScreenState extends State<SearchScreen>
                   // 描述
                   Text(
                     '确定要清空所有搜索历史吗？此操作无法撤销。',
-                    style: FontUtils.poppins(
+                    style: FontUtils.systemFont(
                       fontSize: 14,
                       color: themeService.isDarkMode
                           ? const Color(0xFFb0b0b0)
@@ -368,7 +368,7 @@ class _SearchScreenState extends State<SearchScreen>
                           ),
                           child: Text(
                             '取消',
-                            style: FontUtils.poppins(
+                            style: FontUtils.systemFont(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: themeService.isDarkMode
@@ -395,7 +395,7 @@ class _SearchScreenState extends State<SearchScreen>
                           ),
                           child: Text(
                             '清空',
-                            style: FontUtils.poppins(
+                            style: FontUtils.systemFont(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -630,7 +630,7 @@ class _SearchScreenState extends State<SearchScreen>
               const SizedBox(height: 24),
               Text(
                 '暂无搜索历史',
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: themeService.isDarkMode
@@ -641,7 +641,7 @@ class _SearchScreenState extends State<SearchScreen>
               const SizedBox(height: 12),
               Text(
                 '开始搜索你喜欢的内容吧',
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
                       ? const Color(0xFF555555)
@@ -667,7 +667,7 @@ class _SearchScreenState extends State<SearchScreen>
             children: [
               Text(
                 '搜索历史',
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: themeService.isDarkMode
@@ -704,7 +704,7 @@ class _SearchScreenState extends State<SearchScreen>
                   ),
                   child: Text(
                     '清空',
-                    style: FontUtils.poppins(
+                    style: FontUtils.systemFont(
                       fontSize: 14,
                       color: DeviceUtils.isPC() && _isClearHistoryButtonHovered
                           ? const Color(0xFFe74c3c) // hover 时红色
@@ -847,7 +847,7 @@ class _SearchScreenState extends State<SearchScreen>
                               children: [
                                 Text(
                                   history,
-                                  style: FontUtils.poppins(
+                                  style: FontUtils.systemFont(
                                     fontSize: 14,
                                     color: textColor,
                                   ),
@@ -949,7 +949,7 @@ class _SearchScreenState extends State<SearchScreen>
           Expanded(
             child: Text(
               error,
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 color: const Color(0xFFe74c3c),
               ),
@@ -963,7 +963,7 @@ class _SearchScreenState extends State<SearchScreen>
             },
             child: Text(
               '重试',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 12,
                 color: const Color(0xFFe74c3c),
                 fontWeight: FontWeight.w500,
@@ -1003,7 +1003,7 @@ class _SearchScreenState extends State<SearchScreen>
                 children: [
                   Text(
                     '搜索结果',
-                    style: FontUtils.poppins(
+                    style: FontUtils.systemFont(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
@@ -1016,7 +1016,7 @@ class _SearchScreenState extends State<SearchScreen>
                     if (_hasReceivedStart)
                       Text(
                         _getProgressText(),
-                        style: FontUtils.poppins(
+                        style: FontUtils.systemFont(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: themeService.isDarkMode
@@ -1035,7 +1035,7 @@ class _SearchScreenState extends State<SearchScreen>
                   children: [
                     Text(
                       '聚合',
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: themeService.isDarkMode
@@ -1163,7 +1163,7 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 24),
           Text(
             '未找到结果',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF7f8c8d),
@@ -1172,7 +1172,7 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 12),
           Text(
             '请尝试更换关键词',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: const Color(0xFF95a5a6),
             ),
@@ -1192,7 +1192,7 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 24),
           Text(
             '搜索中...',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF7f8c8d),
@@ -1201,7 +1201,7 @@ class _SearchScreenState extends State<SearchScreen>
           const SizedBox(height: 12),
           Text(
             '聚合搜索中，请稍候',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: const Color(0xFF95a5a6),
             ),
@@ -1263,7 +1263,7 @@ class _SearchScreenState extends State<SearchScreen>
           SnackBar(
             content: Text(
               '正在打开豆瓣详情: ${videoInfo.title}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF3498DB),
             behavior: SnackBarBehavior.floating,
@@ -1280,7 +1280,7 @@ class _SearchScreenState extends State<SearchScreen>
           SnackBar(
             content: Text(
               '正在打开 Bangumi 详情: ${videoInfo.title}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF3498DB),
             behavior: SnackBarBehavior.floating,
@@ -1323,7 +1323,7 @@ class _SearchScreenState extends State<SearchScreen>
             SnackBar(
               content: Text(
                 result.errorMessage ?? '收藏失败',
-                style: FontUtils.poppins(color: Colors.white),
+                style: FontUtils.systemFont(color: Colors.white),
               ),
               backgroundColor: const Color(0xFFe74c3c),
               behavior: SnackBarBehavior.floating,
@@ -1343,7 +1343,7 @@ class _SearchScreenState extends State<SearchScreen>
           SnackBar(
             content: Text(
               '收藏失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,
@@ -1380,7 +1380,7 @@ class _SearchScreenState extends State<SearchScreen>
             SnackBar(
               content: Text(
                 result.errorMessage ?? '取消收藏失败',
-                style: FontUtils.poppins(color: Colors.white),
+                style: FontUtils.systemFont(color: Colors.white),
               ),
               backgroundColor: const Color(0xFFe74c3c),
               behavior: SnackBarBehavior.floating,
@@ -1401,7 +1401,7 @@ class _SearchScreenState extends State<SearchScreen>
           SnackBar(
             content: Text(
               '取消收藏失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,
@@ -1520,7 +1520,7 @@ class _SearchScreenState extends State<SearchScreen>
             children: [
               Text(
                 title, // 始终显示原始标题，不显示选中内容
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 13,
                   color: (DeviceUtils.isPC() && isHovered) || !isDefault
                       ? const Color(0xFF27AE60)
@@ -1717,7 +1717,7 @@ class _SearchScreenState extends State<SearchScreen>
             children: [
               Text(
                 text,
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 13,
                   color:
                       (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault

@@ -2,10 +2,9 @@
     <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- 震动权限 -->
+    <!-- 震动反馈 -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- Android 13+ 媒体权限 (替代旧版READ/WRITE_EXTERNAL_STORAGE) -->
+    <!-- Android 13+ 媒体权限 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- Android TV: 声明不需要触摸屏 -->

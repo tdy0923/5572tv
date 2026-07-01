@@ -16,15 +16,19 @@ void main() async {
   try {
     await Future.wait([
       Future.sync(() => MediaKit.ensureInitialized()),
-      Future.delayed(const Duration(seconds: 5)).then((_) => throw TimeoutException('MediaKit initialization timed out')),
+      Future.delayed(const Duration(seconds: 5), () => throw TimeoutException('MediaKit initialization timed out')),
     ]);
   } catch (e) {
     debugPrint('MediaKit initialization failed: $e');
   }
 
-  final cacheService = DoubanCacheService();
-  await cacheService.init();
-  cacheService.startPeriodicCleanup();
+  try {
+    final cacheService = DoubanCacheService();
+    await cacheService.init();
+    cacheService.startPeriodicCleanup();
+  } catch (e) {
+    debugPrint('DoubanCacheService init failed: $e');
+  }
 
   ErrorWidget.builder = (errorDetails) {
     debugPrint('Flutter error: ${errorDetails.exception}');

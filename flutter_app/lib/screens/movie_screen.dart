@@ -518,7 +518,7 @@ class _MovieScreenState extends State<MovieScreen> {
         children: [
           Text(
             '电影',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 28,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).textTheme.titleLarge?.color,
@@ -529,7 +529,7 @@ class _MovieScreenState extends State<MovieScreen> {
             height: 20, // 固定高度确保一致性
             child: Text(
               '来自豆瓣的精选内容',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 color: Theme.of(context).textTheme.bodySmall?.color,
               ),
@@ -593,7 +593,7 @@ class _MovieScreenState extends State<MovieScreen> {
       children: [
         Text(
           '筛选',
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -639,7 +639,7 @@ class _MovieScreenState extends State<MovieScreen> {
       children: [
         Text(
           '地区',
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -712,7 +712,7 @@ class _MovieScreenState extends State<MovieScreen> {
       children: [
         Text(
           title,
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -757,7 +757,7 @@ class _MovieScreenState extends State<MovieScreen> {
           const SizedBox(height: 12),
           Text(
             '已经到底啦~',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
                   ? Colors.white.withOpacity(0.6)
@@ -768,7 +768,7 @@ class _MovieScreenState extends State<MovieScreen> {
           const SizedBox(height: 4),
           Text(
             '共 ${_movies.length} 部电影',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 12,
               color: themeService.isDarkMode
                   ? Colors.white.withOpacity(0.4)

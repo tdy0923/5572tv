@@ -178,7 +178,7 @@ class _UserMenuState extends State<UserMenu> {
           SnackBar(
             content: Text(
               '正在检查更新...',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: Colors.black,
             duration: const Duration(seconds: 2),
@@ -199,7 +199,7 @@ class _UserMenuState extends State<UserMenu> {
           SnackBar(
             content: Text(
               '当前已是最新版本',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF27AE60),
           ),
@@ -211,7 +211,7 @@ class _UserMenuState extends State<UserMenu> {
           SnackBar(
             content: Text(
               '检查更新失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFef4444),
           ),
@@ -251,7 +251,7 @@ class _UserMenuState extends State<UserMenu> {
       ),
       child: Text(
         label,
-        style: FontUtils.poppins(
+        style: FontUtils.systemFont(
           fontSize: 10,
           color: Colors.white,
           fontWeight: FontWeight.w500,
@@ -292,7 +292,7 @@ class _UserMenuState extends State<UserMenu> {
                   children: [
                     Text(
                       title,
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 16,
                         color: widget.isDarkMode
                             ? const Color(0xFFffffff)
@@ -303,7 +303,7 @@ class _UserMenuState extends State<UserMenu> {
                     const SizedBox(height: 2),
                     Text(
                       currentValue,
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 12,
                         color: widget.isDarkMode
                             ? const Color(0xFF9ca3af)
@@ -338,7 +338,7 @@ class _UserMenuState extends State<UserMenu> {
               widget.isDarkMode ? const Color(0xFF2c2c2c) : Colors.white,
           title: Text(
             title,
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 18,
               color: widget.isDarkMode
                   ? const Color(0xFFffffff)
@@ -380,7 +380,7 @@ class _UserMenuState extends State<UserMenu> {
                         Expanded(
                           child: Text(
                             option,
-                            style: FontUtils.poppins(
+                            style: FontUtils.systemFont(
                               fontSize: 16,
                               color: widget.isDarkMode
                                   ? const Color(0xFFffffff)
@@ -412,7 +412,7 @@ class _UserMenuState extends State<UserMenu> {
               widget.isDarkMode ? const Color(0xFF2c2c2c) : Colors.white,
           title: Text(
             'M3U8 代理 URL',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 18,
               color: widget.isDarkMode
                   ? const Color(0xFFffffff)
@@ -422,7 +422,7 @@ class _UserMenuState extends State<UserMenu> {
           ),
           content: TextField(
             controller: controller,
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: widget.isDarkMode
                   ? const Color(0xFFffffff)
@@ -430,7 +430,7 @@ class _UserMenuState extends State<UserMenu> {
             ),
             decoration: InputDecoration(
               hintText: '输入代理 URL（可选）',
-              hintStyle: FontUtils.poppins(
+              hintStyle: FontUtils.systemFont(
                 fontSize: 14,
                 color: widget.isDarkMode
                     ? const Color(0xFF9ca3af)
@@ -468,7 +468,7 @@ class _UserMenuState extends State<UserMenu> {
               },
               child: Text(
                 '取消',
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 14,
                   color: widget.isDarkMode
                       ? const Color(0xFF9ca3af)
@@ -490,7 +490,7 @@ class _UserMenuState extends State<UserMenu> {
               },
               child: Text(
                 '保存',
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 14,
                   color: const Color(0xFF10b981),
                   fontWeight: FontWeight.w600,
@@ -534,7 +534,7 @@ class _UserMenuState extends State<UserMenu> {
                   children: [
                     Text(
                       title,
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 16,
                         color: widget.isDarkMode
                             ? const Color(0xFFffffff)
@@ -545,7 +545,7 @@ class _UserMenuState extends State<UserMenu> {
                     const SizedBox(height: 2),
                     Text(
                       currentValue.isEmpty ? '未设置' : currentValue,
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 12,
                         color: widget.isDarkMode
                             ? const Color(0xFF9ca3af)
@@ -598,7 +598,7 @@ class _UserMenuState extends State<UserMenu> {
             Expanded(
               child: Text(
                 title,
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 16,
                   color: widget.isDarkMode
                       ? const Color(0xFFffffff)
@@ -686,7 +686,7 @@ class _UserMenuState extends State<UserMenu> {
                           if (!_isLocalMode)
                             Text(
                               '当前用户',
-                              style: FontUtils.poppins(
+                              style: FontUtils.systemFont(
                                 fontSize: 12,
                                 color: widget.isDarkMode
                                     ? const Color(0xFF9ca3af)
@@ -699,7 +699,7 @@ class _UserMenuState extends State<UserMenu> {
                           if (_isLocalMode)
                             Text(
                               '本地模式',
-                              style: FontUtils.poppins(
+                              style: FontUtils.systemFont(
                                 fontSize: 18,
                                 color: widget.isDarkMode
                                     ? const Color(0xFFffffff)
@@ -713,7 +713,7 @@ class _UserMenuState extends State<UserMenu> {
                               children: [
                                 Text(
                                   _username ?? '未知用户',
-                                  style: FontUtils.poppins(
+                                  style: FontUtils.systemFont(
                                     fontSize: 18,
                                     color: widget.isDarkMode
                                         ? const Color(0xFFffffff)
@@ -864,7 +864,7 @@ class _UserMenuState extends State<UserMenu> {
                               const SizedBox(width: 12),
                               Text(
                                 '清除豆瓣缓存',
-                                style: FontUtils.poppins(
+                                style: FontUtils.systemFont(
                                   fontSize: 16,
                                   color: widget.isDarkMode
                                       ? const Color(0xFFffffff)
@@ -904,7 +904,7 @@ class _UserMenuState extends State<UserMenu> {
                               const SizedBox(width: 12),
                               Text(
                                 '检查更新',
-                                style: FontUtils.poppins(
+                                style: FontUtils.systemFont(
                                   fontSize: 16,
                                   color: widget.isDarkMode
                                       ? const Color(0xFFffffff)
@@ -944,7 +944,7 @@ class _UserMenuState extends State<UserMenu> {
                               const SizedBox(width: 12),
                               Text(
                                 '登出',
-                                style: FontUtils.poppins(
+                                style: FontUtils.systemFont(
                                   fontSize: 16,
                                   color: const Color(0xFFef4444),
                                   fontWeight: FontWeight.w500,
@@ -984,7 +984,7 @@ class _UserMenuState extends State<UserMenu> {
                           child: Center(
                             child: Text(
                               _version.isEmpty ? 'v1.4.3' : 'v$_version',
-                              style: FontUtils.poppins(
+                              style: FontUtils.systemFont(
                                 fontSize: 14,
                                 color: widget.isDarkMode
                                     ? const Color(0xFF9ca3af)

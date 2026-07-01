@@ -626,7 +626,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
         children: [
           Text(
             '动漫',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 28,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).textTheme.titleLarge?.color,
@@ -639,7 +639,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
               _selectedCategoryValue == '每日放送' 
                   ? '来自 Bangumi 的精选内容'
                   : '来自豆瓣的精选内容',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 color: Theme.of(context).textTheme.bodySmall?.color,
               ),
@@ -715,7 +715,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
       children: [
         Text(
           '星期',
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -745,7 +745,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
       children: [
         Text(
           '筛选',
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -791,7 +791,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
       children: [
         Text(
           '筛选',
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -871,7 +871,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
       children: [
         Text(
           title,
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -918,7 +918,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           const SizedBox(height: 12),
           Text(
             '已经到底啦~',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
                   ? Colors.white.withOpacity(0.6)
@@ -929,7 +929,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           const SizedBox(height: 4),
           Text(
             '共 $totalCount $contentType',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 12,
               color: themeService.isDarkMode
                   ? Colors.white.withOpacity(0.4)

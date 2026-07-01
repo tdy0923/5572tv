@@ -100,7 +100,7 @@ class _SimpleTabHoverState extends State<_SimpleTabHover> {
           alignment: Alignment.center, // 垂直居中
           child: Text(
             widget.label,
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 13,
               fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
               color: color,

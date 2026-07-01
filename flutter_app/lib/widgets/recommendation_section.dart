@@ -172,7 +172,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                   builder: (context, themeService, child) {
                     return Text(
                       widget.title,
-                      style: FontUtils.poppins(
+                      style: FontUtils.systemFont(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: themeService.isDarkMode
@@ -212,7 +212,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                       ),
                       child: Text(
                         widget.moreText!,
-                        style: FontUtils.poppins(
+                        style: FontUtils.systemFont(
                           fontSize: 14,
                           color: DeviceUtils.isPC() && _isMoreButtonHovered
                               ? const Color(0xFF27ae60) // hover 时绿色
@@ -499,7 +499,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
             const SizedBox(height: 8),
             Text(
               '加载失败',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
@@ -510,7 +510,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                 onPressed: widget.onRetry,
                 child: Text(
                   '重试',
-                  style: FontUtils.poppins(
+                  style: FontUtils.systemFont(
                     fontSize: 12,
                     color: const Color(0xFF2c3e50),
                   ),

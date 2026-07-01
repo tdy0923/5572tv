@@ -71,7 +71,7 @@ class UpdateDialog extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         '发现新版本',
-                        style: FontUtils.poppins(
+                        style: FontUtils.systemFont(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: themeService.isDarkMode
@@ -143,7 +143,7 @@ class UpdateDialog extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               '更新内容',
-                              style: FontUtils.poppins(
+                              style: FontUtils.systemFont(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: themeService.isDarkMode
@@ -168,7 +168,7 @@ class UpdateDialog extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               child: Text(
                                 versionInfo.releaseNotes,
-                                style: FontUtils.poppins(
+                                style: FontUtils.systemFont(
                                   fontSize: 14,
                                   height: 1.6,
                                   color: themeService.isDarkMode
@@ -209,7 +209,7 @@ class UpdateDialog extends StatelessWidget {
                           icon: const Icon(Icons.open_in_new_rounded, size: 18),
                           label: Text(
                             '查看新版本',
-                            style: FontUtils.poppins(
+                            style: FontUtils.systemFont(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -244,7 +244,7 @@ class UpdateDialog extends StatelessWidget {
                               ),
                               child: Text(
                                 '忽略',
-                                style: FontUtils.poppins(fontSize: 14),
+                                style: FontUtils.systemFont(fontSize: 14),
                               ),
                             ),
                           ),
@@ -258,7 +258,7 @@ class UpdateDialog extends StatelessWidget {
                               ),
                               child: Text(
                                 '稍后',
-                                style: FontUtils.poppins(fontSize: 14),
+                                style: FontUtils.systemFont(fontSize: 14),
                               ),
                             ),
                           ),
@@ -289,7 +289,7 @@ class UpdateDialog extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 12,
             color: themeService.isDarkMode
                 ? const Color(0xFF999999)
@@ -299,7 +299,7 @@ class UpdateDialog extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           version,
-          style: FontUtils.poppins(
+          style: FontUtils.systemFont(
             fontSize: 15,
             fontWeight: FontWeight.bold,
             color: color,

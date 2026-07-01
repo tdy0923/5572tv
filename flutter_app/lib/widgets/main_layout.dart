@@ -248,7 +248,7 @@ class _MainLayoutState extends State<MainLayout> {
                           Expanded(
                             child: Text(
                               suggestion,
-                              style: FontUtils.poppins(
+                              style: FontUtils.systemFont(
                                 fontSize: 14,
                                 color: themeService.isDarkMode
                                     ? const Color(0xFFffffff)
@@ -467,7 +467,7 @@ class _MainLayoutState extends State<MainLayout> {
               behavior: HitTestBehavior.opaque,
               child: Text(
                 '5572 影视',
-                style: FontUtils.sourceCodePro(
+                style: FontUtils.monospace(
                   fontSize: 24,
                   fontWeight: FontWeight.w400,
                   color: themeService.isDarkMode
@@ -515,7 +515,7 @@ class _MainLayoutState extends State<MainLayout> {
             textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               hintText: '搜索电影、剧集、动漫...',
-              hintStyle: FontUtils.poppins(
+              hintStyle: FontUtils.systemFont(
                 color: themeService.isDarkMode
                     ? const Color(0xFF666666)
                     : const Color(0xFF95a5a6),
@@ -653,7 +653,7 @@ class _MainLayoutState extends State<MainLayout> {
               ),
               isDense: true,
             ),
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
                   ? const Color(0xFFffffff)
@@ -999,7 +999,7 @@ class _MainLayoutState extends State<MainLayout> {
                           const SizedBox(height: 4),
                           Text(
                             item['label'],
-                            style: FontUtils.poppins(
+                            style: FontUtils.systemFont(
                               fontSize: 12,
                               fontWeight:
                                   isSelected ? FontWeight.w600 : FontWeight.w400,

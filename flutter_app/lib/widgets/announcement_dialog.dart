@@ -35,12 +35,12 @@ class AnnouncementDialog extends StatelessWidget {
                   child: Column(children: [
                     const Icon(Icons.campaign_rounded, size: 36, color: Color(0xFFF59E0B)),
                     const SizedBox(height: 8),
-                    Text(info.title, style: FontUtils.poppins(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(info.title, style: FontUtils.systemFont(fontSize: 18, fontWeight: FontWeight.bold)),
                   ]),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(info.content, style: FontUtils.poppins(fontSize: 14, height: 1.6, color: isDark ? const Color(0xFFCCC) : const Color(0xFF666))),
+                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? const Color(0xFFCCC) : const Color(0xFF666))),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -49,7 +49,7 @@ class AnnouncementDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF27AE60), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      child: Text('我知道了', style: FontUtils.poppins(fontWeight: FontWeight.w600)),
+                      child: Text('我知道了', style: FontUtils.systemFont(fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ),

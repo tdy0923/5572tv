@@ -60,7 +60,7 @@ class _FilterPillHoverState extends State<FilterPillHover> {
             children: [
               Text(
                 widget.isDefault ? widget.title : widget.selectedOption.label,
-                style: FontUtils.poppins(
+                style: FontUtils.systemFont(
                   fontSize: 13,
                   color: textColor,
                   fontWeight:

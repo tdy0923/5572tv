@@ -372,7 +372,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
           const SizedBox(height: 24),
           Text(
             '加载失败',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF7f8c8d),
@@ -381,7 +381,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
           const SizedBox(height: 12),
           Text(
             _errorMessage ?? '未知错误',
-            style: FontUtils.poppins(
+            style: FontUtils.systemFont(
               fontSize: 14,
               color: const Color(0xFF95a5a6),
             ),
@@ -399,7 +399,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
             ),
             child: Text(
               '重试',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -425,7 +425,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
             const SizedBox(height: 24),
             Text(
               '暂无收藏内容',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF7f8c8d),
@@ -434,7 +434,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
             const SizedBox(height: 12),
             Text(
               '您收藏的视频将显示在这里',
-              style: FontUtils.poppins(
+              style: FontUtils.systemFont(
                 fontSize: 14,
                 color: const Color(0xFF95a5a6),
               ),

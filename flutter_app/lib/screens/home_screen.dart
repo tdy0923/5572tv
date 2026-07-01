@@ -629,7 +629,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               '正在打开豆瓣详情: ${playRecord.title}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF3498DB),
             behavior: SnackBarBehavior.floating,
@@ -646,7 +646,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               '正在打开 Bangumi 详情: ${playRecord.title}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFF3498DB),
             behavior: SnackBarBehavior.floating,
@@ -692,7 +692,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               '删除失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,
@@ -776,7 +776,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SnackBar(
               content: Text(
                 result.errorMessage ?? '收藏失败',
-                style: FontUtils.poppins(color: Colors.white),
+                style: FontUtils.systemFont(color: Colors.white),
               ),
               backgroundColor: const Color(0xFFe74c3c),
               behavior: SnackBarBehavior.floating,
@@ -796,7 +796,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               '收藏失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,
@@ -833,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               result.errorMessage ?? '取消收藏失败',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,
@@ -853,7 +853,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Text(
               '取消收藏失败: ${e.toString()}',
-              style: FontUtils.poppins(color: Colors.white),
+              style: FontUtils.systemFont(color: Colors.white),
             ),
             backgroundColor: const Color(0xFFe74c3c),
             behavior: SnackBarBehavior.floating,

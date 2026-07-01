@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- 允许所有 HTTP 连接和所有 IP 地址 -->
-    <base-config cleartextTrafficPermitted="true">
+    <!-- 默认禁止明文 HTTP -->
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system"/>
-            <certificates src="user"/>
         </trust-anchors>
     </base-config>
+
+    <!-- 允许 5572 网站域名 HTTP（Emby/API 等内网服务） -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">www.5572.net</domain>
+        <domain includeSubdomains="true">5572.tv</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <!-- 内网 Emby 地址 -->
+        <domain includeSubdomains="true">192.168.0</domain>
+        <domain includeSubdomains="true">10.0.0</domain>
+    </domain-config>
 </network-security-config>

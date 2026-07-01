@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Text(
           message,
-          style: FontUtils.poppins(color: Colors.white, fontSize: 14),
+          style: FontUtils.systemFont(color: Colors.white, fontSize: 14),
         ),
         backgroundColor: backgroundColor,
         behavior: SnackBarBehavior.floating,
@@ -144,12 +144,12 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         TextFormField(
           controller: _usernameController,
-          style: FontUtils.poppins(fontSize: 16, color: const Color(0xFF2c3e50)),
+          style: FontUtils.systemFont(fontSize: 16, color: const Color(0xFF2c3e50)),
           decoration: InputDecoration(
             labelText: '用户名',
-            labelStyle: FontUtils.poppins(color: const Color(0xFF7f8c8d), fontSize: 14),
+            labelStyle: FontUtils.systemFont(color: const Color(0xFF7f8c8d), fontSize: 14),
             hintText: '请输入用户名',
-            hintStyle: FontUtils.poppins(color: const Color(0xFFbdc3c7), fontSize: 16),
+            hintStyle: FontUtils.systemFont(color: const Color(0xFFbdc3c7), fontSize: 16),
             prefixIcon: const Icon(Icons.person, color: Color(0xFF7f8c8d), size: 20),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -168,12 +168,12 @@ class _LoginScreenState extends State<LoginScreen> {
         TextFormField(
           controller: _passwordController,
           obscureText: !_isPasswordVisible,
-          style: FontUtils.poppins(fontSize: 16, color: const Color(0xFF2c3e50)),
+          style: FontUtils.systemFont(fontSize: 16, color: const Color(0xFF2c3e50)),
           decoration: InputDecoration(
             labelText: '密码',
-            labelStyle: FontUtils.poppins(color: const Color(0xFF7f8c8d), fontSize: 14),
+            labelStyle: FontUtils.systemFont(color: const Color(0xFF7f8c8d), fontSize: 14),
             hintText: '请输入密码',
-            hintStyle: FontUtils.poppins(color: const Color(0xFFbdc3c7), fontSize: 16),
+            hintStyle: FontUtils.systemFont(color: const Color(0xFFbdc3c7), fontSize: 16),
             prefixIcon: const Icon(Icons.lock, color: Color(0xFF7f8c8d), size: 20),
             suffixIcon: IconButton(
               icon: Icon(
@@ -218,10 +218,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
                     const SizedBox(width: 12),
-                    Text('登录中...', style: FontUtils.poppins(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
+                    Text('登录中...', style: FontUtils.systemFont(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
                   ],
                 )
-              : Text('登录', style: FontUtils.poppins(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 1.0)),
+              : Text('登录', style: FontUtils.systemFont(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 1.0)),
         ),
       ],
     );
@@ -282,7 +282,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 16),
         Text(
           '5572 影视',
-          style: FontUtils.sourceCodePro(
+          style: FontUtils.monospace(
             fontSize: 32,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF2c3e50),
@@ -292,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 8),
         Text(
           '智能影视播放平台',
-          style: FontUtils.poppins(fontSize: 14, color: const Color(0xFF7f8c8d)),
+          style: FontUtils.systemFont(fontSize: 14, color: const Color(0xFF7f8c8d)),
         ),
         const SizedBox(height: 40),
         Form(key: _formKey, child: _buildForm()),
@@ -318,9 +318,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('5572 影视', style: FontUtils.sourceCodePro(fontSize: 32, fontWeight: FontWeight.w600, color: Color(0xFF2c3e50), letterSpacing: 1.5)),
+          Text('5572 影视', style: FontUtils.monospace(fontSize: 32, fontWeight: FontWeight.w600, color: Color(0xFF2c3e50), letterSpacing: 1.5)),
           const SizedBox(height: 8),
-          Text('智能影视播放平台', style: FontUtils.poppins(fontSize: 14, color: Color(0xFF7f8c8d))),
+          Text('智能影视播放平台', style: FontUtils.systemFont(fontSize: 14, color: Color(0xFF7f8c8d))),
           const SizedBox(height: 40),
           Form(key: _formKey, child: _buildForm()),
         ],
