@@ -1,0 +1,37 @@
+{
+  "name": "5572 影视",
+  "subtitle": "海量影视资源聚合",
+  "description": "5572 影视 - 海量影视资源聚合平台，支持 AI 智能搜索推荐、弹幕互动、离线缓存、多端同步。",
+  "iconURL": "https://www.5572.net/icons/icon-192x192.png",
+  "website": "https://www.5572.net",
+  "tintColor": "#F4C24D",
+  "apps": [
+    {
+      "name": "5572 影视",
+      "bundleIdentifier": "org.moontechlab.selene",
+      "subtitle": "海量影视资源聚合",
+      "localizedDescription": "5572 影视 - 海量影视资源聚合平台，支持 AI 智能搜索推荐、弹幕互动、离线缓存、多端同步。",
+      "iconURL": "https://www.5572.net/icons/icon-192x192.png",
+      "tintColor": "#F4C24D",
+      "category": "entertainment",
+      "versions": [
+        {
+          "version": "1.8.0",
+          "buildVersion": "180",
+          "date": "2026-07-01",
+          "localizedDescription": "初始版本发布",
+          "downloadURL": "https://www.5572.net/altstore/selene-1.8.0.ipa",
+          "size": 65536000,
+          "minOSVersion": "13.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": ["com.apple.security.application-groups"],
+        "privacy": {
+          "NSMicrophoneUsageDescription": "用于直播互动功能",
+          "NSCameraUsageDescription": "用于扫描二维码登录"
+        }
+      }
+    }
+  ]
+}

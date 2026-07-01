@@ -22,6 +22,7 @@ import { detectPlatform } from './utils';
 
 const APK_SIZE = '63.1';
 const APK_VERSION = 'v1.8.0';
+const IPA_VERSION = 'v1.8.0';
 
 function DownloadCard() {
   return (
@@ -178,12 +179,23 @@ export default function DownloadPage() {
               <div className='flex flex-col gap-6 justify-center lg:justify-start'>
                 <div className='flex flex-col sm:flex-row gap-3 items-center lg:items-start'>
                   {selectedPlatform === 'ios' ? (
-                    <button
-                      onClick={() => setShowGuide(true)}
-                      className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
-                    >
-                      添加到主屏幕
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setShowGuide(true)}
+                        className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
+                      >
+                        <Smartphone className='w-5 h-5' />
+                        AltStore 安装
+                      </button>
+                      <button
+                        onClick={() => {
+                          window.open('https://altstore.io', '_blank');
+                        }}
+                        className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors min-h-[56px]'
+                      >
+                        下载 AltStore
+                      </button>
+                    </>
                   ) : (
                     <a
                       href='/download/5572tv-android.apk'
@@ -268,9 +280,10 @@ export default function DownloadPage() {
                 {(selectedPlatform === 'ios'
                   ? [
                       '用 Safari 打开此页面',
-                      '点击底部「分享」按钮',
-                      '选择「添加到主屏幕」',
-                      '点击「添加」完成',
+                      '点击「AltStore 安装」',
+                      '按提示添加 AltStore 源',
+                      '在 AltStore 中安装 5572 影视',
+                      '每 7 天自动续期（同 WiFi 下）',
                     ]
                   : [
                       '点击下载按钮',

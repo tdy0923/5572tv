@@ -1,0 +1,12 @@
+{
+  "appName": "5572 影视",
+  "appBundleId": "org.moontechlab.selene",
+  "appVersion": "1.8.0",
+  "appBuildVersion": "180",
+  "appSubtitle": "海量影视资源聚合",
+  "appDescription": "5572 影视 - 海量影视资源聚合平台，支持 AI 智能搜索推荐、弹幕互动、离线缓存、多端同步。",
+  "appIconURL": "https://www.5572.net/icons/icon-192x192.png",
+  "appScreenshotURLs": [],
+  "releaseDate": "2026-07-01",
+  "minimumOSVersion": "13.0"
+}
