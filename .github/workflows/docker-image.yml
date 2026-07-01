@@ -101,6 +101,7 @@ jobs:
           build-args: CACHE_BUST=${{ github.run_id }}
           outputs: type=image,name=ghcr.io/${{ steps.lowercase.outputs.owner }}/5572tv,name-canonical=true,push=true
           pull: true
+          no-cache: true
 
       - name: Export digest
         run: |
