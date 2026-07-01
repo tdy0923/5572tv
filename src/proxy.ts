@@ -2,6 +2,7 @@
 
 /* eslint-disable unused-imports/no-unused-vars */
 
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -211,38 +212,60 @@ function isIPTrusted(clientIP: string, trustedIPs: string[]): boolean {
 
 // 生成信任网络的自动登录 cookie
 function generateTrustedAuthCookie(request: NextRequest): NextResponse {
+  // 如果未设置密码，禁止信任网络自动登录
+  if (!process.env.PASSWORD) {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
 
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  const storageType = process.env.STORAGE_TYPE || 'localstorage';
   const username = process.env.USERNAME || 'admin';
 
   if (storageType === 'localstorage') {
-    // localstorage 模式：设置密码 cookie
+    // localstorage 模式：使用 HMAC 签名 cookie（不再存储明文密码）
+    const role = 'admin';
+    const signData = `${username}:${role}`;
+    const hmac = crypto.createHmac('sha256', process.env.PASSWORD);
+    const signature = hmac.update(signData).digest('hex');
+
     const authInfo = {
-      password: process.env.PASSWORD,
+      username,
+      role,
+      signature,
+      timestamp: Date.now(),
       loginTime: Date.now(),
+      trustedNetwork: true,
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
+      path: '/',
     });
   } else {
     // 数据库模式：生成签名 cookie（需要异步，这里简化处理）
-    // 在信任网络模式下，我们设置一个特殊的信任标记
+    // 在信任网络模式下，设置带签名的用户角色（非 owner）
+    const role = 'admin';
+    const signData = `${username}:${role}`;
+    const hmac = crypto.createHmac('sha256', process.env.PASSWORD);
+    const signature = hmac.update(signData).digest('hex');
+
     const authInfo = {
       username,
       trustedNetwork: true,
       timestamp: Date.now(),
       loginTime: Date.now(),
-      role: 'owner',
+      role,
+      signature,
     };
     response.cookies.set('user_auth', JSON.stringify(authInfo), {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60,
+      path: '/',
     });
   }
 
@@ -311,7 +334,8 @@ async function handleAuthentication(
   const trustedNetworkConfig = await getTrustedNetworkConfig(request);
   if (
     trustedNetworkConfig?.enabled &&
-    trustedNetworkConfig.trustedIPs.length > 0
+    trustedNetworkConfig.trustedIPs.length > 0 &&
+    process.env.PASSWORD
   ) {
     const clientIP = getClientIP(request);
 
@@ -336,7 +360,7 @@ async function handleAuthentication(
     }
   }
 
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  const storageType = process.env.STORAGE_TYPE || 'localstorage';
 
   if (!process.env.PASSWORD) {
     // 如果没有设置密码，重定向到警告页面

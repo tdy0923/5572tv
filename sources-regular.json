@@ -2,7 +2,7 @@
   {
     "key": "zy_01",
     "name": "资源01",
-    "api": "http://ffzy1.tv/api.php/provide/vod/",
+    "api": "https://ffzy1.tv/api.php/provide/vod/",
     "detail": "https://ffzy1.tv",
     "weight": 80
   },

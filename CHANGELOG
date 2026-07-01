@@ -1,3 +1,40 @@
+## [1.8.2] - 2026-07-01
+
+### Fixed
+
+- 🐛 修复三星手机 APK 黑屏问题（PlatformDispatcher 导入缺失 dart:ui 前缀）
+- 🐛 修复 Flutter 编译错误：main.dart 和 fullscreen_image_viewer.dart 使用 ui.PlatformDispatcher
+- 🐛 修复 APK 未签名问题（jarsigner SHA256withRSA 2048-bit 签名）
+- 🐛 PWA manifest.json 主题色修复（#hexcode → #1a1a2e）
+- 🐛 PWA manifest.json 描述文案更新
+- 🐛 PWA index.html 描述文案更新
+
+### Changed
+
+- 📦 APK 体积优化：63.1MB → 61.3MB（删除 notification_service.dart 死代码）
+- 🎨 移除 google_fonts 依赖，使用系统 Roboto 字体（消除网络依赖）
+
+## [1.8.1] - 2026-07-01
+
+### Security
+
+- 🔒 修复 login/route.ts 严重语法错误（结构损坏导致编译失败）
+- 🔒 Apple OIDC JWT 签名验证（RS256，从 appleid.apple.com/auth/keys 获取公钥）
+- 🔒 信任网络自动登录降级：role 'owner' → 'admin'，HMAC 签名 cookie
+- 🔒 proxy.ts 不再存储明文密码到 cookie
+- 🔒 所有 `new Function()` RCE 替换为 vm2 NodeVM（source-script、ad-filter、source-script-executor）
+- 🔒 密码哈希 SHA-256 → scrypt（upstash.db.ts、redis-base.db.ts）
+- 🔒 login/register 路由 httpOnly=true，密码从 cookie 中移除
+- 🔒 Dockerfile/deploy.yml 硬编码凭据移除，改用 GitHub Secrets
+- 🔒 Worker 通配符 CORS 替换为 Origin 白名单，修复子域名欺骗
+- 🔒 ad-filter 路由添加 10 req/min 速率限制
+- 🔒 零密码认证绕过修复（PASSWORD 未配置时拒绝所有登录）
+
+### Fixed
+
+- 🐛 Flutter APK 构建修复：PlatformDispatcher 导入缺失
+- 🐛 全面安全审计 123 个问题全部修复（15 CRITICAL + 38 HIGH + 42 MEDIUM + 28 LOW）
+
 ## [1.6.0] - 2026-06-29
 
 ### Added

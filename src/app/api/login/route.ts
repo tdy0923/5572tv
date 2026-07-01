@@ -203,20 +203,16 @@ export async function POST(req: NextRequest) {
     if (STORAGE_TYPE === 'localstorage') {
       const envPassword = process.env.PASSWORD;
 
-      // 未配置 PASSWORD 时直接放行
+      // 未配置 PASSWORD 时拒绝所有登录尝试
       if (!envPassword) {
-        const response = NextResponse.json({ ok: true });
-
-        // 清除可能存在的认证cookie
-        response.cookies.set('user_auth', '', {
-          path: '/',
-          expires: new Date(0),
-          sameSite: 'lax',
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-        });
-
-        return response;
+        console.error(
+          '[Login] PASSWORD environment variable is not set. ' +
+            'Login is disabled for security.',
+        );
+        return NextResponse.json(
+          { error: 'Authentication service not configured' },
+          { status: 503 },
+        );
       }
 
       const { password } = await req.json();
@@ -241,108 +237,8 @@ export async function POST(req: NextRequest) {
       const response = NextResponse.json({ ok: true });
       const cookieValue = await generateAuthCookie(
         undefined,
-        password,
+        undefined,
         'user',
-        true,
-      ); // localstorage 模式包含 password
-      const expires = new Date();
-      expires.setDate(expires.getDate() + 7); // 7天过期
-
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
-        expires,
-        sameSite: 'lax',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-      });
-
-      return response;
-    }
-
-    // 数据库 / redis 模式——校验用户名并尝试连接数据库
-    const { username, password } = await req.json();
-
-    if (!username || typeof username !== 'string') {
-      return NextResponse.json({ error: '用户名不能为空' }, { status: 400 });
-    }
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json({ error: '密码不能为空' }, { status: 400 });
-    }
-
-    // 可能是站长，直接读环境变量
-    if (
-      username === process.env.USERNAME &&
-      password === process.env.PASSWORD
-    ) {
-      // 记录设备信息
-      const userAgent = req.headers.get('user-agent') || '';
-      await trackDevice(username, userAgent, ip);
-
-      // 验证成功，设置认证cookie
-      const response = NextResponse.json({ ok: true });
-      const cookieValue = await generateAuthCookie(
-        username,
-        password,
-        'owner',
-        false,
-      ); // 数据库模式不包含 password
-      const expires = new Date();
-      expires.setDate(expires.getDate() + 7); // 7天过期
-
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
-        expires,
-        sameSite: 'lax',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-      });
-
-      recordSuccessfulLogin(ip);
-      return response;
-    } else if (username === process.env.USERNAME) {
-      recordFailedAttempt(ip);
-      return NextResponse.json({ error: '用户名或密码错误' }, { status: 401 });
-    }
-
-    const config = await getConfig();
-    const legacyUser = config.UserConfig.Users.find(
-      (u) => u.username === username,
-    );
-    const userV2 = await db.getUserInfoV2(username);
-    const user = userV2 || legacyUser;
-    if (user?.banned) {
-      return NextResponse.json({ error: '用户被封禁' }, { status: 401 });
-    }
-
-    // 优先校验 V2 用户密码，失败后回退到 V1（兼容老用户）
-    try {
-      let pass = false;
-
-      if (userV2) {
-        pass = await db.verifyUserV2(username, password);
-      } else {
-        pass = await db.verifyUser(username, password);
-      }
-
-      if (!pass) {
-        recordFailedAttempt(ip);
-        return NextResponse.json(
-          { error: '用户名或密码错误' },
-          { status: 401 },
-        );
-      }
-
-      recordSuccessfulLogin(ip);
-      // 记录设备信息
-      const userAgent = req.headers.get('user-agent') || '';
-      await trackDevice(username, userAgent, ip);
-
-      // 验证成功，设置认证cookie
-      const response = NextResponse.json({ ok: true });
-      const cookieValue = await generateAuthCookie(
-        username,
-        password,
-        user?.role || 'user',
         false,
       );
       const expires = new Date();
@@ -352,14 +248,112 @@ export async function POST(req: NextRequest) {
         path: '/',
         expires,
         sameSite: 'lax',
-        httpOnly: false,
+        httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
       });
 
       return response;
-    } catch (err) {
-      console.error('数据库验证失败', err);
-      return NextResponse.json({ error: '数据库错误' }, { status: 500 });
+    }
+
+    // 数据库 / redis 模式——校验用户名并尝试连接数据库
+    try {
+      const { username, password } = await req.json();
+
+      if (!username || typeof username !== 'string') {
+        return NextResponse.json({ error: '用户名不能为空' }, { status: 400 });
+      }
+      if (!password || typeof password !== 'string') {
+        return NextResponse.json({ error: '密码不能为空' }, { status: 400 });
+      }
+
+      // 可能是站长，直接读环境变量
+      if (
+        username === process.env.USERNAME &&
+        password === process.env.PASSWORD
+      ) {
+        // 记录设备信息
+        const userAgent = req.headers.get('user-agent') || '';
+        await trackDevice(username, userAgent, ip);
+
+        // 验证成功，设置认证cookie
+        const response = NextResponse.json({ ok: true });
+        const cookieValue = await generateAuthCookie(
+          username,
+          undefined,
+          'owner',
+          false,
+        ); // 不包含 password
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 7); // 7天过期
+
+        response.cookies.set('user_auth', cookieValue, {
+          path: '/',
+          expires,
+          sameSite: 'lax',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+        });
+        return response;
+      }
+
+      const config = await getConfig();
+      const legacyUser = config.UserConfig.Users.find(
+        (u) => u.username === username,
+      );
+      const userV2 = await db.getUserInfoV2(username);
+      const user = userV2 || legacyUser;
+      if (user?.banned) {
+        return NextResponse.json({ error: '用户被封禁' }, { status: 401 });
+      }
+
+      // 优先校验 V2 用户密码，失败后回退到 V1（兼容老用户）
+      try {
+        let pass = false;
+
+        if (userV2) {
+          pass = await db.verifyUserV2(username, password);
+        } else {
+          pass = await db.verifyUser(username, password);
+        }
+
+        if (!pass) {
+          recordFailedAttempt(ip);
+          return NextResponse.json(
+            { error: '用户名或密码错误' },
+            { status: 401 },
+          );
+        }
+
+        recordSuccessfulLogin(ip);
+        // 记录设备信息
+        const userAgent = req.headers.get('user-agent') || '';
+        await trackDevice(username, userAgent, ip);
+
+        // 验证成功，设置认证cookie
+        const response = NextResponse.json({ ok: true });
+        const cookieValue = await generateAuthCookie(
+          username,
+          password,
+          user?.role || 'user',
+          false,
+        );
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 7); // 7天过期
+
+        response.cookies.set('user_auth', cookieValue, {
+          path: '/',
+          expires,
+          sameSite: 'lax',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+        });
+      } catch (dbErr) {
+        console.error('数据库验证失败', dbErr);
+        return NextResponse.json({ error: '数据库错误' }, { status: 500 });
+      }
+    } catch (error) {
+      console.error('登录接口异常', error);
+      return NextResponse.json({ error: '服务器错误' }, { status: 500 });
     }
   } catch (error) {
     console.error('登录接口异常', error);

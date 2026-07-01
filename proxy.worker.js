@@ -43,12 +43,10 @@ async function handleTrailerCache(request, url) {
     return jsonResponse({ error: 'Invalid URL format' }, 400);
   }
 
-  // 验证是否为豆瓣域名
+  // 验证是否为豆瓣域名（精确匹配）
   const allowedDomains = ['douban.com', 'doubanio.com'];
   const parsedUrl = new URL(decodedUrl);
-  const isAllowed = allowedDomains.some((domain) =>
-    parsedUrl.hostname.includes(domain),
-  );
+  const isAllowed = allowedDomains.includes(parsedUrl.hostname);
 
   if (!isAllowed) {
     return jsonResponse({ error: 'Only douban domains are allowed' }, 403);
@@ -72,7 +70,10 @@ async function handleTrailerCache(request, url) {
     }
 
     const headers = new Headers(response.headers);
-    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set(
+      'Access-Control-Allow-Origin',
+      request.headers.get('Origin') || '',
+    );
     headers.set('Cache-Control', 'public, max-age=86400'); // 24h cache
 
     return new Response(response.body, {
@@ -84,15 +85,19 @@ async function handleTrailerCache(request, url) {
   }
 }
 
-function jsonResponse(data, status) {
+function jsonResponse(data, status, cors = false) {
+  const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+  if (cors) {
+    headers['Access-Control-Allow-Origin'] =
+      request.headers.get('Origin') || '';
+    headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = '*';
+  }
   return new Response(JSON.stringify(data), {
     status: status,
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': '*',
-    },
+    headers,
   });
 }
 

@@ -41,26 +41,34 @@ function IOSSteps() {
     <div className='space-y-4'>
       <h3 className='text-lg font-bold flex items-center gap-2'>
         <Smartphone className='w-5 h-5 text-[#f4c24d]' />
-        AltStore 安装
+        iOS 安装步骤（PWA）
       </h3>
       <div className='space-y-3'>
         {[
           {
             step: 1,
-            text: '下载并安装 AltStore（从 altstore.io）',
-            icon: '📱',
+            text: '用 Safari 浏览器打开 https://www.5572.net',
+            icon: '🌐',
           },
-          { step: 2, text: '打开 AltStore，点击「Sources」', icon: '📚' },
+          {
+            step: 2,
+            text: '点击底部中间的「分享」按钮',
+            icon: '↗️',
+          },
           {
             step: 3,
-            text: '添加源：https://www.5572.net/altstore/source.json',
-            icon: '🔗',
+            text: '向下滚动，点击「添加到主屏幕」',
+            icon: '➕',
           },
-          { step: 4, text: '返回 App 列表，点击「5572 影视」安装', icon: '⬇️' },
+          {
+            step: 4,
+            text: '点击右上角「添加」确认',
+            icon: '✅',
+          },
           {
             step: 5,
-            text: '每 7 天自动续期（设备在同一 WiFi 下）',
-            icon: '🔄',
+            text: '回到主屏幕，找到 5572 影视图标打开',
+            icon: '📲',
           },
         ].map((s) => (
           <div key={s.step} className='flex items-center gap-3'>
@@ -73,12 +81,12 @@ function IOSSteps() {
       </div>
       <div className='mt-4 p-3 rounded-xl bg-[#f4c24d]/10 border border-[#f4c24d]/20'>
         <p className='text-sm text-[#f4c24d]'>
-          💡 AltStore 会在 7 天内自动为你的 App 重新签名，无需手动操作
+          💡 iOS 16+ 也可直接长按图标，选择「添加到主屏幕」
         </p>
       </div>
       <div className='mt-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20'>
         <p className='text-sm text-blue-400'>
-          📝 注意：首次安装需要在电脑上运行 AltServer（用于签名你的 Apple ID）
+          📝 注意：请使用 Safari 浏览器，其他浏览器不支持添加到主屏幕
         </p>
       </div>
     </div>

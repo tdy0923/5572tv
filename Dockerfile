@@ -34,7 +34,7 @@ RUN ls -la /app/static/download/ && wc -c /app/static/download/5572tv-android.ap
 # 在构建阶段设置 DOCKER_BUILD，启用 standalone 输出
 ENV DOCKER_BUILD=true
 ENV NEXT_PUBLIC_STORAGE_TYPE=kvrocks
-ENV KVROCKS_URL=redis://:Danny0923@kvrocks:6666
+# KVROCKS_URL 应在运行时通过环境变量注入，不要在此硬编码
 
 # 生成生产构建
 RUN pnpm run build

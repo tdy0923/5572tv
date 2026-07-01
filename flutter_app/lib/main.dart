@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
@@ -10,8 +11,24 @@ import 'services/api_service.dart';
 import 'services/theme_service.dart';
 import 'services/douban_cache_service.dart';
 
+class GlobalErrorHandler {
+  static void init() {
+    FlutterError.onError = (details) {
+      debugPrint('Flutter error: ${details.exception}');
+      debugPrint(details.stack.toString());
+    };
+
+    ui.PlatformDispatcher.instance.onError = (error, stack) {
+      debugPrint('Platform error: $error');
+      debugPrint(stack.toString());
+      return true;
+    };
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GlobalErrorHandler.init();
 
   try {
     await Future.wait([

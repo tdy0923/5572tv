@@ -49,66 +49,66 @@ const nextConfig = {
   },
 
   // 安全头配置
-  headers: async () => [
-    {
-      source: '/(.*)',
-      headers: [
-        {
-          key: 'X-Content-Type-Options',
-          value: 'nosniff',
-        },
-        {
-          key: 'X-Frame-Options',
-          value: 'DENY',
-        },
-        {
-          key: 'X-XSS-Protection',
-          value: '1; mode=block',
-        },
-        {
-          key: 'Referrer-Policy',
-          value: 'strict-origin-when-cross-origin',
-        },
-        {
-          key: 'Permissions-Policy',
-          value: 'camera=(), microphone=(), geolocation=()',
-        },
-        {
-          key: 'Content-Security-Policy',
-          value:
-            "default-src 'self' https: http:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://tg.yunku.de https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';",
-        },
-      ],
-    },
-    // 海报缓存 - 长期缓存
-    {
-      source: '/poster-cache/:path*',
-      headers: [
-        {
-          key: 'Cache-Control',
-          value: 'public, max-age=2592000, s-maxage=2592000, immutable',
-        },
-        {
-          key: 'Access-Control-Allow-Origin',
-          value: '*',
-        },
-      ],
-    },
-    // 视频缩略图缓存 - 长期缓存
-    {
-      source: '/video-cache/:path*',
-      headers: [
-        {
-          key: 'Cache-Control',
-          value: 'public, max-age=2592000, s-maxage=2592000, immutable',
-        },
-        {
-          key: 'Access-Control-Allow-Origin',
-          value: '*',
-        },
-      ],
-    },
-  ],
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self' https: http:; script-src 'self' https://tg.yunku.de https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';",
+          },
+        ],
+      },
+      {
+        source: '/poster-cache/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, s-maxage=2592000, immutable',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+        ],
+      },
+      {
+        source: '/video-cache/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, s-maxage=2592000, immutable',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

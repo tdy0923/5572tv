@@ -337,14 +337,55 @@ export async function GET(request: NextRequest) {
 
     if (providerId === 'apple') {
       // Apple 的用户信息在 id_token 中，不需要调用 userinfo endpoint
-      // 解析 JWT (id_token) 获取用户信息
+      // 验证 Apple JWT 签名（使用 Apple 的公钥）
       try {
-        // JWT 格式：header.payload.signature
-        // 我们只需要 payload 部分
         const tokenParts = idToken.split('.');
         if (tokenParts.length !== 3) {
           throw new Error('Invalid id_token format');
         }
+        // 获取 Apple 公钥（JWT 的 kid 告诉我们要用哪个密钥）
+        const header = JSON.parse(
+          Buffer.from(tokenParts[0], 'base64').toString(),
+        );
+        const kid = header.kid;
+        if (!kid) {
+          throw new Error('Missing kid in JWT header');
+        }
+
+        // 获取 Apple 的公钥
+        const keysResponse = await fetch('https://appleid.apple.com/auth/keys');
+        const keysData = await keysResponse.json();
+        const publicKey = keysData.keys.find((k: any) => k.kid === kid);
+        if (!publicKey) {
+          throw new Error('Apple public key not found for kid: ' + kid);
+        }
+
+        // 验证 JWT 签名
+        const signingInput = tokenParts[0] + '.' + tokenParts[1];
+        const signature = Buffer.from(tokenParts[2], 'base64');
+        const crypto = await import('crypto');
+        const verifier = crypto.webcrypto.subtle.verify(
+          'RS256',
+          await crypto.webcrypto.subtle.importKey(
+            'jwk',
+            publicKey,
+            { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+            false,
+            ['verify'],
+          ),
+          signature,
+          Buffer.from(signingInput),
+        );
+        if (!verifier) {
+          recordFailedAttempt(ip);
+          return NextResponse.redirect(
+            new URL(
+              '/login?error=' + encodeURIComponent('Apple 签名验证失败'),
+              origin,
+            ),
+          );
+        }
+
         // Base64 解码 payload
         const payload = JSON.parse(
           Buffer.from(tokenParts[1], 'base64').toString(),

@@ -147,8 +147,13 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
         );
       }
     } else {
-      // No PASSWORD set — skip signature verification (legacy mode)
-      isValid = true;
+      // No PASSWORD set — reject all authentication attempts
+      console.error(
+        '[Auth] PASSWORD environment variable is not set. ' +
+          'Authentication is disabled for security. ' +
+          'Set a strong PASSWORD in production.',
+      );
+      return null;
     }
 
     if (!isValid) {

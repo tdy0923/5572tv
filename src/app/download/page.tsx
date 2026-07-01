@@ -20,9 +20,9 @@ import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '63.1';
-const APK_VERSION = 'v1.8.0';
-const IPA_VERSION = 'v1.8.0';
+const APK_SIZE = '61.3';
+const APK_VERSION = 'v1.8.2';
+const IPA_VERSION = 'v1.8.1';
 
 function DownloadCard() {
   return (
@@ -286,11 +286,11 @@ export default function DownloadPage() {
               <div className='space-y-4'>
                 {(selectedPlatform === 'ios'
                   ? [
-                      '用 Safari 打开此页面',
-                      '点击下载按钮下载 APK',
-                      '打开下载的文件安装',
-                      '点击「仍然安装」确认',
-                      '安装完成，打开使用',
+                      '用 Safari 打开 https://www.5572.net',
+                      '点击底部「分享」按钮',
+                      '选择「添加到主屏幕」',
+                      '点击右上角「添加」确认',
+                      '回到主屏幕打开 5572 影视',
                     ]
                   : [
                       '点击下载按钮',

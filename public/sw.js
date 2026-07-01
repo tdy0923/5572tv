@@ -88,7 +88,11 @@ self.addEventListener('message', (event) => {
       ? data
       : 'download';
 
-  const token = Math.random().toString(36).slice(2);
+  const array = new Uint8Array(16);
+  self.crypto.getRandomValues(array);
+  const token = Array.from(array, (b) => b.toString(16).padStart(2, '0')).join(
+    '',
+  );
   const downloadUrl = '/download/' + token + '/' + filename;
 
   const metadata = new Array(3);

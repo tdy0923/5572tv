@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { NodeVM } from 'vm2';
 
 import { ensureAdmin } from '@/lib/admin-auth';
 import { db } from '@/lib/db';
@@ -137,55 +138,39 @@ export async function DELETE(request: NextRequest) {
 
 // ==================== Script Execution Helpers ====================
 
-const BLOCKED_GLOBALS = [
-  'process',
-  'require',
-  'module',
-  'exports',
-  '__dirname',
-  '__filename',
-  'eval',
-  'Function',
-  'setTimeout',
-  'setInterval',
-  'setImmediate',
-  'globalThis',
-  'global',
-];
-
 function executeScript(
   scriptCode: string,
   context: Record<string, any>,
   timeoutMs = 5000,
-): any {
+): Promise<any> {
   // Code size limit: 100KB
   const MAX_CODE_SIZE = 100 * 1024;
   if (scriptCode.length > MAX_CODE_SIZE) {
     return Promise.reject(new Error('脚本代码超过大小限制'));
   }
 
-  const wrappedCode = `
-    "use strict";
-    ${BLOCKED_GLOBALS.map((g) => `var ${g} = undefined;`).join('\n')}
-    return (${scriptCode})(__ctx__);
-  `;
+  try {
+    const vm = new NodeVM({
+      timeout: timeoutMs,
+      sandbox: context,
+      eval: false,
+      wasm: false,
+      console: 'redirect',
+      require: {
+        external: false,
+        builtin: [],
+        root: './',
+        mock: null,
+      },
+    });
 
-  const fn = new Function('__ctx__', wrappedCode);
-
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error('脚本执行超时'));
-    }, timeoutMs);
-
-    try {
-      const result = fn(context);
-      clearTimeout(timer);
-      resolve(result);
-    } catch (err) {
-      clearTimeout(timer);
-      reject(err);
-    }
-  });
+    return vm.run(
+      `module.exports = async (__ctx__) => { ${scriptCode} };`,
+      __dirname,
+    );
+  } catch (err) {
+    return Promise.reject(err);
+  }
 }
 
 async function handleTest(body: {

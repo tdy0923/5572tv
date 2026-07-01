@@ -22,7 +22,7 @@ import { generateStorageKey } from './utils';
 const STORAGE_TYPE =
   (process.env.KVROCKS_URL
     ? 'kvrocks'
-    : (process.env.NEXT_PUBLIC_STORAGE_TYPE as
+    : (process.env.STORAGE_TYPE as
         | 'localstorage'
         | 'redis'
         | 'upstash'
@@ -676,7 +676,7 @@ export class DbManager {
 
   // 检查存储类型是否支持统计功能
   isStatsSupported(): boolean {
-    const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+    const storageType = process.env.STORAGE_TYPE || 'localstorage';
     return storageType !== 'localstorage';
   }
 

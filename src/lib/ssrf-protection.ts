@@ -100,7 +100,7 @@ export async function isUrlSafeDeep(targetUrl: string): Promise<boolean> {
 
     return true;
   } catch {
-    // DNS resolution failure — allow through (conservative: don't block on DNS failure)
-    return true;
+    // DNS resolution failure — fail closed to prevent SSRF bypass
+    return false;
   }
 }

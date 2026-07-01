@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { NodeVM } from 'vm2';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
@@ -55,15 +56,52 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid code' }, { status: 400 });
     }
 
-    // Validate the code is safe JavaScript
+    // Validate the code is safe JavaScript using VM2
     try {
-      new Function(code);
+      const vm = new NodeVM({
+        timeout: 3000,
+        sandbox: {},
+        eval: false,
+        wasm: false,
+        console: 'redirect',
+        require: {
+          external: false,
+          builtin: [],
+          root: './',
+          mock: null,
+        },
+      });
+      await vm.run(`module.exports = async () => { ${code} };`, __dirname);
     } catch {
       return NextResponse.json(
-        { error: 'Invalid JavaScript code' },
+        { error: 'Invalid or unsafe JavaScript code' },
         { status: 400 },
       );
     }
+
+    // Rate limit: 10 modifications per minute per IP
+    const ip =
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    const rateLimitKey = `ad-filter:${ip}`;
+    const now = Date.now();
+    const WINDOW_MS = 60 * 1000;
+    const MAX_REQUESTS = 10;
+    const rateLimitStore =
+      (globalThis as any).__rateLimitStore ||
+      ((globalThis as any).__rateLimitStore = new Map());
+    const entry = rateLimitStore.get(rateLimitKey);
+    if (entry && now < entry.resetTime && entry.count >= MAX_REQUESTS) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded' },
+        { status: 429 },
+      );
+    }
+    rateLimitStore.set(rateLimitKey, {
+      count: (entry?.count || 0) + 1,
+      resetTime: now + WINDOW_MS,
+    });
 
     // Save to config
     const config = await getConfig();
