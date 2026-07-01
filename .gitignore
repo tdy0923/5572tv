@@ -78,3 +78,4 @@ package-lock.json
 commitlint.config.js
 jest.config.js
 jest.setup.js
+*.keystore
