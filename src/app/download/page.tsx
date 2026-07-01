@@ -185,16 +185,23 @@ export default function DownloadPage() {
                         className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#f4c24d] text-black rounded-xl font-semibold hover:bg-[#d89c18] transition-colors min-h-[56px]'
                       >
                         <Smartphone className='w-5 h-5' />
-                        AltStore 安装
+                        iOS 安装指南
                       </button>
-                      <button
-                        onClick={() => {
-                          window.open('https://altstore.io', '_blank');
+                      <a
+                        href='/download/5572tv-android.apk'
+                        download='5572tv-android.apk'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          browserDownload(
+                            '/download/5572tv-android.apk',
+                            '5572tv-android.apk',
+                          );
                         }}
                         className='inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20 transition-colors min-h-[56px]'
                       >
-                        下载 AltStore
-                      </button>
+                        <Download className='w-5 h-5' />
+                        下载 APK
+                      </a>
                     </>
                   ) : (
                     <a
@@ -280,10 +287,10 @@ export default function DownloadPage() {
                 {(selectedPlatform === 'ios'
                   ? [
                       '用 Safari 打开此页面',
-                      '点击「AltStore 安装」',
-                      '按提示添加 AltStore 源',
-                      '在 AltStore 中安装 5572 影视',
-                      '每 7 天自动续期（同 WiFi 下）',
+                      '点击下载按钮下载 APK',
+                      '打开下载的文件安装',
+                      '点击「仍然安装」确认',
+                      '安装完成，打开使用',
                     ]
                   : [
                       '点击下载按钮',
