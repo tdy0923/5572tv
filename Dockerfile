@@ -70,6 +70,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 COPY --from=builder --chown=nextjs:nodejs /app/start.js ./start.js
 # 从构建器中复制 public、static 和 .next/static 目录
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# 创建 static/download 目录用于存放 APK
+RUN mkdir -p /app/static/download
 # static 目录包含 APK 等大文件，确保每次构建都更新
 COPY --from=builder --chown=nextjs:nodejs /app/static/download/5572tv-android.apk ./static/download/5572tv-android.apk # Explicitly copy APK
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
