@@ -36,8 +36,8 @@ ENV DOCKER_BUILD=true
 ENV NEXT_PUBLIC_STORAGE_TYPE=kvrocks
 ENV KVROCKS_URL=redis://:Danny0923@kvrocks:6666
 
-# 生成生产构建（添加 --no-cache 确保不使用缓存）
-RUN pnpm run build -- --no-cache
+# 生成生产构建
+RUN pnpm run build
 
 # ---- 第 3 阶段：生成运行时镜像 ----
 FROM node:22-alpine AS runner
