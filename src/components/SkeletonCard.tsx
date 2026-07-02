@@ -1,13 +1,17 @@
 'use client';
 
-export default function SkeletonCard({ className = '' }: { className?: string }) {
+import FluentSkeleton from './FluentSkeleton';
+
+export default function SkeletonCard({
+  className = '',
+}: {
+  className?: string;
+}) {
   return (
-    <div className={`animate-pulse ${className}`}>
-      <div className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-800" />
-      <div className="mt-2 space-y-2">
-        <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-3/4" />
-        <div className="h-3 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
-      </div>
+    <div className={`space-y-3 ${className}`}>
+      <FluentSkeleton height='200px' borderRadius='8px' />
+      <FluentSkeleton width='70%' height='16px' />
+      <FluentSkeleton width='40%' height='12px' />
     </div>
   );
 }
