@@ -37,8 +37,9 @@ jobs:
 
             docker pull ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
-            docker stop 5572tv-core || true
-            docker rm 5572tv-core || true
+            docker stop 5572tv-core 2>/dev/null || true
+            docker rm -f 5572tv-core 2>/dev/null || true
+            sleep 2
 
             # 下载最新 APK 到服务器并挂载
             mkdir -p /app/static/download
