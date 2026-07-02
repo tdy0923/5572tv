@@ -201,7 +201,7 @@ export default function DanmuManualMatchModal({
                 }
               }}
               placeholder='输入标题关键词，例如：猫和老鼠'
-              className='h-10 flex-1 rounded-lg border border-white/15 bg-gray-900/80 px-3 text-sm text-slate-100 outline-none transition focus:border-green-400'
+              className='h-10 flex-1 rounded-lg border border-white/15 bg-gray-900/80 px-3 text-sm text-slate-100 outline-none transition focus:border-primary-400'
             />
             <button
               type='button'

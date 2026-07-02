@@ -148,8 +148,8 @@ export default function HomeContentView({
                   key={`skeleton-${i}`}
                   className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                 >
-                  <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
-                  <div className='mt-2 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4' />
+                  <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
+                  <div className='mt-2 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] w-3/4' />
                 </div>
               ))}
             </ScrollableRow>

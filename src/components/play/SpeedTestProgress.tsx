@@ -46,7 +46,7 @@ const SpeedTestProgress = memo(function SpeedTestProgress({
         <div className='flex items-center gap-2'>
           {/* 脉动指示器 */}
           <div className='relative'>
-            <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></div>
+            <div className='w-2 h-2 bg-red-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
             <div className='absolute inset-0 w-2 h-2 bg-red-500 rounded-full animate-ping'></div>
           </div>
 

@@ -576,7 +576,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                         {isCurrentSource && (
                           <div className='absolute top-2 right-2 z-10'>
                             <div className='relative'>
-                              <div className='absolute inset-0 bg-green-500 rounded-full blur opacity-60 animate-pulse'></div>
+                              <div className='absolute inset-0 bg-green-500 rounded-full blur opacity-60 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                               <div className='relative bg-linear-to-r from-green-500 to-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold shadow-lg'>
                                 当前源
                               </div>

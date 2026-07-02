@@ -1884,7 +1884,7 @@ function LivePageClient() {
 
             {/* 加载消息 */}
             <div className='space-y-2'>
-              <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-pulse'>
+              <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                 {loadingMessage}
               </p>
             </div>
@@ -1904,7 +1904,7 @@ function LivePageClient() {
               <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
                 <div className='text-white text-4xl'>😵</div>
                 {/* 脉冲效果 */}
-                <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-pulse'></div>
+                <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
               </div>
             </div>
 
@@ -2072,7 +2072,7 @@ function LivePageClient() {
               <div
                 className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-all duration-200 ${
                   isChannelListCollapsed
-                    ? 'bg-orange-400 animate-pulse'
+                    ? 'bg-orange-400 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
                     : 'bg-green-400'
                 }`}
               ></div>
@@ -2113,7 +2113,7 @@ function LivePageClient() {
                                     ? '📼'
                                     : '⚠️'}
                           </div>
-                          <div className='absolute -inset-2 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl opacity-20 animate-pulse'></div>
+                          <div className='absolute -inset-2 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                         </div>
                       </div>
                       <div className='space-y-4'>
@@ -2237,7 +2237,7 @@ function LivePageClient() {
                         </div>
                       </div>
                       <div className='space-y-2'>
-                        <p className='text-xl font-semibold text-white animate-pulse'>
+                        <p className='text-xl font-semibold text-white animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                           🔄 IPTV 加载中...
                         </p>
                       </div>

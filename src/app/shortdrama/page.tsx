@@ -535,7 +535,7 @@ export default function ShortDramaPage() {
                     </div>
                     {/* 浮动小点装饰 */}
                     <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
-                    <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-pulse'></div>
+                    <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                   </div>
 
                   {/* 文字内容 */}

@@ -52,7 +52,7 @@ export default function NetDiskButton({
       {netdiskTotal > 0 && (
         <div className='absolute -top-0.5 -right-0.5 z-20'>
           <div className='relative'>
-            <div className='absolute inset-0 bg-blue-400 rounded-full blur-sm opacity-75 animate-pulse'></div>
+            <div className='absolute inset-0 bg-blue-400 rounded-full blur-sm opacity-75 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
             <div className='relative w-2 h-2 rounded-full bg-linear-to-br from-blue-400 to-blue-500 shadow-lg'></div>
           </div>
         </div>

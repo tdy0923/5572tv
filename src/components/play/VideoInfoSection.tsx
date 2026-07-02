@@ -114,7 +114,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
               {(loadingMovieDetails || loadingBangumiDetails) &&
                 !movieDetails &&
                 !bangumiDetails && (
-                  <div className='animate-pulse'>
+                  <div className='animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                     <div className='h-4 bg-gray-300 rounded w-64 mb-2'></div>
                     <div className='h-4 bg-gray-300 rounded w-48'></div>
                   </div>

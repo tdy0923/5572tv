@@ -105,7 +105,7 @@ export default function DanmuSendBox({
         }}
         placeholder='发条弹幕...'
         maxLength={100}
-        className='flex-1 px-3 py-1.5 text-sm rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500'
+        className='flex-1 px-3 py-1.5 text-sm rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500'
         disabled={sending}
       />
 

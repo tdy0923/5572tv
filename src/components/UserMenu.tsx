@@ -1079,7 +1079,7 @@ export const UserMenu: React.FC = () => {
               <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
                 {watchingUpdates && watchingUpdates.updatedCount > 0 && (
                   <span className='inline-flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></div>
+                    <div className='w-2 h-2 bg-red-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                     {watchingUpdates.updatedCount}部有新集
                   </span>
                 )}
@@ -1122,7 +1122,7 @@ export const UserMenu: React.FC = () => {
                       🎬 新上映
                     </h4>
                     <div className='flex items-center gap-1'>
-                      <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
+                      <div className='w-2 h-2 bg-green-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       <span className='text-sm text-green-500 font-medium'>
                         {
                           watchingUpdates.updatedSeries.filter(
@@ -1181,7 +1181,7 @@ export const UserMenu: React.FC = () => {
                             />
                           </div>
                           {/* 新上映徽章 */}
-                          <div className='absolute -top-2 -right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             新上映
                           </div>
                           {/* 不再提醒按钮 */}
@@ -1215,7 +1215,7 @@ export const UserMenu: React.FC = () => {
                       新集更新
                     </h4>
                     <div className='flex items-center gap-1'>
-                      <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></div>
+                      <div className='w-2 h-2 bg-red-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       <span className='text-sm text-red-500 font-medium'>
                         {
                           watchingUpdates.updatedSeries.filter(
@@ -1251,7 +1251,7 @@ export const UserMenu: React.FC = () => {
                             />
                           </div>
                           {/* 新集数徽章 - Netflix 统一风格 */}
-                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             +{series.newEpisodes}
                           </div>
                         </div>
@@ -1341,7 +1341,7 @@ export const UserMenu: React.FC = () => {
                   </div>
                   {/* 新集数徽章 - Netflix 统一风格 */}
                   {newEpisodesCount > 0 && (
-                    <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                    <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                       +{newEpisodesCount}
                     </div>
                   )}
@@ -1469,7 +1469,7 @@ export const UserMenu: React.FC = () => {
                   {/* 收藏心形图标 - 隐藏，使用VideoCard内部的hover爱心 */}
                   {/* 新上映高亮标记 - Netflix 统一风格 - 7天内上映的显示 */}
                   {isNewRelease && (
-                    <div className='absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-md shadow-lg animate-pulse z-40'>
+                    <div className='absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-40'>
                       新上映
                     </div>
                   )}
@@ -1516,7 +1516,7 @@ export const UserMenu: React.FC = () => {
         {/* 统一更新提醒点：版本更新或剧集更新都显示橙色点 */}
         {(updateStatus === UpdateStatus.HAS_UPDATE ||
           (hasUnreadUpdates && totalUpdates > 0)) && (
-          <div className='absolute top-[2px] right-[2px] w-2 h-2 bg-yellow-500 rounded-full animate-pulse shadow-lg shadow-yellow-500/50'></div>
+          <div className='absolute top-[2px] right-[2px] w-2 h-2 bg-yellow-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] shadow-lg shadow-yellow-500/50'></div>
         )}
       </div>
 

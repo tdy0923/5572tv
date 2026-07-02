@@ -38,7 +38,7 @@ export default function VideoLoadingOverlay({
 
         {/* 换源消息 */}
         <div className='space-y-2'>
-          <p className='text-xl font-semibold text-white animate-pulse'>
+          <p className='text-xl font-semibold text-white animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
             {loadingStage === 'sourceChanging'
               ? '🔄 切换播放源...'
               : '🔄 视频加载中...'}

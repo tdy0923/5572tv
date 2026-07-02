@@ -572,7 +572,7 @@ export default function ReleaseCalendarPage() {
                         {/* 状态指示器 */}
                         <div className='absolute top-3 right-3 z-10'>
                           {isToday && (
-                            <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-pulse'>
+                            <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                               🔥 今日上映
                             </span>
                           )}
@@ -1125,7 +1125,7 @@ export default function ReleaseCalendarPage() {
                             <div
                               className={`absolute left-6 w-6 h-6 rounded-full border-4 border-white dark:border-gray-900 flex items-center justify-center ${
                                 isToday
-                                  ? 'bg-red-500 animate-pulse shadow-lg shadow-red-500/50'
+                                  ? 'bg-red-500 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] shadow-lg shadow-red-500/50'
                                   : isPast
                                     ? 'bg-gray-400'
                                     : 'bg-blue-500 shadow-lg shadow-blue-500/30'
@@ -1192,7 +1192,7 @@ export default function ReleaseCalendarPage() {
                                   {/* 状态标签 */}
                                   <div className='flex items-center gap-2'>
                                     {isToday && (
-                                      <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-pulse'>
+                                      <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                                         🔥 今日上映
                                       </span>
                                     )}

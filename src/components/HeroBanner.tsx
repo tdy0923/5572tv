@@ -215,7 +215,7 @@ function HeroBanner({
 
   if (!hasItems || !currentItem) {
     return (
-      <div className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden rounded-xl sm:rounded-xl bg-gray-200 dark:bg-gray-800 animate-pulse'>
+      <div className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden rounded-xl sm:rounded-xl bg-gray-200 dark:bg-gray-800 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
         <div className='absolute inset-0 flex items-end p-6 sm:p-10'>
           <div className='space-y-3 w-1/2'>
             <div className='h-4 bg-gray-300 dark:bg-gray-700 rounded-full w-3/4' />

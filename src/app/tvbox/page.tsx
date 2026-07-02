@@ -370,7 +370,7 @@ export default function TVBoxConfigPage() {
                         | 'yingshicang',
                     )
                   }
-                  className='mr-2 w-4 h-4 text-green-600 focus:ring-green-500'
+                  className='mr-2 w-4 h-4 text-green-600 focus:ring-primary-500'
                 />
                 <div className='text-sm'>
                   <span className='font-medium text-gray-900 dark:text-white block'>

@@ -1043,7 +1043,7 @@ function DoubanPageClient() {
                 >
                   {isLoadingMore && (
                     <div className='relative px-8 py-4 rounded-2xl bg-linear-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200/50 dark:border-green-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                      <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-pulse'></div>
+                      <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       <div className='relative flex items-center gap-3'>
                         <div className='relative'>
                           <div className='animate-spin rounded-full h-8 w-8 border-[3px] border-green-200 dark:border-green-800'></div>
@@ -1141,7 +1141,7 @@ function DoubanPageClient() {
                           </svg>
                         </div>
                         <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-pulse'></div>
+                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       </div>
                       <div className='text-center space-y-2'>
                         <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -1218,7 +1218,7 @@ function DoubanPageClient() {
                   {isLoadingMore && (
                     <div className='relative px-8 py-4 rounded-2xl bg-linear-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200/50 dark:border-green-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
                       {/* 动画背景 */}
-                      <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-pulse'></div>
+                      <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
 
                       {/* 内容 */}
                       <div className='relative flex items-center gap-3'>
@@ -1333,7 +1333,7 @@ function DoubanPageClient() {
                         </div>
                         {/* 浮动小点装饰 */}
                         <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-pulse'></div>
+                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       </div>
 
                       {/* 文字内容 */}

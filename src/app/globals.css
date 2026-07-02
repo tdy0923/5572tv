@@ -776,8 +776,20 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 }
 
 :root {
-  --skeleton-color: #f0f0f0;
-  --skeleton-highlight: #e0e0e0;
+  --skeleton-color: var(--color-background-muted);
+  --skeleton-highlight: var(--color-background-subtle);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --skeleton-color: var(--color-background-muted);
+    --skeleton-highlight: var(--color-background-subtle);
+  }
+}
+
+.dark {
+  --skeleton-color: var(--color-background-muted);
+  --skeleton-highlight: var(--color-background-subtle);
 }
 
 @media (prefers-color-scheme: dark) {

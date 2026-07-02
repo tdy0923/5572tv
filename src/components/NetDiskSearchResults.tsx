@@ -394,7 +394,7 @@ export default function NetDiskSearchResults({
               >
                 {filterMode === 'all' ? '显示全部' : '仅显示选中'}
                 {filterMode === 'all' && (
-                  <span className='absolute -top-1 -right-1 h-2 w-2 bg-orange-400 rounded-full animate-pulse'></span>
+                  <span className='absolute -top-1 -right-1 h-2 w-2 bg-orange-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></span>
                 )}
               </button>
             </div>

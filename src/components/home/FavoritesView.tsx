@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const VideoCard = dynamic(() => import('@/components/VideoCard'), {
   ssr: false,
   loading: () => (
-    <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse' />
+    <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
   ),
 });
 const ConfirmDialog = dynamic(() =>
@@ -242,7 +242,7 @@ export default function FavoritesView({
           Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse'
+              className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
             />
           ))
         ) : (
@@ -365,7 +365,7 @@ export default function FavoritesView({
             {favoriteItems.length === 0 && (
               <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
                 <div className='mb-6 relative'>
-                  <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-pulse'></div>
+                  <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                   <svg
                     className='w-32 h-32 relative z-10'
                     viewBox='0 0 200 200'

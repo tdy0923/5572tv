@@ -196,11 +196,11 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
                 key={`skeleton-${index}`}
                 className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
               >
-                <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 animate-pulse dark:bg-gray-800'>
+                <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'>
                   <div className='absolute inset-0 bg-gray-300 dark:bg-gray-700'></div>
                 </div>
-                <div className='mt-2 h-4 bg-gray-200 rounded animate-pulse dark:bg-gray-800'></div>
-                <div className='mt-1 h-3 bg-gray-200 rounded animate-pulse dark:bg-gray-800'></div>
+                <div className='mt-2 h-4 bg-gray-200 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'></div>
+                <div className='mt-1 h-3 bg-gray-200 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'></div>
               </div>
             ))
           : // 显示真实数据
@@ -237,7 +237,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
                   </div>
                   {/* 新集数徽章 - Netflix 统一风格 */}
                   {newEpisodesCount > 0 && (
-                    <div className='absolute -right-2 -top-2 z-10 rounded-full border border-red-500/30 bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg animate-pulse'>
+                    <div className='absolute -right-2 -top-2 z-10 rounded-full border border-red-500/30 bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
                       +{newEpisodesCount}
                     </div>
                   )}

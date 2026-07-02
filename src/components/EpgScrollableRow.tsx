@@ -300,7 +300,7 @@ export default function EpgScrollableRow({
                 {/* 正在播放状态在底部 */}
                 {isPlaying && (
                   <div className='mt-auto pt-1 sm:pt-2 flex items-center gap-1 sm:gap-1.5 shrink-0'>
-                    <div className='w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-pulse'></div>
+                    <div className='w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                     <span className='text-xs text-green-600 dark:text-green-400 font-medium'>
                       正在播放
                     </span>

@@ -40,7 +40,9 @@ export default function CollapseButton({
         <div className='relative'>
           <div
             className={`absolute inset-0 rounded-full blur-sm opacity-75 ${
-              isCollapsed ? 'bg-orange-400 animate-pulse' : 'bg-green-400'
+              isCollapsed
+                ? 'bg-orange-400 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
+                : 'bg-green-400'
             }`}
           ></div>
           <div

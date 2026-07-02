@@ -228,7 +228,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                 }`}
               >
                 {/* 渐变边框效果 */}
-                <div className='absolute inset-0 rounded-full bg-linear-to-r from-green-400 via-blue-400 to-purple-400 opacity-0 group-hover/toggle:opacity-100 transition-opacity duration-300 animate-pulse'></div>
+                <div className='absolute inset-0 rounded-full bg-linear-to-r from-green-400 via-blue-400 to-purple-400 opacity-0 group-hover/toggle:opacity-100 transition-opacity duration-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                 <div className='absolute inset-[2px] rounded-full bg-white dark:bg-gray-900 group-hover/toggle:bg-gray-50 dark:group-hover/toggle:bg-gray-800 transition-colors duration-300'></div>
 
                 <Menu className='h-4 w-4 relative z-10 transition-transform duration-300 group-hover/toggle:rotate-180' />

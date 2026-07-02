@@ -801,7 +801,7 @@ export default function UserConfig({
                         type='checkbox'
                         checked={editingGroupMembers.includes(u.username)}
                         onChange={() => toggleGroupMember(u.username)}
-                        className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-green-500'
+                        className='w-4 h-4 rounded border-gray-300 text-green-500 focus:ring-primary-500'
                       />
                       <div className='w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0'>
                         {u.username.charAt(0).toUpperCase()}

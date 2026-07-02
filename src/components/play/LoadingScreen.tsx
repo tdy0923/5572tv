@@ -63,7 +63,7 @@ const LoadingScreen = memo(function LoadingScreen({
 
           {/* 加载消息 */}
           <div className='space-y-2'>
-            <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-pulse'>
+            <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
               {loadingMessage}
             </p>
 

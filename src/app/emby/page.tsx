@@ -448,7 +448,7 @@ export default function PrivateLibraryPage() {
               <input
                 type='text'
                 placeholder='搜索 Emby 视频...'
-                className='w-full rounded-xl border border-gray-200 bg-white/80 pl-11 pr-11 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white shadow-sm hover:shadow-md focus:shadow-lg dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:border-gray-700 dark:focus:bg-gray-800 dark:focus:ring-green-500 transition-all duration-300'
+                className='w-full rounded-xl border border-gray-200 bg-white/80 pl-11 pr-11 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white shadow-sm hover:shadow-md focus:shadow-lg dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:border-gray-700 dark:focus:bg-gray-800 dark:focus:ring-primary-500 transition-all duration-300'
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />
@@ -609,7 +609,7 @@ export default function PrivateLibraryPage() {
                     </svg>
                   </div>
                   <div className='absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping'></div>
-                  <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-teal-400 rounded-full animate-pulse'></div>
+                  <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-teal-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                 </div>
                 <div className='text-center space-y-2'>
                   <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>

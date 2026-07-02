@@ -1064,7 +1064,7 @@ export default function SkipController({
                         openingStart: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all'
                     placeholder='0:00'
                   />
                   <p className='text-xs text-gray-500 dark:text-gray-400 mt-1.5'>
@@ -1085,7 +1085,7 @@ export default function SkipController({
                         openingEnd: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all mb-2'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all mb-2'
                     placeholder='1:30'
                   />
                   <button

@@ -1056,7 +1056,7 @@ const AIRecommendConfig = ({
           disabled={isLoading}
           className={`flex items-center px-4 py-2 ${
             hasUnsavedChanges
-              ? 'bg-orange-600 hover:bg-orange-700 animate-pulse'
+              ? 'bg-orange-600 hover:bg-orange-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
               : 'bg-blue-600 hover:bg-blue-700'
           } disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors`}
         >

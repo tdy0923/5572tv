@@ -7,7 +7,10 @@ interface PlayErrorDisplayProps {
   videoTitle?: string;
 }
 
-export default function PlayErrorDisplay({ error, videoTitle }: PlayErrorDisplayProps) {
+export default function PlayErrorDisplay({
+  error,
+  videoTitle,
+}: PlayErrorDisplayProps) {
   const router = useRouter();
 
   return (
@@ -18,7 +21,7 @@ export default function PlayErrorDisplay({ error, videoTitle }: PlayErrorDisplay
           <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
             <div className='text-white text-4xl'>😵</div>
             {/* 脉冲效果 */}
-            <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-pulse'></div>
+            <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
           </div>
 
           {/* 浮动错误粒子 */}

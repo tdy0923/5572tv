@@ -1010,7 +1010,7 @@ const PlayStatsPage: React.FC = () => {
                         Array.from({ length: 3 }).map((_, index) => (
                           <div
                             key={`loading-${index}`}
-                            className='min-w-[140px] bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 animate-pulse'
+                            className='min-w-[140px] bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
                           >
                             <div className='h-4 bg-white/20 rounded mb-2'></div>
                             <div className='h-3 bg-white/20 rounded mb-2 w-3/4'></div>
@@ -1133,7 +1133,7 @@ const PlayStatsPage: React.FC = () => {
                         有新集数
                       </h2>
                       <div className='flex items-center gap-1'>
-                        <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></div>
+                        <div className='w-2 h-2 bg-red-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                         <span className='text-sm text-red-500 font-medium'>
                           {
                             watchingUpdates.updatedSeries.filter(
@@ -1170,10 +1170,10 @@ const PlayStatsPage: React.FC = () => {
                                   remarks={series.remarks}
                                 />
                                 {/* 新集数提示光环效果 */}
-                                <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                                <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                               </div>
                               {/* 新集数徽章 - Netflix 统一风格 */}
-                              <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                              <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                                 +{series.newEpisodes}
                               </div>
                             </div>
@@ -1206,10 +1206,10 @@ const PlayStatsPage: React.FC = () => {
                                   remarks={series.remarks}
                                 />
                                 {/* 新集数提示光环效果 */}
-                                <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                                <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                               </div>
                               {/* 新集数徽章 - Netflix 统一风格 */}
-                              <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                              <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                                 +{series.newEpisodes}
                               </div>
                             </div>
@@ -1231,7 +1231,7 @@ const PlayStatsPage: React.FC = () => {
                         继续观看
                       </h2>
                       <div className='flex items-center gap-1'>
-                        <div className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'></div>
+                        <div className='w-2 h-2 bg-blue-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                         <span className='text-sm text-blue-500 font-medium'>
                           {
                             watchingUpdates.updatedSeries.filter(
@@ -1274,10 +1274,10 @@ const PlayStatsPage: React.FC = () => {
                                   remarks={series.remarks}
                                 />
                                 {/* 继续观看提示光环效果 */}
-                                <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                                <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                               </div>
                               {/* 继续观看徽章 - Netflix 统一风格 */}
-                              <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                              <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                                 继续看
                               </div>
                             </div>
@@ -1314,10 +1314,10 @@ const PlayStatsPage: React.FC = () => {
                                   remarks={series.remarks}
                                 />
                                 {/* 继续观看提示光环效果 */}
-                                <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                                <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                               </div>
                               {/* 继续观看徽章 - Netflix 统一风格 */}
-                              <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                              <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                                 继续看
                               </div>
                             </div>
@@ -1718,7 +1718,7 @@ const PlayStatsPage: React.FC = () => {
                     Array.from({ length: 3 }).map((_, index) => (
                       <div
                         key={`loading-${index}`}
-                        className='min-w-[140px] bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 animate-pulse'
+                        className='min-w-[140px] bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
                       >
                         <div className='h-4 bg-white/20 rounded mb-2'></div>
                         <div className='h-3 bg-white/20 rounded mb-2 w-1/2'></div>
@@ -1839,7 +1839,7 @@ const PlayStatsPage: React.FC = () => {
                     有新集数
                   </h2>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-red-500 rounded-full animate-pulse'></div>
+                    <div className='w-2 h-2 bg-red-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                     <span className='text-sm text-red-500 font-medium'>
                       {
                         watchingUpdates.updatedSeries.filter(
@@ -1876,10 +1876,10 @@ const PlayStatsPage: React.FC = () => {
                               remarks={series.remarks}
                             />
                             {/* 新集数提示光环效果 */}
-                            <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                            <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                           </div>
                           {/* 新集数徽章 - Netflix 统一风格 */}
-                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             +{series.newEpisodes}
                           </div>
                         </div>
@@ -1912,10 +1912,10 @@ const PlayStatsPage: React.FC = () => {
                               remarks={series.remarks}
                             />
                             {/* 新集数提示光环效果 */}
-                            <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                            <div className='absolute inset-0 rounded-lg ring-2 ring-red-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                           </div>
                           {/* 新集数徽章 - Netflix 统一风格 */}
-                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             +{series.newEpisodes}
                           </div>
                         </div>
@@ -1936,7 +1936,7 @@ const PlayStatsPage: React.FC = () => {
                     继续观看
                   </h2>
                   <div className='flex items-center gap-1'>
-                    <div className='w-2 h-2 bg-blue-500 rounded-full animate-pulse'></div>
+                    <div className='w-2 h-2 bg-blue-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                     <span className='text-sm text-blue-500 font-medium'>
                       {
                         watchingUpdates.updatedSeries.filter(
@@ -1977,10 +1977,10 @@ const PlayStatsPage: React.FC = () => {
                               remarks={series.remarks}
                             />
                             {/* 继续观看提示光环效果 */}
-                            <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                            <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                           </div>
                           {/* 继续观看徽章 - Netflix 统一风格 */}
-                          <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             继续看
                           </div>
                         </div>
@@ -2016,10 +2016,10 @@ const PlayStatsPage: React.FC = () => {
                               remarks={series.remarks}
                             />
                             {/* 继续观看提示光环效果 */}
-                            <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-pulse pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
+                            <div className='absolute inset-0 rounded-lg ring-2 ring-blue-400/50 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] pointer-events-none z-9 transition-transform duration-300 ease-in-out group-hover/card:scale-[1.05]'></div>
                           </div>
                           {/* 继续观看徽章 - Netflix 统一风格 */}
-                          <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-pulse z-10 font-bold'>
+                          <div className='absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-md shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] z-10 font-bold'>
                             继续看
                           </div>
                         </div>

@@ -498,7 +498,7 @@ export const UserEmbyConfig = memo(({ initialConfig }: UserEmbyConfigProps) => {
                   enabled: e.target.checked,
                 }))
               }
-              className='w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-green-500'
+              className='w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-primary-500'
             />
             <span className='text-gray-700 dark:text-gray-300'>启用此源</span>
           </label>

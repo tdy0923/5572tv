@@ -620,7 +620,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                       !isDoubanImageProxyDropdownOpen,
                     )
                   }
-                  className='w-full px-3 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
+                  className='w-full px-3 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 text-left'
                 >
                   {
                     doubanImageProxyTypeOptions.find(
@@ -687,7 +687,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </div>
                 <input
                   type='text'
-                  className='w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
+                  className='w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 shadow-sm hover:border-gray-400 dark:hover:border-gray-500'
                   placeholder='例如: https://proxy.example.com/fetch?url='
                   value={doubanImageProxyUrl}
                   onChange={(e) =>
@@ -989,7 +989,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                         type='number'
                         min='0'
                         max='100'
-                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                         value={continueWatchingMinProgress}
                         onChange={(e) =>
                           handleContinueWatchingMinProgressChange(
@@ -1009,7 +1009,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                         type='number'
                         min='0'
                         max='100'
-                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                         value={continueWatchingMaxProgress}
                         onChange={(e) =>
                           handleContinueWatchingMaxProgressChange(

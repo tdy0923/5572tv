@@ -306,7 +306,7 @@ export default function ChannelSidebar({
                   placeholder='搜索频道...'
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
                 {searchQuery && (
                   <button
@@ -324,7 +324,7 @@ export default function ChannelSidebar({
                 <div className='mb-4 -mx-6 shrink-0'>
                   {isSwitchingSource && (
                     <div className='flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 px-6 mb-2'>
-                      <div className='w-2 h-2 bg-amber-500 rounded-full animate-pulse'></div>
+                      <div className='w-2 h-2 bg-amber-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       切换直播源中...
                     </div>
                   )}
@@ -414,7 +414,7 @@ export default function ChannelSidebar({
                           <Tv className='w-10 h-10 text-gray-400 dark:text-gray-500' />
                         </div>
                         <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-pulse'></div>
+                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       </div>
                       <p className='text-base font-semibold text-gray-700 dark:text-gray-300 mb-2'>
                         暂无可用频道
@@ -584,7 +584,7 @@ export default function ChannelSidebar({
                   placeholder='搜索直播源...'
                   value={sourceSearchQuery}
                   onChange={(e) => handleSourceSearchChange(e.target.value)}
-                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent'
+                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent'
                 />
                 {sourceSearchQuery && (
                   <button
@@ -618,7 +618,7 @@ export default function ChannelSidebar({
                     id='autoRefresh'
                     checked={autoRefreshEnabled}
                     onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
-                    className='rounded text-green-500 focus:ring-green-500'
+                    className='rounded text-green-500 focus:ring-primary-500'
                   />
                   <label
                     htmlFor='autoRefresh'
@@ -663,7 +663,7 @@ export default function ChannelSidebar({
                         );
                       }
                     }}
-                    className='rounded text-green-500 focus:ring-green-500'
+                    className='rounded text-green-500 focus:ring-primary-500'
                   />
                   <label
                     htmlFor='directPlayback'
@@ -764,7 +764,7 @@ export default function ChannelSidebar({
                           <Radio className='w-10 h-10 text-orange-500 dark:text-orange-400' />
                         </div>
                         <div className='absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-red-400 rounded-full animate-pulse'></div>
+                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-red-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                       </div>
                       <p className='text-base font-semibold text-gray-700 dark:text-gray-300 mb-2'>
                         暂无可用直播源

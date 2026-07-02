@@ -72,7 +72,7 @@ const MessageItem = memo(
             message.role === 'user'
               ? 'bg-linear-to-br from-blue-600 to-blue-700 text-white shadow-blue-500/20'
               : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200/50 dark:border-gray-600/50 shadow-gray-200/50 dark:shadow-gray-900/50'
-          } ${message.content === '思考中...' ? 'opacity-70 animate-pulse' : ''}`}
+          } ${message.content === '思考中...' ? 'opacity-70 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' : ''}`}
         >
           {message.role === 'assistant' ? (
             <div className='prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-p:leading-relaxed prose-pre:bg-gray-800 prose-pre:text-gray-100 dark:prose-pre:bg-gray-900 prose-code:text-purple-600 dark:prose-code:text-purple-400 prose-code:bg-purple-50 dark:prose-code:bg-purple-900/20 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-gray-900 dark:prose-strong:text-white prose-ul:my-2 prose-ol:my-2 prose-li:my-1'>
