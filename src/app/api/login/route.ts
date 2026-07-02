@@ -347,6 +347,7 @@ export async function POST(req: NextRequest) {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
         });
+        return response;
       } catch (dbErr: any) {
         console.error('数据库验证失败', dbErr);
         return NextResponse.json(
