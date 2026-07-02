@@ -53,7 +53,7 @@ const nextConfig = {
     ],
   },
 
-  // Security headers (CSP is set dynamically in middleware.ts with per-request nonce)
+  // Security headers (CSP is set dynamically in proxy.ts with per-request nonce)
   async headers() {
     return [
       {

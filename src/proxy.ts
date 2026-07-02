@@ -272,8 +272,18 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
   return response;
 }
 
+// 为页面响应设置 CSP nonce 头
+function applyCSPHeaders(response: NextResponse, nonce: string): NextResponse {
+  const csp = `default-src 'self' https: http:; script-src 'self' 'nonce-${nonce}' https://tg.yunku.de https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';`;
+  response.headers.set('Content-Security-Policy', csp);
+  response.headers.set('x-csp-nonce', nonce);
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const nonce = crypto.randomBytes(16).toString('base64');
+  const isPage = !pathname.startsWith('/api');
 
   // Rate limiting for high-abuse proxy routes
   const ip = getClientIP(request);
@@ -287,41 +297,29 @@ export async function proxy(request: NextRequest) {
 
   // 处理 /adult/ 路径前缀，重写为实际 API 路径
   if (pathname.startsWith('/adult/')) {
-    // 移除 /adult 前缀
     const newPathname = pathname.replace(/^\/adult/, '');
-
-    // 创建新的 URL
     const url = request.nextUrl.clone();
     url.pathname = newPathname || '/';
-
-    // 添加 adult=1 参数（如果还没有）
     if (!url.searchParams.has('adult')) {
       url.searchParams.set('adult', '1');
     }
-
-    // 重写请求
     const response = NextResponse.rewrite(url);
-
-    // 设置响应头标识成人内容模式
     response.headers.set('X-Content-Mode', 'adult');
-
-    // 继续执行认证检查（对于 API 路径）
     if (newPathname.startsWith('/api')) {
-      // 将重写后的请求传递给认证逻辑
       const modifiedRequest = new NextRequest(url, request);
       return handleAuthentication(modifiedRequest, newPathname, response);
     }
-
-    return response;
+    return isPage ? applyCSPHeaders(response, nonce) : response;
   }
 
   // 跳过不需要认证的路径
   if (shouldSkipAuth(pathname)) {
-    // console.log('[Middleware] Skipping auth for:', pathname);
-    return NextResponse.next();
+    const response = NextResponse.next();
+    return isPage ? applyCSPHeaders(response, nonce) : response;
   }
 
-  return handleAuthentication(request, pathname);
+  const response = await handleAuthentication(request, pathname);
+  return isPage ? applyCSPHeaders(response, nonce) : response;
 }
 
 // 提取认证处理逻辑为单独的函数
