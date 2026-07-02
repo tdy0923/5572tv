@@ -928,3 +928,139 @@ html:not(.dark) .hover\:bg-slate-50:hover {
     contain-intrinsic-size: auto 600px;
   }
 }
+
+/* ============================================
+   Fluent 2 Global Normalize Layer
+   Overrides legacy Tailwind arbitrary values
+   to enforce consistent Fluent 2 design tokens
+   ============================================ */
+
+/* --- Border Radius: Fluent 2 uses max 12px --- */
+[class*='rounded-[28px]'],
+[class*='rounded-[30px]'] {
+  border-radius: 12px !important;
+}
+[class*='rounded-[20px]'],
+[class*='rounded-[24px]'] {
+  border-radius: 12px !important;
+}
+[class*='rounded-3xl'] {
+  border-radius: 12px !important;
+}
+[class*='rounded-full'] {
+  /* Keep pill shapes for tags/chips */
+}
+
+/* --- Shadows: Replace arbitrary with Fluent 2 elevation --- */
+[class*='shadow-[0_14px_'],
+[class*='shadow-[0_12px_'],
+[class*='shadow-[0_18px_'],
+[class*='shadow-[0_24px_'],
+[class*='shadow-[0_30px_'] {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.14),
+    0 0 2px rgba(0, 0, 0, 0.06) !important;
+}
+.dark [class*='shadow-[0_'] {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.32) !important;
+}
+
+/* --- Backdrop Blur: Simplify for performance --- */
+.backdrop-blur-xl,
+.backdrop-blur-2xl,
+.backdrop-blur-3xl {
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+.dark .backdrop-blur-xl,
+.dark .backdrop-blur-2xl,
+.dark .backdrop-blur-3xl {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* --- Background Transparency: Fluent 2 uses solid colors --- */
+.bg-white\/65,
+.bg-white\/72,
+.bg-white\/76,
+.bg-white\/78,
+.bg-white\/80,
+.bg-white\/82,
+.bg-white\/88,
+.bg-white\/90,
+.bg-white\/92,
+.bg-white\/95 {
+  background-color: var(--color-background) !important;
+}
+.dark .bg-white\/65,
+.dark .bg-white\/72,
+.dark .bg-white\/76,
+.dark .bg-white\/78,
+.dark .bg-white\/80,
+.dark .bg-white\/82,
+.dark .bg-white\/88,
+.dark .bg-white\/90,
+.dark .bg-white\/92,
+.dark .bg-white\/95 {
+  background-color: var(--color-background-subtle) !important;
+}
+
+/* --- Border Colors: Fluent 2 neutral strokes --- */
+.border-black\/5,
+.border-black\/6,
+.border-black\/8,
+.border-black\/10,
+.border-black\/12 {
+  border-color: var(--color-stroke-subtle) !important;
+}
+.dark .border-white\/8,
+.dark .border-white\/10,
+.dark .border-white\/16 {
+  border-color: var(--color-stroke) !important;
+}
+
+/* --- Dark Mode Arbitrary Backgrounds --- */
+.dark [class*='dark:bg-[#0c'],
+.dark [class*='dark:bg-[#0d'],
+.dark [class*='dark:bg-[#0f'] {
+  background-color: var(--color-background-subtle) !important;
+}
+.dark [class*='dark:bg-[#11'] {
+  background-color: var(--color-background) !important;
+}
+
+/* --- Text Colors: Fluent 2 semantic --- */
+.text-gray-900 {
+  color: var(--color-foreground) !important;
+}
+.text-gray-800 {
+  color: var(--color-foreground) !important;
+}
+.text-gray-700 {
+  color: var(--color-foreground-subtle) !important;
+}
+.text-gray-500 {
+  color: var(--color-foreground-muted) !important;
+}
+.text-gray-400 {
+  color: var(--color-foreground-muted) !important;
+}
+.dark .text-gray-100 {
+  color: var(--color-foreground) !important;
+}
+.dark .text-gray-200 {
+  color: var(--color-foreground-subtle) !important;
+}
+.dark .text-gray-300 {
+  color: var(--color-foreground-subtle) !important;
+}
+
+/* --- Inset Shadows: Remove glass morphism inset effects --- */
+[class*='shadow-[inset_'] {
+  box-shadow: none !important;
+}
+
+/* --- Background Gradients: Simplify --- */
+[class*='bg-gradient-to-r from-white/0 via-white/20'] {
+  display: none !important;
+}
