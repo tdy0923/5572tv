@@ -362,11 +362,7 @@ async function handleAuthentication(
 
   const storageType = process.env.STORAGE_TYPE || 'localstorage';
 
-  if (!process.env.PASSWORD) {
-    // 如果没有设置密码，重定向到警告页面
-    const warningUrl = new URL('/warning', request.url);
-    return NextResponse.redirect(warningUrl);
-  }
+  // PASSWORD check removed - no access control required
 
   // 从cookie获取认证信息
   const authInfo = await getAuthInfoFromCookie(request);
