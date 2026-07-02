@@ -109,7 +109,7 @@ export default function HomeContentView({
         className='mb-6 flex items-center justify-between rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white shadow-lg transition-transform hover:scale-[1.02] sm:mb-8 sm:rounded-2xl sm:p-5'
       >
         <div className='flex items-center gap-3'>
-          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white/20'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white dark:bg-gray-800'>
             <Film className='h-5 w-5' />
           </div>
           <div>
@@ -226,7 +226,7 @@ export default function HomeContentView({
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                   upcomingFilter === key
                     ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
-                    : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                    : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
                 }`}
               >
                 {label}

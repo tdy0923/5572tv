@@ -59,7 +59,7 @@ export default function RemindersView({
   requireClearConfirmation,
 }: RemindersViewProps) {
   return (
-    <section className='mb-8 rounded-xl sm:rounded-[24px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+    <section className='mb-8 rounded-xl sm:rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
       <div className='mb-6 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -122,7 +122,7 @@ export default function RemindersView({
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                 reminderFilter === key
                   ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
-                  : 'border border-black/6 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                  : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-800'
               }`}
             >
               {label}

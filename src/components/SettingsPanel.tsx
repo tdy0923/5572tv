@@ -548,7 +548,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                           handleDoubanDataSourceChange(option.value);
                           setIsDoubanDropdownOpen(false);
                         }}
-                        className={`flex w-full items-center justify-between px-3 py-3 text-left text-sm transition-colors duration-150 hover:bg-black/4 dark:hover:bg-white/8 ${doubanDataSource === option.value ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
+                        className={`flex w-full items-center justify-between px-3 py-3 text-left text-sm transition-colors duration-150 hover:bg-black/4 dark:hover:bg-white dark:bg-gray-800 ${doubanDataSource === option.value ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'}`}
                       >
                         <span className='truncate'>{option.label}</span>
                         {doubanDataSource === option.value && (

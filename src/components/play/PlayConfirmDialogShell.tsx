@@ -31,7 +31,7 @@ export default function PlayConfirmDialogShell({
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
-      <div className='mx-4 max-w-sm rounded-[28px] border border-black/6 bg-white/86 p-6 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/8 dark:bg-[#151a22]/86'>
+      <div className='mx-4 max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white/86 p-6 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-gray-700 dark:bg-[#151a22]/86'>
         <div className='text-center'>
           <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 dark:bg-white/10'>
             {icon}
@@ -49,7 +49,7 @@ export default function PlayConfirmDialogShell({
           <div className='mt-6 flex gap-3'>
             <button
               onClick={onCancel}
-              className='flex-1 rounded-full border border-black/6 bg-white/72 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-white/8 dark:bg-white/[0.05] dark:text-gray-300 dark:hover:bg-white/[0.08]'
+              className='flex-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-white/[0.05] dark:text-gray-300 dark:hover:bg-white/[0.08]'
             >
               {cancelLabel}
             </button>

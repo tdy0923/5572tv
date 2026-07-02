@@ -318,7 +318,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
         }}
       >
         {/* 标题栏 */}
-        <div className='flex items-center justify-between border-b border-black/6 p-3 sm:p-6 dark:border-white/8'>
+        <div className='flex items-center justify-between border-b border-gray-200 dark:border-gray-700 p-3 sm:p-6 dark:border-gray-700'>
           <div className='flex items-center gap-2 sm:gap-3'>
             <h3 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200'>
               版本信息

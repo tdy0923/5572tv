@@ -220,7 +220,7 @@ export default function ModernNav({
                       key={item.label}
                       href={item.href}
                       useTransitionNav
-                      className='group relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white/6 lg:px-4'
+                      className='group relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 transition-all duration-300 hover:bg-[#f8f5ec] dark:hover:bg-white dark:bg-gray-800 lg:px-4'
                     >
                       {active && (
                         <div className='absolute inset-0 rounded-full border border-primary-300/40 bg-linear-to-r from-[#f4c24d]/18 to-[#fff6de]/60 shadow-[0_8px_20px_rgba(244,194,77,0.1)] dark:border-primary-300/20 dark:from-primary-400/14 dark:to-white/6' />
@@ -273,7 +273,7 @@ export default function ModernNav({
           onClick={() => setShowMoreMenu(false)}
         >
           <div
-            className='absolute bottom-20 left-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-800/30 overflow-hidden'
+            className='absolute bottom-20 left-2 right-2 bg-white dark:bg-gray-800 dark:bg-gray-900/90 backdrop-blur-3xl rounded-3xl shadow-2xl border border-white/20 dark:border-gray-800/30 overflow-hidden'
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -337,7 +337,7 @@ export default function ModernNav({
 
       {/* Mobile Bottom Navigation - Netflix Full-Width Style with Light Mode Support */}
       <nav
-        className='md:hidden fixed left-0 right-0 z-30 bg-white/80 dark:bg-black/95 backdrop-blur-lg border-t border-black/5 dark:border-white/5 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
+        className='md:hidden fixed left-0 right-0 z-30 bg-white dark:bg-black/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
         style={{
           bottom: 0,
           paddingBottom: 'env(safe-area-inset-bottom)',

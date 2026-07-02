@@ -263,7 +263,7 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
         createPortal(
           <GlassPanel
             ref={dropdownRef}
-            className='fixed z-60 max-h-[50vh] flex flex-col rounded-2xl bg-white/95 dark:bg-gray-800/95'
+            className='fixed z-60 max-h-[50vh] flex flex-col rounded-2xl bg-white dark:bg-gray-800/95'
             style={{
               left: `${dropdownPosition.x}px`,
               top: `${dropdownPosition.y}px`,

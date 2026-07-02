@@ -16,7 +16,7 @@ export default function SectionTitle({
       <div className='ui-section-heading'>
         {Icon && (
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-2xl border border-black/6 bg-white/70 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-transform duration-300 group-hover:scale-105 dark:border-white/8 dark:bg-white/8 ${iconColor}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 group-hover:scale-105 ${iconColor}`}
           >
             <Icon size={24} strokeWidth={2.5} />
           </div>

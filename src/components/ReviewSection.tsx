@@ -82,7 +82,7 @@ export default function ReviewSection({
   }, [videoId, videoSource, userRating, userComment, reviews]);
 
   return (
-    <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
+    <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>
       {/* 标题和评分 */}
       <div className='flex items-center justify-between mb-4'>
         <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>

@@ -69,7 +69,7 @@ function AdminMetricCard({
   helper?: string;
 }) {
   return (
-    <div className='rounded-2xl border border-black/6 bg-white/70 px-4 py-3 shadow-sm dark:border-white/8 dark:bg-white/[0.04]'>
+    <div className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-800'>
       <div className='text-[11px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
         {label}
       </div>
@@ -95,8 +95,8 @@ function AdminModulePanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className='rounded-[28px] border border-black/6 bg-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-white/8 dark:bg-gray-800/55'>
-      <div className='flex items-center gap-3 border-b border-black/6 bg-gray-50/70 px-6 py-4 dark:border-white/8 dark:bg-gray-800/60'>
+    <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'>
+      <div className='flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 dark:border-gray-700 dark:bg-gray-800'>
         {icon}
         <div>
           <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
@@ -108,12 +108,12 @@ function AdminModulePanel({
         </div>
       </div>
 
-      <div className='border-b border-black/6 bg-white/60 px-6 py-3 dark:border-white/8 dark:bg-white/[0.03]'>
+      <div className='border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3 dark:border-gray-700 dark:bg-gray-800'>
         <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
             Single Module
           </span>
-          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
             Admin Workspace
           </span>
         </div>
@@ -386,7 +386,7 @@ function AdminPageClient() {
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className='mt-6 inline-flex items-center rounded-full border border-black/6 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:bg-white/10'
+                className='mt-6 inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10'
               >
                 重新加载
               </button>
@@ -467,7 +467,7 @@ function AdminPageClient() {
                   {activeAdminSectionMeta?.label || '后台工作区'}
                 </div>
                 {activeAdminGroupMeta && (
-                  <div className='mt-5 border-t border-black/6 pt-4 dark:border-white/8'>
+                  <div className='mt-5 border-t border-gray-200 dark:border-gray-700 pt-4 dark:border-gray-700'>
                     <div className='flex flex-wrap gap-2'>
                       {activeAdminGroupMeta.items.map((section) => {
                         const Icon = section.icon;
@@ -478,7 +478,7 @@ function AdminPageClient() {
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                               activeAdminSection === section.id
                                 ? 'bg-primary-100 text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
-                                : 'border border-black/6 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:bg-white/10'
+                                : 'border border-gray-200 dark:border-gray-700 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10'
                             }`}
                           >
                             <Icon size={15} />
@@ -652,7 +652,7 @@ function AdminPageClient() {
                     <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-3'>
                       <button
                         onClick={() => setActiveAdminSection('cache-tools')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           缓存管理
@@ -663,7 +663,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('data-migration')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           数据迁移
@@ -676,7 +676,7 @@ function AdminPageClient() {
                         onClick={() =>
                           setActiveAdminSection('system-performance')
                         }
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           统计中心
@@ -692,7 +692,7 @@ function AdminPageClient() {
                     <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
                       <button
                         onClick={() => setActiveAdminSection('source-config')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           视频源
@@ -703,7 +703,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('live-config')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           直播源
@@ -714,7 +714,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('category-config')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           分类配置
@@ -725,7 +725,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('netdisk-config')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           网盘搜索
@@ -741,7 +741,7 @@ function AdminPageClient() {
                     <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
                       <button
                         onClick={() => setActiveAdminSection('media-tools')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           Emby 集成
@@ -749,7 +749,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('download-tools')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           下载中心
@@ -757,7 +757,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('watchroom-tools')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           观影室
@@ -765,7 +765,7 @@ function AdminPageClient() {
                       </button>
                       <button
                         onClick={() => setActiveAdminSection('adfilter-tools')}
-                        className='rounded-2xl border border-black/6 bg-white/80 p-4 text-left transition-colors hover:bg-white dark:border-white/8 dark:bg-white/[0.05] dark:hover:bg-white/[0.08]'
+                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
                         <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
                           播放增强

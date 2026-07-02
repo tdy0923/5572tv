@@ -950,7 +950,7 @@ export default function SkipController({
           onClick={handleCloseDialog}
         >
           <div
-            className='bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_0_rgba(0,0,0,0.4)] border border-white/20 dark:border-gray-700/50 animate-scale-in'
+            className='bg-white dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-md border border-white/20 dark:border-gray-700/50 animate-scale-in'
             style={{
               backdropFilter: 'blur(20px) saturate(180%)',
               WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -1064,7 +1064,7 @@ export default function SkipController({
                         openingStart: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all'
                     placeholder='0:00'
                   />
                   <p className='text-xs text-gray-500 dark:text-gray-400 mt-1.5'>
@@ -1085,7 +1085,7 @@ export default function SkipController({
                         openingEnd: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all mb-2'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all mb-2'
                     placeholder='1:30'
                   />
                   <button
@@ -1169,7 +1169,7 @@ export default function SkipController({
                         endingStart: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all mb-2'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all mb-2'
                     placeholder={
                       batchSettings.endingMode === 'remaining'
                         ? '2:00'
@@ -1203,7 +1203,7 @@ export default function SkipController({
                         endingEnd: e.target.value,
                       })
                     }
-                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all'
+                    className='w-full px-4 py-2.5 border border-gray-300/50 dark:border-gray-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 backdrop-blur-sm focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-all'
                     placeholder='留空直接跳下一集'
                   />
                   <p className='text-xs text-gray-500 dark:text-gray-400 mt-1.5'>
@@ -1297,7 +1297,7 @@ export default function SkipController({
                 <select
                   value={selectedPresetId}
                   onChange={(e) => setSelectedPresetId(e.target.value)}
-                  className='flex-1 px-3 py-2.5 border border-amber-300/50 dark:border-amber-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-800 dark:text-gray-100 text-sm focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all'
+                  className='flex-1 px-3 py-2.5 border border-amber-300/50 dark:border-amber-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-800 dark:text-gray-100 text-sm focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all'
                 >
                   <option value=''>选择一个预设</option>
                   {skipPresets.map((preset) => (
@@ -1325,7 +1325,7 @@ export default function SkipController({
                   value={newPresetName}
                   onChange={(e) => setNewPresetName(e.target.value)}
                   maxLength={30}
-                  className='flex-1 px-3 py-2.5 border border-amber-300/50 dark:border-amber-600/50 rounded-lg bg-white/80 dark:bg-gray-700/80 text-gray-800 dark:text-gray-100 text-sm focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all'
+                  className='flex-1 px-3 py-2.5 border border-amber-300/50 dark:border-amber-600/50 rounded-lg bg-white dark:bg-gray-800 dark:bg-gray-700/80 text-gray-800 dark:text-gray-100 text-sm focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all'
                   placeholder='新建预设名,例如:国产剧通用90s/120s'
                 />
                 <button
@@ -1374,7 +1374,7 @@ export default function SkipController({
 
               {/* 导入确认对话框 */}
               {isImportDialogOpen && (
-                <div className='mt-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white/90 dark:bg-gray-900/70 p-3'>
+                <div className='mt-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:bg-gray-900/70 p-3'>
                   {(() => {
                     const byName = (name: string) => name.trim().toLowerCase();
                     const overwriteCount = pendingImportedPresets.filter(
@@ -1423,13 +1423,13 @@ export default function SkipController({
                               {conflictPreview.map((name) => (
                                 <span
                                   key={name}
-                                  className='rounded-full border border-amber-300 bg-white/80 px-2 py-0.5 text-xs text-amber-900 dark:border-amber-600 dark:bg-amber-900/40 dark:text-amber-200'
+                                  className='rounded-full border border-amber-300 bg-white dark:bg-gray-800 px-2 py-0.5 text-xs text-amber-900 dark:border-amber-600 dark:bg-amber-900/40 dark:text-amber-200'
                                 >
                                   {name}
                                 </span>
                               ))}
                               {hiddenCount > 0 && (
-                                <span className='rounded-full border border-amber-300 bg-white/80 px-2 py-0.5 text-xs text-amber-900 dark:border-amber-600 dark:bg-amber-900/40 dark:text-amber-200'>
+                                <span className='rounded-full border border-amber-300 bg-white dark:bg-gray-800 px-2 py-0.5 text-xs text-amber-900 dark:border-amber-600 dark:bg-amber-900/40 dark:text-amber-200'>
                                   还有 {hiddenCount} 条
                                 </span>
                               )}
@@ -1553,7 +1553,7 @@ export default function SkipController({
             cursor: isDragging ? 'grabbing' : 'default',
             userSelect: isDragging ? 'none' : 'auto',
           }}
-          className='z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
+          className='z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm bg-white dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
         >
           <div className='p-3'>
             <h4 className='drag-handle font-medium mb-2 text-gray-900 dark:text-gray-100 text-sm flex items-center cursor-move select-none'>
@@ -1654,7 +1654,7 @@ export function SkipSettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className='group flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 hover:border-white/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.18)] hover:scale-105 transition-all duration-300 ease-out'
+      className='group flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-white rounded-xl border border-white/30 hover:border-white/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.18)] hover:scale-105 transition-all duration-300 ease-out'
       title='跳过设置'
       style={{
         backdropFilter: 'blur(20px) saturate(180%)',

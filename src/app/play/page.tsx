@@ -4825,7 +4825,7 @@ function PlayPageClient() {
 
               {/* AI 影片摘要 */}
               <div className='md:col-span-3'>
-                <div className='rounded-xl sm:rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
+                <div className='rounded-xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>
                   <div className='flex items-center justify-between mb-3'>
                     <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
                       <span className='text-purple-500'>🤖</span> AI 摘要
@@ -5222,7 +5222,7 @@ function PlayPageClient() {
           onClick={() => setShowNetdiskModal(false)}
         >
           <div
-            className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-black/6 bg-white/88 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-white/8 dark:bg-[#151a22]/88 md:max-h-[90vh] md:max-w-4xl md:rounded-[28px]'
+            className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-gray-200 dark:border-gray-700 bg-white/88 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-gray-700 dark:bg-[#151a22]/88 md:max-h-[90vh] md:max-w-4xl md:rounded-xl'
             onClick={(e) => e.stopPropagation()}
           >
             {/* 头部 - Fixed */}
@@ -5406,7 +5406,7 @@ function PlayPageClient() {
                       });
                     }
                   }}
-                  className='sticky bottom-6 left-full -ml-14 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-black/6 bg-white/82 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:text-blue-600 hover:shadow-xl active:scale-95 dark:border-white/8 dark:bg-white/6 dark:text-gray-200 sm:bottom-8 sm:-ml-16 sm:h-12 sm:w-12'
+                  className='sticky bottom-6 left-full -ml-14 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/82 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:text-blue-600 hover:shadow-xl active:scale-95 dark:border-gray-700 dark:bg-white/6 dark:text-gray-200 sm:bottom-8 sm:-ml-16 sm:h-12 sm:w-12'
                   aria-label='返回顶部'
                 >
                   <svg

@@ -848,7 +848,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
             {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
             <div className='flex items-center justify-start'>
               <CapsuleSwitch
-                className='bg-white/62 dark:bg-white/6'
+                className='bg-white dark:bg-gray-800'
                 options={[
                   { label: '首页', value: 'home' },
                   {
@@ -958,7 +958,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               }}
             >
               <div
-                className='w-full max-w-md max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.24)] dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
+                className='w-full max-w-md max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
                 onTouchMove={(e) => {
                   e.stopPropagation();
                 }}

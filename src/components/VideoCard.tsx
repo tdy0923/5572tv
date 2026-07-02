@@ -1019,7 +1019,7 @@ function VideoCard({
       >
         {/* 海报容器 */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-[12px] border border-black/6 bg-white/40 shadow-[0_16px_34px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_20px_42px_rgba(15,23,42,0.12)] dark:border-white/8 dark:bg-white/5 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative aspect-[2/3] overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
           style={
             {
               WebkitUserSelect: 'none',

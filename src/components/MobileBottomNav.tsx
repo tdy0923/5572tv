@@ -208,9 +208,9 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
       aria-label='主导航'
       className={cn(
         'md:hidden fixed left-0 right-0 z-30',
-        'bg-white/92 dark:bg-[#0b0b0b]/96',
+        'bg-white dark:bg-[#0b0b0b]/96',
         'backdrop-blur-lg',
-        'border-t border-black/5 dark:border-white/8 shadow-[0_-20px_40px_rgba(0,0,0,0.22)]',
+        'border-t border-gray-200 dark:border-gray-700 shadow-md',
       )}
       style={{
         // 贴底，使用 safe area insets
@@ -255,7 +255,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
                 'rounded-2xl py-2 px-1',
                 'transition-all duration-200',
                 'active:scale-95',
-                active && 'bg-white/10',
+                active && 'bg-white dark:bg-gray-800',
               )}
             >
               <Icon

@@ -103,8 +103,8 @@ export function AdminModulePanel({
   children,
 }: AdminModulePanelProps) {
   return (
-    <div className='overflow-hidden rounded-[28px] border border-black/6 bg-white/80 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-md dark:border-white/8 dark:bg-gray-800/55'>
-      <div className='flex items-center gap-3 border-b border-black/6 bg-gray-50/70 px-6 py-4 dark:border-white/8 dark:bg-gray-800/60'>
+    <div className='overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'>
+      <div className='flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 dark:border-gray-700 dark:bg-gray-800'>
         {icon}
         <div>
           <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
@@ -116,12 +116,12 @@ export function AdminModulePanel({
         </div>
       </div>
 
-      <div className='border-b border-black/6 bg-white/60 px-6 py-3 dark:border-white/8 dark:bg-white/[0.03]'>
+      <div className='border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3 dark:border-gray-700 dark:bg-gray-800'>
         <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
             Single Module
           </span>
-          <span className='rounded-full border border-black/8 bg-white px-2.5 py-1 dark:border-white/10 dark:bg-white/5'>
+          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
             Admin Workspace
           </span>
         </div>

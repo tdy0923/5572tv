@@ -157,7 +157,7 @@ function SearchPageClient() {
         key={item.key}
         type='button'
         onClick={() => router.push(itemUrl)}
-        className='group w-full rounded-2xl border border-gray-200/80 bg-white/90 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700'
+        className='group w-full rounded-2xl border border-gray-200/80 bg-white dark:bg-gray-800 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700'
       >
         <div className='flex items-start gap-4'>
           <div className='relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
@@ -1026,7 +1026,7 @@ function SearchPageClient() {
                   </GlassPanel>
 
                   {tmdbActorError ? (
-                    <div className='rounded-[28px] border border-red-200 bg-red-50/90 p-8 text-center shadow-[0_12px_30px_rgba(15,23,42,0.05)] dark:border-red-800/50 dark:bg-red-900/20'>
+                    <div className='rounded-xl border border-red-200 bg-red-50/90 p-8 text-center shadow-sm dark:border-red-800/50 dark:bg-red-900/20'>
                       <div className='mb-2 text-red-500'>{tmdbActorError}</div>
                       <p className='mb-4 text-sm text-red-400 dark:text-red-300'>
                         可以重试一次，或切换筛选条件后重新搜索。
@@ -1064,7 +1064,7 @@ function SearchPageClient() {
                       ))}
                     </div>
                   ) : !tmdbActorLoading ? (
-                    <div className='rounded-[28px] border border-dashed border-black/10 bg-black/[0.02] p-8 text-center dark:border-white/10 dark:bg-white/[0.03]'>
+                    <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
                       <div className='text-gray-500 dark:text-gray-400'>
                         未找到相关演员作品
                       </div>
@@ -1079,7 +1079,7 @@ function SearchPageClient() {
                 <>
                   <div className='grid gap-8'>
                     <div className='min-w-0 space-y-6'>
-                      <div className='rounded-[28px] border border-black/6 bg-white/65 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.04] sm:p-5'>
+                      <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
                         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
                           <div className='min-w-0 flex-1'>
                             <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -1178,7 +1178,7 @@ function SearchPageClient() {
                       {/* 搜索结果网格/列表 */}
                       <div className='pt-1'>
                         {isLoading && searchResults.length === 0 ? (
-                          <div className='rounded-[28px] border border-black/6 bg-black/[0.02] p-10 text-center dark:border-white/8 dark:bg-white/[0.03]'>
+                          <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-10 text-center dark:border-gray-700 dark:bg-gray-800'>
                             <div className='mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-green-500 dark:border-gray-600 dark:border-t-green-400'></div>
                             <div className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                               正在整理搜索结果...
@@ -1189,7 +1189,7 @@ function SearchPageClient() {
                             </div>
                           </div>
                         ) : traditionalSearchError && !useFluidSearch ? (
-                          <div className='rounded-[28px] border border-red-200 bg-red-50/90 p-8 text-center shadow-[0_12px_30px_rgba(15,23,42,0.05)] dark:border-red-800/50 dark:bg-red-900/20'>
+                          <div className='rounded-xl border border-red-200 bg-red-50/90 p-8 text-center shadow-sm dark:border-red-800/50 dark:bg-red-900/20'>
                             <div className='mb-2 text-red-500'>
                               {traditionalSearchError || '搜索失败'}
                             </div>
@@ -1198,7 +1198,7 @@ function SearchPageClient() {
                             </p>
                           </div>
                         ) : searchResults.length === 0 ? (
-                          <div className='rounded-[28px] border border-dashed border-black/10 bg-black/[0.02] p-8 text-center dark:border-white/10 dark:bg-white/[0.03]'>
+                          <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
                             <div className='text-gray-500 dark:text-gray-400'>
                               未找到相关影视结果
                             </div>
@@ -1430,7 +1430,7 @@ function SearchPageClient() {
                       (filteredAggResults.length > 0 ||
                         filteredAllResults.length > 0) ? (
                         <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
-                          <div className='rounded-full border border-black/6 bg-white/78 px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-white/6'>
+                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)]  dark:border-gray-700 dark:bg-gray-800'>
                             <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
                               <div className='animate-spin rounded-full h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
                               <span>正在搜索更多结果...</span>
@@ -1441,7 +1441,7 @@ function SearchPageClient() {
                         (filteredAggResults.length > 0 ||
                           filteredAllResults.length > 0) ? (
                         <div className='mt-8 flex justify-center py-6'>
-                          <div className='rounded-[24px] border border-black/6 bg-white/72 px-6 py-3 text-sm font-medium text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-white/8 dark:bg-white/6 dark:text-gray-300'>
+                          <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white/72 px-6 py-3 text-sm font-medium text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.06)]  dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
                             搜索完成 · 共找到{' '}
                             {viewMode === 'agg'
                               ? filteredAggResults.length
@@ -1466,7 +1466,7 @@ function SearchPageClient() {
             <>
               {/* 搜索历史 - 优先显示 */}
               {searchHistory.length > 0 && (
-                <section className='mb-12 rounded-2xl sm:rounded-[30px] border border-black/6 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-white/8 dark:bg-white/[0.03] sm:p-5'>
+                <section className='mb-12 rounded-2xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)]  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
                   <div className='mb-4 flex items-center justify-between'>
                     <h2 className='text-xl font-bold text-gray-800 text-left dark:text-gray-200'>
                       搜索历史
@@ -1475,7 +1475,7 @@ function SearchPageClient() {
                       onClick={() => {
                         clearSearchHistory();
                       }}
-                      className='inline-flex items-center rounded-full border border-black/6 bg-white/70 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-red-500 dark:border-white/8 dark:bg-white/6 dark:text-gray-400 dark:hover:text-red-500'
+                      className='inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-red-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-red-500'
                     >
                       清空
                     </button>
@@ -1490,7 +1490,7 @@ function SearchPageClient() {
                               `/search?q=${encodeURIComponent(item.trim())}`,
                             );
                           }}
-                          className='rounded-full border border-black/6 bg-white/75 px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10'
+                          className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/75 px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10'
                         >
                           {item}
                         </button>
@@ -1515,7 +1515,7 @@ function SearchPageClient() {
               )}
 
               {searchHistory.length === 0 && (
-                <section className='mb-12 rounded-2xl sm:rounded-[30px] border border-dashed border-black/10 bg-black/[0.02] p-8 text-center dark:border-white/10 dark:bg-white/[0.03]'>
+                <section className='mb-12 rounded-2xl sm:rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
                   <h2 className='text-xl font-semibold text-gray-700 dark:text-gray-300'>
                     还没有搜索历史
                   </h2>
@@ -1541,7 +1541,7 @@ function SearchPageClient() {
       {/* 返回顶部悬浮按钮 */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] right-6 z-70 flex h-12 w-12 items-center justify-center rounded-full border border-black/6 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-white/8 dark:bg-white/6 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
+        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] right-6 z-70 flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)]  transition-all duration-300 hover:scale-105 hover:text-green-600 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:text-green-400 md:bottom-6 ${
           showBackToTop
             ? 'opacity-100 translate-y-0'
             : 'opacity-0 translate-y-4 pointer-events-none'

@@ -44,15 +44,15 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
   const isFooterSlot = position === 'footer';
   const isPlayerRowSlot = position === 'play_sidebar';
   const containerClass = isHeroSlot
-    ? 'rounded-[28px] border border-black/6 bg-white/78 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/8 dark:bg-white/6'
+    ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-700 dark:bg-white/6'
     : isFooterSlot
-      ? 'rounded-[24px] border border-black/6 bg-white/72 shadow-[0_16px_36px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-white/8 dark:bg-white/6'
+      ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[0_16px_36px_rgba(15,23,42,0.06)] backdrop-blur-xl dark:border-gray-700 dark:bg-white/6'
       : isPlayerRowSlot
-        ? 'rounded-[24px] border border-black/6 bg-white/76 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/8 dark:bg-white/6'
-        : 'rounded-2xl border border-black/6 bg-white/75 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/8 dark:bg-white/6';
+        ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/76 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-700 dark:bg-white/6'
+        : 'rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/75 shadow-[0_16px_36px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-700 dark:bg-white/6';
   const imageContainerClass = isSidebarSlot
-    ? 'mx-auto overflow-hidden rounded-2xl border border-black/6 bg-black/5'
-    : 'overflow-hidden rounded-2xl border border-black/6 bg-black/5';
+    ? 'mx-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5'
+    : 'overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5';
 
   const textContent = (content || title || '').slice(0, maxTextLength);
   const textAds = (content || title || '')
@@ -117,7 +117,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
                 .split('|')
                 .map((v) => v.trim());
               const node = (
-                <div className='w-full rounded-2xl border border-black/6 bg-white/90 px-3 py-2 text-gray-800 shadow-sm dark:border-white/8 dark:bg-white/8 dark:text-gray-100'>
+                <div className='w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 px-3 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-white/8 dark:text-gray-100'>
                   <div className='text-sm font-medium'>
                     {(label || line).slice(0, maxTextLength)}
                   </div>
