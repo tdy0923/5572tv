@@ -930,32 +930,29 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 }
 
 /* ============================================
-   Fluent 2 Global Normalize Layer
-   Overrides legacy Tailwind arbitrary values
-   to enforce consistent Fluent 2 design tokens
+   Fluent 2 Global Design System Layer
+   Enforces Microsoft Fluent 2 design standards
+   across the entire application
    ============================================ */
 
-/* --- Border Radius: Fluent 2 uses max 12px --- */
+/* --- 1. Border Radius: Fluent 2 uses max 12px (4/8/12 scale) --- */
 [class*='rounded-[28px]'],
-[class*='rounded-[30px]'] {
-  border-radius: 12px !important;
-}
+[class*='rounded-[30px]'],
+[class*='rounded-[24px]'],
 [class*='rounded-[20px]'],
-[class*='rounded-[24px]'] {
-  border-radius: 12px !important;
-}
 [class*='rounded-3xl'] {
   border-radius: 12px !important;
 }
-[class*='rounded-full'] {
-  /* Keep pill shapes for tags/chips */
-}
 
-/* --- Shadows: Replace arbitrary with Fluent 2 elevation --- */
-[class*='shadow-[0_14px_'],
+/* --- 2. Shadows: Fluent 2 elevation scale (2/4/8/16) --- */
 [class*='shadow-[0_12px_'],
+[class*='shadow-[0_14px_'],
+[class*='shadow-[0_16px_'],
 [class*='shadow-[0_18px_'],
+[class*='shadow-[0_20px_'],
+[class*='shadow-[0_22px_'],
 [class*='shadow-[0_24px_'],
+[class*='shadow-[0_28px_'],
 [class*='shadow-[0_30px_'] {
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.14),
@@ -965,7 +962,7 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.32) !important;
 }
 
-/* --- Backdrop Blur: Simplify for performance --- */
+/* --- 3. Backdrop Blur: Unified for performance --- */
 .backdrop-blur-xl,
 .backdrop-blur-2xl,
 .backdrop-blur-3xl {
@@ -979,7 +976,7 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
-/* --- Background Transparency: Only override high-opacity cases, preserve intentional overlays --- */
+/* --- 4. High-opacity backgrounds → solid Fluent 2 surfaces --- */
 .bg-white\/80,
 .bg-white\/82,
 .bg-white\/85,
@@ -998,9 +995,8 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 .dark .bg-white\/95 {
   background-color: var(--color-background-subtle) !important;
 }
-/* Low-opacity bg-white/XX (65, 70, 72, 76, 78) are intentional overlay effects — keep as-is */
 
-/* --- Border Colors: Fluent 2 neutral strokes --- */
+/* --- 5. Border Colors: Fluent 2 neutral strokes --- */
 .border-black\/5,
 .border-black\/6,
 .border-black\/8,
@@ -1014,7 +1010,7 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   border-color: var(--color-stroke) !important;
 }
 
-/* --- Dark Mode Arbitrary Backgrounds --- */
+/* --- 6. Dark Mode Arbitrary Backgrounds → semantic tokens --- */
 .dark [class*='dark:bg-[#0c'],
 .dark [class*='dark:bg-[#0d'],
 .dark [class*='dark:bg-[#0f'] {
@@ -1024,7 +1020,7 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   background-color: var(--color-background) !important;
 }
 
-/* --- Text Colors: Fluent 2 semantic --- */
+/* --- 7. Text Colors: Fluent 2 semantic --- */
 .text-gray-900 {
   color: var(--color-foreground) !important;
 }
@@ -1050,12 +1046,180 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   color: var(--color-foreground-subtle) !important;
 }
 
-/* --- Inset Shadows: Remove glass morphism inset effects --- */
+/* --- 8. Remove glass morphism inset shadows --- */
 [class*='shadow-[inset_'] {
   box-shadow: none !important;
 }
 
-/* --- Background Gradients: Simplify --- */
-[class*='bg-gradient-to-r from-white/0 via-white/20'] {
-  display: none !important;
+/* --- 9. Fluent 2 Interaction Effects --- */
+
+/* Hover: elevation change + subtle scale (Fluent 2 Standard) */
+button,
+a,
+[role='button'],
+input[type='submit'],
+input[type='button'] {
+  transition: all 150ms cubic-bezier(0.33, 0, 0.67, 1) !important;
+}
+button:hover:not(:disabled),
+a:hover:not(:disabled),
+[role='button']:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+button:active:not(:disabled),
+a:active:not(:disabled),
+[role='button']:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Focus: Fluent 2 focus ring (2px brand color ring) */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--color-primary-500) !important;
+  outline-offset: 2px !important;
+  border-radius: inherit;
+}
+.dark button:focus-visible,
+.dark a:focus-visible,
+.dark input:focus-visible {
+  outline-color: var(--color-primary-400) !important;
+}
+
+/* --- 10. Fluent 2 Button Effects --- */
+
+/* Primary button: brand fill + elevation transition */
+.fluent2-btn-primary,
+[class*='bg-primary-500'] {
+  transition: all 150ms cubic-bezier(0.33, 0, 0.67, 1) !important;
+}
+.fluent2-btn-primary:hover:not(:disabled),
+[class*='bg-primary-500']:hover:not(:disabled) {
+  filter: brightness(0.95);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.14),
+    0 0 2px rgba(0, 0, 0, 0.06) !important;
+}
+.fluent2-btn-primary:active:not(:disabled),
+[class*='bg-primary-500']:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 0 2px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* --- 11. Fluent 2 Card Hover Effect --- */
+.card-hover,
+[class*='rounded-xl'][class*='shadow-'] {
+  transition:
+    box-shadow 150ms cubic-bezier(0.33, 0, 0.67, 1),
+    transform 150ms cubic-bezier(0.33, 0, 0.67, 1) !important;
+}
+.card-hover:hover {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.14),
+    0 0 2px rgba(0, 0, 0, 0.06) !important;
+}
+.dark .card-hover:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.32) !important;
+}
+
+/* --- 12. Fluent 2 Link/Menu Hover --- */
+.hover:bg-black\/4 {
+  transition: background-color 150ms cubic-bezier(0.33, 0, 0.67, 1) !important;
+}
+.hover\:bg-black\/4:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* --- 13. Fluent 2 Scale Animations --- */
+@keyframes fluent2-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fluent2-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes fluent2-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fluent2-fade-in {
+  animation: fluent2-fade-in 250ms cubic-bezier(0, 0, 0, 1) forwards;
+}
+.animate-fluent2-scale-in {
+  animation: fluent2-scale-in 200ms cubic-bezier(0, 0, 0, 1) forwards;
+}
+.animate-fluent2-slide-up {
+  animation: fluent2-slide-up 300ms cubic-bezier(0, 0, 0, 1) forwards;
+}
+
+/* --- 14. Disabled State: Fluent 2 muted --- */
+button:disabled,
+[role='button']:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  filter: grayscale(30%) !important;
+}
+
+/* --- 15. Scrollbar: Fluent 2 thin style --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+/* --- 16. Selection: Fluent 2 brand highlight --- */
+::selection {
+  background: var(--color-primary-200);
+  color: var(--color-gray-900);
+}
+.dark ::selection {
+  background: rgba(244, 194, 77, 0.3);
+  color: var(--color-gray-100);
+}
+
+/* --- 17. Placeholder: Fluent 2 muted --- */
+::placeholder {
+  color: var(--color-foreground-muted);
+  opacity: 1;
 }
