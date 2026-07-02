@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 
@@ -68,6 +69,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const headerList = await headers();
+  const nonce = headerList.get('x-csp-nonce') || '';
   let siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   let announcementTitle = process.env.ANNOUNCEMENT_TITLE || '站点公告';
   let announcement =
@@ -132,6 +135,7 @@ export default async function RootLayout({
         />
         {/* 将配置序列化后直接写入脚本，浏览器端可通过 window.RUNTIME_CONFIG 获取 */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               try {
@@ -144,11 +148,13 @@ export default async function RootLayout({
           }}
         />
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
@@ -159,7 +165,12 @@ export default async function RootLayout({
             `,
           }}
         />
-        {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
+        {customCSS && (
+          <style
+            nonce={nonce}
+            dangerouslySetInnerHTML={{ __html: customCSS }}
+          />
+        )}
         <script
           defer
           src='https://tg.yunku.de/script.js'

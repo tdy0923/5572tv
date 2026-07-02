@@ -28,8 +28,8 @@ COPY --from=deps /app/node_modules ./node_modules
 RUN pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
 # 复制全部源代码
 COPY . .
-# 验证 static 目录存在并打印文件大小
-RUN ls -la /app/static/download/ && wc -c /app/static/download/5572tv-android.apk || echo "MISSING: static/download"
+# Verify static directory exists (APK will be mounted at deploy time via volume)
+RUN test -d /app/static/download && echo "static/download dir exists" || echo "WARNING: static/download dir missing"
 
 # 在构建阶段设置 DOCKER_BUILD，启用 standalone 输出
 ENV DOCKER_BUILD=true

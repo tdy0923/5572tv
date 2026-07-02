@@ -20,14 +20,14 @@ import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '61.3';
+const APK_SIZE = '64.4';
 const APK_VERSION = 'v1.8.2';
-const IPA_VERSION = 'v1.8.1';
 
 function DownloadCard() {
   return (
     <div className='flex flex-col items-center gap-4 p-6 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm'>
       <div className='p-2 bg-white rounded-xl shadow-lg shadow-[#f4c24d]/10'>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent('https://www.5572.net/download/5572tv-android.apk')}`}
           alt='扫码下载 APK'

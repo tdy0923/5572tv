@@ -85,13 +85,12 @@ async function handleTrailerCache(request, url) {
   }
 }
 
-function jsonResponse(data, status, cors = false) {
+function jsonResponse(data, status, cors = false, req) {
   const headers = {
     'Content-Type': 'application/json; charset=utf-8',
   };
-  if (cors) {
-    headers['Access-Control-Allow-Origin'] =
-      request.headers.get('Origin') || '';
+  if (cors && req) {
+    headers['Access-Control-Allow-Origin'] = req.headers.get('Origin') || '';
     headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS';
     headers['Access-Control-Allow-Headers'] = '*';
   }

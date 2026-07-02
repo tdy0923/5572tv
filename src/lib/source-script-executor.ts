@@ -6,18 +6,6 @@ import { db } from '@/lib/db';
 import { SearchResult } from '@/lib/types';
 
 const SCRIPTS_KEY = 'source_scripts';
-const BLOCKED_GLOBALS = [
-  'process',
-  'require',
-  'module',
-  'exports',
-  '__dirname',
-  '__filename',
-  'eval',
-  'Function',
-  'globalThis',
-  'global',
-];
 
 export interface SourceScript {
   id: string;
