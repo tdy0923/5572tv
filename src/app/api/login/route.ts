@@ -248,7 +248,7 @@ export async function POST(req: NextRequest) {
         path: '/',
         expires,
         sameSite: 'lax',
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
       });
 
@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
           path: '/',
           expires,
           sameSite: 'lax',
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
         });
         return response;
@@ -344,19 +344,28 @@ export async function POST(req: NextRequest) {
           path: '/',
           expires,
           sameSite: 'lax',
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
         });
-      } catch (dbErr) {
+      } catch (dbErr: any) {
         console.error('数据库验证失败', dbErr);
-        return NextResponse.json({ error: '数据库错误' }, { status: 500 });
+        return NextResponse.json(
+          { error: '数据库错误', detail: String(dbErr?.message || dbErr) },
+          { status: 500 },
+        );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('登录接口异常', error);
-      return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+      return NextResponse.json(
+        { error: '服务器错误', detail: String(error?.message || error) },
+        { status: 500 },
+      );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('登录接口异常', error);
-    return NextResponse.json({ error: '服务器错误' }, { status: 500 });
+    return NextResponse.json(
+      { error: '服务器错误', detail: String(error?.message || error) },
+      { status: 500 },
+    );
   }
 }
