@@ -22,7 +22,13 @@ import { generateStorageKey } from './utils';
 const STORAGE_TYPE =
   (process.env.KVROCKS_URL
     ? 'kvrocks'
-    : (process.env.STORAGE_TYPE as
+    : (process.env.NEXT_PUBLIC_STORAGE_TYPE as
+        | 'localstorage'
+        | 'redis'
+        | 'upstash'
+        | 'kvrocks'
+        | undefined) ||
+      (process.env.STORAGE_TYPE as
         | 'localstorage'
         | 'redis'
         | 'upstash'
