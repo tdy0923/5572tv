@@ -51,7 +51,7 @@ jobs:
               --name 5572tv-core \
               --network 5572tv-net \
               -p 3000:3000 \
-              -e USERNAME='${{ secrets.SERVER_USERNAME }}' \
+              -e USERNAME='Danny Danny0923' \
               -e PASSWORD='${{ secrets.SERVER_PASSWORD }}' \
               -e SITE_BASE='https://www.5572.net' \
               -e NEXT_PUBLIC_SITE_NAME='5572影视' \
