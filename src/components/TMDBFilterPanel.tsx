@@ -169,7 +169,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
         <FunnelIcon className='h-4 w-4' />
         筛选
         {hasActiveFilters && (
-          <span className='rounded-full bg-black/10 px-1.5 py-0.5 text-xs text-current dark:bg-white/10'>
+          <span className='rounded-full bg-black/10 px-1.5 py-0.5 text-xs text-current dark:bg-gray-800'>
             {Object.keys(localFilters).length}
           </span>
         )}

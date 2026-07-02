@@ -4825,7 +4825,7 @@ function PlayPageClient() {
 
               {/* AI 影片摘要 */}
               <div className='md:col-span-3'>
-                <div className='rounded-xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.05)] backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>
+                <div className='rounded-xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>
                   <div className='flex items-center justify-between mb-3'>
                     <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
                       <span className='text-purple-500'>🤖</span> AI 摘要
@@ -5222,7 +5222,7 @@ function PlayPageClient() {
           onClick={() => setShowNetdiskModal(false)}
         >
           <div
-            className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-gray-200 dark:border-gray-700 bg-white/88 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-gray-700 dark:bg-[#151a22]/88 md:max-h-[90vh] md:max-w-4xl md:rounded-xl'
+            className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-gray-200 dark:border-gray-700 bg-white/88 shadow-lg  dark:border-gray-700 dark:bg-gray-900 md:max-h-[90vh] md:max-w-4xl md:rounded-xl'
             onClick={(e) => e.stopPropagation()}
           >
             {/* 头部 - Fixed */}
@@ -5307,7 +5307,7 @@ function PlayPageClient() {
                           }}
                           className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
                             netdiskResourceType === 'netdisk'
-                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)]'
+                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-md'
                               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
                           }`}
                         >
@@ -5324,7 +5324,7 @@ function PlayPageClient() {
                           }}
                           className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
                             netdiskResourceType === 'acg'
-                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)]'
+                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-md'
                               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
                           }`}
                         >
@@ -5371,7 +5371,7 @@ function PlayPageClient() {
                         <button
                           onClick={() => handleNetDiskSearch(videoTitle)}
                           disabled={netdiskLoading}
-                          className='mt-4 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2 text-sm font-medium text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)] transition-transform hover:scale-[1.02] disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-base'
+                          className='mt-4 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2 text-sm font-medium text-[#171717] shadow-md transition-transform hover:scale-[1.02] disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-base'
                         >
                           开始搜索
                         </button>
@@ -5406,7 +5406,7 @@ function PlayPageClient() {
                       });
                     }
                   }}
-                  className='sticky bottom-6 left-full -ml-14 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/82 text-gray-700 shadow-[0_14px_32px_rgba(15,23,42,0.08)] backdrop-blur-md transition-all duration-200 hover:scale-105 hover:text-blue-600 hover:shadow-xl active:scale-95 dark:border-gray-700 dark:bg-white/6 dark:text-gray-200 sm:bottom-8 sm:-ml-16 sm:h-12 sm:w-12'
+                  className='sticky bottom-6 left-full -ml-14 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/82 text-gray-700 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-105 hover:text-blue-600 hover:shadow-xl active:scale-95 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 sm:bottom-8 sm:-ml-16 sm:h-12 sm:w-12'
                   aria-label='返回顶部'
                 >
                   <svg

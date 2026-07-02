@@ -348,7 +348,7 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 - 代理图片不能用next/image */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:bg-white/6'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white/50 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_22px_46px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:bg-gray-800'>
           <img
             src={posterUrl}
             alt={drama.name}
@@ -441,7 +441,7 @@ function ShortDramaCard({
                 className='
                   flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                   bg-black/60 backdrop-blur-md
-                  hover:bg-black/80 hover:scale-105 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)]
+                  hover:bg-black/80 hover:scale-105 hover:shadow-md
                   transition-all duration-300 ease-out
                   border border-white/10'
                 aria-label='AI问片'

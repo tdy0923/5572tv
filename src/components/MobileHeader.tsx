@@ -23,7 +23,7 @@ const MobileHeader = ({
 }: MobileHeaderProps) => {
   const { siteName } = useSite();
   return (
-    <header className='md:hidden fixed top-0 left-0 right-0 z-20 w-full border-b border-gray-200 dark:border-gray-700 bg-white/80 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-gray-700 dark:bg-[#0b0d12]/76 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]'>
+    <header className='md:hidden fixed top-0 left-0 right-0 z-20 w-full border-b border-gray-200 dark:border-gray-700 bg-white/80 shadow-[0_12px_40px_rgba(15,23,42,0.08)]  dark:border-gray-700 dark:bg-[#0b0d12]/76 dark:shadow-[0_18px_48px_rgba(0,0,0,0.35)]'>
       <div className='h-14 flex items-center justify-between px-4'>
         {/* 左侧：搜索按钮、返回按钮和设置按钮 */}
         <div className='flex items-center gap-2'>

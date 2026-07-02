@@ -131,7 +131,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           Bangumi评分:{' '}
                         </span>
                         <div className='flex items-center group'>
-                          <span className='relative text-transparent bg-clip-text bg-linear-to-r from-pink-600 via-rose-600 to-pink-600 dark:from-pink-400 dark:via-rose-400 dark:to-pink-400 font-bold text-lg transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_2px_8px_rgba(236,72,153,0.5)]'>
+                          <span className='relative text-transparent bg-clip-text bg-linear-to-r from-pink-600 via-rose-600 to-pink-600 dark:from-pink-400 dark:via-rose-400 dark:to-pink-400 font-bold text-lg transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-sm'>
                             {bangumiDetails.rating.score}
                           </span>
                           <div className='flex ml-2 gap-0.5'>
@@ -244,7 +244,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                           豆瓣评分:{' '}
                         </span>
                         <div className='flex items-center group'>
-                          <span className='relative text-transparent bg-clip-text bg-linear-to-r from-yellow-600 via-amber-600 to-yellow-600 dark:from-yellow-400 dark:via-amber-400 dark:to-yellow-400 font-bold text-lg transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]'>
+                          <span className='relative text-transparent bg-clip-text bg-linear-to-r from-yellow-600 via-amber-600 to-yellow-600 dark:from-yellow-400 dark:via-amber-400 dark:to-yellow-400 font-bold text-lg transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-sm'>
                             {movieDetails.rate}
                           </span>
                           <div className='flex ml-2 gap-0.5'>
@@ -485,7 +485,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                       onClick={() => onCelebrityClick(celebrity.name)}
                       className='group cursor-pointer'
                     >
-                      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-300 group-hover:shadow-[0_18px_36px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:bg-white/6 dark:group-hover:border-blue-500/40'>
+                      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-300 group-hover:shadow-[0_18px_36px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:bg-gray-800 dark:group-hover:border-blue-500/40'>
                         <div className='h-20 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-700 sm:h-24 sm:w-[72px]'>
                           <img
                             src={processImageUrl(celebrityAvatar)}
@@ -539,21 +539,21 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                   <span>{selectedCelebrityName} 的作品</span>
                 </h3>
                 {!loadingCelebrityWorks && celebrityWorks.length > 0 && (
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-white/6 dark:text-gray-300'>
+                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
                     {celebrityWorks.length} 部
                   </span>
                 )}
               </div>
               <button
                 onClick={onClearCelebrity}
-                className='inline-flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700 dark:border-gray-700 dark:bg-white/6 dark:text-gray-400 dark:hover:text-gray-200'
+                className='inline-flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
               >
                 收起
               </button>
             </div>
 
             {loadingCelebrityWorks ? (
-              <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-12 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-gray-700 dark:bg-white/5'>
+              <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-12 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800'>
                 <div className='flex flex-col items-center justify-center'>
                   <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4'></div>
                   <p className='text-gray-600 dark:text-gray-400'>
@@ -690,7 +690,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                       喜欢这部{movieDetails.episodes ? '剧' : '电影'}的人也喜欢
                     </span>
                   </h3>
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-white/6 dark:text-gray-300'>
+                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
                     {movieDetails.recommendations.length} 部
                   </span>
                 </div>

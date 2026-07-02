@@ -33,7 +33,7 @@ const CommentSection = memo(function CommentSection({
           <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200'>
             豆瓣短评
           </h3>
-          <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300'>
+          <span className='rounded-full border border-black/6 bg-white/70 px-3 py-1 text-xs text-gray-600 dark:border-white/8 dark:bg-gray-800 dark:text-gray-300'>
             {comments.length} 条
           </span>
         </div>
@@ -54,7 +54,7 @@ const CommentSection = memo(function CommentSection({
             href={`https://movie.douban.com/subject/${videoDoubanId}/comments?status=P`}
             target='_blank'
             rel='noopener noreferrer'
-            className='inline-flex items-center gap-2 rounded-full border border-black/6 bg-white/70 px-4 py-2 text-sm text-gray-700 transition-colors hover:text-blue-600 dark:border-white/8 dark:bg-white/6 dark:text-gray-300 dark:hover:text-blue-400'
+            className='inline-flex items-center gap-2 rounded-full border border-black/6 bg-white/70 px-4 py-2 text-sm text-gray-700 transition-colors hover:text-blue-600 dark:border-white/8 dark:bg-gray-800 dark:text-gray-300 dark:hover:text-blue-400'
           >
             查看更多短评
             <svg

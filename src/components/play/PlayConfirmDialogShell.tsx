@@ -31,9 +31,9 @@ export default function PlayConfirmDialogShell({
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
-      <div className='mx-4 max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white/86 p-6 shadow-[0_28px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl dark:border-gray-700 dark:bg-[#151a22]/86'>
+      <div className='mx-4 max-w-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white/86 p-6 shadow-lg  dark:border-gray-700 dark:bg-gray-900'>
         <div className='text-center'>
-          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 dark:bg-white/10'>
+          <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/70 dark:bg-gray-800'>
             {icon}
           </div>
           <h3 className='mb-2 text-lg font-semibold text-gray-900 dark:text-white'>
@@ -55,7 +55,7 @@ export default function PlayConfirmDialogShell({
             </button>
             <button
               onClick={onConfirm}
-              className='flex-1 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2.5 font-medium text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.22)] transition-transform hover:scale-[1.02]'
+              className='flex-1 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2.5 font-medium text-[#171717] shadow-md transition-transform hover:scale-[1.02]'
             >
               {confirmLabel}
             </button>

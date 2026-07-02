@@ -165,7 +165,7 @@ export default function FavoritesView({
             onClick={() => setFavoriteGroupFilter('全部')}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
               favoriteGroupFilter === '全部'
-                ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_10px_24px_rgba(139,92,246,0.28)]'
+                ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
                 : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
             }`}
           >
@@ -177,7 +177,7 @@ export default function FavoritesView({
               onClick={() => setFavoriteGroupFilter(g)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                 favoriteGroupFilter === g
-                  ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_10px_24px_rgba(139,92,246,0.28)]'
+                  ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
                   : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
               }`}
             >
@@ -203,7 +203,7 @@ export default function FavoritesView({
               onClick={() => setFavoriteFilter(key)}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                 favoriteFilter === key
-                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
                   : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
               }`}
             >
@@ -226,7 +226,7 @@ export default function FavoritesView({
                 onClick={() => setFavoriteSortBy(key)}
                 className={`rounded-full px-3 py-1.5 transition-colors ${
                   favoriteSortBy === key
-                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
                     : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
                 }`}
               >

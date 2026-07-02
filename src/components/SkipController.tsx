@@ -1654,7 +1654,7 @@ export function SkipSettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className='group flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-white rounded-xl border border-white/30 hover:border-white/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.18)] hover:scale-105 transition-all duration-300 ease-out'
+      className='group flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-white rounded-xl border border-white/30 hover:border-white/50 shadow-lg hover:shadow-md hover:scale-105 transition-all duration-300 ease-out'
       title='跳过设置'
       style={{
         backdropFilter: 'blur(20px) saturate(180%)',

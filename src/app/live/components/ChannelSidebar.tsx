@@ -268,7 +268,7 @@ export default function ChannelSidebar({
 }: ChannelSidebarProps) {
   return (
     <div className='h-[300px] lg:h-full md:overflow-hidden transition-all duration-300 ease-in-out md:col-span-1 lg:opacity-100 lg:scale-100'>
-      <div className='md:ml-2 px-4 py-0 h-full rounded-xl bg-black/10 dark:bg-white/5 flex flex-col border border-white/0 dark:border-white/30 overflow-hidden'>
+      <div className='md:ml-2 px-4 py-0 h-full rounded-xl bg-black/10 dark:bg-gray-800 flex flex-col border border-white/0 dark:border-white/30 overflow-hidden'>
         <div className='flex mb-1 -mx-6 shrink-0'>
           <div
             onClick={() => setActiveTab('channels')}
@@ -276,7 +276,7 @@ export default function ChannelSidebar({
               ${
                 activeTab === 'channels'
                   ? 'text-green-600 dark:text-green-400'
-                  : 'text-gray-700 hover:text-green-600 bg-black/5 dark:bg-white/5 dark:text-gray-300 dark:hover:text-green-400 hover:bg-black/3 dark:hover:bg-white/3'
+                  : 'text-gray-700 hover:text-green-600 bg-black/5 dark:bg-gray-800 dark:text-gray-300 dark:hover:text-green-400 hover:bg-black/3 dark:hover:bg-white/3'
               }
             `.trim()}
           >
@@ -288,7 +288,7 @@ export default function ChannelSidebar({
               ${
                 activeTab === 'sources'
                   ? 'text-green-600 dark:text-green-400'
-                  : 'text-gray-700 hover:text-green-600 bg-black/5 dark:bg-white/5 dark:text-gray-300 dark:hover:text-green-400 hover:bg-black/3 dark:hover:bg-white/3'
+                  : 'text-gray-700 hover:text-green-600 bg-black/5 dark:bg-gray-800 dark:text-gray-300 dark:hover:text-green-400 hover:bg-black/3 dark:hover:bg-white/3'
               }
             `.trim()}
           >

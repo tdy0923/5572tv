@@ -590,10 +590,10 @@ export default function SourceBrowserPage() {
                 </div>
               </div>
               <div className='flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300'>
-                <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-white/6'>
+                <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
                   {sources.length} 个来源
                 </span>
-                <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-white/6'>
+                <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
                   {mode === 'search' ? '搜索模式' : '分类模式'}
                 </span>
               </div>
@@ -695,7 +695,7 @@ export default function SourceBrowserPage() {
                         清除
                       </PillButton>
                     )}
-                    <div className='inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-white/5 dark:text-gray-400 whitespace-nowrap'>
+                    <div className='inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 whitespace-nowrap'>
                       {mode === 'search' ? '搜索模式' : '分类模式'}
                     </div>
                   </div>
@@ -760,10 +760,10 @@ export default function SourceBrowserPage() {
                   <span>{activeSource.name} 分类</span>
                 </div>
                 <div className='flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-white/6'>
+                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
                     {filteredAndSorted.length} 条内容
                   </span>
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-white/6'>
+                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
                     第 {page} / {pageCount} 页
                   </span>
                 </div>
@@ -913,15 +913,15 @@ export default function SourceBrowserPage() {
                       className='mt-4 flex items-center justify-center py-4'
                     >
                       {loadingMore ? (
-                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-sm text-gray-500 dark:border-gray-700 dark:bg-white/6'>
+                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800'>
                           加载更多...
                         </div>
                       ) : hasMore ? (
-                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-white/6'>
+                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
                           下拉加载更多
                         </div>
                       ) : (
-                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-white/6'>
+                        <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
                           没有更多了
                         </div>
                       )}
@@ -942,7 +942,7 @@ export default function SourceBrowserPage() {
             onClick={() => setPreviewOpen(false)}
           >
             <div
-              className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-xl animate-scaleIn dark:border-gray-700 dark:bg-gray-900/82 md:max-h-[90vh]'
+              className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-lg  animate-scaleIn dark:border-gray-700 dark:bg-gray-900/82 md:max-h-[90vh]'
               onClick={(e) => e.stopPropagation()}
             >
               {/* 头部 */}
@@ -1297,7 +1297,7 @@ export default function SourceBrowserPage() {
               <div className='flex items-center justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-5 py-4 backdrop-blur-md dark:border-gray-700 sm:justify-between sm:px-6'>
                 <div className='hidden text-xs text-gray-500 dark:text-gray-400 sm:block sm:text-sm'>
                   {previewData?.class && (
-                    <span className='inline-flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-white/6'>
+                    <span className='inline-flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
                       <span className='h-1.5 w-1.5 rounded-full bg-blue-500'></span>
                       {previewData.class}
                     </span>
@@ -1314,7 +1314,7 @@ export default function SourceBrowserPage() {
                     onClick={() => {
                       if (previewItem) goPlay(previewItem);
                     }}
-                    className='group relative inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] text-sm font-semibold shadow-[0_10px_24px_rgba(244,194,77,0.28)] transition-all duration-300 hover:scale-[1.03]'
+                    className='group relative inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] text-sm font-semibold shadow-md transition-all duration-300 hover:scale-[1.03]'
                   >
                     <svg
                       className='w-4 h-4'

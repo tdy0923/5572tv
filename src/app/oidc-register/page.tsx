@@ -98,7 +98,7 @@ export default function OIDCRegisterPage() {
           </div>
           <div className='grid gap-2 text-xs sm:text-sm'>
             {oidcInfo.email && (
-              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-gray-800 dark:text-blue-100'>
                 <span className='text-blue-600 dark:text-blue-300'>邮箱</span>
                 <div className='mt-1 break-all font-medium'>
                   {oidcInfo.email}
@@ -106,7 +106,7 @@ export default function OIDCRegisterPage() {
               </div>
             )}
             {oidcInfo.name && (
-              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-gray-800 dark:text-blue-100'>
                 <span className='text-blue-600 dark:text-blue-300'>名称</span>
                 <div className='mt-1 break-all font-medium'>
                   {oidcInfo.name}
@@ -114,7 +114,7 @@ export default function OIDCRegisterPage() {
               </div>
             )}
             {oidcInfo.trust_level !== undefined && (
-              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-white/6 dark:text-blue-100'>
+              <div className='rounded-xl bg-white/60 px-3 py-2 text-blue-900 dark:bg-gray-800 dark:text-blue-100'>
                 <span className='text-blue-600 dark:text-blue-300'>
                   信任等级
                 </span>

@@ -225,7 +225,7 @@ export default function HomeContentView({
                 onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
                 className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                   upcomingFilter === key
-                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
+                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
                     : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
                 }`}
               >

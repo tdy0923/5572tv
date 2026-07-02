@@ -27,7 +27,7 @@ export function AuthShell({ title, subtitle, icon, children }: AuthShellProps) {
       </div>
 
       <div className='relative z-10 flex min-h-[calc(100dvh-4rem)] items-center justify-center sm:min-h-screen'>
-        <div className='w-full max-w-md overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 p-6 shadow-md backdrop-blur-2xl dark:border-gray-700 dark:bg-[#0f131a]/82 sm:p-10'>
+        <div className='w-full max-w-md overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 p-6 shadow-md  dark:border-gray-700 dark:bg-[#0f131a]/82 sm:p-10'>
           <div className='mb-8 text-center'>
             <div className='mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_12px_28px_rgba(244,194,77,0.22)]'>
               {icon}

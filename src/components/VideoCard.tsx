@@ -1610,7 +1610,7 @@ function VideoCard({
                 className='flex items-center gap-1.5 px-3 py-1.5 rounded-md
                   bg-black/70 backdrop-blur-sm
                   shadow-lg text-white/90
-                  hover:bg-black/80 hover:scale-105 hover:shadow-[0_0_12px_rgba(168,85,247,0.4)]
+                  hover:bg-black/80 hover:scale-105 hover:shadow-md
                   transition-all duration-300 ease-out
                   border border-white/10'
                 aria-label='AI问片'

@@ -13,7 +13,7 @@ export function GlassPanel({
     <div
       ref={ref}
       className={cn(
-        'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 shadow-[0_20px_50px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-gray-700 dark:bg-white/[0.05]',
+        'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 shadow-md  dark:border-gray-700 dark:bg-white/[0.05]',
         className,
       )}
       {...props}
@@ -28,7 +28,7 @@ export function PillGroup({
   return (
     <div
       className={cn(
-        'inline-flex max-w-full items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white/50 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-gray-700 dark:bg-white/5',
+        'inline-flex max-w-full items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white/50 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-gray-700 dark:bg-gray-800',
         className,
       )}
       {...props}
@@ -52,8 +52,8 @@ export function PillButton({
       className={cn(
         'rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
         active
-          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.28)]'
-          : 'border border-gray-200 dark:border-gray-700 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-white/6 dark:text-gray-300 dark:hover:bg-white/10',
+          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
+          : 'border border-gray-200 dark:border-gray-700 bg-white/75 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10',
         className,
       )}
       {...props}
@@ -68,7 +68,7 @@ export function PanelField({
   return (
     <input
       className={cn(
-        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-white/8 dark:text-gray-300 dark:placeholder:text-gray-500 dark:focus:ring-green-500',
+        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:placeholder:text-gray-500 dark:focus:ring-green-500',
         className,
       )}
       {...props}
@@ -84,7 +84,7 @@ export function PanelSelect({
   return (
     <select
       className={cn(
-        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-white/8 dark:text-gray-300 dark:focus:ring-green-500',
+        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-green-500',
         className,
       )}
       {...props}
