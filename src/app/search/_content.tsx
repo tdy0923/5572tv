@@ -1430,7 +1430,7 @@ function SearchPageClient() {
                       (filteredAggResults.length > 0 ||
                         filteredAllResults.length > 0) ? (
                         <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
-                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 px-4 py-2 shadow-[0_10px_24px_rgba(15,23,42,0.06)]  dark:border-gray-700 dark:bg-gray-800'>
+                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 px-4 py-2 shadow-sm  dark:border-gray-700 dark:bg-gray-800'>
                             <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
                               <div className='animate-spin rounded-full h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
                               <span>正在搜索更多结果...</span>
@@ -1441,7 +1441,7 @@ function SearchPageClient() {
                         (filteredAggResults.length > 0 ||
                           filteredAllResults.length > 0) ? (
                         <div className='mt-8 flex justify-center py-6'>
-                          <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white/72 px-6 py-3 text-sm font-medium text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.06)]  dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
+                          <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white/72 px-6 py-3 text-sm font-medium text-gray-700 shadow-sm  dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
                             搜索完成 · 共找到{' '}
                             {viewMode === 'agg'
                               ? filteredAggResults.length
@@ -1466,7 +1466,7 @@ function SearchPageClient() {
             <>
               {/* 搜索历史 - 优先显示 */}
               {searchHistory.length > 0 && (
-                <section className='mb-12 rounded-2xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white/34 p-4 shadow-[0_16px_44px_rgba(15,23,42,0.05)]  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
+                <section className='mb-12 rounded-2xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white/34 p-4 shadow-sm  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
                   <div className='mb-4 flex items-center justify-between'>
                     <h2 className='text-xl font-bold text-gray-800 text-left dark:text-gray-200'>
                       搜索历史

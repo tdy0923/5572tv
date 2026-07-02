@@ -46,10 +46,10 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
   const containerClass = isHeroSlot
     ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'
     : isFooterSlot
-      ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-[0_16px_36px_rgba(15,23,42,0.06)]  dark:border-gray-700 dark:bg-gray-800'
+      ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'
       : isPlayerRowSlot
-        ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/76 shadow-[0_18px_40px_rgba(15,23,42,0.08)]  dark:border-gray-700 dark:bg-gray-800'
-        : 'rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/75 shadow-[0_16px_36px_rgba(15,23,42,0.08)]  dark:border-gray-700 dark:bg-gray-800';
+        ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/76 shadow-md  dark:border-gray-700 dark:bg-gray-800'
+        : 'rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/75 shadow-md  dark:border-gray-700 dark:bg-gray-800';
   const imageContainerClass = isSidebarSlot
     ? 'mx-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5'
     : 'overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5';

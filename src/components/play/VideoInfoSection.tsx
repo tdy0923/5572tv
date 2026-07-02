@@ -485,7 +485,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                       onClick={() => onCelebrityClick(celebrity.name)}
                       className='group cursor-pointer'
                     >
-                      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-300 group-hover:shadow-[0_18px_36px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:bg-gray-800 dark:group-hover:border-blue-500/40'>
+                      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 shadow-md backdrop-blur-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-blue-300 group-hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:group-hover:border-blue-500/40'>
                         <div className='h-20 w-16 shrink-0 overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-700 sm:h-24 sm:w-[72px]'>
                           <img
                             src={processImageUrl(celebrityAvatar)}
@@ -553,7 +553,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
             </div>
 
             {loadingCelebrityWorks ? (
-              <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-12 text-center shadow-[0_16px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800'>
+              <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-12 text-center shadow-md backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800'>
                 <div className='flex flex-col items-center justify-center'>
                   <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4'></div>
                   <p className='text-gray-600 dark:text-gray-400'>

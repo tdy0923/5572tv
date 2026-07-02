@@ -365,7 +365,7 @@ export default function ShortDramaPage() {
               <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors'>
                 虚拟滑动
               </span>
-              <div className='relative inline-flex items-center rounded-full border border-black/6 bg-white/75 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-white/8 dark:bg-gray-800'>
+              <div className='relative inline-flex items-center rounded-full border border-black/6 bg-white/75 p-1 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-gray-800'>
                 <input
                   type='checkbox'
                   className='sr-only peer'
@@ -435,7 +435,7 @@ export default function ShortDramaPage() {
           {loading && (isInitialLoad || page > 1) && (
             <div className='mt-8'>
               <div className='flex justify-center mb-6'>
-                <div className='flex items-center gap-3 px-6 py-3 bg-white/70 dark:bg-gray-800 rounded-full border border-black/6 dark:border-white/8 shadow-[0_12px_28px_rgba(15,23,42,0.06)] backdrop-blur-md'>
+                <div className='flex items-center gap-3 px-6 py-3 bg-white/70 dark:bg-gray-800 rounded-full border border-black/6 dark:border-white/8 shadow-sm backdrop-blur-md'>
                   <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-[#f0b938] dark:border-gray-600 dark:border-t-[#f0b938]'></div>
                   <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                     加载更多短剧...
@@ -466,7 +466,7 @@ export default function ShortDramaPage() {
           {/* 无更多数据提示 */}
           {!loading && !hasMore && sortedDramas.length > 0 && (
             <div className='flex justify-center mt-12 py-8'>
-              <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-gray-800 border border-black/6 dark:border-white/8 shadow-[0_16px_36px_rgba(15,23,42,0.08)]  overflow-hidden'>
+              <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-gray-800 border border-black/6 dark:border-white/8 shadow-md  overflow-hidden'>
                 <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
 
                 {/* 内容 */}

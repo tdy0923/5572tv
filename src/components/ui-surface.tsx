@@ -28,7 +28,7 @@ export function PillGroup({
   return (
     <div
       className={cn(
-        'inline-flex max-w-full items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white/50 p-1 shadow-[0_10px_22px_rgba(15,23,42,0.05)] backdrop-blur-md dark:border-gray-700 dark:bg-gray-800',
+        'inline-flex max-w-full items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-white/50 p-1 shadow-sm backdrop-blur-md dark:border-gray-700 dark:bg-gray-800',
         className,
       )}
       {...props}
@@ -68,7 +68,7 @@ export function PanelField({
   return (
     <input
       className={cn(
-        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:placeholder:text-gray-500 dark:focus:ring-green-500',
+        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-md transition-all duration-300 placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:placeholder:text-gray-500 dark:focus:ring-green-500',
         className,
       )}
       {...props}
@@ -84,7 +84,7 @@ export function PanelSelect({
   return (
     <select
       className={cn(
-        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-green-500',
+        'w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/85 px-4 py-3 text-sm text-gray-700 shadow-md transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-green-500',
         className,
       )}
       {...props}

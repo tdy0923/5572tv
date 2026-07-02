@@ -850,7 +850,7 @@ export default function SourceBrowserPage() {
                             animation: `fadeInUp 0.4s ease-out ${index * 0.02}s both`,
                           }}
                         >
-                          <div className='relative aspect-[2/3] overflow-hidden rounded-[22px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 shadow-[0_16px_34px_rgba(15,23,42,0.08)] transition-all duration-300 group-hover:shadow-[0_22px_42px_rgba(15,23,42,0.12)] dark:border-gray-700 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700'>
+                          <div className='relative aspect-[2/3] overflow-hidden rounded-[22px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 shadow-md transition-all duration-300 group-hover:shadow-lg dark:border-gray-700 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700'>
                             {item.poster ? (
                               <img
                                 src={item.poster}
