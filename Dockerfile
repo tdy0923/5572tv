@@ -58,6 +58,7 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 ENV DOCKER_BUILD=true
+ENV STORAGE_TYPE=kvrocks
 # Puppeteer 配置：使用系统安装的 Chromium（已禁用）
 # ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 # ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
