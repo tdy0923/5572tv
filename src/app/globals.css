@@ -979,31 +979,26 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   -webkit-backdrop-filter: blur(12px) !important;
 }
 
-/* --- Background Transparency: Fluent 2 uses solid colors --- */
-.bg-white\/65,
-.bg-white\/72,
-.bg-white\/76,
-.bg-white\/78,
+/* --- Background Transparency: Only override high-opacity cases, preserve intentional overlays --- */
 .bg-white\/80,
 .bg-white\/82,
+.bg-white\/85,
 .bg-white\/88,
 .bg-white\/90,
 .bg-white\/92,
 .bg-white\/95 {
   background-color: var(--color-background) !important;
 }
-.dark .bg-white\/65,
-.dark .bg-white\/72,
-.dark .bg-white\/76,
-.dark .bg-white\/78,
 .dark .bg-white\/80,
 .dark .bg-white\/82,
+.dark .bg-white\/85,
 .dark .bg-white\/88,
 .dark .bg-white\/90,
 .dark .bg-white\/92,
 .dark .bg-white\/95 {
   background-color: var(--color-background-subtle) !important;
 }
+/* Low-opacity bg-white/XX (65, 70, 72, 76, 78) are intentional overlay effects — keep as-is */
 
 /* --- Border Colors: Fluent 2 neutral strokes --- */
 .border-black\/5,
