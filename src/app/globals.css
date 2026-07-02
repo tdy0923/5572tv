@@ -272,7 +272,7 @@
   }
 
   .ui-surface {
-    @apply rounded-lg border bg-white p-6 backdrop-blur-2xl sm:p-10;
+    @apply rounded-lg border bg-white p-6 sm:p-10;
     border-color: var(--color-stroke-subtle);
     box-shadow: var(--shadow-16);
   }
@@ -732,34 +732,34 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   .dark .backdrop-blur-xl,
   .dark .backdrop-blur-2xl,
   .dark .backdrop-blur-3xl {
-    background-color: rgba(24, 24, 27, 0.95) !important; /* zinc-900 */
+    background-color: var(--color-background-subtle) !important;
   }
 
   /* 处理带有透明度的背景色 + backdrop-blur组合 */
   /* 例如: bg-white/80 backdrop-blur */
   [class*='bg-white/'] {
-    background-color: rgba(255, 255, 255, 0.95) !important;
+    background-color: var(--color-background) !important;
   }
 
   [class*='bg-zinc-'][class*='/'] {
-    background-color: rgba(24, 24, 27, 0.95) !important;
+    background-color: var(--color-background-subtle) !important;
   }
 
   [class*='bg-gray-'][class*='/'] {
-    background-color: rgba(31, 41, 55, 0.95) !important;
+    background-color: var(--color-background-muted) !important;
   }
 
   /* 渐变背景的fallback - 登录页面主卡片 */
   .from-white\/95.backdrop-blur-2xl,
   .from-white\/85.backdrop-blur-2xl,
   .from-white\/75.backdrop-blur-2xl {
-    background: rgba(255, 255, 255, 0.98) !important;
+    background: var(--color-background) !important;
   }
 
   .dark .from-zinc-900\/95.backdrop-blur-2xl,
   .dark .from-zinc-900\/85.backdrop-blur-2xl,
   .dark .from-zinc-900\/75.backdrop-blur-2xl {
-    background: rgba(24, 24, 27, 0.98) !important;
+    background: var(--color-background-subtle) !important;
   }
 }
 
