@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -221,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const Color(0xFF27AE60),
+      primaryColor: const AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -344,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const Color(0xFF27AE60),
+      primaryColor: const AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -364,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const Color(0xFF27AE60),
+      primaryColor: const AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -631,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '正在打开豆瓣详情: ${playRecord.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFF3498DB),
+            backgroundColor: const AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -648,7 +649,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '正在打开 Bangumi 详情: ${playRecord.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFF3498DB),
+            backgroundColor: const AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -694,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '删除失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFe74c3c),
+            backgroundColor: const AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -778,7 +779,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 result.errorMessage ?? '收藏失败',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const Color(0xFFe74c3c),
+              backgroundColor: const AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -798,7 +799,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFe74c3c),
+            backgroundColor: const AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -835,7 +836,7 @@ class _HomeScreenState extends State<HomeScreen> {
               result.errorMessage ?? '取消收藏失败',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFe74c3c),
+            backgroundColor: const AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -855,7 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '取消收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFe74c3c),
+            backgroundColor: const AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

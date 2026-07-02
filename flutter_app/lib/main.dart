@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -164,7 +165,7 @@ class _AppWrapperState extends State<AppWrapper> {
             body: Container(
               decoration: BoxDecoration(
                 color: themeService.isDarkMode
-                    ? const Color(0xFF000000)
+                    ? const AppTheme.gray950
                     : null,
                 gradient: themeService.isDarkMode
                     ? null
@@ -172,11 +173,11 @@ class _AppWrapperState extends State<AppWrapper> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Color(0xFFe6f3fb),
-                          Color(0xFFeaf3f7),
-                          Color(0xFFf7f7f3),
-                          Color(0xFFe9ecef),
-                          Color(0xFFd3dde6),
+                          AppTheme.gray100,
+                          AppTheme.gray100,
+                          AppTheme.backgroundSubtle,
+                          AppTheme.gray200,
+                          AppTheme.gray300,
                         ],
                         stops: [0.0, 0.18, 0.38, 0.60, 1.0],
                       ),
@@ -188,8 +189,8 @@ class _AppWrapperState extends State<AppWrapper> {
                     CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
                           themeService.isDarkMode
-                              ? const Color(0xFFffffff)
-                              : const Color(0xFF2c3e50)),
+                              ? const AppTheme.background
+                              : const AppTheme.foreground),
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -197,8 +198,8 @@ class _AppWrapperState extends State<AppWrapper> {
                       style: TextStyle(
                         fontSize: 16,
                         color: themeService.isDarkMode
-                            ? const Color(0xFFffffff)
-                            : const Color(0xFF2c3e50),
+                            ? const AppTheme.background
+                            : const AppTheme.foreground,
                       ),
                     ),
                   ],

@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class PulsingDotsIndicator extends StatefulWidget {
@@ -60,7 +61,7 @@ class _PulsingDotsIndicatorState extends State<PulsingDotsIndicator>
                     width: 10.0,
                     height: 10.0,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF27AE60),
+                      color: AppTheme.success,
                       shape: BoxShape.circle,
                     ),
                   ),

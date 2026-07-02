@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/bangumi.dart';
@@ -114,7 +115,7 @@ class BangumiGrid extends StatelessWidget {
           const Icon(
             Icons.error_outline,
             size: 80,
-            color: Color(0xFFbdc3c7),
+            color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -122,7 +123,7 @@ class BangumiGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF7f8c8d),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -130,7 +131,7 @@ class BangumiGrid extends StatelessWidget {
             errorMessage ?? '未知错误',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const Color(0xFF95a5a6),
+              color: const AppTheme.foregroundMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -150,7 +151,7 @@ class BangumiGrid extends StatelessWidget {
           Icon(
             isAnime ? Icons.tv_outlined : Icons.movie_filter_outlined,
             size: 80,
-            color: const Color(0xFFbdc3c7),
+            color: const AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -158,7 +159,7 @@ class BangumiGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF7f8c8d),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -166,7 +167,7 @@ class BangumiGrid extends StatelessWidget {
             '今日暂无新番放送',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const Color(0xFF95a5a6),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
         ],

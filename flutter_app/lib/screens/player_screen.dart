@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
@@ -1216,7 +1217,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color:
-                            isDarkMode ? Colors.white : const Color(0xFF2c3e50),
+                            isDarkMode ? Colors.white : const AppTheme.foreground,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1228,7 +1229,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     child: Icon(
                       _isFavorite ? Icons.favorite : Icons.favorite_border,
                       color: _isFavorite
-                          ? const Color(0xFFe74c3c)
+                          ? const AppTheme.error
                           : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                       size: 28,
                     ),
@@ -2257,12 +2258,12 @@ class _PlayerScreenState extends State<PlayerScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFe6f3fb),
-                  Color(0xFFeaf3f7),
-                  Color(0xFFf7f7f3),
-                  Color(0xFFe9ecef),
+                  AppTheme.gray100,
+                  AppTheme.gray100,
+                  AppTheme.backgroundSubtle,
+                  AppTheme.gray200,
                   Color(0xFFdbe3ea),
-                  Color(0xFFd3dde6),
+                  AppTheme.gray300,
                 ],
                 stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
               ),
@@ -2603,12 +2604,12 @@ class _PlayerScreenState extends State<PlayerScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFFe6f3fb),
-                      Color(0xFFeaf3f7),
-                      Color(0xFFf7f7f3),
-                      Color(0xFFe9ecef),
+                      AppTheme.gray100,
+                      AppTheme.gray100,
+                      AppTheme.backgroundSubtle,
+                      AppTheme.gray200,
                       Color(0xFFdbe3ea),
-                      Color(0xFFd3dde6),
+                      AppTheme.gray300,
                     ],
                     stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
                   ),
@@ -2619,7 +2620,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               // Windows 自定义标题栏（播放页使用纯黑背景）
               if (Platform.isWindows)
                 const WindowsTitleBar(
-                  customBackgroundColor: Color(0xFF000000),
+                  customBackgroundColor: AppTheme.gray950,
                 ),
               // 主要内容
               Expanded(
@@ -2853,12 +2854,12 @@ class _PlayerScreenState extends State<PlayerScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFFe6f3fb),
-                  Color(0xFFeaf3f7),
-                  Color(0xFFf7f7f3),
-                  Color(0xFFe9ecef),
+                  AppTheme.gray100,
+                  AppTheme.gray100,
+                  AppTheme.backgroundSubtle,
+                  AppTheme.gray200,
                   Color(0xFFdbe3ea),
-                  Color(0xFFd3dde6),
+                  AppTheme.gray300,
                 ],
                 stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
               ),
@@ -2874,8 +2875,8 @@ class _PlayerScreenState extends State<PlayerScreen>
               child: _HoverBackButton(
                 onTap: _onBackPressed,
                 iconColor: isDarkMode
-                    ? const Color(0xFFffffff)
-                    : const Color(0xFF2c3e50),
+                    ? const AppTheme.background
+                    : const AppTheme.foreground,
               ),
             ),
           // 中心加载内容
@@ -2906,7 +2907,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF2ecc71), Color(0xFF27ae60)],
+                          colors: [Color(0xFF2ecc71), AppTheme.success],
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),

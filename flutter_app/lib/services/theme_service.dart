@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io' show Platform;
-import 'package:macos_window_utils/macos_window_utils.dart';
 import '../theme/app_theme.dart';
 
+/// Fluent 2 Theme Service
+/// Manages light/dark theme switching with Fluent 2 design tokens
 class ThemeService extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
 
@@ -10,47 +11,29 @@ class ThemeService extends ChangeNotifier {
   bool get isDarkMode {
     if (_themeMode == ThemeMode.dark) return true;
     if (_themeMode == ThemeMode.light) return false;
-    // 当为系统模式时，需要根据当前系统主题判断
     return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
         Brightness.dark;
   }
 
   ThemeService() {
-    _loadTheme();
-  }
-
-  void _loadTheme() async {
-    // 每次启动都默认跟随系统主题，不保存用户的手动选择
     _themeMode = ThemeMode.system;
-    notifyListeners();
     _updateMacOSWindowAppearance();
   }
 
-  void setThemeMode(ThemeMode mode) async {
+  void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
-    // 不再保存到 SharedPreferences，每次启动都重新遵循系统主题
     notifyListeners();
     _updateMacOSWindowAppearance();
   }
 
-  // 更新 macOS 窗口外观
   void _updateMacOSWindowAppearance() async {
     if (!Platform.isMacOS) return;
-
     try {
-      // 使用 WindowManipulator.overrideMacOSBrightness 来设置窗口外观
-      if (isDarkMode) {
-        await WindowManipulator.overrideMacOSBrightness(dark: true);
-      } else {
-        await WindowManipulator.overrideMacOSBrightness(dark: false);
-      }
-    } catch (e) {
-      // 忽略错误，可能在某些环境下不支持
-      debugPrint('Failed to update macOS window appearance: $e');
-    }
+      await WindowManipulator.overrideMacOSBrightness(dark: isDarkMode);
+    } catch (_) {}
   }
 
-  void toggleTheme(BuildContext context) async {
+  void toggleTheme(BuildContext context) {
     switch (_themeMode) {
       case ThemeMode.light:
         setThemeMode(ThemeMode.dark);
@@ -59,152 +42,40 @@ class ThemeService extends ChangeNotifier {
         setThemeMode(ThemeMode.light);
         break;
       case ThemeMode.system:
-        // 当为系统模式时，检测当前系统主题并切换到相反模式
         final brightness = MediaQuery.of(context).platformBrightness;
-        if (brightness == Brightness.light) {
-          setThemeMode(ThemeMode.dark);
-        } else {
-          setThemeMode(ThemeMode.light);
-        }
+        setThemeMode(
+          brightness == Brightness.light ? ThemeMode.dark : ThemeMode.light,
+        );
         break;
     }
   }
 
   ThemeData get lightTheme {
-    // Windows 下使用微软雅黑以获得更好的中文渲染
-    final textTheme = Platform.isWindows
-        ? ThemeData.light().textTheme.copyWith(
-              bodyLarge: const TextStyle(
-                color: Color(0xFF2c3e50),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              bodyMedium: const TextStyle(
-                color: Color(0xFF2c3e50),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              bodySmall: const TextStyle(
-                color: Color(0xFF7f8c8d),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleLarge: const TextStyle(
-                color: Color(0xFF2c3e50),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleMedium: const TextStyle(
-                color: Color(0xFF2c3e50),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleSmall: const TextStyle(
-                color: Color(0xFF2c3e50),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-            )
-        : const TextTheme(
-            bodyLarge: TextStyle(color: Color(0xFF2c3e50)),
-            bodyMedium: TextStyle(color: Color(0xFF2c3e50)),
-            bodySmall: TextStyle(color: Color(0xFF7f8c8d)),
-            titleLarge: TextStyle(color: Color(0xFF2c3e50)),
-            titleMedium: TextStyle(color: Color(0xFF2c3e50)),
-            titleSmall: TextStyle(color: Color(0xFF2c3e50)),
-          );
+    final baseTheme = AppTheme.lightTheme;
+    final fontFamily = _getFontFamily();
 
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppTheme.primary,
-        brightness: Brightness.light,
-      ),
-      scaffoldBackgroundColor: AppTheme.lightBg,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppTheme.lightSurface,
-        foregroundColor: AppTheme.textPrimaryLight,
-        elevation: 0,
-      ),
-      cardTheme: CardTheme(
-        color: AppTheme.lightSurface,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        ),
-      ),
-      textTheme: textTheme,
-      fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
+    return baseTheme.copyWith(
+      textTheme: _applyFontFamily(baseTheme.textTheme, fontFamily),
     );
   }
 
   ThemeData get darkTheme {
-    // Windows 下使用微软雅黑以获得更好的中文渲染
-    final textTheme = Platform.isWindows
-        ? ThemeData.dark().textTheme.copyWith(
-              bodyLarge: const TextStyle(
-                color: Color(0xFFffffff),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              bodyMedium: const TextStyle(
-                color: Color(0xFFffffff),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              bodySmall: const TextStyle(
-                color: Color(0xFFb0b0b0),
-                fontWeight: FontWeight.w400,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleLarge: const TextStyle(
-                color: Color(0xFFffffff),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleMedium: const TextStyle(
-                color: Color(0xFFffffff),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-              titleSmall: const TextStyle(
-                color: Color(0xFFffffff),
-                fontWeight: FontWeight.w500,
-                fontFamily: 'Microsoft YaHei',
-              ),
-            )
-        : const TextTheme(
-            bodyLarge: TextStyle(color: Color(0xFFffffff)),
-            bodyMedium: TextStyle(color: Color(0xFFffffff)),
-            bodySmall: TextStyle(color: Color(0xFFb0b0b0)),
-            titleLarge: TextStyle(color: Color(0xFFffffff)),
-            titleMedium: TextStyle(color: Color(0xFFffffff)),
-            titleSmall: TextStyle(color: Color(0xFFffffff)),
-          );
+    final baseTheme = AppTheme.darkTheme;
+    final fontFamily = _getFontFamily();
 
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppTheme.primary,
-        brightness: Brightness.dark,
-      ),
-      scaffoldBackgroundColor: AppTheme.darkBg,
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppTheme.darkSurface,
-        foregroundColor: AppTheme.textPrimaryDark,
-        elevation: 0,
-      ),
-      cardTheme: CardTheme(
-        color: AppTheme.darkCard,
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        ),
-      ),
-      textTheme: textTheme,
-      fontFamily: Platform.isWindows ? 'Microsoft YaHei' : null,
+    return baseTheme.copyWith(
+      textTheme: _applyFontFamily(baseTheme.textTheme, fontFamily),
     );
+  }
+
+  String? _getFontFamily() {
+    if (Platform.isWindows) return 'Microsoft YaHei';
+    if (Platform.isLinux) return 'Noto Sans CJK SC';
+    return null;
+  }
+
+  TextTheme _applyFontFamily(TextTheme textTheme, String? fontFamily) {
+    if (fontFamily == null) return textTheme;
+    return textTheme.apply(fontFamily: fontFamily);
   }
 }

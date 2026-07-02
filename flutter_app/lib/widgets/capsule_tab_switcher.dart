@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -143,8 +144,8 @@ class _CapsuleTabSwitcherState extends State<CapsuleTabSwitcher>
             height: 32,
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const Color(0xFF333333)
-                  : const Color(0xFFe0e0e0),
+                  ? const AppTheme.foreground
+                  : const AppTheme.gray200,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Stack(
@@ -160,7 +161,7 @@ class _CapsuleTabSwitcherState extends State<CapsuleTabSwitcher>
                         height: 32,
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
-                              ? const Color(0xFF1e1e1e)
+                              ? const AppTheme.darkBackground
                               : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
@@ -289,19 +290,19 @@ class _CapsuleTabHoverState extends State<_CapsuleTabHover> {
                 // 选中状态：使用原来的颜色插值逻辑
                 color = Color.lerp(
                   widget.themeService.isDarkMode
-                      ? const Color(0xFFb0b0b0)
-                      : const Color(0xFF7f8c8d),
+                      ? const AppTheme.foregroundMuted
+                      : const AppTheme.foregroundMuted,
                   widget.themeService.isDarkMode ? Colors.white : Colors.black,
                   progress,
                 )!;
               } else if (widget.isPC && _isHovered) {
                 // PC上未选中且hover：显示绿色
-                color = const Color(0xFF27AE60);
+                color = const AppTheme.success;
               } else {
                 // 未选中且未hover：默认颜色
                 color = widget.themeService.isDarkMode
-                    ? const Color(0xFFb0b0b0)
-                    : const Color(0xFF7f8c8d);
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundMuted;
               }
 
               final fontWeight =

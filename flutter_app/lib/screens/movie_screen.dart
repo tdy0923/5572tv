@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -474,7 +475,7 @@ class _MovieScreenState extends State<MovieScreen> {
       child: StyledRefreshIndicator(
         onRefresh: _refreshMoviesData,
         refreshText: '刷新电影数据...',
-        primaryColor: const Color(0xFF27AE60),
+        primaryColor: const AppTheme.success,
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(

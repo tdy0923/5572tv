@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -63,9 +64,9 @@ class _ShimmerEffectState extends State<ShimmerEffect>
                   end: Alignment.centerRight,
                   colors: themeService.isDarkMode
                       ? [
-                          const Color(0xFF333333),
+                          const AppTheme.foreground,
                           const Color(0xFF1a1a1a),
-                          const Color(0xFF333333),
+                          const AppTheme.foreground,
                         ]
                       : [
                           Colors.grey[300]!,

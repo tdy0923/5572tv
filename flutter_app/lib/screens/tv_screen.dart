@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -505,7 +506,7 @@ class _TvScreenState extends State<TvScreen> {
       child: StyledRefreshIndicator(
       onRefresh: _refreshTvShowsData,
       refreshText: '刷新电视剧数据...',
-      primaryColor: const Color(0xFF27AE60),
+      primaryColor: const AppTheme.success,
       child: SingleChildScrollView(
         controller: _scrollController,
         child: Column(

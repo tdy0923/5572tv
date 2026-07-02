@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -27,7 +28,7 @@ class UpdateDialog extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 400),
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const Color(0xFF2C2C2C)
+                  ? const AppTheme.darkBackground
                   : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -47,7 +48,7 @@ class UpdateDialog extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: themeService.isDarkMode
-                        ? const Color(0xFF333333)
+                        ? const AppTheme.foreground
                         : const Color(0xFFF5F5F5),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
@@ -59,13 +60,13 @@ class UpdateDialog extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF27AE60).withOpacity(0.1),
+                          color: const AppTheme.success.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.rocket_launch_rounded,
                           size: 40,
-                          color: Color(0xFF27AE60),
+                          color: AppTheme.success,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -75,8 +76,8 @@ class UpdateDialog extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: themeService.isDarkMode
-                              ? const Color(0xFFFFFFFF)
-                              : const Color(0xFF2C2C2C),
+                              ? const AppTheme.background
+                              : const AppTheme.darkBackground,
                         ),
                       ),
                     ],
@@ -94,7 +95,7 @@ class UpdateDialog extends StatelessWidget {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
-                              ? const Color(0xFF333333)
+                              ? const AppTheme.foreground
                               : const Color(0xFFF5F5F5),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -108,8 +109,8 @@ class UpdateDialog extends StatelessWidget {
                               versionInfo.currentVersion,
                               Icons.info_outline_rounded,
                               themeService.isDarkMode
-                                  ? const Color(0xFF999999)
-                                  : const Color(0xFF666666),
+                                  ? const AppTheme.foregroundMuted
+                                  : const AppTheme.foregroundSubtle,
                             ),
                             Container(
                               width: 1,
@@ -124,7 +125,7 @@ class UpdateDialog extends StatelessWidget {
                               '最新版本',
                               versionInfo.latestVersion,
                               Icons.new_releases_rounded,
-                              const Color(0xFF27AE60),
+                              const AppTheme.success,
                             ),
                           ],
                         ),
@@ -138,7 +139,7 @@ class UpdateDialog extends StatelessWidget {
                             const Icon(
                               Icons.article_outlined,
                               size: 18,
-                              color: Color(0xFF27AE60),
+                              color: AppTheme.success,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -147,8 +148,8 @@ class UpdateDialog extends StatelessWidget {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: themeService.isDarkMode
-                                    ? const Color(0xFFFFFFFF)
-                                    : const Color(0xFF2C2C2C),
+                                    ? const AppTheme.background
+                                    : const AppTheme.darkBackground,
                               ),
                             ),
                           ],
@@ -159,7 +160,7 @@ class UpdateDialog extends StatelessWidget {
                           constraints: const BoxConstraints(maxHeight: 200),
                           decoration: BoxDecoration(
                             color: themeService.isDarkMode
-                                ? const Color(0xFF333333)
+                                ? const AppTheme.foreground
                                 : const Color(0xFFF5F5F5),
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -172,8 +173,8 @@ class UpdateDialog extends StatelessWidget {
                                   fontSize: 14,
                                   height: 1.6,
                                   color: themeService.isDarkMode
-                                      ? const Color(0xFFCCCCCC)
-                                      : const Color(0xFF666666),
+                                      ? const AppTheme.gray300
+                                      : const AppTheme.foregroundSubtle,
                                 ),
                               ),
                             ),
@@ -215,7 +216,7 @@ class UpdateDialog extends StatelessWidget {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF27AE60),
+                            backgroundColor: const AppTheme.success,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -239,8 +240,8 @@ class UpdateDialog extends StatelessWidget {
                               },
                               style: TextButton.styleFrom(
                                 foregroundColor: themeService.isDarkMode
-                                    ? const Color(0xFF999999)
-                                    : const Color(0xFF666666),
+                                    ? const AppTheme.foregroundMuted
+                                    : const AppTheme.foregroundSubtle,
                               ),
                               child: Text(
                                 '忽略',
@@ -254,7 +255,7 @@ class UpdateDialog extends StatelessWidget {
                                 Navigator.of(context).pop();
                               },
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF27AE60),
+                                foregroundColor: const AppTheme.success,
                               ),
                               child: Text(
                                 '稍后',
@@ -292,8 +293,8 @@ class UpdateDialog extends StatelessWidget {
           style: FontUtils.systemFont(
             fontSize: 12,
             color: themeService.isDarkMode
-                ? const Color(0xFF999999)
-                : const Color(0xFF666666),
+                ? const AppTheme.foregroundMuted
+                : const AppTheme.foregroundSubtle,
           ),
         ),
         const SizedBox(height: 2),

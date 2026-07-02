@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -489,7 +490,7 @@ class _ShowScreenState extends State<ShowScreen> {
       child: StyledRefreshIndicator(
         onRefresh: _refreshShowsData,
         refreshText: '刷新综艺数据...',
-        primaryColor: const Color(0xFF27AE60),
+        primaryColor: const AppTheme.success,
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(

@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../services/live_service.dart';
 import '../models/live_channel.dart';
@@ -258,7 +259,7 @@ class _LiveScreenState extends State<LiveScreen>
           message,
           style: FontUtils.systemFont(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF3498DB),
+        backgroundColor: const AppTheme.info,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -323,7 +324,7 @@ class _LiveScreenState extends State<LiveScreen>
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? const Color(0xFF1e1e1e).withOpacity(0.9)
+            ? const AppTheme.darkBackground.withOpacity(0.9)
             : Colors.white.withOpacity(0.8),
       ),
       child: Row(
@@ -397,9 +398,9 @@ class _LiveScreenState extends State<LiveScreen>
                         Icons.refresh,
                         size: 20,
                         color: _isRefreshing
-                            ? const Color(0xFF27ae60)
+                            ? const AppTheme.success
                             : (DeviceUtils.isPC() && _isRefreshButtonHovered
-                                ? const Color(0xFF27ae60)
+                                ? const AppTheme.success
                                 : (themeService.isDarkMode
                                     ? Colors.grey[600]
                                     : Colors.grey[500])),
@@ -523,7 +524,7 @@ class _LiveScreenState extends State<LiveScreen>
                                 alignment: Alignment.centerLeft, // 内容左对齐
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF27AE60)
+                                      ? const AppTheme.success
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
@@ -559,15 +560,15 @@ class _LiveScreenState extends State<LiveScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF27ae60)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.success),
           ),
           const SizedBox(height: 16),
           Text(
             '加载中...',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const Color(0xFFb0b0b0)
-                  : const Color(0xFF7f8c8d),
+                  ? const AppTheme.foregroundMuted
+                  : const AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -581,15 +582,15 @@ class _LiveScreenState extends State<LiveScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF27ae60)),
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.success),
           ),
           const SizedBox(height: 16),
           Text(
             '刷新中...',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const Color(0xFFb0b0b0)
-                  : const Color(0xFF7f8c8d),
+                  ? const AppTheme.foregroundMuted
+                  : const AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -606,23 +607,23 @@ class _LiveScreenState extends State<LiveScreen>
             Icons.error_outline,
             size: 64,
             color: themeService.isDarkMode
-                ? const Color(0xFF666666)
-                : const Color(0xFF95a5a6),
+                ? const AppTheme.foregroundSubtle
+                : const AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 16),
           Text(
             _errorMessage ?? '加载失败',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const Color(0xFFb0b0b0)
-                  : const Color(0xFF7f8c8d),
+                  ? const AppTheme.foregroundMuted
+                  : const AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: refreshChannels,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF27ae60),
+              backgroundColor: const AppTheme.success,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -646,8 +647,8 @@ class _LiveScreenState extends State<LiveScreen>
           '暂无频道',
           style: FontUtils.systemFont(
             color: themeService.isDarkMode
-                ? const Color(0xFFb0b0b0)
-                : const Color(0xFF7f8c8d),
+                ? const AppTheme.foregroundMuted
+                : const AppTheme.foregroundMuted,
           ),
         ),
       );
@@ -739,7 +740,7 @@ class _LiveScreenState extends State<LiveScreen>
           Icons.tv,
           size: 48,
           color: themeService.isDarkMode
-              ? const Color(0xFF666666)
+              ? const AppTheme.foregroundSubtle
               : const Color(0xFF95a5b0),
         ),
       ),
@@ -792,7 +793,7 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: widget.themeService.isDarkMode
-                          ? const Color(0xFF1e1e1e)
+                          ? const AppTheme.darkBackground
                           : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -816,10 +817,10 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: isPC && _isHovered
-                      ? const Color(0xFF27ae60)
+                      ? const AppTheme.success
                       : (widget.themeService.isDarkMode
                           ? Colors.white
-                          : const Color(0xFF2c3e50)),
+                          : const AppTheme.foreground),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,

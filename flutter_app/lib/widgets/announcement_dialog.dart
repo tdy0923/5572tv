@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/announcement_service.dart';
@@ -19,7 +20,7 @@ class AnnouncementDialog extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 380),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+              color: isDark ? const AppTheme.darkBackground : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -48,7 +49,7 @@ class AnnouncementDialog extends StatelessWidget {
                     width: double.infinity, height: 40,
                     child: ElevatedButton(
                       onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF27AE60), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: ElevatedButton.styleFrom(backgroundColor: const AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       child: Text('我知道了', style: FontUtils.systemFont(fontWeight: FontWeight.w600)),
                     ),
                   ),

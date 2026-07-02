@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -94,8 +95,8 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
             height: 32,
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const Color(0xFF333333)
-                  : const Color(0xFFe0e0e0),
+                  ? const AppTheme.foreground
+                  : const AppTheme.gray200,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Stack(
@@ -114,7 +115,7 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                         height: 32,
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
-                              ? const Color(0xFF1e1e1e)
+                              ? const AppTheme.darkBackground
                               : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
@@ -219,11 +220,11 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                 double progress = 1.0 - (_animation.value * 2).clamp(0.0, 1.0);
                 textColor = Color.lerp(
                   themeService.isDarkMode
-                      ? const Color(0xFFb0b0b0)
-                      : const Color(0xFF7f8c8d),
+                      ? const AppTheme.foregroundMuted
+                      : const AppTheme.foregroundMuted,
                   themeService.isDarkMode
-                      ? const Color(0xFFffffff)
-                      : const Color(0xFF2c3e50),
+                      ? const AppTheme.background
+                      : const AppTheme.foreground,
                   progress,
                 )!;
                 fontWeight = progress > 0.5 ? FontWeight.w600 : FontWeight.w400;
@@ -233,11 +234,11 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                 progress = progress.clamp(0.0, 1.0);
                 textColor = Color.lerp(
                   themeService.isDarkMode
-                      ? const Color(0xFFb0b0b0)
-                      : const Color(0xFF7f8c8d),
+                      ? const AppTheme.foregroundMuted
+                      : const AppTheme.foregroundMuted,
                   themeService.isDarkMode
-                      ? const Color(0xFFffffff)
-                      : const Color(0xFF2c3e50),
+                      ? const AppTheme.background
+                      : const AppTheme.foreground,
                   progress,
                 )!;
                 fontWeight = progress > 0.5 ? FontWeight.w600 : FontWeight.w400;
@@ -247,11 +248,11 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                     ((_animation.value - 0.5) * 2).clamp(0.0, 1.0);
                 textColor = Color.lerp(
                   themeService.isDarkMode
-                      ? const Color(0xFFb0b0b0)
-                      : const Color(0xFF7f8c8d),
+                      ? const AppTheme.foregroundMuted
+                      : const AppTheme.foregroundMuted,
                   themeService.isDarkMode
-                      ? const Color(0xFFffffff)
-                      : const Color(0xFF2c3e50),
+                      ? const AppTheme.background
+                      : const AppTheme.foreground,
                   progress,
                 )!;
                 fontWeight = progress > 0.5 ? FontWeight.w600 : FontWeight.w400;
@@ -259,7 +260,7 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
 
               // PC端悬停时文字变绿色
               if (isPC && isHovering) {
-                textColor = const Color(0xFF27AE60);
+                textColor = const AppTheme.success;
               }
 
               return Center(

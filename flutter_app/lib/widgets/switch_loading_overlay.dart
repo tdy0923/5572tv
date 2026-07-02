@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../utils/device_utils.dart';
 
@@ -77,7 +78,7 @@ class SwitchLoadingOverlay extends StatelessWidget {
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [Color(0xFF2ecc71), Color(0xFF27ae60)],
+                            colors: [Color(0xFF2ecc71), AppTheme.success],
                           ),
                           borderRadius: BorderRadius.circular(16),
                         ),

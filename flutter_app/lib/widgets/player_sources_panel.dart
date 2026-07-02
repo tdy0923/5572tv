@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/search_result.dart';
@@ -285,7 +286,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                             placeholder: (context, url) => Container(
                               decoration: BoxDecoration(
                                 color: widget.isDarkMode
-                                    ? const Color(0xFF333333)
+                                    ? const AppTheme.foreground
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -293,14 +294,14 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                             errorWidget: (context, url, error) => Container(
                               decoration: BoxDecoration(
                                 color: widget.isDarkMode
-                                    ? const Color(0xFF333333)
+                                    ? const AppTheme.foreground
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.movie,
                                 color: widget.isDarkMode
-                                    ? const Color(0xFF666666)
+                                    ? const AppTheme.foregroundSubtle
                                     : Colors.grey,
                                 size: 40,
                               ),

@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -176,8 +177,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: themeService.isDarkMode
-                            ? const Color(0xFFffffff)
-                            : const Color(0xFF2c3e50),
+                            ? const AppTheme.background
+                            : const AppTheme.foreground,
                       ),
                     );
                   },
@@ -215,8 +216,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           color: DeviceUtils.isPC() && _isMoreButtonHovered
-                              ? const Color(0xFF27ae60) // hover 时绿色
-                              : const Color(0xFF7f8c8d),
+                              ? const AppTheme.success // hover 时绿色
+                              : const AppTheme.foregroundMuted,
                         ),
                       ),
                     ),
@@ -512,7 +513,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                   '重试',
                   style: FontUtils.systemFont(
                     fontSize: 12,
-                    color: const Color(0xFF2c3e50),
+                    color: const AppTheme.foreground,
                   ),
                 ),
               ),

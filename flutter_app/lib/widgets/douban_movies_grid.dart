@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/douban_movie.dart';
@@ -112,7 +113,7 @@ class DoubanMoviesGrid extends StatelessWidget {
           const Icon(
             Icons.error_outline,
             size: 80,
-            color: Color(0xFFbdc3c7),
+            color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -120,7 +121,7 @@ class DoubanMoviesGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF7f8c8d),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -128,7 +129,7 @@ class DoubanMoviesGrid extends StatelessWidget {
             errorMessage ?? '未知错误',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const Color(0xFF95a5a6),
+              color: const AppTheme.foregroundMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -148,7 +149,7 @@ class DoubanMoviesGrid extends StatelessWidget {
           Icon(
             isMovie ? Icons.movie_filter_outlined : Icons.tv_outlined,
             size: 80,
-            color: const Color(0xFFbdc3c7),
+            color: const AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -156,7 +157,7 @@ class DoubanMoviesGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF7f8c8d),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -164,7 +165,7 @@ class DoubanMoviesGrid extends StatelessWidget {
             '当前分类下没有$contentName',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const Color(0xFF95a5a6),
+              color: const AppTheme.foregroundMuted,
             ),
           ),
         ],

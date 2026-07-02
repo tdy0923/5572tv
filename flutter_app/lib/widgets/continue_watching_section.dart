@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -230,7 +231,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
           builder: (context, themeService, child) {
             return AlertDialog(
               backgroundColor: themeService.isDarkMode
-                  ? const Color(0xFF1e1e1e)
+                  ? const AppTheme.darkBackground
                   : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -244,12 +245,12 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFe74c3c).withOpacity(0.1),
+                      color: const AppTheme.error.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.delete_outline,
-                      color: Color(0xFFe74c3c),
+                      color: AppTheme.error,
                       size: 32,
                     ),
                   ),
@@ -261,8 +262,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
-                          ? const Color(0xFFffffff)
-                          : const Color(0xFF2c3e50),
+                          ? const AppTheme.background
+                          : const AppTheme.foreground,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -272,8 +273,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                     style: FontUtils.systemFont(
                       fontSize: 14,
                       color: themeService.isDarkMode
-                          ? const Color(0xFFb0b0b0)
-                          : const Color(0xFF7f8c8d),
+                          ? const AppTheme.foregroundMuted
+                          : const AppTheme.foregroundMuted,
                       height: 1.4,
                     ),
                     textAlign: TextAlign.center,
@@ -297,8 +298,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: themeService.isDarkMode
-                                  ? const Color(0xFFb0b0b0)
-                                  : const Color(0xFF7f8c8d),
+                                  ? const AppTheme.foregroundMuted
+                                  : const AppTheme.foregroundMuted,
                             ),
                           ),
                         ),
@@ -311,7 +312,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                             _clearPlayRecords();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFe74c3c),
+                            backgroundColor: const AppTheme.error,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -357,7 +358,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                 '播放记录已清空',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const Color(0xFF27ae60),
+              backgroundColor: const AppTheme.success,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -375,7 +376,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                 '清空失败',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const Color(0xFFe74c3c),
+              backgroundColor: const AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -394,7 +395,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
               '清空失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFe74c3c),
+            backgroundColor: const AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -439,8 +440,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: themeService.isDarkMode
-                                ? const Color(0xFFffffff)
-                                : const Color(0xFF2c3e50),
+                                ? const AppTheme.background
+                                : const AppTheme.foreground,
                           ),
                         );
                       },
@@ -479,8 +480,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                             style: FontUtils.systemFont(
                               fontSize: 14,
                               color: DeviceUtils.isPC() && _isClearButtonHovered
-                                  ? const Color(0xFFe74c3c) // hover 时红色
-                                  : const Color(0xFF7f8c8d),
+                                  ? const AppTheme.error // hover 时红色
+                                  : const AppTheme.foregroundMuted,
                             ),
                           ),
                         ),
@@ -522,8 +523,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           color: DeviceUtils.isPC() && _isMoreButtonHovered
-                              ? const Color(0xFF27ae60) // hover 时绿色
-                              : const Color(0xFF7f8c8d),
+                              ? const AppTheme.success // hover 时绿色
+                              : const AppTheme.foregroundMuted,
                         ),
                       ),
                     ),
@@ -820,7 +821,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                 '重试',
                 style: FontUtils.systemFont(
                   fontSize: 12,
-                  color: const Color(0xFF2c3e50),
+                  color: const AppTheme.foreground,
                 ),
               ),
             ),

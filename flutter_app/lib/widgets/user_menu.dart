@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -201,7 +202,7 @@ class _UserMenuState extends State<UserMenu> {
               '当前已是最新版本',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFF27AE60),
+            backgroundColor: const AppTheme.success,
           ),
         );
       }
@@ -282,8 +283,8 @@ class _UserMenuState extends State<UserMenu> {
                 icon,
                 size: 20,
                 color: widget.isDarkMode
-                    ? const Color(0xFF9ca3af)
-                    : const Color(0xFF6b7280),
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundSubtle,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -295,8 +296,8 @@ class _UserMenuState extends State<UserMenu> {
                       style: FontUtils.systemFont(
                         fontSize: 16,
                         color: widget.isDarkMode
-                            ? const Color(0xFFffffff)
-                            : const Color(0xFF1f2937),
+                            ? const AppTheme.background
+                            : const AppTheme.darkSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -306,8 +307,8 @@ class _UserMenuState extends State<UserMenu> {
                       style: FontUtils.systemFont(
                         fontSize: 12,
                         color: widget.isDarkMode
-                            ? const Color(0xFF9ca3af)
-                            : const Color(0xFF6b7280),
+                            ? const AppTheme.foregroundMuted
+                            : const AppTheme.foregroundSubtle,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -318,8 +319,8 @@ class _UserMenuState extends State<UserMenu> {
                 LucideIcons.chevronRight,
                 size: 16,
                 color: widget.isDarkMode
-                    ? const Color(0xFF9ca3af)
-                    : const Color(0xFF6b7280),
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundSubtle,
               ),
             ],
           ),
@@ -341,8 +342,8 @@ class _UserMenuState extends State<UserMenu> {
             style: FontUtils.systemFont(
               fontSize: 18,
               color: widget.isDarkMode
-                  ? const Color(0xFFffffff)
-                  : const Color(0xFF1f2937),
+                  ? const AppTheme.background
+                  : const AppTheme.darkSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -373,8 +374,8 @@ class _UserMenuState extends State<UserMenu> {
                           color: currentValue == option
                               ? const Color(0xFF10b981)
                               : (widget.isDarkMode
-                                  ? const Color(0xFF9ca3af)
-                                  : const Color(0xFF6b7280)),
+                                  ? const AppTheme.foregroundMuted
+                                  : const AppTheme.foregroundSubtle),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -383,8 +384,8 @@ class _UserMenuState extends State<UserMenu> {
                             style: FontUtils.systemFont(
                               fontSize: 16,
                               color: widget.isDarkMode
-                                  ? const Color(0xFFffffff)
-                                  : const Color(0xFF1f2937),
+                                  ? const AppTheme.background
+                                  : const AppTheme.darkSurface,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -415,8 +416,8 @@ class _UserMenuState extends State<UserMenu> {
             style: FontUtils.systemFont(
               fontSize: 18,
               color: widget.isDarkMode
-                  ? const Color(0xFFffffff)
-                  : const Color(0xFF1f2937),
+                  ? const AppTheme.background
+                  : const AppTheme.darkSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -425,31 +426,31 @@ class _UserMenuState extends State<UserMenu> {
             style: FontUtils.systemFont(
               fontSize: 14,
               color: widget.isDarkMode
-                  ? const Color(0xFFffffff)
-                  : const Color(0xFF1f2937),
+                  ? const AppTheme.background
+                  : const AppTheme.darkSurface,
             ),
             decoration: InputDecoration(
               hintText: '输入代理 URL（可选）',
               hintStyle: FontUtils.systemFont(
                 fontSize: 14,
                 color: widget.isDarkMode
-                    ? const Color(0xFF9ca3af)
-                    : const Color(0xFF6b7280),
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundSubtle,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
                   color: widget.isDarkMode
-                      ? const Color(0xFF374151)
-                      : const Color(0xFFe5e7eb),
+                      ? const AppTheme.gray700
+                      : const AppTheme.gray200,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
                   color: widget.isDarkMode
-                      ? const Color(0xFF374151)
-                      : const Color(0xFFe5e7eb),
+                      ? const AppTheme.gray700
+                      : const AppTheme.gray200,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -471,8 +472,8 @@ class _UserMenuState extends State<UserMenu> {
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: widget.isDarkMode
-                      ? const Color(0xFF9ca3af)
-                      : const Color(0xFF6b7280),
+                      ? const AppTheme.foregroundMuted
+                      : const AppTheme.foregroundSubtle,
                 ),
               ),
             ),
@@ -524,8 +525,8 @@ class _UserMenuState extends State<UserMenu> {
                 icon,
                 size: 20,
                 color: widget.isDarkMode
-                    ? const Color(0xFF9ca3af)
-                    : const Color(0xFF6b7280),
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundSubtle,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -537,8 +538,8 @@ class _UserMenuState extends State<UserMenu> {
                       style: FontUtils.systemFont(
                         fontSize: 16,
                         color: widget.isDarkMode
-                            ? const Color(0xFFffffff)
-                            : const Color(0xFF1f2937),
+                            ? const AppTheme.background
+                            : const AppTheme.darkSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -548,8 +549,8 @@ class _UserMenuState extends State<UserMenu> {
                       style: FontUtils.systemFont(
                         fontSize: 12,
                         color: widget.isDarkMode
-                            ? const Color(0xFF9ca3af)
-                            : const Color(0xFF6b7280),
+                            ? const AppTheme.foregroundMuted
+                            : const AppTheme.foregroundSubtle,
                         fontWeight: FontWeight.w400,
                       ),
                       maxLines: 1,
@@ -562,8 +563,8 @@ class _UserMenuState extends State<UserMenu> {
                 LucideIcons.chevronRight,
                 size: 16,
                 color: widget.isDarkMode
-                    ? const Color(0xFF9ca3af)
-                    : const Color(0xFF6b7280),
+                    ? const AppTheme.foregroundMuted
+                    : const AppTheme.foregroundSubtle,
               ),
             ],
           ),
@@ -591,8 +592,8 @@ class _UserMenuState extends State<UserMenu> {
               icon,
               size: 20,
               color: widget.isDarkMode
-                  ? const Color(0xFF9ca3af)
-                  : const Color(0xFF6b7280),
+                  ? const AppTheme.foregroundMuted
+                  : const AppTheme.foregroundSubtle,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -601,8 +602,8 @@ class _UserMenuState extends State<UserMenu> {
                 style: FontUtils.systemFont(
                   fontSize: 16,
                   color: widget.isDarkMode
-                      ? const Color(0xFFffffff)
-                      : const Color(0xFF1f2937),
+                      ? const AppTheme.background
+                      : const AppTheme.darkSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -622,8 +623,8 @@ class _UserMenuState extends State<UserMenu> {
                   color: value
                       ? const Color(0xFF10b981)
                       : (widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb)),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200),
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 200),
@@ -689,8 +690,8 @@ class _UserMenuState extends State<UserMenu> {
                               style: FontUtils.systemFont(
                                 fontSize: 12,
                                 color: widget.isDarkMode
-                                    ? const Color(0xFF9ca3af)
-                                    : const Color(0xFF6b7280),
+                                    ? const AppTheme.foregroundMuted
+                                    : const AppTheme.foregroundSubtle,
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -702,8 +703,8 @@ class _UserMenuState extends State<UserMenu> {
                               style: FontUtils.systemFont(
                                 fontSize: 18,
                                 color: widget.isDarkMode
-                                    ? const Color(0xFFffffff)
-                                    : const Color(0xFF1f2937),
+                                    ? const AppTheme.background
+                                    : const AppTheme.darkSurface,
                                 fontWeight: FontWeight.w600,
                               ),
                             )
@@ -716,8 +717,8 @@ class _UserMenuState extends State<UserMenu> {
                                   style: FontUtils.systemFont(
                                     fontSize: 18,
                                     color: widget.isDarkMode
-                                        ? const Color(0xFFffffff)
-                                        : const Color(0xFF1f2937),
+                                        ? const AppTheme.background
+                                        : const AppTheme.darkSurface,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -733,8 +734,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 豆瓣数据源选项
                     _buildOptionSelector(
@@ -759,8 +760,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 豆瓣图片源选项
                     _buildOptionSelector(
@@ -785,8 +786,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // M3U8 代理 URL 选项
                     _buildInputOption(
@@ -799,8 +800,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 优选测速选项
                     _buildToggleOption(
@@ -821,8 +822,8 @@ class _UserMenuState extends State<UserMenu> {
                       Container(
                         height: 1,
                         color: widget.isDarkMode
-                            ? const Color(0xFF374151)
-                            : const Color(0xFFe5e7eb),
+                            ? const AppTheme.gray700
+                            : const AppTheme.gray200,
                       ),
                       _buildToggleOption(
                         title: '本地搜索',
@@ -841,8 +842,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 清除豆瓣缓存按钮
                     Material(
@@ -867,8 +868,8 @@ class _UserMenuState extends State<UserMenu> {
                                 style: FontUtils.systemFont(
                                   fontSize: 16,
                                   color: widget.isDarkMode
-                                      ? const Color(0xFFffffff)
-                                      : const Color(0xFF1f2937),
+                                      ? const AppTheme.background
+                                      : const AppTheme.darkSurface,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -881,8 +882,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 检查更新按钮
                     Material(
@@ -907,8 +908,8 @@ class _UserMenuState extends State<UserMenu> {
                                 style: FontUtils.systemFont(
                                   fontSize: 16,
                                   color: widget.isDarkMode
-                                      ? const Color(0xFFffffff)
-                                      : const Color(0xFF1f2937),
+                                      ? const AppTheme.background
+                                      : const AppTheme.darkSurface,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -921,8 +922,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 登出按钮
                     Material(
@@ -959,8 +960,8 @@ class _UserMenuState extends State<UserMenu> {
                     Container(
                       height: 1,
                       color: widget.isDarkMode
-                          ? const Color(0xFF374151)
-                          : const Color(0xFFe5e7eb),
+                          ? const AppTheme.gray700
+                          : const AppTheme.gray200,
                     ),
                     // 版本号
                     MouseRegion(
@@ -987,8 +988,8 @@ class _UserMenuState extends State<UserMenu> {
                               style: FontUtils.systemFont(
                                 fontSize: 14,
                                 color: widget.isDarkMode
-                                    ? const Color(0xFF9ca3af)
-                                    : const Color(0xFF6b7280),
+                                    ? const AppTheme.foregroundMuted
+                                    : const AppTheme.foregroundSubtle,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),

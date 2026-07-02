@@ -1,3 +1,4 @@
+import 'package:flutter_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:provider/provider.dart';
@@ -31,7 +32,7 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> {
             (widget.forceBlack
                 ? Colors.transparent
                 : (isDark 
-                    ? const Color(0xFF1e1e1e).withOpacity(0.9)
+                    ? const AppTheme.darkBackground.withOpacity(0.9)
                     : Colors.white.withOpacity(0.8)));
         
         // Windows 11 风格的文字和图标颜色
