@@ -30,18 +30,18 @@ class AnnouncementDialog extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF333) : const AppTheme.gray100,
+                    color: isDark ? const AppTheme.gray800 : const AppTheme.gray100,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Column(children: [
-                    const Icon(Icons.campaign_rounded, size: 36, color: Color(0xFFF59E0B)),
+                    const Icon(Icons.campaign_rounded, size: 36, color: AppTheme.warning),
                     const SizedBox(height: 8),
                     Text(info.title, style: FontUtils.systemFont(fontSize: 18, fontWeight: FontWeight.bold)),
                   ]),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? const Color(0xFFCCC) : const Color(0xFF666))),
+                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? const AppTheme.gray300 : const AppTheme.gray500)),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),

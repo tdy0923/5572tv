@@ -706,8 +706,8 @@ class _LiveScreenState extends State<LiveScreen>
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: themeService.isDarkMode
-              ? const Color(0xFF2a2a2a)
-              : const Color(0xFFc0c0c0),
+              ? const AppTheme.darkBackground
+              : const AppTheme.gray300,
         ),
         child: Image.network(
           channel.logo,
@@ -732,8 +732,8 @@ class _LiveScreenState extends State<LiveScreen>
       height: double.infinity,
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? const Color(0xFF2a2a2a)
-            : const Color(0xFFc0c0c0),
+            ? const AppTheme.darkBackground
+            : const AppTheme.gray300,
       ),
       child: Center(
         child: Icon(
@@ -741,7 +741,7 @@ class _LiveScreenState extends State<LiveScreen>
           size: 48,
           color: themeService.isDarkMode
               ? const AppTheme.foregroundSubtle
-              : const Color(0xFF95a5b0),
+              : const AppTheme.gray500,
         ),
       ),
     );

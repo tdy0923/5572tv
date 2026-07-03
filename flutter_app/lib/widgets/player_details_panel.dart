@@ -27,7 +27,7 @@ class PlayerDetailsPanel extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: showCloseButton 
-            ? (isDarkMode ? const Color(0xFF1c1c1e) : Colors.white)
+            ? (isDarkMode ? const AppTheme.darkBackground : Colors.white)
             : Colors.transparent,
       ),
       child: Column(

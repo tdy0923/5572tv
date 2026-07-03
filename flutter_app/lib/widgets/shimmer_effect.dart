@@ -65,7 +65,7 @@ class _ShimmerEffectState extends State<ShimmerEffect>
                   colors: themeService.isDarkMode
                       ? [
                           const AppTheme.foreground,
-                          const Color(0xFF1a1a1a),
+                          const AppTheme.gray900,
                           const AppTheme.foreground,
                         ]
                       : [

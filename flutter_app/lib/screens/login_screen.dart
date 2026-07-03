@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: (_isLoading || !_isFormValid) ? null : _handleLogin,
           style: ElevatedButton.styleFrom(
             backgroundColor: _isFormValid && !_isLoading
-                ? const Color(0xFF22c55e)
+                ? const AppTheme.success
                 : const AppTheme.stroke,
             foregroundColor: _isFormValid && !_isLoading
                 ? Colors.white
@@ -272,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 72,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF22c55e), Color(0xFF16a34a)],
+              colors: [AppTheme.success, AppTheme.success],
             ),
             borderRadius: BorderRadius.circular(20),
           ),
@@ -311,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             width: 72, height: 72,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF22c55e), Color(0xFF16a34a)]),
+              gradient: const LinearGradient(colors: [AppTheme.success, AppTheme.success]),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Center(

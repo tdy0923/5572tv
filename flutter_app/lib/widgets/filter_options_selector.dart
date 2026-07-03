@@ -32,7 +32,7 @@ void showFilterOptionsSelector({
             constraints: const BoxConstraints(maxHeight: 450),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF2A2A2A)
+                  ? const AppTheme.darkBackground
                   : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),

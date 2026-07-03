@@ -52,7 +52,7 @@ void main() async {
     debugPrint('Flutter error: ${errorDetails.exception}');
     return Material(
       child: Container(
-        color: const Color(0xFF1a1a1a),
+        color: const AppTheme.gray900,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

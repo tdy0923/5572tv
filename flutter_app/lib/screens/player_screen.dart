@@ -1286,7 +1286,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       child: Text(
                         currentDetail!.class_!,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF2ecc71),
+                          color: const AppTheme.success,
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -2262,7 +2262,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                   AppTheme.gray100,
                   AppTheme.backgroundSubtle,
                   AppTheme.gray200,
-                  Color(0xFFdbe3ea),
+                  AppTheme.gray200,
                   AppTheme.gray300,
                 ],
                 stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
@@ -2322,7 +2322,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     gradient: const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Color(0xFFFF8C42), Color(0xFFE74C3C)],
+                      colors: [AppTheme.primaryDark, AppTheme.error],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
@@ -2360,10 +2360,10 @@ class _PlayerScreenState extends State<PlayerScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF8B4513).withOpacity(0.1),
+                    color: const AppTheme.gray600.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF8B4513).withOpacity(0.3),
+                      color: const AppTheme.gray600.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -2371,7 +2371,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     _errorMessage!,
                     style: const TextStyle(
                       fontSize: 16,
-                      color: Color(0xFFE74C3C),
+                      color: AppTheme.error,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
@@ -2440,11 +2440,11 @@ class _PlayerScreenState extends State<PlayerScreen>
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
-                                ? const Color(0xFF2D3748)
-                                : const Color(0xFFE2E8F0),
+                                ? const AppTheme.gray800
+                                : const AppTheme.gray200,
                             foregroundColor: isDarkMode
                                 ? Colors.white
-                                : const Color(0xFF3182CE),
+                                : const AppTheme.info,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -2458,7 +2458,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                               fontWeight: FontWeight.w500,
                               color: isDarkMode
                                   ? Colors.white
-                                  : const Color(0xFF3182CE),
+                                  : const AppTheme.info,
                             ),
                           ),
                         ),
@@ -2608,7 +2608,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       AppTheme.gray100,
                       AppTheme.backgroundSubtle,
                       AppTheme.gray200,
-                      Color(0xFFdbe3ea),
+                      AppTheme.gray200,
                       AppTheme.gray300,
                     ],
                     stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
@@ -2858,7 +2858,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                   AppTheme.gray100,
                   AppTheme.backgroundSubtle,
                   AppTheme.gray200,
-                  Color(0xFFdbe3ea),
+                  AppTheme.gray200,
                   AppTheme.gray300,
                 ],
                 stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
@@ -2894,7 +2894,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2ecc71).withOpacity(0.3),
+                          color: const AppTheme.success.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -2907,7 +2907,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFF2ecc71), AppTheme.success],
+                          colors: [AppTheme.success, AppTheme.success],
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -2934,7 +2934,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     widthFactor: _loadingProgress,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2ecc71),
+                        color: const AppTheme.success,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -3059,8 +3059,8 @@ class _EpisodeCardWithHoverState extends State<_EpisodeCardWithHover> {
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode
-                        ? const Color(0xFF1A3D2E) // 深色模式下的浅绿色
-                        : const Color(0xFFE8F5E9)) // 浅色模式下的浅绿色
+                        ? const AppTheme.darkBackground // 深色模式下的浅绿色
+                        : const AppTheme.gray100) // 浅色模式下的浅绿色
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),
@@ -3160,8 +3160,8 @@ class _SourceCardWithHoverState extends State<_SourceCardWithHover> {
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode
-                        ? const Color(0xFF1A3D2E) // 深色模式下的浅绿色
-                        : const Color(0xFFE8F5E9)) // 浅色模式下的浅绿色
+                        ? const AppTheme.darkBackground // 深色模式下的浅绿色
+                        : const AppTheme.gray100) // 浅色模式下的浅绿色
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),

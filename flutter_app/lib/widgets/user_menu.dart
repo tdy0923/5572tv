@@ -214,7 +214,7 @@ class _UserMenuState extends State<UserMenu> {
               '检查更新失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const Color(0xFFef4444),
+            backgroundColor: const AppTheme.error,
           ),
         );
       }
@@ -228,16 +228,16 @@ class _UserMenuState extends State<UserMenu> {
     switch (_role) {
       case 'admin':
         label = '管理员';
-        color = const Color(0xFFf59e0b); // 橙黄色
+        color = const AppTheme.warning; // 橙黄色
         break;
       case 'owner':
         label = '站长';
-        color = const Color(0xFF8b5cf6); // 紫色
+        color = const AppTheme.info; // 紫色
         break;
       case 'user':
       default:
         label = '用户';
-        color = const Color(0xFF10b981); // 绿色
+        color = const AppTheme.success; // 绿色
         break;
     }
 
@@ -336,7 +336,7 @@ class _UserMenuState extends State<UserMenu> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor:
-              widget.isDarkMode ? const Color(0xFF2c2c2c) : Colors.white,
+              widget.isDarkMode ? const AppTheme.darkBackground : Colors.white,
           title: Text(
             title,
             style: FontUtils.systemFont(
@@ -372,7 +372,7 @@ class _UserMenuState extends State<UserMenu> {
                               : LucideIcons.circle,
                           size: 20,
                           color: currentValue == option
-                              ? const Color(0xFF10b981)
+                              ? const AppTheme.success
                               : (widget.isDarkMode
                                   ? const AppTheme.foregroundMuted
                                   : const AppTheme.foregroundSubtle),
@@ -410,7 +410,7 @@ class _UserMenuState extends State<UserMenu> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor:
-              widget.isDarkMode ? const Color(0xFF2c2c2c) : Colors.white,
+              widget.isDarkMode ? const AppTheme.darkBackground : Colors.white,
           title: Text(
             'M3U8 代理 URL',
             style: FontUtils.systemFont(
@@ -456,7 +456,7 @@ class _UserMenuState extends State<UserMenu> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF10b981),
+                  color: AppTheme.success,
                   width: 2,
                 ),
               ),
@@ -493,7 +493,7 @@ class _UserMenuState extends State<UserMenu> {
                 '保存',
                 style: FontUtils.systemFont(
                   fontSize: 14,
-                  color: const Color(0xFF10b981),
+                  color: const AppTheme.success,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -621,7 +621,7 @@ class _UserMenuState extends State<UserMenu> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   color: value
-                      ? const Color(0xFF10b981)
+                      ? const AppTheme.success
                       : (widget.isDarkMode
                           ? const AppTheme.gray700
                           : const AppTheme.gray200),
@@ -664,7 +664,7 @@ class _UserMenuState extends State<UserMenu> {
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
                   color: widget.isDarkMode
-                      ? const Color(0xFF2c2c2c)
+                      ? const AppTheme.darkBackground
                       : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
@@ -860,7 +860,7 @@ class _UserMenuState extends State<UserMenu> {
                               Icon(
                                 LucideIcons.trash2,
                                 size: 20,
-                                color: const Color(0xFFf59e0b),
+                                color: const AppTheme.warning,
                               ),
                               const SizedBox(width: 12),
                               Text(
@@ -900,7 +900,7 @@ class _UserMenuState extends State<UserMenu> {
                               Icon(
                                 LucideIcons.download,
                                 size: 20,
-                                color: const Color(0xFF3b82f6),
+                                color: const AppTheme.info,
                               ),
                               const SizedBox(width: 12),
                               Text(
@@ -940,14 +940,14 @@ class _UserMenuState extends State<UserMenu> {
                               const Icon(
                                 LucideIcons.logOut,
                                 size: 20,
-                                color: Color(0xFFef4444),
+                                color: AppTheme.error,
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 '登出',
                                 style: FontUtils.systemFont(
                                   fontSize: 16,
-                                  color: const Color(0xFFef4444),
+                                  color: const AppTheme.error,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

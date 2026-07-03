@@ -633,13 +633,13 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
               height: 64,
               decoration: BoxDecoration(
                 color: themeService.isDarkMode
-                    ? const Color(0xE61F2937)
-                    : const Color(0xF2FFFFFF),
+                    ? const AppTheme.gray800
+                    : const AppTheme.background,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: themeService.isDarkMode
-                      ? const Color(0xFF4B5563)
-                      : const Color(0xFFE5E7EB),
+                      ? const AppTheme.gray600
+                      : const AppTheme.gray200,
                   width: 1,
                 ),
                 boxShadow: [
@@ -654,8 +654,8 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                 icon,
                 size: 32,
                 color: themeService.isDarkMode
-                    ? const Color(0xFFD1D5DB)
-                    : const Color(0xFF4B5563),
+                    ? const AppTheme.gray300
+                    : const AppTheme.gray600,
               ),
             ),
           ),

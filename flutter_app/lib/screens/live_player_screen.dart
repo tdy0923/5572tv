@@ -434,7 +434,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       AppTheme.gray100,
                       AppTheme.backgroundSubtle,
                       AppTheme.gray200,
-                      Color(0xFFdbe3ea),
+                      AppTheme.gray200,
                       AppTheme.gray300,
                     ],
                     stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
@@ -795,8 +795,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: themeService.isDarkMode
-                        ? const Color(0xFF2a2a2a)
-                        : const Color(0xFFc0c0c0),
+                        ? const AppTheme.darkBackground
+                        : const AppTheme.gray300,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ClipRRect(
@@ -864,14 +864,14 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         child: Container(
           decoration: BoxDecoration(
             color: themeService.isDarkMode
-                ? const Color(0xFF2a2a2a)
-                : const Color(0xFFc0c0c0),
+                ? const AppTheme.darkBackground
+                : const AppTheme.gray300,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(
             Icons.tv,
             size: 24,
-            color: Color(0xFF95a5b0),
+            color: AppTheme.gray500,
           ),
         ),
       ),
@@ -882,7 +882,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     return const Icon(
       Icons.tv,
       size: 24,
-      color: Color(0xFF95a5b0),
+      color: AppTheme.gray500,
     );
   }
 
@@ -933,8 +933,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: themeService.isDarkMode
-                          ? const Color(0xFF2a2a2a)
-                          : const Color(0xFFc0c0c0),
+                          ? const AppTheme.darkBackground
+                          : const AppTheme.gray300,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: ClipRRect(
@@ -946,7 +946,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                           return const Icon(
                             Icons.tv,
                             size: 16,
-                            color: Color(0xFF95a5b0),
+                            color: AppTheme.gray500,
                           );
                         },
                       ),
@@ -958,14 +958,14 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       color: themeService.isDarkMode
-                          ? const Color(0xFF2a2a2a)
-                          : const Color(0xFFc0c0c0),
+                          ? const AppTheme.darkBackground
+                          : const AppTheme.gray300,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Icon(
                       Icons.tv,
                       size: 16,
-                      color: Color(0xFF95a5b0),
+                      color: AppTheme.gray500,
                     ),
                   ),
                 ),
@@ -1527,11 +1527,11 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     if (isLive) {
       // 正在播放 - 绿色
       textColor = themeService.isDarkMode
-          ? const Color(0xFF4ade80)
-          : const Color(0xFF16a34a);
+          ? const AppTheme.success
+          : const AppTheme.success;
       timeColor = themeService.isDarkMode
-          ? const Color(0xFF4ade80)
-          : const Color(0xFF16a34a);
+          ? const AppTheme.success
+          : const AppTheme.success;
     } else if (isPast) {
       // 过去的节目 - 灰色
       textColor = themeService.isDarkMode
@@ -1543,11 +1543,11 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     } else {
       // 未开始的节目 - 蓝色
       textColor = themeService.isDarkMode
-          ? const Color(0xFF60a5fa)
-          : const Color(0xFF2563eb);
+          ? const AppTheme.info
+          : const AppTheme.info;
       timeColor = themeService.isDarkMode
-          ? const Color(0xFF60a5fa)
-          : const Color(0xFF2563eb);
+          ? const AppTheme.info
+          : const AppTheme.info;
     }
 
     return Container(
@@ -1742,19 +1742,19 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
           : const AppTheme.success.withOpacity(0.1);
       borderColor = const AppTheme.success.withOpacity(0.3);
       textColor = themeService.isDarkMode
-          ? const Color(0xFF4ade80)
-          : const Color(0xFF16a34a);
+          ? const AppTheme.success
+          : const AppTheme.success;
       timeColor = themeService.isDarkMode
-          ? const Color(0xFF4ade80)
-          : const Color(0xFF16a34a);
+          ? const AppTheme.success
+          : const AppTheme.success;
     } else if (isPast) {
       // 过去的节目 - 灰色背景 + 灰色边框
       backgroundColor = themeService.isDarkMode
           ? const AppTheme.gray700.withOpacity(0.5)
-          : const Color(0xFFd1d5db).withOpacity(0.5);
+          : const AppTheme.gray300.withOpacity(0.5);
       borderColor = themeService.isDarkMode
-          ? const Color(0xFF4b5563)
-          : const Color(0xFFd1d5db);
+          ? const AppTheme.gray600
+          : const AppTheme.gray300;
       textColor = themeService.isDarkMode
           ? const AppTheme.foregroundMuted
           : const AppTheme.foregroundSubtle;
@@ -1764,15 +1764,15 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     } else {
       // 未开始的节目 - 蓝色背景 + 蓝色边框
       backgroundColor = themeService.isDarkMode
-          ? const Color(0xFF3498db).withOpacity(0.2)
-          : const Color(0xFF3498db).withOpacity(0.1);
-      borderColor = const Color(0xFF3498db).withOpacity(0.3);
+          ? const AppTheme.info.withOpacity(0.2)
+          : const AppTheme.info.withOpacity(0.1);
+      borderColor = const AppTheme.info.withOpacity(0.3);
       textColor = themeService.isDarkMode
-          ? const Color(0xFF60a5fa)
-          : const Color(0xFF2563eb);
+          ? const AppTheme.info
+          : const AppTheme.info;
       timeColor = themeService.isDarkMode
-          ? const Color(0xFF60a5fa)
-          : const Color(0xFF2563eb);
+          ? const AppTheme.info
+          : const AppTheme.info;
     }
 
     return Container(

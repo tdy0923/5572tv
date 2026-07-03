@@ -83,7 +83,7 @@ class _PlayerEpisodesPanelState extends State<PlayerEpisodesPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF1c1c1e) : Colors.white,
+        color: isDarkMode ? const AppTheme.darkBackground : Colors.white,
       ),
       child: Column(
         children: [
@@ -198,8 +198,8 @@ class _EpisodePanelItemWithHoverState extends State<_EpisodePanelItemWithHover> 
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode 
-                        ? const Color(0xFF1A3D2E)  // 深色模式下的浅绿色
-                        : const Color(0xFFE8F5E9))  // 浅色模式下的浅绿色
+                        ? const AppTheme.darkBackground  // 深色模式下的浅绿色
+                        : const AppTheme.gray100)  // 浅色模式下的浅绿色
                     : (widget.isDarkMode ? Colors.grey[800] : Colors.grey[200])),
             borderRadius: BorderRadius.circular(8),
             border: widget.isCurrentEpisode

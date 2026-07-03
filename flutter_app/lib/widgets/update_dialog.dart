@@ -116,8 +116,8 @@ class UpdateDialog extends StatelessWidget {
                               width: 1,
                               height: 40,
                               color: themeService.isDarkMode
-                                  ? const Color(0xFF444444)
-                                  : const Color(0xFFDDDDDD),
+                                  ? const AppTheme.gray700
+                                  : const AppTheme.gray300,
                             ),
                             _buildVersionChip(
                               context,

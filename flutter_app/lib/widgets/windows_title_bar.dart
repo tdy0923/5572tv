@@ -38,7 +38,7 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> {
         // Windows 11 风格的文字和图标颜色
         final foregroundColor = widget.forceBlack 
             ? Colors.white
-            : (isDark ? Colors.white : const Color(0xFF202020));
+            : (isDark ? Colors.white : const AppTheme.gray900);
         
         return Container(
           height: 40,
@@ -142,13 +142,13 @@ class _WindowsButtonHoverState extends State<_WindowsButtonHover> {
     
     if (_isPressed) {
       backgroundColor = widget.isCloseButton
-          ? const Color(0xFF8B0000) // 深红色
+          ? const AppTheme.error // 深红色
           : (widget.isDark 
               ? Colors.white.withOpacity(0.1)
               : Colors.black.withOpacity(0.06));
     } else if (_isHovered) {
       backgroundColor = widget.isCloseButton
-          ? const Color(0xFFE81123) // Windows 11 红色
+          ? const AppTheme.error // Windows 11 红色
           : (widget.isDark 
               ? Colors.white.withOpacity(0.08)
               : Colors.black.withOpacity(0.04));

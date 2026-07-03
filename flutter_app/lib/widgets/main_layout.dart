@@ -306,7 +306,7 @@ class _MainLayoutState extends State<MainLayout> {
                                     AppTheme.gray100,
                                     AppTheme.backgroundSubtle,
                                     AppTheme.gray200,
-                                    Color(0xFFdbe3ea),
+                                    AppTheme.gray200,
                                     AppTheme.gray300,
                                   ],
                                   stops: [0.0, 0.18, 0.38, 0.60, 0.80, 1.0],
@@ -319,8 +319,8 @@ class _MainLayoutState extends State<MainLayout> {
                               WindowsTitleBar(
                                 customBackgroundColor: widget.isSearchMode
                                     ? (themeService.isDarkMode
-                                        ? const Color(0xFF121212)
-                                        : const Color(0xFFf5f5f5))
+                                        ? const AppTheme.gray950
+                                        : const AppTheme.gray100)
                                     : null,
                               ),
                             // 固定 Header
@@ -376,8 +376,8 @@ class _MainLayoutState extends State<MainLayout> {
       decoration: BoxDecoration(
         color: widget.isSearchMode
             ? themeService.isDarkMode
-                ? const Color(0xFF121212)
-                : const Color(0xFFf5f5f5)
+                ? const AppTheme.gray950
+                : const AppTheme.gray100
             : themeService.isDarkMode
                 ? const AppTheme.darkBackground.withOpacity(0.9)
                 : Colors.white.withOpacity(0.8),
@@ -979,7 +979,7 @@ class _MainLayoutState extends State<MainLayout> {
                       ),
                       decoration: BoxDecoration(
                         color: _hoveredNavIndex == index
-                            ? const Color(0xFF22C55E).withOpacity(0.15)
+                            ? const AppTheme.success.withOpacity(0.15)
                             : null,
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -991,7 +991,7 @@ class _MainLayoutState extends State<MainLayout> {
                             color: isSelected
                                 ? const AppTheme.success
                                 : _hoveredNavIndex == index
-                                    ? const Color(0xFF52c77a)
+                                    ? const AppTheme.success
                                     : themeService.isDarkMode
                                         ? const AppTheme.foregroundMuted
                                         : const AppTheme.foregroundMuted,
@@ -1007,7 +1007,7 @@ class _MainLayoutState extends State<MainLayout> {
                               color: isSelected
                                   ? const AppTheme.success
                                   : _hoveredNavIndex == index
-                                      ? const Color(0xFF52c77a)
+                                      ? const AppTheme.success
                                       : themeService.isDarkMode
                                           ? const AppTheme.foregroundMuted
                                           : const AppTheme.foregroundMuted,

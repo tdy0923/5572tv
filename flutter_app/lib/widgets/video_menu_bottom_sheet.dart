@@ -944,7 +944,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             height: 1,
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
-                ? const Color(0xFF404040)
+                ? const AppTheme.gray700
                 : const AppTheme.gray200,
           ),
           
@@ -969,7 +969,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFB800).withOpacity(0.1),
+                    color: const AppTheme.warning.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -978,7 +978,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       Icon(
                         Icons.star,
                         size: 16,
-                        color: const Color(0xFFFFB800),
+                        color: const AppTheme.warning,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -986,7 +986,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFFB800),
+                          color: const AppTheme.warning,
                         ),
                       ),
                     ],
@@ -1028,7 +1028,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
-                      ? const Color(0xFF404040)
+                      ? const AppTheme.gray700
                       : const AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -1108,7 +1108,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             height: 1,
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
-                ? const Color(0xFF404040)
+                ? const AppTheme.gray700
                 : const AppTheme.gray200,
           ),
           
@@ -1133,7 +1133,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE91E63).withOpacity(0.1),
+                    color: const AppTheme.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -1142,7 +1142,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       Icon(
                         Icons.star,
                         size: 16,
-                        color: const Color(0xFFE91E63),
+                        color: const AppTheme.error,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1150,7 +1150,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFE91E63),
+                          color: const AppTheme.error,
                         ),
                       ),
                     ],
@@ -1194,7 +1194,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
-                      ? const Color(0xFF404040)
+                      ? const AppTheme.gray700
                       : const AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
@@ -1449,7 +1449,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.favorite,
-            iconColor: const Color(0xFFE74C3C),
+            iconColor: const AppTheme.error,
             title: '取消收藏',
             onTap: () {
               widget.onClose();
@@ -1523,7 +1523,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: widget.isFavorited ? Icons.favorite : Icons.favorite_border,
-          iconColor: const Color(0xFFE74C3C),
+          iconColor: const AppTheme.error,
           title: widget.isFavorited ? '取消收藏' : '收藏',
           onTap: () {
             widget.onClose();
@@ -1594,7 +1594,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: widget.isFavorited ? Icons.favorite : Icons.favorite_border,
-          iconColor: const Color(0xFFE74C3C),
+          iconColor: const AppTheme.error,
           title: widget.isFavorited ? '取消收藏' : '收藏',
           onTap: () {
             widget.onClose();
@@ -1608,7 +1608,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: Icons.delete,
-          iconColor: const Color(0xFFE74C3C),
+          iconColor: const AppTheme.error,
           title: '删除记录',
           onTap: () {
             widget.onClose();
@@ -1692,7 +1692,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
       height: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       color: themeService.isDarkMode 
-          ? const Color(0xFF404040)
+          ? const AppTheme.gray700
           : const AppTheme.gray200,
     );
   }

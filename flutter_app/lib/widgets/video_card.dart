@@ -207,7 +207,7 @@ class _VideoCardState extends State<VideoCard> {
                               width: 30,
                               height: 30,
                               decoration: const BoxDecoration(
-                                color: Color(0xFFe91e63), // 粉色圆形背景
+                                color: AppTheme.error, // 粉色圆形背景
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -572,7 +572,7 @@ class _VideoCardState extends State<VideoCard> {
                                 color: isPC && _isHovered
                                     ? Colors.green
                                     : (widget.from == 'agg'
-                                        ? const Color(0xFF9b59b6) // 聚合模式用紫色文字
+                                        ? const AppTheme.info // 聚合模式用紫色文字
                                         : const AppTheme.foregroundMuted), // 其他模式用灰色文字
                                 height: 1.0, // 进一步减少行高
                               ),
@@ -666,12 +666,12 @@ class _VideoCardState extends State<VideoCard> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: _isFocused
-                      ? Border.all(color: const Color(0xFF22C55E), width: 3)
+                      ? Border.all(color: const AppTheme.success, width: 3)
                       : null,
                   boxShadow: _isFocused
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF22C55E).withOpacity(0.4),
+                            color: const AppTheme.success.withOpacity(0.4),
                             blurRadius: 8,
                             spreadRadius: 2,
                           ),

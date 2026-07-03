@@ -536,8 +536,8 @@ class _SearchScreenState extends State<SearchScreen>
         final ml = MainLayout(
           content: Container(
             color: themeService.isDarkMode
-                ? const Color(0xFF121212)
-                : const Color(0xFFf5f5f5),
+                ? const AppTheme.gray950
+                : const AppTheme.gray100,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -625,7 +625,7 @@ class _SearchScreenState extends State<SearchScreen>
                 LucideIcons.history,
                 size: 80,
                 color: themeService.isDarkMode
-                    ? const Color(0xFF444444)
+                    ? const AppTheme.gray700
                     : const AppTheme.stroke,
               ),
               const SizedBox(height: 24),
@@ -645,7 +645,7 @@ class _SearchScreenState extends State<SearchScreen>
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
-                      ? const Color(0xFF555555)
+                      ? const AppTheme.gray600
                       : const AppTheme.foregroundMuted,
                 ),
               ),
@@ -811,10 +811,10 @@ class _SearchScreenState extends State<SearchScreen>
                       } else if (DeviceUtils.isPC() && isHovered) {
                         // PC 端 hover 效果 - 浅绿色
                         backgroundColor = themeService.isDarkMode
-                            ? const Color(0xFF1e3a28) // 深色模式下的深绿背景
-                            : const Color(0xFFe8f5e9); // 浅色模式下的浅绿背景
+                            ? const AppTheme.darkBackground // 深色模式下的深绿背景
+                            : const AppTheme.gray100; // 浅色模式下的浅绿背景
                         textColor = const AppTheme.success; // 绿色文字
-                        borderColor = const Color(0xFF52c77a); // 浅绿边框
+                        borderColor = const AppTheme.success; // 浅绿边框
                       } else {
                         backgroundColor = themeService.isDarkMode
                             ? const AppTheme.darkBackground
@@ -1060,8 +1060,8 @@ class _SearchScreenState extends State<SearchScreen>
                           },
                           activeColor: const AppTheme.success,
                           inactiveColor: themeService.isDarkMode
-                              ? const Color(0xFF444444)
-                              : const Color(0xFFcccccc),
+                              ? const AppTheme.gray700
+                              : const AppTheme.gray300,
                           width: 32,
                           height: 16,
                         ),
