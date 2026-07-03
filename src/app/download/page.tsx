@@ -46,8 +46,8 @@ function StatCard({
     <div
       className='relative p-6 rounded-lg border group cursor-default'
       style={{
-        background: 'var(--color-background-subtle)',
-        borderColor: 'var(--color-stroke-subtle)',
+        background: '#1a1a1a',
+        borderColor: '#3d3d3d',
         boxShadow: visible ? 'var(--shadow-2)' : 'none',
         opacity: visible ? 1 : 0,
         transform: visible ? 'translateY(0)' : 'translateY(8px)',
@@ -60,8 +60,7 @@ function StatCard({
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-2)';
-        (e.currentTarget as HTMLDivElement).style.borderColor =
-          'var(--color-stroke-subtle)';
+        (e.currentTarget as HTMLDivElement).style.borderColor = '#3d3d3d';
       }}
     >
       <div
@@ -78,7 +77,7 @@ function StatCard({
           {unit}
         </span>
       </div>
-      <p className='text-sm' style={{ color: 'var(--color-foreground-muted)' }}>
+      <p className='text-sm' style={{ color: '#a3a3a3' }}>
         {desc}
       </p>
     </div>
@@ -116,15 +115,12 @@ function StepIndicator({
             className='absolute top-full left-1/2 -translate-x-1/2 w-px'
             style={{
               height: 20,
-              background: 'var(--color-stroke-subtle)',
+              background: '#3d3d3d',
             }}
           />
         )}
       </div>
-      <span
-        className='text-sm'
-        style={{ color: 'var(--color-foreground-subtle)' }}
-      >
+      <span className='text-sm' style={{ color: '#d4d4d4' }}>
         {step}
       </span>
     </div>
@@ -202,9 +198,9 @@ function SecondaryButton({
       onMouseLeave={() => setPressed(false)}
       className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold whitespace-nowrap transition-all duration-150 ${className}`}
       style={{
-        background: 'var(--color-background)',
-        color: 'var(--color-foreground)',
-        border: '1px solid var(--color-stroke)',
+        background: '#111111',
+        color: '#ffffff',
+        border: '1px solid #545454',
         boxShadow: pressed ? 'none' : 'var(--shadow-2)',
         transform: pressed ? 'scale(0.98)' : 'scale(1)',
       }}
@@ -239,7 +235,7 @@ function PlatformTabs({
   return (
     <div
       className='inline-flex rounded-lg p-1'
-      style={{ background: 'var(--color-background-subtle)' }}
+      style={{ background: '#1a1a1a' }}
     >
       {tabs.map((tab) => (
         <button
@@ -248,10 +244,7 @@ function PlatformTabs({
           className='flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-150'
           style={{
             background: selected === tab.key ? '#f4c24d' : 'transparent',
-            color:
-              selected === tab.key
-                ? '#1a1a1a'
-                : 'var(--color-foreground-muted)',
+            color: selected === tab.key ? '#1a1a1a' : '#a3a3a3',
             boxShadow: selected === tab.key ? 'var(--shadow-2)' : 'none',
           }}
         >
@@ -304,10 +297,7 @@ export default function DownloadPage() {
   ];
 
   return (
-    <div
-      className='min-h-screen'
-      style={{ background: 'var(--color-background)' }}
-    >
+    <div className='min-h-screen' style={{ background: '#111111' }}>
       {/* ── Hero ── */}
       <section
         className='relative min-h-[100dvh] flex items-center'
@@ -350,14 +340,14 @@ export default function DownloadPage() {
                   </div>
                   <div
                     className='flex items-center gap-1.5 text-xs'
-                    style={{ color: 'var(--color-foreground-muted)' }}
+                    style={{ color: '#a3a3a3' }}
                   >
                     <Star
                       className='w-3 h-3 fill-current'
                       style={{ color: '#f4c24d' }}
                     />
                     <span>4.8</span>
-                    <span style={{ color: 'var(--color-stroke)' }}>·</span>
+                    <span style={{ color: '#545454' }}>·</span>
                     <span>10万+用户</span>
                   </div>
                 </div>
@@ -369,10 +359,7 @@ export default function DownloadPage() {
                 <br />
                 <span style={{ color: '#f4c24d' }}>这里都有</span>
               </h1>
-              <p
-                className='text-lg mb-8 max-w-lg'
-                style={{ color: 'var(--color-foreground-muted)' }}
-              >
+              <p className='text-lg mb-8 max-w-lg' style={{ color: '#a3a3a3' }}>
                 海量影视资源聚合，AI智能搜索推荐。支持手机、平板、电视全平台。
               </p>
 
@@ -392,7 +379,7 @@ export default function DownloadPage() {
                     </div>
                     <div
                       className='text-xs mt-0.5'
-                      style={{ color: 'var(--color-foreground-muted)' }}
+                      style={{ color: '#a3a3a3' }}
                     >
                       {s.l}
                     </div>
@@ -428,8 +415,8 @@ export default function DownloadPage() {
                 <div
                   className='inline-flex flex-col items-center gap-3 p-5 rounded-lg border'
                   style={{
-                    background: 'var(--color-background-subtle)',
-                    borderColor: 'var(--color-stroke-subtle)',
+                    background: '#1a1a1a',
+                    borderColor: '#3d3d3d',
                     boxShadow: 'var(--shadow-2)',
                   }}
                 >
@@ -448,14 +435,11 @@ export default function DownloadPage() {
                   <div className='text-center'>
                     <p
                       className='text-sm font-medium'
-                      style={{ color: 'var(--color-foreground-subtle)' }}
+                      style={{ color: '#d4d4d4' }}
                     >
                       手机扫码下载
                     </p>
-                    <p
-                      className='text-xs mt-0.5'
-                      style={{ color: 'var(--color-foreground-muted)' }}
-                    >
+                    <p className='text-xs mt-0.5' style={{ color: '#a3a3a3' }}>
                       {APK_VERSION} · {APK_SIZE} MB · Android 7.0+
                     </p>
                   </div>
@@ -481,19 +465,17 @@ export default function DownloadPage() {
       {/* ── Features ── */}
       <section
         className='py-24 px-6 sm:px-12 lg:px-20'
-        style={{ background: 'var(--color-background)' }}
+        style={{ background: '#111111' }}
       >
         <div className='max-w-6xl mx-auto'>
           <div className='text-center mb-14'>
             <h2
               className='text-3xl font-bold mb-3'
-              style={{ color: 'var(--color-foreground)' }}
+              style={{ color: '#ffffff' }}
             >
               为什么选择 5572
             </h2>
-            <p style={{ color: 'var(--color-foreground-muted)' }}>
-              为极致观影体验而生
-            </p>
+            <p style={{ color: '#a3a3a3' }}>为极致观影体验而生</p>
           </div>
           <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5'>
             {stats.map((s, i) => (
@@ -513,13 +495,13 @@ export default function DownloadPage() {
       {/* ── Install Steps ── */}
       <section
         className='py-24 px-6 sm:px-12 lg:px-20'
-        style={{ background: 'var(--color-background-subtle)' }}
+        style={{ background: '#1a1a1a' }}
       >
         <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12'>
           <div>
             <h2
               className='text-2xl font-bold mb-8'
-              style={{ color: 'var(--color-foreground)' }}
+              style={{ color: '#ffffff' }}
             >
               {selectedPlatform === 'ios' ? 'iOS 安装' : '安装步骤'}
             </h2>
@@ -546,7 +528,7 @@ export default function DownloadPage() {
           <div>
             <h2
               className='text-2xl font-bold mb-8'
-              style={{ color: 'var(--color-foreground)' }}
+              style={{ color: '#ffffff' }}
             >
               核心功能
             </h2>
@@ -561,10 +543,10 @@ export default function DownloadPage() {
                 <div
                   key={feature}
                   className='flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-150'
-                  style={{ color: 'var(--color-foreground-subtle)' }}
+                  style={{ color: '#d4d4d4' }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLDivElement).style.background =
-                      'var(--color-background)';
+                      '#111111';
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLDivElement).style.background =
@@ -586,7 +568,7 @@ export default function DownloadPage() {
       {/* ── Footer ── */}
       <footer
         className='py-8 px-6 sm:px-12 lg:px-20'
-        style={{ borderTop: '1px solid var(--color-stroke-subtle)' }}
+        style={{ borderTop: '1px solid #3d3d3d' }}
       >
         <div className='max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4'>
           <div className='flex items-center gap-2'>
@@ -597,17 +579,11 @@ export default function DownloadPage() {
               height={24}
               className='rounded'
             />
-            <span
-              className='text-sm'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
+            <span className='text-sm' style={{ color: '#a3a3a3' }}>
               5572 影视 © 2025
             </span>
           </div>
-          <p
-            className='text-xs'
-            style={{ color: 'var(--color-foreground-muted)', opacity: 0.6 }}
-          >
+          <p className='text-xs' style={{ color: '#a3a3a3', opacity: 0.6 }}>
             仅提供影视信息搜索服务
           </p>
         </div>
