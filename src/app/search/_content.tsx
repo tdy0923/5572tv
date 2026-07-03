@@ -810,7 +810,7 @@ function SearchPageClient() {
                       className='absolute right-4 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-gray-200/80 text-gray-500 shadow-sm transition-all duration-300 hover:bg-red-500 hover:text-white dark:bg-gray-700/80 dark:text-gray-400 dark:hover:bg-red-600'
                       aria-label='清除搜索内容'
                     >
-                      <X className='h-4 w-4' />
+                      <X className='h-5 w-5' />
                     </button>
                   )}
 
@@ -1136,7 +1136,7 @@ function SearchPageClient() {
                                 className='inline-flex items-center gap-1 px-3 py-1.5'
                                 aria-label='切换为卡片视图'
                               >
-                                <Grid2x2 className='h-4 w-4' />
+                                <Grid2x2 className='h-5 w-5' />
                               </PillButton>
                               <PillButton
                                 type='button'
@@ -1151,7 +1151,7 @@ function SearchPageClient() {
                                 className='inline-flex items-center gap-1 px-3 py-1.5'
                                 aria-label='切换为列表视图'
                               >
-                                <List className='h-4 w-4' />
+                                <List className='h-5 w-5' />
                               </PillButton>
                             </PillGroup>
                             <PillButton
@@ -1432,7 +1432,7 @@ function SearchPageClient() {
                         <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
                           <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 px-4 py-2 shadow-sm  dark:border-gray-700 dark:bg-gray-800'>
                             <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
-                              <div className='animate-spin rounded-full h-4 w-4 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
+                              <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
                               <span>正在搜索更多结果...</span>
                             </div>
                           </div>

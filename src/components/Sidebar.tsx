@@ -231,7 +231,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                 <div className='absolute inset-0 rounded-full bg-linear-to-r from-green-400 via-blue-400 to-purple-400 opacity-0 group-hover/toggle:opacity-100 transition-opacity duration-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                 <div className='absolute inset-[2px] rounded-full bg-white dark:bg-gray-900 group-hover/toggle:bg-gray-50 dark:group-hover/toggle:bg-gray-800 transition-colors duration-300'></div>
 
-                <Menu className='h-4 w-4 relative z-10 transition-transform duration-300 group-hover/toggle:rotate-180' />
+                <Menu className='h-5 w-5 relative z-10 transition-transform duration-300 group-hover/toggle:rotate-180' />
               </button>
             </div>
 
@@ -245,7 +245,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                 } gap-3 justify-start hover:shadow-md hover:shadow-green-500/10 data-[active=true]:shadow-lg data-[active=true]:shadow-green-500/20`}
               >
                 <div className='w-4 h-4 flex items-center justify-center relative z-10'>
-                  <Home className='h-4 w-4 text-gray-500 group-hover:text-green-600 data-[active=true]:text-green-700 dark:text-gray-400 dark:group-hover:text-green-400 dark:data-[active=true]:text-green-400 transition-all duration-200 group-hover:scale-110' />
+                  <Home className='h-5 w-5 text-gray-500 group-hover:text-green-600 data-[active=true]:text-green-700 dark:text-gray-400 dark:group-hover:text-green-400 dark:data-[active=true]:text-green-400 transition-all duration-200 group-hover:scale-110' />
                 </div>
                 {!isCollapsed && (
                   <span className='whitespace-nowrap transition-opacity duration-200 opacity-100 relative z-10'>
@@ -270,7 +270,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                 } gap-3 justify-start hover:shadow-md hover:shadow-blue-500/10 data-[active=true]:shadow-lg data-[active=true]:shadow-blue-500/20`}
               >
                 <div className='w-4 h-4 flex items-center justify-center relative z-10'>
-                  <Search className='h-4 w-4 text-gray-500 group-hover:text-blue-600 data-[active=true]:text-blue-700 dark:text-gray-400 dark:group-hover:text-blue-400 dark:data-[active=true]:text-blue-400 transition-all duration-200 group-hover:scale-110' />
+                  <Search className='h-5 w-5 text-gray-500 group-hover:text-blue-600 data-[active=true]:text-blue-700 dark:text-gray-400 dark:group-hover:text-blue-400 dark:data-[active=true]:text-blue-400 transition-all duration-200 group-hover:scale-110' />
                 </div>
                 {!isCollapsed && (
                   <span className='whitespace-nowrap transition-opacity duration-200 opacity-100 relative z-10'>

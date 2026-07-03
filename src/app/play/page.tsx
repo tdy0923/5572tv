@@ -5256,7 +5256,7 @@ function PlayPageClient() {
                   </div>
                   {netdiskLoading && netdiskResourceType === 'netdisk' && (
                     <span className='inline-block ml-2'>
-                      <span className='inline-block h-4 w-4 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></span>
+                      <span className='inline-block h-5 w-5 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></span>
                     </span>
                   )}
                   {netdiskTotal > 0 && netdiskResourceType === 'netdisk' && (
