@@ -56,9 +56,9 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
             
-            // R8 优化 — 已启用（正式签名+混淆+资源压缩）
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // R8 优化 — 临时关闭排查黑屏问题
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
