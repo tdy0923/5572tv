@@ -21,7 +21,7 @@ import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
 const APK_SIZE = '64.4';
-const APK_VERSION = 'v1.8.2';
+const APK_VERSION = 'v1.9.0';
 
 function DownloadCard() {
   return (

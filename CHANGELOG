@@ -1,3 +1,35 @@
+## [1.9.0] - 2026-07-03
+
+### Changed — Fluent 2 Design System
+
+- 🎨 **Web**: 全面迁移至 Microsoft Fluent 2 设计语言
+  - 重写 Tailwind 4 @theme 为 Fluent 2 token 体系（颜色/阴影/圆角/间距/动效）
+  - 全局 normalize 层覆盖 500+ 旧样式（rounded-28px/shadow-rgba/backdrop-blur 等）
+  - 交互系统：hover 上浮 + focus 金色 ring + active 缩放 + 150ms motion
+  - FluentSkeleton/FluentSpinner/FluentTransition 加载组件
+  - 17 个 Suspense 添加 FluentSpinner fallback
+  - 全站 TSX 文件硬编码颜色归零
+- 📱 **Flutter**: AppTheme 完全重写为 Fluent 2 语义 token
+  - 148 处硬编码颜色全部替换为 AppTheme 常量
+  - Elevation/Radius/Spacing/Motion 与 Web 端统一
+  - ThemeService 简化
+
+### Fixed
+
+- 🔧 CSP nonce：middleware.ts 合并到 proxy.ts（解决 Next.js 16 冲突）
+- 🔧 数据库连接：KVROCKS_URL + STORAGE_TYPE 环境变量修复
+- 🔧 登录 500：缺失 return response + Danny/Danny0923 凭据
+- 🔧 Cookie httpOnly 改为 false（客户端可读）
+- 🔧 服务器恢复：SSH 密钥恢复 + 容器重启
+
+### Added
+
+- ✨ FluentIcon 组件（sm/md/lg/xl 四级尺寸规范）
+- ✨ FluentSkeleton/FluentSpinner/FluentLoading 组件
+- ✨ FluentFadeIn/FluentSlideUp/FluentScaleIn/FluentStagger 动画组件
+- ✨ app/loading.tsx 全局 FluentSpinner 加载状态
+- ✨ Fluent 2 animation keyframes（shimmer/spinner/fade-in/scale-in）
+
 ## [1.8.2] - 2026-07-01
 
 ### Fixed
