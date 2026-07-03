@@ -106,7 +106,7 @@ export function GlobalErrorIndicator() {
           isClosing ? '-translate-y-4 opacity-0' : 'translate-y-0 opacity-100'
         } ${
           isReplacing ? 'scale-105 bg-red-400' : 'scale-100 bg-red-500'
-        } animate-fade-in`}
+        } animate-fluent2-fade-in`}
       >
         <span className='text-sm font-medium flex-1 mr-3'>
           {currentError.message}

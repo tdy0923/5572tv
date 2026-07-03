@@ -71,7 +71,7 @@ export function ConfirmDialog({
   const styles = variantStyles[variant];
 
   const dialogContent = (
-    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 animate-fluent2-fade-in'>
       {/* 背景遮罩 */}
       <div
         className='absolute inset-0 bg-black/50 backdrop-blur-sm'
@@ -79,7 +79,7 @@ export function ConfirmDialog({
       />
 
       {/* 对话框 */}
-      <div className='relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-slide-up'>
+      <div className='relative w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-fluent2-slide-up'>
         {/* 关闭按钮 */}
         <button
           onClick={onCancel}

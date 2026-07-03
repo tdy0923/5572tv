@@ -924,7 +924,7 @@ export default function SkipController({
     <div className='skip-controller'>
       {/* 跳过按钮 - 放在播放器内左上角 */}
       {showSkipButton && currentSkipSegment && (
-        <div className='absolute top-4 left-4 z-30 bg-black/80 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 shadow-lg animate-fade-in'>
+        <div className='absolute top-4 left-4 z-30 bg-black/80 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 shadow-lg animate-fluent2-fade-in'>
           <div className='flex items-center space-x-3'>
             <span className='text-sm'>
               {currentSkipSegment.type === 'opening'
@@ -946,11 +946,11 @@ export default function SkipController({
       {/* 设置模式面板 - 增强版批量设置 */}
       {isSettingMode && (
         <div
-          className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in'
+          className='fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fluent2-fade-in'
           onClick={handleCloseDialog}
         >
           <div
-            className='bg-white dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-md border border-white/20 dark:border-gray-700/50 animate-scale-in'
+            className='bg-white dark:bg-gray-800/95 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-md border border-white/20 dark:border-gray-700/50 animate-fluent2-scale-in'
             style={{
               backdropFilter: 'blur(20px) saturate(180%)',
               WebkitBackdropFilter: 'blur(20px) saturate(180%)',
@@ -1553,7 +1553,7 @@ export default function SkipController({
             cursor: isDragging ? 'grabbing' : 'default',
             userSelect: isDragging ? 'none' : 'auto',
           }}
-          className='z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm bg-white dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fade-in'
+          className='z-50 max-w-[calc(100vw-2rem)] sm:max-w-sm bg-white dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 animate-fluent2-fade-in'
         >
           <div className='p-3'>
             <h4 className='drag-handle font-medium mb-2 text-gray-900 dark:text-gray-100 text-sm flex items-center cursor-move select-none'>
@@ -1638,10 +1638,10 @@ export default function SkipController({
             transform: scale(1);
           }
         }
-        .animate-fade-in {
+        .animate-fluent2-fade-in {
           animation: fade-in 0.3s ease-out;
         }
-        .animate-scale-in {
+        .animate-fluent2-scale-in {
           animation: scale-in 0.3s ease-out;
         }
       `}</style>

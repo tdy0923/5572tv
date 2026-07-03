@@ -611,7 +611,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
+                      blurRadius: 8,
                       offset: const Offset(0, -2),
                     ),
                   ],
@@ -1774,7 +1774,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
+                  blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
               ],

@@ -34,7 +34,7 @@ class UpdateDialog extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
+                  blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
               ],
