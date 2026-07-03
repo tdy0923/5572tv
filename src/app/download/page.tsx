@@ -159,7 +159,7 @@ function PrimaryButton({
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
       onMouseLeave={() => setPressed(false)}
-      className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold transition-all duration-150 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold whitespace-nowrap transition-all duration-150 ${className}`}
       style={{
         background: '#f4c24d',
         color: '#1a1a1a',
@@ -200,7 +200,7 @@ function SecondaryButton({
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
       onMouseLeave={() => setPressed(false)}
-      className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold transition-all duration-150 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg font-semibold whitespace-nowrap transition-all duration-150 ${className}`}
       style={{
         background: 'var(--color-background)',
         color: 'var(--color-foreground)',
@@ -411,14 +411,9 @@ export default function DownloadPage() {
               {/* CTA buttons */}
               <div className='flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8'>
                 {selectedPlatform === 'ios' ? (
-                  <>
-                    <PrimaryButton onClick={() => setShowGuide(true)}>
-                      <Smartphone className='w-5 h-5' /> iOS 安装指南
-                    </PrimaryButton>
-                    <SecondaryButton href='/download/5572tv-android.apk'>
-                      <Download className='w-5 h-5' /> 下载 APK
-                    </SecondaryButton>
-                  </>
+                  <PrimaryButton onClick={() => setShowGuide(true)}>
+                    <Smartphone className='w-5 h-5' /> iOS 安装指南
+                  </PrimaryButton>
                 ) : (
                   <PrimaryButton href='/download/5572tv-android.apk'>
                     <Download className='w-5 h-5' />
