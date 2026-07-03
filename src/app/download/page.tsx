@@ -64,7 +64,7 @@ function StatCard({
       }}
     >
       <div
-        className='w-12 h-12 rounded-lg flex items-center justify-center mb-4'
+        className='w-12 h-12 rounded-lg flex items-center justify-center mb-3'
         style={{ background: 'rgba(244,194,77,0.1)', color: '#f4c24d' }}
       >
         {icon}
@@ -315,7 +315,7 @@ export default function DownloadPage() {
         </div>
 
         <div className='relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-20'>
-          <div className='flex flex-col lg:flex-row items-center gap-16 lg:gap-24'>
+          <div className='flex flex-col lg:flex-row items-center gap-10 lg:gap-16'>
             {/* Left */}
             <div
               className='flex-1 text-center lg:text-left'
@@ -326,7 +326,7 @@ export default function DownloadPage() {
               }}
             >
               {/* Logo row */}
-              <div className='flex items-center gap-3 mb-8 justify-center lg:justify-start'>
+              <div className='flex items-center gap-3 mb-3 justify-center lg:justify-start'>
                 <Image
                   src='/icons/icon-192x192.png'
                   alt='5572'
@@ -354,17 +354,17 @@ export default function DownloadPage() {
               </div>
 
               {/* Headline */}
-              <h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-5 leading-tight'>
+              <h1 className='text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-3 leading-tight'>
                 想看的，
                 <br />
                 <span style={{ color: '#f4c24d' }}>这里都有</span>
               </h1>
-              <p className='text-lg mb-8 max-w-lg' style={{ color: '#a3a3a3' }}>
+              <p className='text-lg mb-3 max-w-lg' style={{ color: '#a3a3a3' }}>
                 海量影视资源聚合，AI智能搜索推荐。支持手机、平板、电视全平台。
               </p>
 
               {/* Stats row */}
-              <div className='flex gap-8 mb-8 justify-center lg:justify-start'>
+              <div className='flex gap-8 mb-3 justify-center lg:justify-start'>
                 {[
                   { v: '100万+', l: '影视资源' },
                   { v: '50+', l: '播放源' },
@@ -388,7 +388,7 @@ export default function DownloadPage() {
               </div>
 
               {/* Platform tabs */}
-              <div className='mb-6 flex justify-center lg:justify-start'>
+              <div className='mb-3 flex justify-center lg:justify-start'>
                 <PlatformTabs
                   selected={selectedPlatform}
                   onSelect={setSelectedPlatform}
@@ -396,7 +396,7 @@ export default function DownloadPage() {
               </div>
 
               {/* CTA buttons */}
-              <div className='flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8'>
+              <div className='flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-3'>
                 {selectedPlatform === 'ios' ? (
                   <PrimaryButton onClick={() => setShowGuide(true)}>
                     <Smartphone className='w-5 h-5' /> iOS 安装指南
@@ -464,11 +464,11 @@ export default function DownloadPage() {
 
       {/* ── Features ── */}
       <section
-        className='py-24 px-6 sm:px-12 lg:px-20'
+        className='py-14 px-6 sm:px-12 lg:px-20'
         style={{ background: '#111111' }}
       >
         <div className='max-w-6xl mx-auto'>
-          <div className='text-center mb-14'>
+          <div className='text-center mb-3'>
             <h2
               className='text-3xl font-bold mb-3'
               style={{ color: '#ffffff' }}
@@ -477,7 +477,7 @@ export default function DownloadPage() {
             </h2>
             <p style={{ color: '#a3a3a3' }}>为极致观影体验而生</p>
           </div>
-          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5'>
+          <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
             {stats.map((s, i) => (
               <StatCard
                 key={s.desc}
@@ -494,13 +494,13 @@ export default function DownloadPage() {
 
       {/* ── Install Steps ── */}
       <section
-        className='py-24 px-6 sm:px-12 lg:px-20'
+        className='py-14 px-6 sm:px-12 lg:px-20'
         style={{ background: '#1a1a1a' }}
       >
-        <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12'>
+        <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8'>
           <div>
             <h2
-              className='text-2xl font-bold mb-8'
+              className='text-2xl font-bold mb-3'
               style={{ color: '#ffffff' }}
             >
               {selectedPlatform === 'ios' ? 'iOS 安装' : '安装步骤'}
@@ -527,7 +527,7 @@ export default function DownloadPage() {
           </div>
           <div>
             <h2
-              className='text-2xl font-bold mb-8'
+              className='text-2xl font-bold mb-3'
               style={{ color: '#ffffff' }}
             >
               核心功能
