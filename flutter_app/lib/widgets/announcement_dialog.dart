@@ -30,7 +30,7 @@ class AnnouncementDialog extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF333) : const Color(0xFFF5F5F5),
+                    color: isDark ? const Color(0xFF333) : const AppTheme.gray100,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Column(children: [

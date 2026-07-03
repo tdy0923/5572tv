@@ -2328,7 +2328,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     boxShadow: [
                       BoxShadow(
                         color: Colors.orange.withOpacity(0.3),
-                        blurRadius: 20,
+                        blurRadius: 8,
                         offset: const Offset(0, 10),
                       ),
                     ],

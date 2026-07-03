@@ -670,7 +670,7 @@ class _UserMenuState extends State<UserMenu> {
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
+                      blurRadius: 8,
                       offset: const Offset(0, 8),
                     ),
                   ],

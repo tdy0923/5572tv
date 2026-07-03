@@ -818,7 +818,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                             border: Border.all(
                                               color: themeService.isDarkMode 
                                                   ? const AppTheme.foregroundSubtle
-                                                  : const Color(0xFFE0E0E0),
+                                                  : const AppTheme.gray200,
                                               width: 1,
                                             ),
                                             borderRadius: BorderRadius.circular(4),
@@ -945,7 +945,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
                 ? const Color(0xFF404040)
-                : const Color(0xFFE0E0E0),
+                : const AppTheme.gray200,
           ),
           
           // 豆瓣详情标题
@@ -1000,7 +1000,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   border: Border.all(
                     color: themeService.isDarkMode 
                         ? const AppTheme.foregroundSubtle
-                        : const Color(0xFFE0E0E0),
+                        : const AppTheme.gray200,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(4),
@@ -1029,7 +1029,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
                       ? const Color(0xFF404040)
-                      : const Color(0xFFF5F5F5),
+                      : const AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1109,7 +1109,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
                 ? const Color(0xFF404040)
-                : const Color(0xFFE0E0E0),
+                : const AppTheme.gray200,
           ),
           
           // Bangumi 详情标题
@@ -1165,7 +1165,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                     border: Border.all(
                       color: themeService.isDarkMode 
                           ? const AppTheme.foregroundSubtle
-                          : const Color(0xFFE0E0E0),
+                          : const AppTheme.gray200,
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
@@ -1195,7 +1195,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
                       ? const Color(0xFF404040)
-                      : const Color(0xFFF5F5F5),
+                      : const AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1693,7 +1693,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
       margin: const EdgeInsets.symmetric(horizontal: 16),
       color: themeService.isDarkMode 
           ? const Color(0xFF404040)
-          : const Color(0xFFE0E0E0),
+          : const AppTheme.gray200,
     );
   }
 

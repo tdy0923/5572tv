@@ -672,7 +672,7 @@ class _VideoCardState extends State<VideoCard> {
                       ? [
                           BoxShadow(
                             color: const Color(0xFF22C55E).withOpacity(0.4),
-                            blurRadius: 12,
+                            blurRadius: 8,
                             spreadRadius: 2,
                           ),
                         ]

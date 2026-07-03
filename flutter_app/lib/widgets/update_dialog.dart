@@ -49,7 +49,7 @@ class UpdateDialog extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: themeService.isDarkMode
                         ? const AppTheme.foreground
-                        : const Color(0xFFF5F5F5),
+                        : const AppTheme.gray100,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -96,7 +96,7 @@ class UpdateDialog extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
                               ? const AppTheme.foreground
-                              : const Color(0xFFF5F5F5),
+                              : const AppTheme.gray100,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -161,7 +161,7 @@ class UpdateDialog extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: themeService.isDarkMode
                                 ? const AppTheme.foreground
-                                : const Color(0xFFF5F5F5),
+                                : const AppTheme.gray100,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: SingleChildScrollView(

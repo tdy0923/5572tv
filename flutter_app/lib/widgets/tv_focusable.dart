@@ -75,7 +75,7 @@ class _TVFocusableState extends State<TVFocusable> {
                 ? [
                     BoxShadow(
                       color: widget.focusColor.withOpacity(0.4),
-                      blurRadius: 12,
+                      blurRadius: 8,
                       spreadRadius: 2,
                     ),
                   ]
