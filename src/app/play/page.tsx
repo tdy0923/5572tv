@@ -4622,7 +4622,7 @@ function PlayPageClient() {
                   <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[480px] xl:h-[560px] min-h-[200px] sm:min-h-[240px] max-h-[calc(100vh-300px)]'>
                     <div
                       ref={artRef}
-                      className='bg-black w-full h-full rounded-xl overflow-hidden shadow-lg'
+                      className='bg-black w-full h-full rounded-xl shadow-lg'
                     ></div>
 
                     {/* WebSR 分屏对比分割线 */}
