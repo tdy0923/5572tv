@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -177,8 +177,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: themeService.isDarkMode
-                            ? const AppTheme.background
-                            : const AppTheme.foreground,
+                            ? AppTheme.background
+                            : AppTheme.foreground,
                       ),
                     );
                   },
@@ -216,8 +216,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           color: DeviceUtils.isPC() && _isMoreButtonHovered
-                              ? const AppTheme.success // hover 时绿色
-                              : const AppTheme.foregroundMuted,
+                              ? AppTheme.success // hover 时绿色
+                              : AppTheme.foregroundMuted,
                         ),
                       ),
                     ),
@@ -326,13 +326,13 @@ class _RecommendationSectionState extends State<RecommendationSection> {
               height: 64,
               decoration: BoxDecoration(
                 color: themeService.isDarkMode
-                    ? const AppTheme.gray800
-                    : const AppTheme.background,
+                    ? AppTheme.gray800
+                    : AppTheme.background,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: themeService.isDarkMode
-                      ? const AppTheme.gray600
-                      : const AppTheme.gray200,
+                      ? AppTheme.gray600
+                      : AppTheme.gray200,
                   width: 1,
                 ),
                 boxShadow: [
@@ -347,8 +347,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                 icon,
                 size: 32,
                 color: themeService.isDarkMode
-                    ? const AppTheme.gray300
-                    : const AppTheme.gray600,
+                    ? AppTheme.gray300
+                    : AppTheme.gray600,
               ),
             ),
           ),
@@ -513,7 +513,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                   '重试',
                   style: FontUtils.systemFont(
                     fontSize: 12,
-                    color: const AppTheme.foreground,
+                    color: AppTheme.foreground,
                   ),
                 ),
               ),

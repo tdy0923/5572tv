@@ -1,3 +1,4 @@
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/search_result.dart';
@@ -27,7 +28,7 @@ class PlayerDetailsPanel extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: showCloseButton 
-            ? (isDarkMode ? const AppTheme.darkBackground : Colors.white)
+            ? (isDarkMode ? AppTheme.darkBackground : Colors.white)
             : Colors.transparent,
       ),
       child: Column(

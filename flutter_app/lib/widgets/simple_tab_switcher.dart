@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -75,15 +75,15 @@ class _SimpleTabHoverState extends State<_SimpleTabHover> {
     Color color;
     if (widget.isSelected) {
       // 选中状态：绿色
-      color = const AppTheme.success;
+      color = AppTheme.success;
     } else if (widget.isPC && _isHovered) {
       // PC上未选中且hover：绿色
-      color = const AppTheme.success;
+      color = AppTheme.success;
     } else {
       // 未选中且未hover：默认颜色
       color = widget.themeService.isDarkMode
-          ? const AppTheme.foregroundMuted
-          : const AppTheme.foregroundMuted;
+          ? AppTheme.foregroundMuted
+          : AppTheme.foregroundMuted;
     }
 
     return MouseRegion(

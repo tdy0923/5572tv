@@ -1,3 +1,4 @@
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../utils/device_utils.dart';
 
@@ -83,7 +84,7 @@ class _PlayerEpisodesPanelState extends State<PlayerEpisodesPanel> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? const AppTheme.darkBackground : Colors.white,
+        color: isDarkMode ? AppTheme.darkBackground : Colors.white,
       ),
       child: Column(
         children: [
@@ -198,8 +199,8 @@ class _EpisodePanelItemWithHoverState extends State<_EpisodePanelItemWithHover> 
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode 
-                        ? const AppTheme.darkBackground  // 深色模式下的浅绿色
-                        : const AppTheme.gray100)  // 浅色模式下的浅绿色
+                        ? AppTheme.darkBackground  // 深色模式下的浅绿色
+                        : AppTheme.gray100)  // 浅色模式下的浅绿色
                     : (widget.isDarkMode ? Colors.grey[800] : Colors.grey[200])),
             borderRadius: BorderRadius.circular(8),
             border: widget.isCurrentEpisode

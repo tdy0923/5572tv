@@ -56,7 +56,7 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
             
-            // R8 优化 — 临时关闭排查黑屏问题
+            // R8 暂时禁用 — 启用会导致三星设备黑屏
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(

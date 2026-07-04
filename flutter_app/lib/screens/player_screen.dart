@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
@@ -1217,7 +1217,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color:
-                            isDarkMode ? Colors.white : const AppTheme.foreground,
+                            isDarkMode ? Colors.white : AppTheme.foreground,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1229,7 +1229,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     child: Icon(
                       _isFavorite ? Icons.favorite : Icons.favorite_border,
                       color: _isFavorite
-                          ? const AppTheme.error
+                          ? AppTheme.error
                           : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                       size: 28,
                     ),
@@ -1286,7 +1286,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       child: Text(
                         currentDetail!.class_!,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: const AppTheme.success,
+                          color: AppTheme.success,
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -2360,10 +2360,10 @@ class _PlayerScreenState extends State<PlayerScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: const AppTheme.gray600.withOpacity(0.1),
+                    color: AppTheme.gray600.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const AppTheme.gray600.withOpacity(0.3),
+                      color: AppTheme.gray600.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -2440,11 +2440,11 @@ class _PlayerScreenState extends State<PlayerScreen>
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
-                                ? const AppTheme.gray800
-                                : const AppTheme.gray200,
+                                ? AppTheme.gray800
+                                : AppTheme.gray200,
                             foregroundColor: isDarkMode
                                 ? Colors.white
-                                : const AppTheme.info,
+                                : AppTheme.info,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -2458,7 +2458,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                               fontWeight: FontWeight.w500,
                               color: isDarkMode
                                   ? Colors.white
-                                  : const AppTheme.info,
+                                  : AppTheme.info,
                             ),
                           ),
                         ),
@@ -2875,8 +2875,8 @@ class _PlayerScreenState extends State<PlayerScreen>
               child: _HoverBackButton(
                 onTap: _onBackPressed,
                 iconColor: isDarkMode
-                    ? const AppTheme.background
-                    : const AppTheme.foreground,
+                    ? AppTheme.background
+                    : AppTheme.foreground,
               ),
             ),
           // 中心加载内容
@@ -2894,7 +2894,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: const AppTheme.success.withOpacity(0.3),
+                          color: AppTheme.success.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -2934,7 +2934,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     widthFactor: _loadingProgress,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const AppTheme.success,
+                        color: AppTheme.success,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -3059,8 +3059,8 @@ class _EpisodeCardWithHoverState extends State<_EpisodeCardWithHover> {
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode
-                        ? const AppTheme.darkBackground // 深色模式下的浅绿色
-                        : const AppTheme.gray100) // 浅色模式下的浅绿色
+                        ? AppTheme.darkBackground // 深色模式下的浅绿色
+                        : AppTheme.gray100) // 浅色模式下的浅绿色
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),
@@ -3160,8 +3160,8 @@ class _SourceCardWithHoverState extends State<_SourceCardWithHover> {
                 ? Colors.green.withOpacity(0.2)
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode
-                        ? const AppTheme.darkBackground // 深色模式下的浅绿色
-                        : const AppTheme.gray100) // 浅色模式下的浅绿色
+                        ? AppTheme.darkBackground // 深色模式下的浅绿色
+                        : AppTheme.gray100) // 浅色模式下的浅绿色
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),

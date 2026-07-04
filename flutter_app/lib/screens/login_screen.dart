@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -123,18 +123,18 @@ class _LoginScreenState extends State<LoginScreen> {
             }
             break;
           case 401:
-            _showToast('用户名或密码错误', const AppTheme.error);
+            _showToast('用户名或密码错误', AppTheme.error);
             break;
           case 429:
-            _showToast('登录尝试过于频繁', const AppTheme.error);
+            _showToast('登录尝试过于频繁', AppTheme.error);
             break;
           default:
-            _showToast('登录失败 (${response.statusCode})', const AppTheme.error);
+            _showToast('登录失败 (${response.statusCode})', AppTheme.error);
         }
       } catch (e) {
         if (!mounted) return;
         setState(() => _isLoading = false);
-        _showToast('网络异常，请检查网络连接', const AppTheme.error);
+        _showToast('网络异常，请检查网络连接', AppTheme.error);
       }
     }
   }
@@ -145,12 +145,12 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         TextFormField(
           controller: _usernameController,
-          style: FontUtils.systemFont(fontSize: 16, color: const AppTheme.foreground),
+          style: FontUtils.systemFont(fontSize: 16, color: AppTheme.foreground),
           decoration: InputDecoration(
             labelText: '用户名',
-            labelStyle: FontUtils.systemFont(color: const AppTheme.foregroundMuted, fontSize: 14),
+            labelStyle: FontUtils.systemFont(color: AppTheme.foregroundMuted, fontSize: 14),
             hintText: '请输入用户名',
-            hintStyle: FontUtils.systemFont(color: const AppTheme.stroke, fontSize: 16),
+            hintStyle: FontUtils.systemFont(color: AppTheme.stroke, fontSize: 16),
             prefixIcon: const Icon(Icons.person, color: AppTheme.foregroundMuted, size: 20),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -169,17 +169,17 @@ class _LoginScreenState extends State<LoginScreen> {
         TextFormField(
           controller: _passwordController,
           obscureText: !_isPasswordVisible,
-          style: FontUtils.systemFont(fontSize: 16, color: const AppTheme.foreground),
+          style: FontUtils.systemFont(fontSize: 16, color: AppTheme.foreground),
           decoration: InputDecoration(
             labelText: '密码',
-            labelStyle: FontUtils.systemFont(color: const AppTheme.foregroundMuted, fontSize: 14),
+            labelStyle: FontUtils.systemFont(color: AppTheme.foregroundMuted, fontSize: 14),
             hintText: '请输入密码',
-            hintStyle: FontUtils.systemFont(color: const AppTheme.stroke, fontSize: 16),
+            hintStyle: FontUtils.systemFont(color: AppTheme.stroke, fontSize: 16),
             prefixIcon: const Icon(Icons.lock, color: AppTheme.foregroundMuted, size: 20),
             suffixIcon: IconButton(
               icon: Icon(
                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: const AppTheme.foregroundMuted, size: 20,
+                color: AppTheme.foregroundMuted, size: 20,
               ),
               onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
             ),
@@ -201,11 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: (_isLoading || !_isFormValid) ? null : _handleLogin,
           style: ElevatedButton.styleFrom(
             backgroundColor: _isFormValid && !_isLoading
-                ? const AppTheme.success
-                : const AppTheme.stroke,
+                ? AppTheme.success
+                : AppTheme.stroke,
             foregroundColor: _isFormValid && !_isLoading
                 ? Colors.white
-                : const AppTheme.foregroundMuted,
+                : AppTheme.foregroundMuted,
             padding: const EdgeInsets.symmetric(vertical: 18),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,
@@ -286,14 +286,14 @@ class _LoginScreenState extends State<LoginScreen> {
           style: FontUtils.monospace(
             fontSize: 32,
             fontWeight: FontWeight.w600,
-            color: const AppTheme.foreground,
+            color: AppTheme.foreground,
             letterSpacing: 1.5,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           '智能影视播放平台',
-          style: FontUtils.systemFont(fontSize: 14, color: const AppTheme.foregroundMuted),
+          style: FontUtils.systemFont(fontSize: 14, color: AppTheme.foregroundMuted),
         ),
         const SizedBox(height: 40),
         Form(key: _formKey, child: _buildForm()),

@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -43,6 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedTopTab = '首页';
   late PageController _pageController;
   late PageController _bottomNavPageController;
+  final Set<int> _builtScreens = {0}; // 只构建访问过的页面
+  static const int _totalScreens = 7;
 
   @override
   void initState() {
@@ -222,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const AppTheme.success,
+      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -345,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const AppTheme.success,
+      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -365,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return StyledRefreshIndicator(
       onRefresh: _refreshHomeData,
       refreshText: '刷新中...',
-      primaryColor: const AppTheme.success,
+      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -418,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// 构建底栏 PageView，支持左右滑动切换
+  /// 构建底栏 PageView，支持左右滑动切换（懒加载）
   Widget _buildBottomNavPageView() {
     return PageView(
       controller: _bottomNavPageController,
@@ -427,18 +429,25 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_currentBottomNavIndex != index) {
           setState(() {
             _currentBottomNavIndex = index;
+            _builtScreens.add(index);
           });
         }
       },
-      children: [
-        _buildHomeContentWithPageView(),
-        const MovieScreen(),
-        const TvScreen(),
-        const AnimeScreen(),
-        const ShowScreen(),
-        const LiveScreen(),
-        const ShortDramaScreen(),
-      ],
+      children: List.generate(_totalScreens, (index) {
+        if (!_builtScreens.contains(index)) {
+          return const SizedBox.shrink();
+        }
+        switch (index) {
+          case 0: return _buildHomeContentWithPageView();
+          case 1: return const MovieScreen();
+          case 2: return const TvScreen();
+          case 3: return const AnimeScreen();
+          case 4: return const ShowScreen();
+          case 5: return const LiveScreen();
+          case 6: return const ShortDramaScreen();
+          default: return const SizedBox.shrink();
+        }
+      }),
     );
   }
 
@@ -632,7 +641,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '正在打开豆瓣详情: ${playRecord.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.info,
+            backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -649,7 +658,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '正在打开 Bangumi 详情: ${playRecord.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.info,
+            backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -695,7 +704,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '删除失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -779,7 +788,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 result.errorMessage ?? '收藏失败',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const AppTheme.error,
+              backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -799,7 +808,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -836,7 +845,7 @@ class _HomeScreenState extends State<HomeScreen> {
               result.errorMessage ?? '取消收藏失败',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -856,7 +865,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '取消收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

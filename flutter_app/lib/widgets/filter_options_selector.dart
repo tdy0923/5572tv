@@ -1,3 +1,4 @@
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../utils/device_utils.dart';
 import 'filter_pill_hover.dart';
@@ -32,7 +33,7 @@ void showFilterOptionsSelector({
             constraints: const BoxConstraints(maxHeight: 450),
             decoration: BoxDecoration(
               color: isDark
-                  ? const AppTheme.darkBackground
+                  ? AppTheme.darkBackground
                   : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),

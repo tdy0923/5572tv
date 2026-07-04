@@ -28,9 +28,7 @@ class ThemeService extends ChangeNotifier {
 
   void _updateMacOSWindowAppearance() async {
     if (!Platform.isMacOS) return;
-    try {
-      await WindowManipulator.overrideMacOSBrightness(dark: isDarkMode);
-    } catch (_) {}
+    // macOS window appearance is handled by the system theme
   }
 
   void toggleTheme(BuildContext context) {

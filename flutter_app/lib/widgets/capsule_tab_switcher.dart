@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -144,8 +144,8 @@ class _CapsuleTabSwitcherState extends State<CapsuleTabSwitcher>
             height: 32,
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const AppTheme.foreground
-                  : const AppTheme.gray200,
+                  ? AppTheme.foreground
+                  : AppTheme.gray200,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Stack(
@@ -161,7 +161,7 @@ class _CapsuleTabSwitcherState extends State<CapsuleTabSwitcher>
                         height: 32,
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
-                              ? const AppTheme.darkBackground
+                              ? AppTheme.darkBackground
                               : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
@@ -290,19 +290,19 @@ class _CapsuleTabHoverState extends State<_CapsuleTabHover> {
                 // 选中状态：使用原来的颜色插值逻辑
                 color = Color.lerp(
                   widget.themeService.isDarkMode
-                      ? const AppTheme.foregroundMuted
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                   widget.themeService.isDarkMode ? Colors.white : Colors.black,
                   progress,
                 )!;
               } else if (widget.isPC && _isHovered) {
                 // PC上未选中且hover：显示绿色
-                color = const AppTheme.success;
+                color = AppTheme.success;
               } else {
                 // 未选中且未hover：默认颜色
                 color = widget.themeService.isDarkMode
-                    ? const AppTheme.foregroundMuted
-                    : const AppTheme.foregroundMuted;
+                    ? AppTheme.foregroundMuted
+                    : AppTheme.foregroundMuted;
               }
 
               final fontWeight =

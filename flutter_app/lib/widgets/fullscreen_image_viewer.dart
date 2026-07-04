@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -66,12 +66,12 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         builder: (context, themeService, child) {
           final isDark = themeService.isDarkMode;
           final backgroundColor = isDark 
-              ? const AppTheme.darkBackground.withOpacity(0.95)
-              : const AppTheme.background.withOpacity(0.95);
-          final textColor = isDark ? Colors.white : const AppTheme.foreground;
+              ? AppTheme.darkBackground.withOpacity(0.95)
+              : AppTheme.background.withOpacity(0.95);
+          final textColor = isDark ? Colors.white : AppTheme.foreground;
           final secondaryTextColor = isDark 
               ? Colors.white.withOpacity(0.7)
-              : const AppTheme.foreground.withOpacity(0.7);
+              : AppTheme.foreground.withOpacity(0.7);
           return Container(
             decoration: BoxDecoration(
               color: backgroundColor,
@@ -162,10 +162,10 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
           builder: (context) => Consumer<ThemeService>(
             builder: (context, themeService, child) {
               final isDark = themeService.isDarkMode;
-              final textColor = isDark ? Colors.white : const AppTheme.foreground;
+              final textColor = isDark ? Colors.white : AppTheme.foreground;
               
               return AlertDialog(
-                backgroundColor: isDark ? const AppTheme.darkBackground : Colors.white,
+                backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
                 title: Text(
                   '需要存储权限',
                   style: FontUtils.systemFont(color: textColor),
@@ -237,8 +237,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               ),
             ),
             backgroundColor: isDark 
-                ? const AppTheme.darkBackground.withOpacity(0.9)
-                : const AppTheme.foreground.withOpacity(0.9),
+                ? AppTheme.darkBackground.withOpacity(0.9)
+                : AppTheme.foreground.withOpacity(0.9),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -336,8 +336,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       builder: (context, themeService, child) {
         final isDark = themeService.isDarkMode;
         final backgroundColor = isDark ? Colors.black : Colors.white;
-        final textColor = isDark ? Colors.white : const AppTheme.foreground;
-        final progressIndicatorColor = isDark ? Colors.white : const AppTheme.foreground;
+        final textColor = isDark ? Colors.white : AppTheme.foreground;
+        final progressIndicatorColor = isDark ? Colors.white : AppTheme.foreground;
         
         return Scaffold(
           backgroundColor: backgroundColor,

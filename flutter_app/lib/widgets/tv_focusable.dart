@@ -1,3 +1,4 @@
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,7 +21,7 @@ class TVFocusable extends StatefulWidget {
     this.autofocus = false,
     this.borderRadius = const BorderRadius.all(Radius.circular(8)),
     this.focusScale = 1.05,
-    this.focusColor = const AppTheme.success,
+    this.focusColor = AppTheme.success,
   });
 
   @override

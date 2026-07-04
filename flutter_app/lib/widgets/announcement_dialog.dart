@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/announcement_service.dart';
@@ -20,7 +20,7 @@ class AnnouncementDialog extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 380),
             decoration: BoxDecoration(
-              color: isDark ? const AppTheme.darkBackground : Colors.white,
+              color: isDark ? AppTheme.darkBackground : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -30,7 +30,7 @@ class AnnouncementDialog extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? const AppTheme.gray800 : const AppTheme.gray100,
+                    color: isDark ? AppTheme.gray800 : AppTheme.gray100,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Column(children: [
@@ -41,7 +41,7 @@ class AnnouncementDialog extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? const AppTheme.gray300 : const AppTheme.gray500)),
+                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? AppTheme.gray300 : AppTheme.gray500)),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
@@ -49,7 +49,7 @@ class AnnouncementDialog extends StatelessWidget {
                     width: double.infinity, height: 40,
                     child: ElevatedButton(
                       onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
-                      style: ElevatedButton.styleFrom(backgroundColor: const AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       child: Text('我知道了', style: FontUtils.systemFont(fontWeight: FontWeight.w600)),
                     ),
                   ),

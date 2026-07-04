@@ -1,3 +1,4 @@
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/api_service.dart';
@@ -227,13 +228,13 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
         label: Text(label),
         selected: isSelected,
         onSelected: (_) => _onCategoryChanged(categoryId),
-        selectedColor: const AppTheme.success,
+        selectedColor: AppTheme.success,
         labelStyle: TextStyle(
           color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
           fontSize: 13,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
-        backgroundColor: isDark ? const AppTheme.darkBackground : Colors.grey[200],
+        backgroundColor: isDark ? AppTheme.darkBackground : Colors.grey[200],
         side: BorderSide.none,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

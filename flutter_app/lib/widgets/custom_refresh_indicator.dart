@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/font_utils.dart';
@@ -23,9 +23,9 @@ class CustomRefreshIndicator extends StatelessWidget {
       builder: (context, themeService, child) {
         return RefreshIndicator(
           onRefresh: onRefresh,
-          color: const AppTheme.success, // 绿色主题
+          color: AppTheme.success, // 绿色主题
           backgroundColor: themeService.isDarkMode 
-              ? const AppTheme.darkBackground 
+              ? AppTheme.darkBackground 
               : Colors.white,
           strokeWidth: 2.5,
           displacement: 40,
@@ -53,7 +53,7 @@ class CustomRefreshIndicatorContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeService>(
       builder: (context, themeService, child) {
-        final indicatorColor = color ?? const AppTheme.success; // 绿色主题
+        final indicatorColor = color ?? AppTheme.success; // 绿色主题
         
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -118,9 +118,9 @@ class StyledRefreshIndicator extends StatelessWidget {
       builder: (context, themeService, child) {
         return RefreshIndicator(
           onRefresh: onRefresh,
-          color: primaryColor ?? const AppTheme.success, // 默认绿色主题
+          color: primaryColor ?? AppTheme.success, // 默认绿色主题
           backgroundColor: backgroundColor ?? (themeService.isDarkMode 
-              ? const AppTheme.darkBackground 
+              ? AppTheme.darkBackground 
               : Colors.white),
           strokeWidth: 2.5,
           displacement: 40,

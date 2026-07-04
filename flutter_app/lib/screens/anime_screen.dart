@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
@@ -567,7 +567,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
       child: StyledRefreshIndicator(
         onRefresh: _refreshAnimeData,
         refreshText: '刷新动漫数据...',
-        primaryColor: const AppTheme.success,
+        primaryColor: AppTheme.success,
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(

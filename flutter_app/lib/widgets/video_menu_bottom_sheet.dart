@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -602,7 +602,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 height: _currentSheetHeight,
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
-                      ? const AppTheme.darkBackground
+                      ? AppTheme.darkBackground
                       : Colors.white,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
@@ -719,24 +719,24 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                                 fadeOutDuration: const Duration(milliseconds: 100),
                                                 placeholder: (context, url) => Container(
                                                   color: themeService.isDarkMode
-                                                      ? const AppTheme.foreground
+                                                      ? AppTheme.foreground
                                                       : Colors.grey[300],
                                                   child: Icon(
                                                     Icons.movie,
                                                     color: themeService.isDarkMode
-                                                        ? const AppTheme.foregroundSubtle
+                                                        ? AppTheme.foregroundSubtle
                                                         : Colors.grey,
                                                     size: 24,
                                                   ),
                                                 ),
                                                 errorWidget: (context, url, error) => Container(
                                                   color: themeService.isDarkMode
-                                                      ? const AppTheme.foreground
+                                                      ? AppTheme.foreground
                                                       : Colors.grey[300],
                                                   child: Icon(
                                                     Icons.movie,
                                                     color: themeService.isDarkMode
-                                                        ? const AppTheme.foregroundSubtle
+                                                        ? AppTheme.foregroundSubtle
                                                         : Colors.grey,
                                                     size: 24,
                                                   ),
@@ -760,8 +760,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
                                                 color: themeService.isDarkMode 
-                                                    ? const AppTheme.background
-                                                    : const AppTheme.darkBackground,
+                                                    ? AppTheme.background
+                                                    : AppTheme.darkBackground,
                                               ),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
@@ -777,8 +777,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                     style: FontUtils.systemFont(
                                       fontSize: 12,
                                       color: themeService.isDarkMode 
-                                          ? const AppTheme.foregroundMuted
-                                          : const AppTheme.foregroundSubtle,
+                                          ? AppTheme.foregroundMuted
+                                          : AppTheme.foregroundSubtle,
                                     ),
                                   )
                                 : // 聚合来源：显示播放源数量并可点击
@@ -793,8 +793,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                                 style: FontUtils.systemFont(
                                                   fontSize: 12,
                                                   color: themeService.isDarkMode 
-                                                      ? const AppTheme.foregroundMuted
-                                                      : const AppTheme.foregroundSubtle,
+                                                      ? AppTheme.foregroundMuted
+                                                      : AppTheme.foregroundSubtle,
                                                 ),
                                               ),
                                               const SizedBox(width: 4),
@@ -802,8 +802,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                                 Icons.chevron_right,
                                                 size: 16,
                                                 color: themeService.isDarkMode 
-                                                    ? const AppTheme.foregroundMuted
-                                                    : const AppTheme.foregroundSubtle,
+                                                    ? AppTheme.foregroundMuted
+                                                    : AppTheme.foregroundSubtle,
                                               ),
                                             ],
                                           ),
@@ -817,8 +817,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                           decoration: BoxDecoration(
                                             border: Border.all(
                                               color: themeService.isDarkMode 
-                                                  ? const AppTheme.foregroundSubtle
-                                                  : const AppTheme.gray200,
+                                                  ? AppTheme.foregroundSubtle
+                                                  : AppTheme.gray200,
                                               width: 1,
                                             ),
                                             borderRadius: BorderRadius.circular(4),
@@ -828,8 +828,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                             style: FontUtils.systemFont(
                                               fontSize: 12,
                                               color: themeService.isDarkMode 
-                                                  ? const AppTheme.foregroundMuted
-                                                  : const AppTheme.foregroundSubtle,
+                                                  ? AppTheme.foregroundMuted
+                                                  : AppTheme.foregroundSubtle,
                                             ),
                                           ),
                                         ),
@@ -847,8 +847,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                             Icons.close,
                                             size: 18,
                                             color: themeService.isDarkMode 
-                                                ? const AppTheme.foregroundMuted
-                                                : const AppTheme.foregroundSubtle,
+                                                ? AppTheme.foregroundMuted
+                                                : AppTheme.foregroundSubtle,
                                           ),
                                         ),
                                       ),
@@ -915,8 +915,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               Icons.keyboard_arrow_down,
               size: 36, // 增大基础尺寸
               color: themeService.isDarkMode 
-                  ? const AppTheme.foregroundSubtle
-                  : const AppTheme.gray300,
+                  ? AppTheme.foregroundSubtle
+                  : AppTheme.gray300,
             ),
           ),
         );
@@ -944,8 +944,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             height: 1,
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
-                ? const AppTheme.gray700
-                : const AppTheme.gray200,
+                ? AppTheme.gray700
+                : AppTheme.gray200,
           ),
           
           // 豆瓣详情标题
@@ -955,8 +955,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: themeService.isDarkMode 
-                  ? const AppTheme.background
-                  : const AppTheme.darkBackground,
+                  ? AppTheme.background
+                  : AppTheme.darkBackground,
             ),
           ),
           
@@ -969,7 +969,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const AppTheme.warning.withOpacity(0.1),
+                    color: AppTheme.warning.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -978,7 +978,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       Icon(
                         Icons.star,
                         size: 16,
-                        color: const AppTheme.warning,
+                        color: AppTheme.warning,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -986,7 +986,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const AppTheme.warning,
+                          color: AppTheme.warning,
                         ),
                       ),
                     ],
@@ -999,8 +999,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: themeService.isDarkMode 
-                        ? const AppTheme.foregroundSubtle
-                        : const AppTheme.gray200,
+                        ? AppTheme.foregroundSubtle
+                        : AppTheme.gray200,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(4),
@@ -1010,8 +1010,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   style: FontUtils.systemFont(
                     fontSize: 14,
                     color: themeService.isDarkMode 
-                        ? const AppTheme.foregroundMuted
-                        : const AppTheme.foregroundSubtle,
+                        ? AppTheme.foregroundMuted
+                        : AppTheme.foregroundSubtle,
                   ),
                 ),
               ),
@@ -1028,8 +1028,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
-                      ? const AppTheme.gray700
-                      : const AppTheme.gray100,
+                      ? AppTheme.gray700
+                      : AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1037,8 +1037,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   style: FontUtils.systemFont(
                     fontSize: 12,
                     color: themeService.isDarkMode 
-                        ? const AppTheme.gray300
-                        : const AppTheme.foregroundSubtle,
+                        ? AppTheme.gray300
+                        : AppTheme.foregroundSubtle,
                   ),
                 ),
               )).toList(),
@@ -1065,8 +1065,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: themeService.isDarkMode 
-                    ? const AppTheme.background
-                    : const AppTheme.darkBackground,
+                    ? AppTheme.background
+                    : AppTheme.darkBackground,
               ),
             ),
             const SizedBox(height: 8),
@@ -1076,8 +1076,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 fontSize: 14,
                 height: 1.5,
                 color: themeService.isDarkMode 
-                    ? const AppTheme.gray300
-                    : const AppTheme.foregroundSubtle,
+                    ? AppTheme.gray300
+                    : AppTheme.foregroundSubtle,
               ),
             ),
           ],
@@ -1108,8 +1108,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             height: 1,
             margin: const EdgeInsets.only(bottom: 16),
             color: themeService.isDarkMode 
-                ? const AppTheme.gray700
-                : const AppTheme.gray200,
+                ? AppTheme.gray700
+                : AppTheme.gray200,
           ),
           
           // Bangumi 详情标题
@@ -1119,8 +1119,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: themeService.isDarkMode 
-                  ? const AppTheme.background
-                  : const AppTheme.darkBackground,
+                  ? AppTheme.background
+                  : AppTheme.darkBackground,
             ),
           ),
           
@@ -1133,7 +1133,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const AppTheme.error.withOpacity(0.1),
+                    color: AppTheme.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -1142,7 +1142,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       Icon(
                         Icons.star,
                         size: 16,
-                        color: const AppTheme.error,
+                        color: AppTheme.error,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1150,7 +1150,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                         style: FontUtils.systemFont(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const AppTheme.error,
+                          color: AppTheme.error,
                         ),
                       ),
                     ],
@@ -1164,8 +1164,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: themeService.isDarkMode 
-                          ? const AppTheme.foregroundSubtle
-                          : const AppTheme.gray200,
+                          ? AppTheme.foregroundSubtle
+                          : AppTheme.gray200,
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
@@ -1175,8 +1175,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                     style: FontUtils.systemFont(
                       fontSize: 14,
                       color: themeService.isDarkMode 
-                          ? const AppTheme.foregroundMuted
-                          : const AppTheme.foregroundSubtle,
+                          ? AppTheme.foregroundMuted
+                          : AppTheme.foregroundSubtle,
                     ),
                   ),
                 ),
@@ -1194,8 +1194,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: themeService.isDarkMode 
-                      ? const AppTheme.gray700
-                      : const AppTheme.gray100,
+                      ? AppTheme.gray700
+                      : AppTheme.gray100,
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -1203,8 +1203,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   style: FontUtils.systemFont(
                     fontSize: 12,
                     color: themeService.isDarkMode 
-                        ? const AppTheme.gray300
-                        : const AppTheme.foregroundSubtle,
+                        ? AppTheme.gray300
+                        : AppTheme.foregroundSubtle,
                   ),
                 ),
               )).toList(),
@@ -1223,8 +1223,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: themeService.isDarkMode 
-                    ? const AppTheme.background
-                    : const AppTheme.darkBackground,
+                    ? AppTheme.background
+                    : AppTheme.darkBackground,
               ),
             ),
             const SizedBox(height: 8),
@@ -1234,8 +1234,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 fontSize: 14,
                 height: 1.5,
                 color: themeService.isDarkMode 
-                    ? const AppTheme.gray300
-                    : const AppTheme.foregroundSubtle,
+                    ? AppTheme.gray300
+                    : AppTheme.foregroundSubtle,
               ),
             ),
           ],
@@ -1258,8 +1258,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode 
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundSubtle,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundSubtle,
             ),
           ),
         ),
@@ -1269,8 +1269,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode 
-                  ? const AppTheme.gray300
-                  : const AppTheme.foreground,
+                  ? AppTheme.gray300
+                  : AppTheme.foreground,
             ),
           ),
         ),
@@ -1358,7 +1358,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.play_circle_fill,
-            iconColor: const AppTheme.success,
+            iconColor: AppTheme.success,
             title: '播放',
             subtitle: _getEpisodeSubtitle(),
             onTap: () {
@@ -1373,7 +1373,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.link,
-            iconColor: const AppTheme.info,
+            iconColor: AppTheme.info,
             title: '豆瓣详情',
             onTap: () async {
               widget.onClose();
@@ -1396,7 +1396,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.play_circle_fill,
-            iconColor: const AppTheme.success,
+            iconColor: AppTheme.success,
             title: '播放',
             subtitle: _getEpisodeSubtitle(),
             onTap: () {
@@ -1411,7 +1411,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.link,
-            iconColor: const AppTheme.info,
+            iconColor: AppTheme.info,
             title: 'Bangumi 详情',
             onTap: () async {
               widget.onClose();
@@ -1434,7 +1434,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.play_circle_fill,
-            iconColor: const AppTheme.success,
+            iconColor: AppTheme.success,
             title: '播放',
             subtitle: _getEpisodeSubtitle(),
             onTap: () {
@@ -1449,7 +1449,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.favorite,
-            iconColor: const AppTheme.error,
+            iconColor: AppTheme.error,
             title: '取消收藏',
             onTap: () {
               widget.onClose();
@@ -1468,7 +1468,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: Icons.play_circle_fill,
-          iconColor: const AppTheme.success,
+          iconColor: AppTheme.success,
           title: '播放',
           subtitle: _getEpisodeSubtitle(),
           onTap: () {
@@ -1487,7 +1487,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.link,
-            iconColor: const AppTheme.info,
+            iconColor: AppTheme.info,
             title: '豆瓣详情',
             onTap: () async {
               widget.onClose();
@@ -1507,7 +1507,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: Icons.play_circle_fill,
-          iconColor: const AppTheme.success,
+          iconColor: AppTheme.success,
           title: '播放',
           subtitle: _getEpisodeSubtitle(),
           onTap: () {
@@ -1523,7 +1523,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: widget.isFavorited ? Icons.favorite : Icons.favorite_border,
-          iconColor: const AppTheme.error,
+          iconColor: AppTheme.error,
           title: widget.isFavorited ? '取消收藏' : '收藏',
           onTap: () {
             widget.onClose();
@@ -1540,7 +1540,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.link,
-            iconColor: const AppTheme.info,
+            iconColor: AppTheme.info,
             title: '豆瓣详情',
             onTap: () async {
               widget.onClose();
@@ -1558,7 +1558,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             context,
             themeService,
             icon: Icons.link,
-            iconColor: const AppTheme.info,
+            iconColor: AppTheme.info,
             title: 'Bangumi 详情',
             onTap: () async {
               widget.onClose();
@@ -1578,7 +1578,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: Icons.play_circle_fill,
-          iconColor: const AppTheme.success,
+          iconColor: AppTheme.success,
           title: '播放',
           subtitle: _getEpisodeSubtitle(),
           onTap: () {
@@ -1594,7 +1594,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: widget.isFavorited ? Icons.favorite : Icons.favorite_border,
-          iconColor: const AppTheme.error,
+          iconColor: AppTheme.error,
           title: widget.isFavorited ? '取消收藏' : '收藏',
           onTap: () {
             widget.onClose();
@@ -1608,7 +1608,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           context,
           themeService,
           icon: Icons.delete,
-          iconColor: const AppTheme.error,
+          iconColor: AppTheme.error,
           title: '删除记录',
           onTap: () {
             widget.onClose();
@@ -1662,8 +1662,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: themeService.isDarkMode 
-                        ? const AppTheme.background
-                        : const AppTheme.darkBackground,
+                        ? AppTheme.background
+                        : AppTheme.darkBackground,
                   ),
                 ),
               ),
@@ -1675,8 +1675,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   style: FontUtils.systemFont(
                     fontSize: 14,
                     color: themeService.isDarkMode 
-                        ? const AppTheme.foregroundMuted
-                        : const AppTheme.foregroundSubtle,
+                        ? AppTheme.foregroundMuted
+                        : AppTheme.foregroundSubtle,
                   ),
                 ),
             ],
@@ -1692,8 +1692,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
       height: 1,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       color: themeService.isDarkMode 
-          ? const AppTheme.gray700
-          : const AppTheme.gray200,
+          ? AppTheme.gray700
+          : AppTheme.gray200,
     );
   }
 
@@ -1768,7 +1768,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
             ),
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const AppTheme.darkBackground
+                  ? AppTheme.darkBackground
                   : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -1791,8 +1791,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
-                          ? const AppTheme.background
-                          : const AppTheme.darkBackground,
+                          ? AppTheme.background
+                          : AppTheme.darkBackground,
                     ),
                   ),
                 ),

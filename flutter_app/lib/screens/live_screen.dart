@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../services/live_service.dart';
 import '../models/live_channel.dart';
@@ -259,7 +259,7 @@ class _LiveScreenState extends State<LiveScreen>
           message,
           style: FontUtils.systemFont(color: Colors.white),
         ),
-        backgroundColor: const AppTheme.info,
+        backgroundColor: AppTheme.info,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -324,7 +324,7 @@ class _LiveScreenState extends State<LiveScreen>
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? const AppTheme.darkBackground.withOpacity(0.9)
+            ? AppTheme.darkBackground.withOpacity(0.9)
             : Colors.white.withOpacity(0.8),
       ),
       child: Row(
@@ -398,9 +398,9 @@ class _LiveScreenState extends State<LiveScreen>
                         Icons.refresh,
                         size: 20,
                         color: _isRefreshing
-                            ? const AppTheme.success
+                            ? AppTheme.success
                             : (DeviceUtils.isPC() && _isRefreshButtonHovered
-                                ? const AppTheme.success
+                                ? AppTheme.success
                                 : (themeService.isDarkMode
                                     ? Colors.grey[600]
                                     : Colors.grey[500])),
@@ -524,7 +524,7 @@ class _LiveScreenState extends State<LiveScreen>
                                 alignment: Alignment.centerLeft, // 内容左对齐
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const AppTheme.success
+                                      ? AppTheme.success
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
@@ -567,8 +567,8 @@ class _LiveScreenState extends State<LiveScreen>
             '加载中...',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -589,8 +589,8 @@ class _LiveScreenState extends State<LiveScreen>
             '刷新中...',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -607,23 +607,23 @@ class _LiveScreenState extends State<LiveScreen>
             Icons.error_outline,
             size: 64,
             color: themeService.isDarkMode
-                ? const AppTheme.foregroundSubtle
-                : const AppTheme.foregroundMuted,
+                ? AppTheme.foregroundSubtle
+                : AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 16),
           Text(
             _errorMessage ?? '加载失败',
             style: FontUtils.systemFont(
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: refreshChannels,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const AppTheme.success,
+              backgroundColor: AppTheme.success,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -647,8 +647,8 @@ class _LiveScreenState extends State<LiveScreen>
           '暂无频道',
           style: FontUtils.systemFont(
             color: themeService.isDarkMode
-                ? const AppTheme.foregroundMuted
-                : const AppTheme.foregroundMuted,
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
         ),
       );
@@ -706,8 +706,8 @@ class _LiveScreenState extends State<LiveScreen>
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: themeService.isDarkMode
-              ? const AppTheme.darkBackground
-              : const AppTheme.gray300,
+              ? AppTheme.darkBackground
+              : AppTheme.gray300,
         ),
         child: Image.network(
           channel.logo,
@@ -732,16 +732,16 @@ class _LiveScreenState extends State<LiveScreen>
       height: double.infinity,
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? const AppTheme.darkBackground
-            : const AppTheme.gray300,
+            ? AppTheme.darkBackground
+            : AppTheme.gray300,
       ),
       child: Center(
         child: Icon(
           Icons.tv,
           size: 48,
           color: themeService.isDarkMode
-              ? const AppTheme.foregroundSubtle
-              : const AppTheme.gray500,
+              ? AppTheme.foregroundSubtle
+              : AppTheme.gray500,
         ),
       ),
     );
@@ -793,7 +793,7 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: widget.themeService.isDarkMode
-                          ? const AppTheme.darkBackground
+                          ? AppTheme.darkBackground
                           : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -817,10 +817,10 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: isPC && _isHovered
-                      ? const AppTheme.success
+                      ? AppTheme.success
                       : (widget.themeService.isDarkMode
                           ? Colors.white
-                          : const AppTheme.foreground),
+                          : AppTheme.foreground),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,

@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -52,7 +52,7 @@ void main() async {
     debugPrint('Flutter error: ${errorDetails.exception}');
     return Material(
       child: Container(
-        color: const AppTheme.gray900,
+        color: AppTheme.gray900,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -165,7 +165,7 @@ class _AppWrapperState extends State<AppWrapper> {
             body: Container(
               decoration: BoxDecoration(
                 color: themeService.isDarkMode
-                    ? const AppTheme.gray950
+                    ? AppTheme.gray950
                     : null,
                 gradient: themeService.isDarkMode
                     ? null
@@ -189,8 +189,8 @@ class _AppWrapperState extends State<AppWrapper> {
                     CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
                           themeService.isDarkMode
-                              ? const AppTheme.background
-                              : const AppTheme.foreground),
+                              ? AppTheme.background
+                              : AppTheme.foreground),
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -198,8 +198,8 @@ class _AppWrapperState extends State<AppWrapper> {
                       style: TextStyle(
                         fontSize: 16,
                         color: themeService.isDarkMode
-                            ? const AppTheme.background
-                            : const AppTheme.foreground,
+                            ? AppTheme.background
+                            : AppTheme.foreground,
                       ),
                     ),
                   ],

@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/bangumi.dart';
@@ -123,7 +123,7 @@ class BangumiGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -131,7 +131,7 @@ class BangumiGrid extends StatelessWidget {
             errorMessage ?? '未知错误',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -151,7 +151,7 @@ class BangumiGrid extends StatelessWidget {
           Icon(
             isAnime ? Icons.tv_outlined : Icons.movie_filter_outlined,
             size: 80,
-            color: const AppTheme.stroke,
+            color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -159,7 +159,7 @@ class BangumiGrid extends StatelessWidget {
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -167,7 +167,7 @@ class BangumiGrid extends StatelessWidget {
             '今日暂无新番放送',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],

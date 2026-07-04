@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -214,7 +214,7 @@ class _MainLayoutState extends State<MainLayout> {
             elevation: 8,
             borderRadius: BorderRadius.circular(12),
             color: themeService.isDarkMode
-                ? const AppTheme.darkBackground
+                ? AppTheme.darkBackground
                 : Colors.white,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 320),
@@ -242,8 +242,8 @@ class _MainLayoutState extends State<MainLayout> {
                             LucideIcons.search,
                             size: 16,
                             color: themeService.isDarkMode
-                                ? const AppTheme.foregroundSubtle
-                                : const AppTheme.foregroundMuted,
+                                ? AppTheme.foregroundSubtle
+                                : AppTheme.foregroundMuted,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -252,8 +252,8 @@ class _MainLayoutState extends State<MainLayout> {
                               style: FontUtils.systemFont(
                                 fontSize: 14,
                                 color: themeService.isDarkMode
-                                    ? const AppTheme.background
-                                    : const AppTheme.foreground,
+                                    ? AppTheme.background
+                                    : AppTheme.foreground,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -294,7 +294,7 @@ class _MainLayoutState extends State<MainLayout> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: themeService.isDarkMode
-                              ? const AppTheme.gray950 // 深色模式纯黑色
+                              ? AppTheme.gray950 // 深色模式纯黑色
                               : null,
                           gradient: themeService.isDarkMode
                               ? null
@@ -319,8 +319,8 @@ class _MainLayoutState extends State<MainLayout> {
                               WindowsTitleBar(
                                 customBackgroundColor: widget.isSearchMode
                                     ? (themeService.isDarkMode
-                                        ? const AppTheme.gray950
-                                        : const AppTheme.gray100)
+                                        ? AppTheme.gray950
+                                        : AppTheme.gray100)
                                     : null,
                               ),
                             // 固定 Header
@@ -376,10 +376,10 @@ class _MainLayoutState extends State<MainLayout> {
       decoration: BoxDecoration(
         color: widget.isSearchMode
             ? themeService.isDarkMode
-                ? const AppTheme.gray950
-                : const AppTheme.gray100
+                ? AppTheme.gray950
+                : AppTheme.gray100
             : themeService.isDarkMode
-                ? const AppTheme.darkBackground.withOpacity(0.9)
+                ? AppTheme.darkBackground.withOpacity(0.9)
                 : Colors.white.withOpacity(0.8),
       ),
       child: widget.isSearchMode
@@ -443,16 +443,16 @@ class _MainLayoutState extends State<MainLayout> {
                     shape: BoxShape.circle,
                     color: DeviceUtils.isPC() && _isSearchButtonHovered
                         ? (themeService.isDarkMode
-                            ? const AppTheme.foreground
-                            : const AppTheme.gray200)
+                            ? AppTheme.foreground
+                            : AppTheme.gray200)
                         : Colors.transparent,
                   ),
                   child: Center(
                     child: Icon(
                       LucideIcons.search,
                       color: themeService.isDarkMode
-                          ? const AppTheme.background
-                          : const AppTheme.foreground,
+                          ? AppTheme.background
+                          : AppTheme.foreground,
                       size: 24,
                       weight: 1.0,
                     ),
@@ -473,7 +473,7 @@ class _MainLayoutState extends State<MainLayout> {
                   fontWeight: FontWeight.w400,
                   color: themeService.isDarkMode
                       ? Colors.white
-                      : const AppTheme.foreground,
+                      : AppTheme.foreground,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -497,7 +497,7 @@ class _MainLayoutState extends State<MainLayout> {
       child: Container(
         decoration: BoxDecoration(
           color:
-              themeService.isDarkMode ? const AppTheme.darkBackground : Colors.white,
+              themeService.isDarkMode ? AppTheme.darkBackground : Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Focus(
@@ -518,8 +518,8 @@ class _MainLayoutState extends State<MainLayout> {
               hintText: '搜索电影、剧集、动漫...',
               hintStyle: FontUtils.systemFont(
                 color: themeService.isDarkMode
-                    ? const AppTheme.foregroundSubtle
-                    : const AppTheme.foregroundMuted,
+                    ? AppTheme.foregroundSubtle
+                    : AppTheme.foregroundMuted,
                 fontSize: 14,
               ),
               suffixIcon: SizedBox(
@@ -571,18 +571,18 @@ class _MainLayoutState extends State<MainLayout> {
                                       (widget.searchQuery?.trim().isNotEmpty ??
                                           false)
                                   ? (themeService.isDarkMode
-                                      ? const AppTheme.foreground
-                                      : const AppTheme.gray200)
+                                      ? AppTheme.foreground
+                                      : AppTheme.gray200)
                                   : Colors.transparent,
                             ),
                             child: Icon(
                               LucideIcons.search,
                               color: (widget.searchQuery?.trim().isNotEmpty ??
                                       false)
-                                  ? const AppTheme.success
+                                  ? AppTheme.success
                                   : themeService.isDarkMode
-                                      ? const AppTheme.foregroundMuted
-                                      : const AppTheme.foregroundMuted,
+                                      ? AppTheme.foregroundMuted
+                                      : AppTheme.foregroundMuted,
                               size: isTablet ? 18 : 16,
                             ),
                           ),
@@ -628,15 +628,15 @@ class _MainLayoutState extends State<MainLayout> {
                                 color:
                                     DeviceUtils.isPC() && _isClearButtonHovered
                                         ? (themeService.isDarkMode
-                                            ? const AppTheme.foreground
-                                            : const AppTheme.gray200)
+                                            ? AppTheme.foreground
+                                            : AppTheme.gray200)
                                         : Colors.transparent,
                               ),
                               child: Icon(
                                 LucideIcons.x,
                                 color: themeService.isDarkMode
-                                    ? const AppTheme.foregroundMuted
-                                    : const AppTheme.foregroundMuted,
+                                    ? AppTheme.foregroundMuted
+                                    : AppTheme.foregroundMuted,
                                 size: isTablet ? 18 : 16,
                               ),
                             ),
@@ -657,8 +657,8 @@ class _MainLayoutState extends State<MainLayout> {
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
-                  ? const AppTheme.background
-                  : const AppTheme.foreground,
+                  ? AppTheme.background
+                  : AppTheme.foreground,
               height: 1.2,
             ),
             onSubmitted: (value) {
@@ -717,16 +717,16 @@ class _MainLayoutState extends State<MainLayout> {
                       shape: BoxShape.circle,
                       color: DeviceUtils.isPC() && _isBackButtonHovered
                           ? (themeService.isDarkMode
-                              ? const AppTheme.foreground
-                              : const AppTheme.gray200)
+                              ? AppTheme.foreground
+                              : AppTheme.gray200)
                           : Colors.transparent,
                     ),
                     child: Center(
                       child: Icon(
                         LucideIcons.arrowLeft,
                         color: themeService.isDarkMode
-                            ? const AppTheme.background
-                            : const AppTheme.foreground,
+                            ? AppTheme.background
+                            : AppTheme.foreground,
                         size: 24,
                         weight: 1.0,
                       ),
@@ -800,8 +800,8 @@ class _MainLayoutState extends State<MainLayout> {
                 shape: BoxShape.circle,
                 color: DeviceUtils.isPC() && _isThemeButtonHovered
                     ? (themeService.isDarkMode
-                        ? const AppTheme.foreground
-                        : const AppTheme.gray200)
+                        ? AppTheme.foreground
+                        : AppTheme.gray200)
                     : Colors.transparent,
               ),
               child: Center(
@@ -820,8 +820,8 @@ class _MainLayoutState extends State<MainLayout> {
                         : LucideIcons.moon,
                     key: ValueKey(themeService.isDarkMode),
                     color: themeService.isDarkMode
-                        ? const AppTheme.background
-                        : const AppTheme.foreground,
+                        ? AppTheme.background
+                        : AppTheme.foreground,
                     size: 24,
                     weight: 1.0,
                   ),
@@ -863,16 +863,16 @@ class _MainLayoutState extends State<MainLayout> {
                 shape: BoxShape.circle,
                 color: DeviceUtils.isPC() && _isUserButtonHovered
                     ? (themeService.isDarkMode
-                        ? const AppTheme.foreground
-                        : const AppTheme.gray200)
+                        ? AppTheme.foreground
+                        : AppTheme.gray200)
                     : Colors.transparent,
               ),
               child: Center(
                 child: Icon(
                   LucideIcons.user,
                   color: themeService.isDarkMode
-                      ? const AppTheme.background
-                      : const AppTheme.foreground,
+                      ? AppTheme.background
+                      : AppTheme.foreground,
                   size: 24,
                   weight: 1.0,
                 ),
@@ -900,12 +900,12 @@ class _MainLayoutState extends State<MainLayout> {
     return Container(
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? const AppTheme.darkBackground.withOpacity(0.9)
+            ? AppTheme.darkBackground.withOpacity(0.9)
             : Colors.white.withOpacity(0.9),
         border: Border(
           top: BorderSide(
             color: themeService.isDarkMode
-                ? const AppTheme.foreground.withOpacity(0.3)
+                ? AppTheme.foreground.withOpacity(0.3)
                 : Colors.white.withOpacity(0.2),
             width: 1,
           ),
@@ -979,7 +979,7 @@ class _MainLayoutState extends State<MainLayout> {
                       ),
                       decoration: BoxDecoration(
                         color: _hoveredNavIndex == index
-                            ? const AppTheme.success.withOpacity(0.15)
+                            ? AppTheme.success.withOpacity(0.15)
                             : null,
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -989,12 +989,12 @@ class _MainLayoutState extends State<MainLayout> {
                           Icon(
                             item['icon'],
                             color: isSelected
-                                ? const AppTheme.success
+                                ? AppTheme.success
                                 : _hoveredNavIndex == index
-                                    ? const AppTheme.success
+                                    ? AppTheme.success
                                     : themeService.isDarkMode
-                                        ? const AppTheme.foregroundMuted
-                                        : const AppTheme.foregroundMuted,
+                                        ? AppTheme.foregroundMuted
+                                        : AppTheme.foregroundMuted,
                             size: 24,
                           ),
                           const SizedBox(height: 4),
@@ -1005,12 +1005,12 @@ class _MainLayoutState extends State<MainLayout> {
                               fontWeight:
                                   isSelected ? FontWeight.w600 : FontWeight.w400,
                               color: isSelected
-                                  ? const AppTheme.success
+                                  ? AppTheme.success
                                   : _hoveredNavIndex == index
-                                      ? const AppTheme.success
+                                      ? AppTheme.success
                                       : themeService.isDarkMode
-                                          ? const AppTheme.foregroundMuted
-                                          : const AppTheme.foregroundMuted,
+                                          ? AppTheme.foregroundMuted
+                                          : AppTheme.foregroundMuted,
                             ),
                           ),
                         ],

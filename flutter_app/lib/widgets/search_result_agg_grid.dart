@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/search_result.dart';
@@ -167,7 +167,7 @@ class _SearchResultAggGridState extends State<SearchResultAggGrid>
           Icon(
             Icons.search_off,
             size: 80,
-            color: const AppTheme.stroke,
+            color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -175,7 +175,7 @@ class _SearchResultAggGridState extends State<SearchResultAggGrid>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -183,7 +183,7 @@ class _SearchResultAggGridState extends State<SearchResultAggGrid>
             '请尝试其他关键词',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],

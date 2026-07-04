@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
@@ -126,7 +126,7 @@ class _SearchResultsGridState extends State<SearchResultsGrid>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -134,7 +134,7 @@ class _SearchResultsGridState extends State<SearchResultsGrid>
             '请尝试其他关键词或调整筛选条件',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],

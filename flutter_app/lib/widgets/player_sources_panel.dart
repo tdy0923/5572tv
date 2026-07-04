@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/search_result.dart';
@@ -132,7 +132,7 @@ class _PlayerSourcesPanelState extends State<PlayerSourcesPanel>
 
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? const AppTheme.darkBackground : Colors.white,
+        color: isDarkMode ? AppTheme.darkBackground : Colors.white,
       ),
       child: Column(
         children: [
@@ -257,8 +257,8 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                 ? (widget.isDarkMode ? Colors.grey[850] : Colors.grey[200])
                 : (_isHovering && DeviceUtils.isPC()
                     ? (widget.isDarkMode
-                        ? const AppTheme.darkBackground // 深色模式下的浅绿色
-                        : const AppTheme.gray100) // 浅色模式下的浅绿色
+                        ? AppTheme.darkBackground // 深色模式下的浅绿色
+                        : AppTheme.gray100) // 浅色模式下的浅绿色
                     : (widget.isDarkMode
                         ? Colors.grey[850]
                         : Colors.grey[200])),
@@ -286,7 +286,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                             placeholder: (context, url) => Container(
                               decoration: BoxDecoration(
                                 color: widget.isDarkMode
-                                    ? const AppTheme.foreground
+                                    ? AppTheme.foreground
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -294,14 +294,14 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                             errorWidget: (context, url, error) => Container(
                               decoration: BoxDecoration(
                                 color: widget.isDarkMode
-                                    ? const AppTheme.foreground
+                                    ? AppTheme.foreground
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.movie,
                                 color: widget.isDarkMode
-                                    ? const AppTheme.foregroundSubtle
+                                    ? AppTheme.foregroundSubtle
                                     : Colors.grey,
                                 size: 40,
                               ),

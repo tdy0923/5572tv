@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:provider/provider.dart';
@@ -32,13 +32,13 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> {
             (widget.forceBlack
                 ? Colors.transparent
                 : (isDark 
-                    ? const AppTheme.darkBackground.withOpacity(0.9)
+                    ? AppTheme.darkBackground.withOpacity(0.9)
                     : Colors.white.withOpacity(0.8)));
         
         // Windows 11 风格的文字和图标颜色
         final foregroundColor = widget.forceBlack 
             ? Colors.white
-            : (isDark ? Colors.white : const AppTheme.gray900);
+            : (isDark ? Colors.white : AppTheme.gray900);
         
         return Container(
           height: 40,
@@ -142,13 +142,13 @@ class _WindowsButtonHoverState extends State<_WindowsButtonHover> {
     
     if (_isPressed) {
       backgroundColor = widget.isCloseButton
-          ? const AppTheme.error // 深红色
+          ? AppTheme.error // 深红色
           : (widget.isDark 
               ? Colors.white.withOpacity(0.1)
               : Colors.black.withOpacity(0.06));
     } else if (_isHovered) {
       backgroundColor = widget.isCloseButton
-          ? const AppTheme.error // Windows 11 红色
+          ? AppTheme.error // Windows 11 红色
           : (widget.isDark 
               ? Colors.white.withOpacity(0.08)
               : Colors.black.withOpacity(0.04));

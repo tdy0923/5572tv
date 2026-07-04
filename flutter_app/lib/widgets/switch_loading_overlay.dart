@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../utils/device_utils.dart';
 
@@ -65,7 +65,7 @@ class SwitchLoadingOverlay extends StatelessWidget {
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: const AppTheme.success.withOpacity(0.3),
+                            color: AppTheme.success.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),

@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../utils/font_utils.dart';
 
@@ -38,11 +38,11 @@ class _FilterPillHoverState extends State<FilterPillHover> {
     // 计算颜色：如果是PC且isDefault且hover，显示绿色；否则按原逻辑
     Color textColor;
     if (widget.isPC && widget.isDefault && _isHovered) {
-      textColor = const AppTheme.success;
+      textColor = AppTheme.success;
     } else if (widget.isDefault) {
       textColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey;
     } else {
-      textColor = const AppTheme.success;
+      textColor = AppTheme.success;
     }
 
     return MouseRegion(
@@ -113,7 +113,7 @@ class _FilterOptionHoverState extends State<FilterOptionHover> {
     if (widget.isSelected) {
       textColor = Colors.white;
     } else if (widget.isPC && _isHovered) {
-      textColor = const AppTheme.success;
+      textColor = AppTheme.success;
     } else {
       textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black;
     }
@@ -135,7 +135,7 @@ class _FilterOptionHoverState extends State<FilterOptionHover> {
               : null,
           decoration: BoxDecoration(
             color: widget.isSelected
-                ? const AppTheme.success
+                ? AppTheme.success
                 : Theme.of(context).chipTheme.backgroundColor,
             borderRadius: BorderRadius.circular(8),
           ),

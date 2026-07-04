@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -306,7 +306,7 @@ class _SearchScreenState extends State<SearchScreen>
           builder: (context, themeService, child) {
             return AlertDialog(
               backgroundColor: themeService.isDarkMode
-                  ? const AppTheme.darkBackground
+                  ? AppTheme.darkBackground
                   : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -320,7 +320,7 @@ class _SearchScreenState extends State<SearchScreen>
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: const AppTheme.error.withOpacity(0.1),
+                      color: AppTheme.error.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -337,8 +337,8 @@ class _SearchScreenState extends State<SearchScreen>
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
-                          ? const AppTheme.background
-                          : const AppTheme.foreground,
+                          ? AppTheme.background
+                          : AppTheme.foreground,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -348,8 +348,8 @@ class _SearchScreenState extends State<SearchScreen>
                     style: FontUtils.systemFont(
                       fontSize: 14,
                       color: themeService.isDarkMode
-                          ? const AppTheme.foregroundMuted
-                          : const AppTheme.foregroundMuted,
+                          ? AppTheme.foregroundMuted
+                          : AppTheme.foregroundMuted,
                       height: 1.4,
                     ),
                     textAlign: TextAlign.center,
@@ -373,8 +373,8 @@ class _SearchScreenState extends State<SearchScreen>
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: themeService.isDarkMode
-                                  ? const AppTheme.foregroundMuted
-                                  : const AppTheme.foregroundMuted,
+                                  ? AppTheme.foregroundMuted
+                                  : AppTheme.foregroundMuted,
                             ),
                           ),
                         ),
@@ -387,7 +387,7 @@ class _SearchScreenState extends State<SearchScreen>
                             _clearSearchHistory();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const AppTheme.error,
+                            backgroundColor: AppTheme.error,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -536,8 +536,8 @@ class _SearchScreenState extends State<SearchScreen>
         final ml = MainLayout(
           content: Container(
             color: themeService.isDarkMode
-                ? const AppTheme.gray950
-                : const AppTheme.gray100,
+                ? AppTheme.gray950
+                : AppTheme.gray100,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -625,8 +625,8 @@ class _SearchScreenState extends State<SearchScreen>
                 LucideIcons.history,
                 size: 80,
                 color: themeService.isDarkMode
-                    ? const AppTheme.gray700
-                    : const AppTheme.stroke,
+                    ? AppTheme.gray700
+                    : AppTheme.stroke,
               ),
               const SizedBox(height: 24),
               Text(
@@ -635,8 +635,8 @@ class _SearchScreenState extends State<SearchScreen>
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                   color: themeService.isDarkMode
-                      ? const AppTheme.foregroundSubtle
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.foregroundSubtle
+                      : AppTheme.foregroundMuted,
                 ),
               ),
               const SizedBox(height: 12),
@@ -645,8 +645,8 @@ class _SearchScreenState extends State<SearchScreen>
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
-                      ? const AppTheme.gray600
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.gray600
+                      : AppTheme.foregroundMuted,
                 ),
               ),
             ],
@@ -672,8 +672,8 @@ class _SearchScreenState extends State<SearchScreen>
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: themeService.isDarkMode
-                      ? const AppTheme.background
-                      : const AppTheme.foreground,
+                      ? AppTheme.background
+                      : AppTheme.foreground,
                 ),
               ),
               MouseRegion(
@@ -708,10 +708,10 @@ class _SearchScreenState extends State<SearchScreen>
                     style: FontUtils.systemFont(
                       fontSize: 14,
                       color: DeviceUtils.isPC() && _isClearHistoryButtonHovered
-                          ? const AppTheme.error // hover 时红色
+                          ? AppTheme.error // hover 时红色
                           : themeService.isDarkMode
-                              ? const AppTheme.foregroundMuted
-                              : const AppTheme.foregroundMuted,
+                              ? AppTheme.foregroundMuted
+                              : AppTheme.foregroundMuted,
                     ),
                   ),
                 ),
@@ -785,46 +785,46 @@ class _SearchScreenState extends State<SearchScreen>
                         // 背景色从正常色渐变到红色
                         backgroundColor = Color.lerp(
                           themeService.isDarkMode
-                              ? const AppTheme.darkBackground
+                              ? AppTheme.darkBackground
                               : Colors.white,
-                          const AppTheme.error.withOpacity(0.2),
+                          AppTheme.error.withOpacity(0.2),
                           animationValue,
                         )!;
 
                         // 文字色从正常色渐变到红色
                         textColor = Color.lerp(
                           themeService.isDarkMode
-                              ? const AppTheme.background
-                              : const AppTheme.foreground,
-                          const AppTheme.error,
+                              ? AppTheme.background
+                              : AppTheme.foreground,
+                          AppTheme.error,
                           animationValue,
                         )!;
 
                         // 边框色从正常色渐变到红色
                         borderColor = Color.lerp(
                           themeService.isDarkMode
-                              ? const AppTheme.foreground
-                              : const AppTheme.gray200,
-                          const AppTheme.error,
+                              ? AppTheme.foreground
+                              : AppTheme.gray200,
+                          AppTheme.error,
                           animationValue,
                         )!;
                       } else if (DeviceUtils.isPC() && isHovered) {
                         // PC 端 hover 效果 - 浅绿色
                         backgroundColor = themeService.isDarkMode
-                            ? const AppTheme.darkBackground // 深色模式下的深绿背景
-                            : const AppTheme.gray100; // 浅色模式下的浅绿背景
-                        textColor = const AppTheme.success; // 绿色文字
-                        borderColor = const AppTheme.success; // 浅绿边框
+                            ? AppTheme.darkBackground // 深色模式下的深绿背景
+                            : AppTheme.gray100; // 浅色模式下的浅绿背景
+                        textColor = AppTheme.success; // 绿色文字
+                        borderColor = AppTheme.success; // 浅绿边框
                       } else {
                         backgroundColor = themeService.isDarkMode
-                            ? const AppTheme.darkBackground
+                            ? AppTheme.darkBackground
                             : Colors.white;
                         textColor = themeService.isDarkMode
-                            ? const AppTheme.background
-                            : const AppTheme.foreground;
+                            ? AppTheme.background
+                            : AppTheme.foreground;
                         borderColor = themeService.isDarkMode
-                            ? const AppTheme.foreground
-                            : const AppTheme.gray200;
+                            ? AppTheme.foreground
+                            : AppTheme.gray200;
                       }
 
                       return Stack(
@@ -890,8 +890,8 @@ class _SearchScreenState extends State<SearchScreen>
                                     height: 18,
                                     decoration: BoxDecoration(
                                       color: _hoveredDeleteButton == history
-                                          ? const AppTheme.error // hover 时红色
-                                          : const AppTheme.foregroundMuted, // 默认灰色
+                                          ? AppTheme.error // hover 时红色
+                                          : AppTheme.foregroundMuted, // 默认灰色
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -932,10 +932,10 @@ class _SearchScreenState extends State<SearchScreen>
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const AppTheme.error.withOpacity(0.1),
+        color: AppTheme.error.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const AppTheme.error.withOpacity(0.3),
+          color: AppTheme.error.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -952,7 +952,7 @@ class _SearchScreenState extends State<SearchScreen>
               error,
               style: FontUtils.systemFont(
                 fontSize: 14,
-                color: const AppTheme.error,
+                color: AppTheme.error,
               ),
             ),
           ),
@@ -966,7 +966,7 @@ class _SearchScreenState extends State<SearchScreen>
               '重试',
               style: FontUtils.systemFont(
                 fontSize: 12,
-                color: const AppTheme.error,
+                color: AppTheme.error,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1008,8 +1008,8 @@ class _SearchScreenState extends State<SearchScreen>
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
-                          ? const AppTheme.background
-                          : const AppTheme.foreground,
+                          ? AppTheme.background
+                          : AppTheme.foreground,
                     ),
                   ),
                   if (_hasSearched) ...[
@@ -1021,8 +1021,8 @@ class _SearchScreenState extends State<SearchScreen>
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: themeService.isDarkMode
-                              ? const AppTheme.foregroundMuted
-                              : const AppTheme.foregroundMuted,
+                              ? AppTheme.foregroundMuted
+                              : AppTheme.foregroundMuted,
                         ),
                       )
                   ],
@@ -1040,8 +1040,8 @@ class _SearchScreenState extends State<SearchScreen>
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: themeService.isDarkMode
-                            ? const AppTheme.background
-                            : const AppTheme.foreground,
+                            ? AppTheme.background
+                            : AppTheme.foreground,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -1058,10 +1058,10 @@ class _SearchScreenState extends State<SearchScreen>
                               _useAggregatedView = value;
                             });
                           },
-                          activeColor: const AppTheme.success,
+                          activeColor: AppTheme.success,
                           inactiveColor: themeService.isDarkMode
-                              ? const AppTheme.gray700
-                              : const AppTheme.gray300,
+                              ? AppTheme.gray700
+                              : AppTheme.gray300,
                           width: 32,
                           height: 16,
                         ),
@@ -1167,7 +1167,7 @@ class _SearchScreenState extends State<SearchScreen>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -1175,7 +1175,7 @@ class _SearchScreenState extends State<SearchScreen>
             '请尝试更换关键词',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -1196,7 +1196,7 @@ class _SearchScreenState extends State<SearchScreen>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -1204,7 +1204,7 @@ class _SearchScreenState extends State<SearchScreen>
             '聚合搜索中，请稍候',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -1266,7 +1266,7 @@ class _SearchScreenState extends State<SearchScreen>
               '正在打开豆瓣详情: ${videoInfo.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.info,
+            backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -1283,7 +1283,7 @@ class _SearchScreenState extends State<SearchScreen>
               '正在打开 Bangumi 详情: ${videoInfo.title}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.info,
+            backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -1326,7 +1326,7 @@ class _SearchScreenState extends State<SearchScreen>
                 result.errorMessage ?? '收藏失败',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const AppTheme.error,
+              backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -1346,7 +1346,7 @@ class _SearchScreenState extends State<SearchScreen>
               '收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -1383,7 +1383,7 @@ class _SearchScreenState extends State<SearchScreen>
                 result.errorMessage ?? '取消收藏失败',
                 style: FontUtils.systemFont(color: Colors.white),
               ),
-              backgroundColor: const AppTheme.error,
+              backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -1404,7 +1404,7 @@ class _SearchScreenState extends State<SearchScreen>
               '取消收藏失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: const AppTheme.error,
+            backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -1524,7 +1524,7 @@ class _SearchScreenState extends State<SearchScreen>
                 style: FontUtils.systemFont(
                   fontSize: 13,
                   color: (DeviceUtils.isPC() && isHovered) || !isDefault
-                      ? const AppTheme.success
+                      ? AppTheme.success
                       : Theme.of(context).textTheme.bodySmall?.color,
                   fontWeight: (DeviceUtils.isPC() && isHovered) || !isDefault
                       ? FontWeight.w500
@@ -1536,7 +1536,7 @@ class _SearchScreenState extends State<SearchScreen>
                 Icons.arrow_drop_down,
                 size: 18,
                 color: (DeviceUtils.isPC() && isHovered) || !isDefault
-                    ? const AppTheme.success
+                    ? AppTheme.success
                     : Theme.of(context).textTheme.bodySmall?.color,
               ),
             ],
@@ -1630,7 +1630,7 @@ class _SearchScreenState extends State<SearchScreen>
                                 alignment: Alignment.centerLeft, // 内容左对齐
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const AppTheme.success
+                                      ? AppTheme.success
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
@@ -1722,7 +1722,7 @@ class _SearchScreenState extends State<SearchScreen>
                   fontSize: 13,
                   color:
                       (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
-                          ? const AppTheme.success
+                          ? AppTheme.success
                           : Theme.of(context).textTheme.bodySmall?.color,
                   fontWeight:
                       (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
@@ -1735,7 +1735,7 @@ class _SearchScreenState extends State<SearchScreen>
                 icon,
                 size: 16,
                 color: (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
-                    ? const AppTheme.success
+                    ? AppTheme.success
                     : Theme.of(context).textTheme.bodySmall?.color,
               ),
             ],

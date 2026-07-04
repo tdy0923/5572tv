@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/favorite_item.dart';
@@ -283,7 +283,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
   Widget _buildLoadingState() {
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: const AppTheme.success,
+      color: AppTheme.success,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 平板模式根据宽度动态展示6～9列，手机模式3列
@@ -368,7 +368,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
           Icon(
             Icons.error_outline,
             size: 80,
-            color: const AppTheme.stroke,
+            color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
           Text(
@@ -376,7 +376,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -384,7 +384,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
             _errorMessage ?? '未知错误',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -392,7 +392,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
           ElevatedButton(
             onPressed: _loadFavorites,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const AppTheme.success,
+              backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -429,7 +429,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
               style: FontUtils.systemFont(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: const AppTheme.foregroundMuted,
+                color: AppTheme.foregroundMuted,
               ),
             ),
             const SizedBox(height: 12),
@@ -437,7 +437,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
               '您收藏的视频将显示在这里',
               style: FontUtils.systemFont(
                 fontSize: 14,
-                color: const AppTheme.foregroundMuted,
+                color: AppTheme.foregroundMuted,
               ),
             ),
           ],
@@ -449,7 +449,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
   Widget _buildFavoritesGrid() {
     return RefreshIndicator(
       onRefresh: _loadFavorites,
-      color: const AppTheme.success,
+      color: AppTheme.success,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 平板模式根据宽度动态展示6～9列，手机模式3列

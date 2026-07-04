@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/play_record.dart';
@@ -162,7 +162,7 @@ class _HistoryGridState extends State<HistoryGrid>
   Widget _buildLoadingState() {
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: const AppTheme.success,
+      color: AppTheme.success,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 平板模式根据宽度动态展示6～9列，手机模式3列
@@ -250,7 +250,7 @@ class _HistoryGridState extends State<HistoryGrid>
             style: FontUtils.systemFont(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
           ),
           const SizedBox(height: 12),
@@ -258,7 +258,7 @@ class _HistoryGridState extends State<HistoryGrid>
             _errorMessage ?? '未知错误',
             style: FontUtils.systemFont(
               fontSize: 14,
-              color: const AppTheme.foregroundMuted,
+              color: AppTheme.foregroundMuted,
             ),
             textAlign: TextAlign.center,
           ),
@@ -266,7 +266,7 @@ class _HistoryGridState extends State<HistoryGrid>
           ElevatedButton(
             onPressed: _loadPlayRecords,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const AppTheme.success,
+              backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -303,7 +303,7 @@ class _HistoryGridState extends State<HistoryGrid>
               style: FontUtils.systemFont(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: const AppTheme.foregroundMuted,
+                color: AppTheme.foregroundMuted,
               ),
             ),
             const SizedBox(height: 12),
@@ -311,7 +311,7 @@ class _HistoryGridState extends State<HistoryGrid>
               '您观看过的视频将显示在这里',
               style: FontUtils.systemFont(
                 fontSize: 14,
-                color: const AppTheme.foregroundMuted,
+                color: AppTheme.foregroundMuted,
               ),
             ),
           ],
@@ -323,7 +323,7 @@ class _HistoryGridState extends State<HistoryGrid>
   Widget _buildHistoryGrid() {
     return RefreshIndicator(
       onRefresh: _loadPlayRecords,
-      color: const AppTheme.success,
+      color: AppTheme.success,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 平板模式根据宽度动态展示6～9列，手机模式3列

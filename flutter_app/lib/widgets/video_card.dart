@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -116,7 +116,7 @@ class _VideoCardState extends State<VideoCard> {
                               height: height,
                               decoration: BoxDecoration(
                                 color: themeService.isDarkMode
-                                    ? const AppTheme.foreground
+                                    ? AppTheme.foreground
                                     : Colors.grey[300],
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -124,12 +124,12 @@ class _VideoCardState extends State<VideoCard> {
                             // 错误占位符
                             errorWidget: (context, url, error) => Container(
                               color: themeService.isDarkMode
-                                  ? const AppTheme.foreground
+                                  ? AppTheme.foreground
                                   : Colors.grey[300],
                               child: Icon(
                                 Icons.movie,
                                 color: themeService.isDarkMode
-                                    ? const AppTheme.foregroundSubtle
+                                    ? AppTheme.foregroundSubtle
                                     : Colors.grey,
                                 size: 40,
                               ),
@@ -177,7 +177,7 @@ class _VideoCardState extends State<VideoCard> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const AppTheme.foreground
+                                color: AppTheme.foreground
                                     .withOpacity(0.8),
                                 borderRadius: BorderRadius.circular(5),
                               ),
@@ -235,7 +235,7 @@ class _VideoCardState extends State<VideoCard> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 7, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const AppTheme.success,
+                                color: AppTheme.success,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
@@ -305,7 +305,7 @@ class _VideoCardState extends State<VideoCard> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: _isPlayButtonHovered
-                                            ? const AppTheme.success
+                                            ? AppTheme.success
                                             : Colors.transparent,
                                         border: Border.all(
                                           color: Colors.white,
@@ -532,8 +532,8 @@ class _VideoCardState extends State<VideoCard> {
                             color: isPC && _isHovered
                                 ? Colors.green
                                 : (themeService.isDarkMode
-                                    ? const AppTheme.background
-                                    : const AppTheme.foreground),
+                                    ? AppTheme.background
+                                    : AppTheme.foreground),
                           ),
                           textAlign: TextAlign.center,
                           maxLines: widget.from == 'douban'
@@ -556,7 +556,7 @@ class _VideoCardState extends State<VideoCard> {
                               border: Border.all(
                                 color: isPC && _isHovered
                                     ? Colors.green
-                                    : const AppTheme.foregroundMuted,
+                                    : AppTheme.foregroundMuted,
                                 width: 0.8,
                               ),
                               borderRadius: BorderRadius.circular(3),
@@ -572,8 +572,8 @@ class _VideoCardState extends State<VideoCard> {
                                 color: isPC && _isHovered
                                     ? Colors.green
                                     : (widget.from == 'agg'
-                                        ? const AppTheme.info // 聚合模式用紫色文字
-                                        : const AppTheme.foregroundMuted), // 其他模式用灰色文字
+                                        ? AppTheme.info // 聚合模式用紫色文字
+                                        : AppTheme.foregroundMuted), // 其他模式用灰色文字
                                 height: 1.0, // 进一步减少行高
                               ),
                               textAlign: TextAlign.center,
@@ -666,12 +666,12 @@ class _VideoCardState extends State<VideoCard> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: _isFocused
-                      ? Border.all(color: const AppTheme.success, width: 3)
+                      ? Border.all(color: AppTheme.success, width: 3)
                       : null,
                   boxShadow: _isFocused
                       ? [
                           BoxShadow(
-                            color: const AppTheme.success.withOpacity(0.4),
+                            color: AppTheme.success.withOpacity(0.4),
                             blurRadius: 8,
                             spreadRadius: 2,
                           ),
@@ -839,7 +839,7 @@ class _VideoCardState extends State<VideoCard> {
             ),
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? const AppTheme.darkBackground
+                  ? AppTheme.darkBackground
                   : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -862,8 +862,8 @@ class _VideoCardState extends State<VideoCard> {
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: themeService.isDarkMode
-                          ? const AppTheme.background
-                          : const AppTheme.darkBackground,
+                          ? AppTheme.background
+                          : AppTheme.darkBackground,
                     ),
                   ),
                 ),

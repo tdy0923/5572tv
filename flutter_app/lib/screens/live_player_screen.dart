@@ -1,4 +1,4 @@
-import 'package:flutter_app/theme/app_theme.dart';
+import 'package:media_5572/theme/app_theme.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -717,7 +717,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                             fontWeight: FontWeight.w600,
                             color: themeService.isDarkMode
                                 ? Colors.white
-                                : const AppTheme.foreground,
+                                : AppTheme.foreground,
                           ),
                         ),
                       ),
@@ -795,8 +795,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: themeService.isDarkMode
-                        ? const AppTheme.darkBackground
-                        : const AppTheme.gray300,
+                        ? AppTheme.darkBackground
+                        : AppTheme.gray300,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: ClipRRect(
@@ -830,7 +830,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                           fontWeight: FontWeight.w600,
                           color: themeService.isDarkMode
                               ? Colors.white
-                              : const AppTheme.foreground,
+                              : AppTheme.foreground,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -844,8 +844,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   style: FontUtils.systemFont(
                     fontSize: 14,
                     color: themeService.isDarkMode
-                        ? const AppTheme.foregroundMuted
-                        : const AppTheme.foregroundMuted,
+                        ? AppTheme.foregroundMuted
+                        : AppTheme.foregroundMuted,
                   ),
                 ),
               ],
@@ -864,8 +864,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         child: Container(
           decoration: BoxDecoration(
             color: themeService.isDarkMode
-                ? const AppTheme.darkBackground
-                : const AppTheme.gray300,
+                ? AppTheme.darkBackground
+                : AppTheme.gray300,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(
@@ -899,8 +899,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
         ),
@@ -924,7 +924,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
           child: ListTile(
             key: itemKey,
             selected: isSelected,
-            selectedTileColor: const AppTheme.success.withOpacity(0.1),
+            selectedTileColor: AppTheme.success.withOpacity(0.1),
             visualDensity: const VisualDensity(vertical: -1),
             leading: channel.logo.isNotEmpty
               ? AspectRatio(
@@ -933,8 +933,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: themeService.isDarkMode
-                          ? const AppTheme.darkBackground
-                          : const AppTheme.gray300,
+                          ? AppTheme.darkBackground
+                          : AppTheme.gray300,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: ClipRRect(
@@ -958,8 +958,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   child: Container(
                     decoration: BoxDecoration(
                       color: themeService.isDarkMode
-                          ? const AppTheme.darkBackground
-                          : const AppTheme.gray300,
+                          ? AppTheme.darkBackground
+                          : AppTheme.gray300,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: const Icon(
@@ -975,10 +975,10 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected
-                  ? const AppTheme.success
+                  ? AppTheme.success
                   : themeService.isDarkMode
                       ? Colors.white
-                      : const AppTheme.foreground,
+                      : AppTheme.foreground,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -988,8 +988,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             style: FontUtils.systemFont(
               fontSize: 12,
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
           onTap: () => _switchChannel(channel),
@@ -1029,8 +1029,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         border: Border(
           bottom: BorderSide(
             color: themeService.isDarkMode
-                ? const AppTheme.foreground
-                : const AppTheme.gray200,
+                ? AppTheme.foreground
+                : AppTheme.gray200,
           ),
         ),
       ),
@@ -1220,7 +1220,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                                 alignment: Alignment.centerLeft, // 内容左对齐
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const AppTheme.success
+                                      ? AppTheme.success
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
@@ -1286,8 +1286,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   style: FontUtils.systemFont(
                     fontSize: 14,
                     color: themeService.isDarkMode
-                        ? const AppTheme.foregroundMuted
-                        : const AppTheme.foregroundMuted,
+                        ? AppTheme.foregroundMuted
+                        : AppTheme.foregroundMuted,
                   ),
                 ),
                 Expanded(
@@ -1299,7 +1299,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                             fontWeight: FontWeight.w500,
                             color: themeService.isDarkMode
                                 ? Colors.white
-                                : const AppTheme.foreground,
+                                : AppTheme.foreground,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1312,7 +1312,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                                 fontWeight: FontWeight.w500,
                                 color: themeService.isDarkMode
                                     ? Colors.white
-                                    : const AppTheme.foreground,
+                                    : AppTheme.foreground,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1323,8 +1323,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
                                 color: themeService.isDarkMode
-                                    ? const AppTheme.foregroundSubtle
-                                    : const AppTheme.foregroundMuted,
+                                    ? AppTheme.foregroundSubtle
+                                    : AppTheme.foregroundMuted,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1397,8 +1397,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   border: Border(
                     bottom: BorderSide(
                       color: themeService.isDarkMode
-                          ? const AppTheme.foreground
-                          : const AppTheme.gray200,
+                          ? AppTheme.foreground
+                          : AppTheme.gray200,
                     ),
                   ),
                 ),
@@ -1411,7 +1411,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                         fontWeight: FontWeight.w600,
                         color: themeService.isDarkMode
                             ? Colors.white
-                            : const AppTheme.foreground,
+                            : AppTheme.foreground,
                       ),
                     ),
                     const Spacer(),
@@ -1420,7 +1420,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                         Icons.close,
                         color: themeService.isDarkMode
                             ? Colors.white
-                            : const AppTheme.foreground,
+                            : AppTheme.foreground,
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
@@ -1457,8 +1457,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
-                      ? const AppTheme.foregroundMuted
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                 ),
               ),
             ],
@@ -1478,8 +1478,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 Icons.calendar_today_outlined,
                 size: 64,
                 color: themeService.isDarkMode
-                    ? const AppTheme.foregroundSubtle
-                    : const AppTheme.foregroundMuted,
+                    ? AppTheme.foregroundSubtle
+                    : AppTheme.foregroundMuted,
               ),
               const SizedBox(height: 16),
               Text(
@@ -1487,8 +1487,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
-                      ? const AppTheme.foregroundMuted
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                 ),
               ),
             ],
@@ -1527,27 +1527,27 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     if (isLive) {
       // 正在播放 - 绿色
       textColor = themeService.isDarkMode
-          ? const AppTheme.success
-          : const AppTheme.success;
+          ? AppTheme.success
+          : AppTheme.success;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.success
-          : const AppTheme.success;
+          ? AppTheme.success
+          : AppTheme.success;
     } else if (isPast) {
       // 过去的节目 - 灰色
       textColor = themeService.isDarkMode
-          ? const AppTheme.foregroundMuted
-          : const AppTheme.foregroundSubtle;
+          ? AppTheme.foregroundMuted
+          : AppTheme.foregroundSubtle;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.foregroundMuted
-          : const AppTheme.foregroundSubtle;
+          ? AppTheme.foregroundMuted
+          : AppTheme.foregroundSubtle;
     } else {
       // 未开始的节目 - 蓝色
       textColor = themeService.isDarkMode
-          ? const AppTheme.info
-          : const AppTheme.info;
+          ? AppTheme.info
+          : AppTheme.info;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.info
-          : const AppTheme.info;
+          ? AppTheme.info
+          : AppTheme.info;
     }
 
     return Container(
@@ -1606,7 +1606,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     fontWeight: FontWeight.w600,
                     color: themeService.isDarkMode
                         ? Colors.white
-                        : const AppTheme.foreground,
+                        : AppTheme.foreground,
                   ),
                 ),
                 const Spacer(),
@@ -1663,8 +1663,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
-                  ? const AppTheme.foregroundMuted
-                  : const AppTheme.foregroundMuted,
+                  ? AppTheme.foregroundMuted
+                  : AppTheme.foregroundMuted,
             ),
           ),
         ),
@@ -1682,8 +1682,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 Icons.calendar_today_outlined,
                 size: 48,
                 color: themeService.isDarkMode
-                    ? const AppTheme.foregroundSubtle
-                    : const AppTheme.foregroundMuted,
+                    ? AppTheme.foregroundSubtle
+                    : AppTheme.foregroundMuted,
               ),
               const SizedBox(height: 12),
               Text(
@@ -1691,8 +1691,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 style: FontUtils.systemFont(
                   fontSize: 14,
                   color: themeService.isDarkMode
-                      ? const AppTheme.foregroundMuted
-                      : const AppTheme.foregroundMuted,
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                 ),
               ),
             ],
@@ -1738,41 +1738,41 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     if (isLive) {
       // 正在播放 - 绿色背景 + 绿色边框
       backgroundColor = themeService.isDarkMode
-          ? const AppTheme.success.withOpacity(0.2)
-          : const AppTheme.success.withOpacity(0.1);
-      borderColor = const AppTheme.success.withOpacity(0.3);
+          ? AppTheme.success.withOpacity(0.2)
+          : AppTheme.success.withOpacity(0.1);
+      borderColor = AppTheme.success.withOpacity(0.3);
       textColor = themeService.isDarkMode
-          ? const AppTheme.success
-          : const AppTheme.success;
+          ? AppTheme.success
+          : AppTheme.success;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.success
-          : const AppTheme.success;
+          ? AppTheme.success
+          : AppTheme.success;
     } else if (isPast) {
       // 过去的节目 - 灰色背景 + 灰色边框
       backgroundColor = themeService.isDarkMode
-          ? const AppTheme.gray700.withOpacity(0.5)
-          : const AppTheme.gray300.withOpacity(0.5);
+          ? AppTheme.gray700.withOpacity(0.5)
+          : AppTheme.gray300.withOpacity(0.5);
       borderColor = themeService.isDarkMode
-          ? const AppTheme.gray600
-          : const AppTheme.gray300;
+          ? AppTheme.gray600
+          : AppTheme.gray300;
       textColor = themeService.isDarkMode
-          ? const AppTheme.foregroundMuted
-          : const AppTheme.foregroundSubtle;
+          ? AppTheme.foregroundMuted
+          : AppTheme.foregroundSubtle;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.foregroundMuted
-          : const AppTheme.foregroundSubtle;
+          ? AppTheme.foregroundMuted
+          : AppTheme.foregroundSubtle;
     } else {
       // 未开始的节目 - 蓝色背景 + 蓝色边框
       backgroundColor = themeService.isDarkMode
-          ? const AppTheme.info.withOpacity(0.2)
-          : const AppTheme.info.withOpacity(0.1);
-      borderColor = const AppTheme.info.withOpacity(0.3);
+          ? AppTheme.info.withOpacity(0.2)
+          : AppTheme.info.withOpacity(0.1);
+      borderColor = AppTheme.info.withOpacity(0.3);
       textColor = themeService.isDarkMode
-          ? const AppTheme.info
-          : const AppTheme.info;
+          ? AppTheme.info
+          : AppTheme.info;
       timeColor = themeService.isDarkMode
-          ? const AppTheme.info
-          : const AppTheme.info;
+          ? AppTheme.info
+          : AppTheme.info;
     }
 
     return Container(
@@ -1811,7 +1811,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       width: 4,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const AppTheme.success,
+                        color: AppTheme.success,
                         shape: BoxShape.circle,
                       ),
                     ),
