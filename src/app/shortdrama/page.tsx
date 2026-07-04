@@ -436,12 +436,34 @@ export default function ShortDramaPage() {
               </div>
             )}
 
-          {/* 加载状态 - 只在首次加载或加载更多时显示骨架屏 */}
+          {/* 加载状态 */}
           {loading && (isInitialLoad || page > 1) && (
             <div className='mt-8'>
+              {/* Fluent 2 动态加载指示器 */}
               <div className='flex justify-center mb-6'>
-                <div className='flex items-center gap-3 px-6 py-3 bg-white/70 dark:bg-gray-800 rounded-full border border-black/6 dark:border-white/8 shadow-sm backdrop-blur-md'>
-                  <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-[#f0b938] dark:border-gray-600 dark:border-t-[#f0b938]'></div>
+                <div
+                  className='flex items-center gap-3 px-6 py-3 rounded-full'
+                  style={{
+                    background: 'var(--color-background-subtle)',
+                    border: '1px solid var(--color-stroke-subtle)',
+                    boxShadow: 'var(--shadow-2)',
+                  }}
+                >
+                  {/* 品牌色脉冲圆点动画 */}
+                  <div className='relative flex items-center gap-1'>
+                    <span
+                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                      style={{ animationDelay: '0ms' }}
+                    ></span>
+                    <span
+                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                      style={{ animationDelay: '160ms' }}
+                    ></span>
+                    <span
+                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                      style={{ animationDelay: '320ms' }}
+                    ></span>
+                  </div>
                   <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                     加载更多短剧...
                   </span>
@@ -452,16 +474,33 @@ export default function ShortDramaPage() {
                   <div
                     key={`skeleton-${index}`}
                     className='relative overflow-hidden'
+                    style={{
+                      animation: `fluent2-fade-in 250ms cubic-bezier(0,0,0,1) ${index * 40}ms both`,
+                    }}
                   >
-                    <div className='aspect-[2/3] w-full rounded-lg bg-linear-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800'>
-                      <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
-                    </div>
-                    <div className='mt-2 h-4 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden'>
-                      <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
-                    </div>
-                    <div className='mt-1 h-3 w-2/3 rounded bg-linear-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 relative overflow-hidden'>
-                      <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
-                    </div>
+                    <div
+                      className='aspect-[2/3] w-full rounded-lg'
+                      style={{
+                        background:
+                          'linear-gradient(135deg, var(--color-background-muted), var(--color-background-subtle), var(--color-background-muted))',
+                        backgroundSize: '200% 100%',
+                        animation: 'fluent2-shimmer 1.5s ease-in-out infinite',
+                      }}
+                    />
+                    <div
+                      className='mt-2 h-4 rounded'
+                      style={{
+                        background: 'var(--color-background-muted)',
+                        width: '70%',
+                      }}
+                    />
+                    <div
+                      className='mt-1 h-3 rounded'
+                      style={{
+                        background: 'var(--color-background-muted)',
+                        width: '45%',
+                      }}
+                    />
                   </div>
                 ))}
               </div>
