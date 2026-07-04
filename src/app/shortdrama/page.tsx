@@ -125,7 +125,12 @@ export default function ShortDramaPage() {
           setDramas(result.list);
           setIsInitialLoad(false);
         } else {
-          setDramas((prev) => [...prev, ...result.list]);
+          // Deduplicate by id when loading more
+          setDramas((prev) => {
+            const existingIds = new Set(prev.map((d) => d.id));
+            const newItems = result.list.filter((d) => !existingIds.has(d.id));
+            return [...prev, ...newItems];
+          });
         }
         setHasMore(result.hasMore);
       } catch (error) {

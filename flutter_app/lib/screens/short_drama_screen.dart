@@ -175,9 +175,9 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
                   padding: EdgeInsets.all(isTablet ? 20 : 12),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: isTablet ? 5 : 3,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.55,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.62,
                   ),
                   itemCount: _dramas.length + (_hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
