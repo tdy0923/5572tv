@@ -176,12 +176,17 @@ function PlayPageClient() {
 
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [showPlaylistManager, setShowPlaylistManager] = useState(false);
-  const [aiSummary, setAiSummary] = useState<{
-    summary: string;
-    highlights: string[];
-    review: string;
-  } | null>(null);
-  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [relatedMovies, setRelatedMovies] = useState<
+    Array<{
+      id: string;
+      title: string;
+      poster: string;
+      year: string;
+      rate: string;
+      type_name: string;
+    }>
+  >([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
 
   // ACG 动漫磁力搜索状态
   const [acgTriggerSearch, setAcgTriggerSearch] = useState<boolean>();
@@ -1988,6 +1993,40 @@ function PlayPageClient() {
     saveFavoriteMutation,
     deleteFavoriteMutation,
   });
+
+  // 获取关联推荐
+  useEffect(() => {
+    if (!videoTitle || relatedLoading) return;
+    const fetchRelated = async () => {
+      setRelatedLoading(true);
+      try {
+        const res = await fetch(`/api/trending`);
+        if (res.ok) {
+          const data = await res.json();
+          const allMovies = (data.results || []).flatMap(
+            (g: any) => g.items || [],
+          );
+          // 去除当前影片，随机取6个
+          const filtered = allMovies
+            .filter((m: any) => (m.vod_name || m.title) !== videoTitle)
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 6);
+          setRelatedMovies(
+            filtered.map((m: any) => ({
+              id: String(m.vod_id || m.id),
+              title: m.vod_name || m.title || '',
+              poster: m.vod_pic || m.pic || m.poster || '',
+              year: m.vod_year || m.year || '',
+              rate: m.rate || '',
+              type_name: m.type_name || '',
+            })),
+          );
+        }
+      } catch {}
+      setRelatedLoading(false);
+    };
+    fetchRelated();
+  }, [videoTitle]);
 
   useEffect(() => {
     // 异步初始化播放器，避免SSR问题
@@ -4823,62 +4862,83 @@ function PlayPageClient() {
                 processImageUrl={processImageUrl}
               />
 
-              {/* AI 影片摘要 */}
+              {/* 兴趣关联推荐 */}
               <div className='md:col-span-3'>
-                <div className='rounded-xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>
-                  <div className='flex items-center justify-between mb-3'>
-                    <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2'>
-                      <span className='text-purple-500'>🤖</span> AI 摘要
+                <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
+                  <div className='flex items-center gap-2 mb-3'>
+                    <span className='text-sm'>🎬</span>
+                    <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200'>
+                      相关推荐
                     </h3>
-                    {!aiSummary && !aiSummaryLoading && (
-                      <button
-                        onClick={async () => {
-                          setAiSummaryLoading(true);
-                          try {
-                            const res = await fetch(
-                              `/api/ai-summary?title=${encodeURIComponent(videoTitle || '')}&description=${encodeURIComponent(detail?.desc || '')}&year=${encodeURIComponent(videoYear || '')}`,
-                            );
-                            if (res.ok) {
-                              const data = await res.json();
-                              setAiSummary(data);
-                            }
-                          } catch {}
-                          setAiSummaryLoading(false);
-                        }}
-                        className='text-xs text-purple-500 hover:text-purple-600 dark:text-purple-400'
-                      >
-                        生成摘要
-                      </button>
+                    {relatedLoading && (
+                      <span className='text-xs text-gray-400'>加载中...</span>
                     )}
                   </div>
-                  {aiSummaryLoading && (
-                    <div className='space-y-2'>
-                      <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] w-full' />
-                      <div className='h-4 bg-gray-200 dark:bg-gray-700 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] w-3/4' />
+                  {relatedLoading && (
+                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3'>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className='space-y-2'
+                          style={{ animationDelay: `${i * 50}ms` }}
+                        >
+                          <div
+                            className='aspect-[2/3] rounded-lg'
+                            style={{
+                              background: 'var(--color-background-muted)',
+                              animation:
+                                'fluent2-shimmer 1.5s ease-in-out infinite',
+                            }}
+                          />
+                          <div
+                            className='h-3 rounded'
+                            style={{
+                              background: 'var(--color-background-muted)',
+                              width: '80%',
+                            }}
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
-                  {aiSummary && (
-                    <div className='space-y-3'>
-                      <p className='text-sm text-gray-600 dark:text-gray-400'>
-                        {aiSummary.summary}
-                      </p>
-                      {aiSummary.highlights.length > 0 && (
-                        <div className='flex flex-wrap gap-1.5'>
-                          {aiSummary.highlights.map((h, i) => (
-                            <span
-                              key={h}
-                              className='px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs'
-                            >
-                              {h}
+                  {!relatedLoading && relatedMovies.length === 0 && (
+                    <p className='text-xs text-gray-400 dark:text-gray-500'>
+                      暂无相关推荐
+                    </p>
+                  )}
+                  {!relatedLoading && relatedMovies.length > 0 && (
+                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3'>
+                      {relatedMovies.map((m) => (
+                        <a
+                          key={m.id}
+                          href={`/play?source=${m.type_name === '电视剧' ? 'tv' : 'douban'}&id=${m.id}&title=${encodeURIComponent(m.title)}`}
+                          className='group block'
+                        >
+                          <div className='aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-1.5 transition-transform duration-200 group-hover:scale-105'>
+                            {m.poster && (
+                              <img
+                                src={m.poster}
+                                alt={m.title}
+                                className='w-full h-full object-cover'
+                                loading='lazy'
+                              />
+                            )}
+                          </div>
+                          <p className='text-xs font-medium text-gray-700 dark:text-gray-300 truncate'>
+                            {m.title}
+                          </p>
+                          <div className='flex items-center gap-1 mt-0.5'>
+                            <span className='text-[10px] text-gray-400'>
+                              {m.year}
                             </span>
-                          ))}
-                        </div>
-                      )}
-                      {aiSummary.review && (
-                        <p className='text-xs text-gray-500 dark:text-gray-400 italic'>
-                          「{aiSummary.review}」
-                        </p>
-                      )}
+                            {m.rate && (
+                              <span className='text-[10px] text-amber-500'>
+                                ★ {m.rate}
+                              </span>
+                            )}
+                          </div>
+                        </a>
+                      ))}
                     </div>
                   )}
                 </div>
