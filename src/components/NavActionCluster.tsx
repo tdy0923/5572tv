@@ -22,8 +22,8 @@ export function NavActionCluster({
   announcementLabel = '公告',
   compact = false,
 }: NavActionClusterProps) {
-  const actionHeight = compact ? 'h-9' : 'h-10';
-  const iconClass = compact ? 'h-4 w-4' : 'h-[18px] w-[18px]';
+  const actionHeight = compact ? 'h-10' : 'h-10';
+  const iconClass = 'h-5 w-5';
   const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
 
   return (

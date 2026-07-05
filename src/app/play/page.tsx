@@ -4619,7 +4619,7 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-[480px] xl:h-[560px] min-h-[200px] sm:min-h-[240px] max-h-[calc(100vh-300px)]'>
+                  <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-full min-h-[200px] sm:min-h-[240px]'>
                     <div
                       ref={artRef}
                       className='bg-black w-full h-full rounded-xl shadow-lg'
@@ -4716,7 +4716,7 @@ function PlayPageClient() {
                   className={`md:overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
                       ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 md:col-span-1'
-                      : 'max-h-[40vh] md:max-h-[280px] lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
+                      : 'max-h-[50vh] md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
                   }`}
                 >
                   <EpisodeSelector
