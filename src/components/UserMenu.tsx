@@ -729,7 +729,7 @@ export const UserMenu: React.FC = () => {
         <div className='py-1'>
           {/* 设置按钮 */}
           <button onClick={handleSettings} className='ui-menu-button'>
-            <Settings className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+            <Settings className='w-5 h-5 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>设置</span>
           </button>
 
@@ -739,7 +739,7 @@ export const UserMenu: React.FC = () => {
               onClick={handleWatchingUpdates}
               className='ui-menu-button relative'
             >
-              <Bell className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <Bell className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>更新提醒</span>
               {hasUnreadUpdates && totalUpdates > 0 && (
                 <div className='ml-auto flex items-center gap-1'>
@@ -757,7 +757,7 @@ export const UserMenu: React.FC = () => {
               onClick={handleContinueWatching}
               className='ui-menu-button relative'
             >
-              <PlayCircle className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <PlayCircle className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>继续观看</span>
               {playRecords.length > 0 && (
                 <span className='ml-auto text-xs text-gray-400'>
@@ -773,7 +773,7 @@ export const UserMenu: React.FC = () => {
               onClick={handleFavorites}
               className='ui-menu-button relative'
             >
-              <Heart className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <Heart className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>我的收藏</span>
               {favorites.length > 0 && (
                 <span className='ml-auto text-xs text-gray-400'>
@@ -786,7 +786,7 @@ export const UserMenu: React.FC = () => {
           {/* 管理面板按钮 */}
           {showAdminPanel && (
             <button onClick={handleAdminPanel} className='ui-menu-button'>
-              <Shield className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <Shield className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>管理面板</span>
             </button>
           )}
@@ -794,7 +794,7 @@ export const UserMenu: React.FC = () => {
           {/* 统计入口 */}
           {showPlayStats && (
             <button onClick={handlePlayStats} className='ui-menu-button'>
-              <BarChart3 className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <BarChart3 className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>
                 {authInfo?.role === 'owner' || authInfo?.role === 'admin'
                   ? '统计中心'
@@ -805,20 +805,20 @@ export const UserMenu: React.FC = () => {
 
           {/* 上映日程按钮 */}
           <button onClick={handleReleaseCalendar} className='ui-menu-button'>
-            <Calendar className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+            <Calendar className='w-5 h-5 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>上映日程</span>
           </button>
 
           {/* TVBox配置按钮 */}
           <button onClick={handleTVBoxConfig} className='ui-menu-button'>
-            <Tv className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+            <Tv className='w-5 h-5 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>TVBox 配置</span>
           </button>
 
           {/* 观影室按钮 */}
           {showWatchRoom && (
             <button onClick={handleWatchRoom} className='ui-menu-button'>
-              <Users className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <Users className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>观影室</span>
             </button>
           )}
@@ -832,7 +832,7 @@ export const UserMenu: React.FC = () => {
               }}
               className='ui-menu-button'
             >
-              <Download className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <Download className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>下载管理</span>
               {tasks.filter((t) => t.status === 'downloading').length > 0 && (
                 <span className='ml-auto flex items-center gap-1'>
@@ -858,7 +858,7 @@ export const UserMenu: React.FC = () => {
           {/* 修改密码按钮 */}
           {showChangePassword && (
             <button onClick={handleChangePassword} className='ui-menu-button'>
-              <KeyRound className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+              <KeyRound className='w-5 h-5 text-gray-500 dark:text-gray-400' />
               <span className='font-medium'>修改密码</span>
             </button>
           )}
@@ -871,7 +871,7 @@ export const UserMenu: React.FC = () => {
             onClick={handleLogout}
             className='flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-600 transition-all duration-200 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-300'
           >
-            <LogOut className='w-4 h-4' />
+            <LogOut className='w-5 h-5' />
             <span className='font-medium'>登出</span>
           </button>
 

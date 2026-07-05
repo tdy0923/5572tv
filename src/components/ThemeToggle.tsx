@@ -41,7 +41,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     // 渲染一个占位符以避免布局偏移
-    return <div className='h-11 w-11' />;
+    return <div className='h-10 w-10' />;
   }
 
   const toggleTheme = () => {
