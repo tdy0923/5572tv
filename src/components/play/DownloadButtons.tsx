@@ -34,7 +34,7 @@ const DownloadButtons = memo(function DownloadButtons({
         title='下载视频'
       >
         <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/0 to-transparent group-hover:via-white/30 dark:group-hover:via-white/10 transition-all duration-500'></div>
-        <Download className='relative z-10 w-3.5 sm:w-4 h-3.5 sm:h-4 text-gray-600 dark:text-gray-400' />
+        <Download className='relative z-10 w-5 h-5 text-gray-600 dark:text-gray-400' />
         <span className='relative z-10 hidden sm:inline text-xs font-medium text-gray-600 dark:text-gray-300'>
           下载
         </span>

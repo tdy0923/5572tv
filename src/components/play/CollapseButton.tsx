@@ -17,7 +17,7 @@ export default function CollapseButton({
     >
       <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/0 to-transparent group-hover:via-white/30 dark:group-hover:via-white/10 transition-all duration-500'></div>
       <svg
-        className={`relative z-10 w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
+        className={`relative z-10 w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
           isCollapsed ? 'rotate-180' : 'rotate-0'
         }`}
         fill='none'
