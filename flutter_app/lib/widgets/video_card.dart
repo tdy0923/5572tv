@@ -43,11 +43,6 @@ class VideoCard extends StatefulWidget {
 class _VideoCardState extends State<VideoCard> {
   bool _isHovered = false;
   bool _isFocused = false;
-  bool _isPlayButtonHovered = false;
-  bool _isDeleteButtonHovered = false;
-  bool _isFavoriteButtonHovered = false;
-  bool _isLinkButtonHovered = false;
-  bool _isSourceCountBadgeHovered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -290,11 +285,11 @@ class _VideoCardState extends State<VideoCard> {
                                 duration: const Duration(milliseconds: 200),
                                 child: MouseRegion(
                                   onEnter: (_) => setState(
-                                      () => _isPlayButtonHovered = true),
+                                      () => _isHovered = true),
                                   onExit: (_) => setState(
-                                      () => _isPlayButtonHovered = false),
+                                      () => _isHovered = false),
                                   child: AnimatedScale(
-                                    scale: _isPlayButtonHovered ? 1.1 : 1.0,
+                                    scale: _isHovered ? 1.1 : 1.0,
                                     duration: const Duration(milliseconds: 200),
                                     curve: Curves.easeInOut,
                                     child: AnimatedContainer(
@@ -304,7 +299,7 @@ class _VideoCardState extends State<VideoCard> {
                                       height: 60,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: _isPlayButtonHovered
+                                        color: _isHovered
                                             ? AppTheme.success
                                             : Colors.transparent,
                                         border: Border.all(
@@ -338,13 +333,13 @@ class _VideoCardState extends State<VideoCard> {
                               duration: const Duration(milliseconds: 200),
                               child: MouseRegion(
                                 onEnter: (_) =>
-                                    setState(() => _isLinkButtonHovered = true),
+                                    setState(() => _isHovered = true),
                                 onExit: (_) => setState(
-                                    () => _isLinkButtonHovered = false),
+                                    () => _isHovered = false),
                                 child: GestureDetector(
                                   onTap: () => _handleLinkButtonTap(),
                                   child: AnimatedScale(
-                                    scale: _isLinkButtonHovered ? 1.05 : 1.0,
+                                    scale: _isHovered ? 1.05 : 1.0,
                                     duration: const Duration(milliseconds: 200),
                                     curve: Curves.easeInOut,
                                     child: Container(
@@ -376,14 +371,14 @@ class _VideoCardState extends State<VideoCard> {
                               duration: const Duration(milliseconds: 200),
                               child: MouseRegion(
                                 onEnter: (_) => setState(
-                                    () => _isSourceCountBadgeHovered = true),
+                                    () => _isHovered = true),
                                 onExit: (_) => setState(
-                                    () => _isSourceCountBadgeHovered = false),
+                                    () => _isHovered = false),
                                 child: GestureDetector(
                                   onTap: () => _showSourcesDialog(context),
                                   child: AnimatedScale(
                                     scale:
-                                        _isSourceCountBadgeHovered ? 1.1 : 1.0,
+                                        _isHovered ? 1.1 : 1.0,
                                     duration: const Duration(milliseconds: 200),
                                     curve: Curves.easeInOut,
                                     child: Container(
@@ -423,20 +418,20 @@ class _VideoCardState extends State<VideoCard> {
                                 children: [
                                   MouseRegion(
                                     onEnter: (_) => setState(
-                                        () => _isDeleteButtonHovered = true),
+                                        () => _isHovered = true),
                                     onExit: (_) => setState(
-                                        () => _isDeleteButtonHovered = false),
+                                        () => _isHovered = false),
                                     child: GestureDetector(
                                       onTap: () => _handleDeleteButtonTap(),
                                       child: AnimatedScale(
                                         scale:
-                                            _isDeleteButtonHovered ? 1.05 : 1.0,
+                                            _isHovered ? 1.05 : 1.0,
                                         duration:
                                             const Duration(milliseconds: 200),
                                         curve: Curves.easeInOut,
                                         child: Icon(
                                           LucideIcons.trash2,
-                                          color: _isDeleteButtonHovered
+                                          color: _isHovered
                                               ? Colors.red
                                               : Colors.white,
                                           size: 24,
@@ -447,13 +442,13 @@ class _VideoCardState extends State<VideoCard> {
                                   const SizedBox(width: 12),
                                   MouseRegion(
                                     onEnter: (_) => setState(
-                                        () => _isFavoriteButtonHovered = true),
+                                        () => _isHovered = true),
                                     onExit: (_) => setState(
-                                        () => _isFavoriteButtonHovered = false),
+                                        () => _isHovered = false),
                                     child: GestureDetector(
                                       onTap: () => _handleFavoriteButtonTap(),
                                       child: AnimatedScale(
-                                        scale: _isFavoriteButtonHovered
+                                        scale: _isHovered
                                             ? 1.05
                                             : 1.0,
                                         duration:
@@ -465,7 +460,7 @@ class _VideoCardState extends State<VideoCard> {
                                               : LucideIcons.heart,
                                           color: widget.isFavorited
                                               ? Colors.red
-                                              : (_isFavoriteButtonHovered
+                                              : (_isHovered
                                                   ? Colors.red
                                                   : Colors.white),
                                           size: 24,
@@ -488,14 +483,14 @@ class _VideoCardState extends State<VideoCard> {
                               duration: const Duration(milliseconds: 200),
                               child: MouseRegion(
                                 onEnter: (_) => setState(
-                                    () => _isFavoriteButtonHovered = true),
+                                    () => _isHovered = true),
                                 onExit: (_) => setState(
-                                    () => _isFavoriteButtonHovered = false),
+                                    () => _isHovered = false),
                                 child: GestureDetector(
                                   onTap: () => _handleFavoriteButtonTap(),
                                   child: AnimatedScale(
                                     scale:
-                                        _isFavoriteButtonHovered ? 1.05 : 1.0,
+                                        _isHovered ? 1.05 : 1.0,
                                     duration: const Duration(milliseconds: 200),
                                     curve: Curves.easeInOut,
                                     child: Icon(
@@ -504,7 +499,7 @@ class _VideoCardState extends State<VideoCard> {
                                           : LucideIcons.heart,
                                       color: widget.isFavorited
                                           ? Colors.red
-                                          : (_isFavoriteButtonHovered
+                                          : (_isHovered
                                               ? Colors.red
                                               : Colors.white),
                                       size: 24,
