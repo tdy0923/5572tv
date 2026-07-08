@@ -874,8 +874,9 @@ const TVBoxSecurityConfig = ({
                     {diagnoseResult.spiderPrivate !== undefined && (
                       <div className='text-xs'>
                         {diagnoseResult.spiderPrivate ? (
-                          <span className='text-yellow-600 dark:text-yellow-400'>
-                            ⚠ Spider 是私网地址
+                          <span className='text-yellow-600 dark:text-yellow-400 inline-flex items-center gap-1'>
+                            <AlertTriangle className='w-4 h-4' /> Spider
+                            是私网地址
                           </span>
                         ) : (
                           <span className='text-green-600 dark:text-green-400 inline-flex items-center gap-1'>

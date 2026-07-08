@@ -1431,7 +1431,7 @@ function PlayPageClient() {
       setLoadingStage(
         currentSource && currentId ? 'fetching' : 'searching',
         currentSource && currentId
-          ? '🎬 正在获取视频详情...'
+          ? '正在获取视频详情...'
           : '🔍 正在搜索播放源...',
       );
 
@@ -3214,7 +3214,7 @@ function PlayPageClient() {
                       artPlayerRef.current.video as HTMLVideoElement
                     ).style.filter = `brightness(${newBright})`;
                   const indicator = createIndicator(
-                    `☀️ ${Math.round(newBright * 100)}%`,
+                    `${Math.round(newBright * 100)}%`,
                   );
                   if (indicator) indicator.style.opacity = '1';
                 }
