@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
   BellRing,
+  Check,
   ExternalLink,
   Heart,
   Link,
@@ -1403,7 +1404,7 @@ function VideoCard({
                 return false;
               }}
             >
-              <span className='text-green-400'>✓</span>
+              <Check className='w-4 h-4 text-green-400' />
               <span>已完结</span>
             </div>
           )}

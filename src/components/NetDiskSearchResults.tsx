@@ -9,6 +9,7 @@ import {
   EyeSlashIcon,
   LinkIcon,
 } from '@heroicons/react/24/outline';
+import { CheckCircle, Cloud, Folder, Lightbulb } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface NetDiskLink {
@@ -32,14 +33,14 @@ const CLOUD_TYPES = {
     name: '百度网盘',
     color: 'bg-blue-500',
     lightColor: 'bg-blue-500/10 hover:bg-blue-500/20',
-    icon: '📁',
+    icon: 'Folder',
     domain: 'pan.baidu.com',
   },
   aliyun: {
     name: '阿里云盘',
     color: 'bg-orange-500',
     lightColor: 'bg-orange-500/10 hover:bg-orange-500/20',
-    icon: '☁️',
+    icon: 'Cloud',
     domain: 'alipan.com',
   },
   quark: {
@@ -278,7 +279,8 @@ export default function NetDiskSearchResults({
               <div
                 className={`text-xs ${isFunctionDisabled ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}
               >
-                💡 <strong>解决方案：</strong>
+                <Lightbulb className='w-4 h-4 inline' />{' '}
+                <strong>解决方案：</strong>
                 {isFunctionDisabled ? (
                   <div className='mt-1'>
                     • 联系管理员启用网盘搜索功能
@@ -361,7 +363,7 @@ export default function NetDiskSearchResults({
                 </svg>
                 <div className='absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20'>
                   <div className='text-center'>
-                    💡 使用技巧：
+                    <Lightbulb className='w-4 h-4 inline' /> 使用技巧：
                     <br />
                     • 显示全部：点击标签快速跳转
                     <br />• 仅显示选中：点击标签筛选显示
@@ -489,7 +491,8 @@ export default function NetDiskSearchResults({
                       />
                     </svg>
                     <span>
-                      ✅ 已选择 <strong>{selectedFilter.length}</strong>{' '}
+                      <CheckCircle className='w-4 h-4 inline' /> 已选择{' '}
+                      <strong>{selectedFilter.length}</strong>{' '}
                       种网盘类型，点击标签可取消选择
                     </span>
                   </div>
@@ -548,7 +551,13 @@ export default function NetDiskSearchResults({
               >
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center space-x-2'>
-                    <span className='text-lg'>{cloudType.icon}</span>
+                    {cloudType.icon === 'Folder' ? (
+                      <Folder className='w-5 h-5' />
+                    ) : cloudType.icon === 'Cloud' ? (
+                      <Cloud className='w-5 h-5' />
+                    ) : (
+                      <span className='text-lg'>{cloudType.icon}</span>
+                    )}
                     <h3 className='font-medium'>{cloudType.name}</h3>
                     <span className='bg-white/20 px-2 py-1 rounded-full text-xs'>
                       {links.length} 个链接

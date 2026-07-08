@@ -1,6 +1,13 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, Save, Send } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Lightbulb,
+  Save,
+  Send,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useConfigMessage } from '@/hooks/useConfigMessage';
@@ -94,7 +101,8 @@ export function TelegramAuthConfig({
               <li>启用配置并保存</li>
             </ol>
             <p className='text-xs text-blue-600 dark:text-blue-300 mt-2'>
-              💡 工作原理：用户输入 Telegram 用户名后，系统会通过 Bot
+              <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+              工作原理：用户输入 Telegram 用户名后，系统会通过 Bot
               发送登录链接到用户的 Telegram，用户点击链接即可登录
             </p>
           </div>
@@ -106,7 +114,9 @@ export function TelegramAuthConfig({
         <div className='flex gap-3'>
           <AlertCircle className='w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5' />
           <div className='text-sm text-yellow-800 dark:text-yellow-200 space-y-2'>
-            <p className='font-semibold'>⚠️ 重要提示：Webhook 绑定限制</p>
+            <p className='font-semibold flex items-center gap-1.5'>
+              <AlertTriangle className='w-4 h-4' /> 重要提示：Webhook 绑定限制
+            </p>
             <ul className='list-disc list-inside space-y-1 ml-2'>
               <li>
                 <strong>

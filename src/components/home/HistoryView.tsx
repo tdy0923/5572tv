@@ -1,5 +1,7 @@
 'use client';
 
+import { Film } from 'lucide-react';
+
 interface HistoryViewProps {
   historyTimeline: Record<string, any[]>;
 }
@@ -42,8 +44,8 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
                           className='w-full h-full object-cover group-hover:scale-105 transition-transform'
                         />
                       ) : (
-                        <div className='w-full h-full flex items-center justify-center text-gray-400 text-2xl'>
-                          🎬
+                        <div className='w-full h-full flex items-center justify-center text-gray-400'>
+                          <Film className='w-8 h-8' />
                         </div>
                       )}
                     </div>

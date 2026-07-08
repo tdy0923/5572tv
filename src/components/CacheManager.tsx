@@ -164,7 +164,7 @@ export default function CacheManager() {
   const clearAllCache = async () => {
     if (
       !confirm(
-        '⚠️ 确定要清理所有缓存吗？这将清除豆瓣、短剧、TMDB、弹幕、网盘搜索等所有缓存数据。',
+        '确定要清理所有缓存吗？这将清除豆瓣、短剧、TMDB、弹幕、网盘搜索等所有缓存数据。',
       )
     ) {
       return;

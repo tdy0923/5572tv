@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Lock } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -74,8 +74,8 @@ export default function WarningPage() {
           </div>
 
           <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4'>
-            <h3 className='text-base sm:text-lg font-semibold text-yellow-800 mb-2'>
-              🔒 安全配置建议
+            <h3 className='text-base sm:text-lg font-semibold text-yellow-800 mb-2 flex items-center gap-2'>
+              <Lock className='w-5 h-5' /> 安全配置建议
             </h3>
             <p className='text-sm sm:text-base text-yellow-700'>
               请立即配置{' '}

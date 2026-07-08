@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Film, Lightbulb, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
@@ -107,7 +107,10 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
                 clipRule='evenodd'
               />
             </svg>
-            <span>🎬 配置短剧视频的解析API，支持主API和备用API自动切换</span>
+            <span>
+              <Film className='w-4 h-4 inline' />{' '}
+              配置短剧视频的解析API，支持主API和备用API自动切换
+            </span>
           </div>
         </div>
 
@@ -171,8 +174,8 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
                 当主API不可用时使用的备用解析API地址
               </p>
               <div className='p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg'>
-                <p className='text-yellow-700 dark:text-yellow-300 text-xs font-medium mb-1'>
-                  🔒 隐私保护
+                <p className='text-yellow-700 dark:text-yellow-300 text-xs font-medium mb-1 flex items-center gap-1'>
+                  <Lock className='w-3.5 h-3.5' /> 隐私保护
                 </p>
                 <p className='text-yellow-700 dark:text-yellow-300 text-xs'>
                   • 备用API地址<strong>仅存储在服务器</strong>
@@ -187,8 +190,8 @@ const ShortDramaConfig = ({ config, refreshConfig }: ShortDramaConfigProps) => {
                 </p>
               </div>
               <div className='p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg'>
-                <p className='text-blue-700 dark:text-blue-300 text-xs font-medium mb-1'>
-                  💡 工作原理
+                <p className='text-blue-700 dark:text-blue-300 text-xs font-medium mb-1 flex items-center gap-1'>
+                  <Lightbulb className='w-3.5 h-3.5' /> 工作原理
                 </p>
                 <p className='text-blue-700 dark:text-blue-300 text-xs'>
                   1. 首先尝试使用<strong>主API</strong>解析视频

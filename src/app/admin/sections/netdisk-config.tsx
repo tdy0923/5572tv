@@ -1,5 +1,6 @@
 'use client';
 
+import { Cloud, Folder } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
@@ -14,8 +15,8 @@ import {
 } from '../admin-utils';
 
 const CLOUD_TYPE_OPTIONS = [
-  { key: 'baidu', name: '百度网盘', icon: '📁' },
-  { key: 'aliyun', name: '阿里云盘', icon: '☁️' },
+  { key: 'baidu', name: '百度网盘', icon: 'Folder' },
+  { key: 'aliyun', name: '阿里云盘', icon: 'Cloud' },
   { key: 'quark', name: '夸克网盘', icon: '⚡' },
   { key: 'tianyi', name: '天翼云盘', icon: '📱' },
   { key: 'uc', name: 'UC网盘', icon: '🌐' },
@@ -217,7 +218,13 @@ export default function NetDiskConfig({
                 }
                 className='w-4 h-4 text-blue-600 border-gray-300 rounded'
               />
-              <span className='text-lg'>{option.icon}</span>
+              {option.icon === 'Folder' ? (
+                <Folder className='w-5 h-5' />
+              ) : option.icon === 'Cloud' ? (
+                <Cloud className='w-5 h-5' />
+              ) : (
+                <span className='text-lg'>{option.icon}</span>
+              )}
               <span className='text-sm font-medium'>{option.name}</span>
             </label>
           ))}

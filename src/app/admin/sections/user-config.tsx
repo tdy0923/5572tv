@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Search } from 'lucide-react';
+import { CheckCircle, Search, Tag, Tv } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -347,7 +347,7 @@ export default function UserConfig({
           onClick={() => setActiveTab('groups')}
           className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${activeTab === 'groups' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400'}`}
         >
-          🏷️ 分组 ({userGroups.length})
+          <Tag className='w-4 h-4 inline' /> 分组 ({userGroups.length})
         </button>
       </div>
 
@@ -415,7 +415,7 @@ export default function UserConfig({
                   onClick={handleAddUser}
                   className='px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600'
                 >
-                  ✅ 确认
+                  <CheckCircle className='w-4 h-4 inline' /> 确认
                 </button>
                 <button
                   onClick={() => setShowAddUserForm(false)}
@@ -720,7 +720,7 @@ export default function UserConfig({
               >
                 <div className='flex items-center justify-between mb-2'>
                   <div className='flex items-center gap-2'>
-                    <span className='text-lg'>🏷️</span>
+                    <Tag className='w-5 h-5' />
                     <span className='text-sm font-semibold text-gray-900 dark:text-white'>
                       {group.name}
                     </span>
@@ -743,7 +743,10 @@ export default function UserConfig({
                   )}
                 </div>
                 <div className='text-xs text-gray-500 dark:text-gray-400 space-y-1'>
-                  <div>📺 可用源: {group.enabledApis?.length || '全部'}</div>
+                  <div>
+                    <Tv className='w-4 h-4 inline' /> 可用源:{' '}
+                    {group.enabledApis?.length || '全部'}
+                  </div>
                   <div>
                     🔞 成人内容: {group.showAdultContent ? '允许' : '禁止'}
                   </div>
@@ -760,7 +763,7 @@ export default function UserConfig({
           <div className='bg-white dark:bg-gray-800 rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl'>
             <div className='px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0'>
               <h3 className='text-lg font-semibold'>
-                🏷️ 编辑分组: {editGroupName}
+                <Tag className='w-5 h-5 inline' /> 编辑分组: {editGroupName}
               </h3>
             </div>
             <div className='flex-1 overflow-y-auto px-6 py-4 space-y-6'>
@@ -844,7 +847,9 @@ export default function UserConfig({
               {/* 源权限 */}
               <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl'>
                 <div className='flex items-center justify-between mb-3'>
-                  <h4 className='text-sm font-semibold'>📺 视频源权限</h4>
+                  <h4 className='text-sm font-semibold flex items-center gap-1'>
+                    <Tv className='w-4 h-4' /> 视频源权限
+                  </h4>
                   <span className='text-xs text-gray-500'>
                     {editingGroupApis.length === 0
                       ? '全部源'

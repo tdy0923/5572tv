@@ -1,5 +1,7 @@
 'use client';
 
+import { Check } from 'lucide-react';
+
 import type { StreamModeSupport, StreamSaverMode } from '@/lib/download';
 import { getStreamModeDescription, getStreamModeName } from '@/lib/download';
 
@@ -144,7 +146,7 @@ export function DownloadSettingsModal({
                   />
                   <div className='flex-1'>
                     <div className='flex items-center gap-2'>
-                      <span className='text-green-500 font-bold'>✓</span>
+                      <Check className='w-4 h-4 text-green-500 font-bold' />
                       <span className='font-medium text-gray-900 dark:text-white'>
                         {getStreamModeName('disabled')}
                       </span>
@@ -175,7 +177,7 @@ export function DownloadSettingsModal({
                   <div className='flex-1'>
                     <div className='flex items-center gap-2'>
                       {streamModeSupport.serviceWorker ? (
-                        <span className='text-green-500 font-bold'>✓</span>
+                        <Check className='w-4 h-4 text-green-500 font-bold' />
                       ) : (
                         <span className='text-red-500 font-bold'>✗</span>
                       )}
@@ -215,7 +217,7 @@ export function DownloadSettingsModal({
                   <div className='flex-1'>
                     <div className='flex items-center gap-2'>
                       {streamModeSupport.fileSystem ? (
-                        <span className='text-green-500 font-bold'>✓</span>
+                        <Check className='w-4 h-4 text-green-500 font-bold' />
                       ) : (
                         <span className='text-red-500 font-bold'>✗</span>
                       )}

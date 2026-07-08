@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 'use client';
 
+import { Clapperboard, Film, Lightbulb, Settings, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
@@ -960,7 +961,7 @@ export default function SkipController({
             {/* 标题栏带关闭按钮 */}
             <div className='flex items-center justify-between mb-6 border-b border-gray-200/50 dark:border-gray-700/50 pb-4'>
               <h3 className='text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
-                <span className='text-2xl'>⚙️</span>
+                <Settings className='w-6 h-6' />
                 智能跳过设置
               </h3>
               <button
@@ -1047,7 +1048,7 @@ export default function SkipController({
               {/* 片头设置 */}
               <div className='space-y-4 bg-linear-to-br from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 p-4 rounded-xl border border-green-100/50 dark:border-green-800/50 backdrop-blur-sm'>
                 <h4 className='font-semibold text-gray-900 dark:text-gray-100 border-b border-green-200/50 dark:border-green-700/50 pb-2 flex items-center gap-2'>
-                  <span className='text-xl'>🎬</span>
+                  <Film className='w-5 h-5' />
                   片头设置
                 </h4>
 
@@ -1104,7 +1105,7 @@ export default function SkipController({
               {/* 片尾设置 */}
               <div className='space-y-4 bg-linear-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-xl border border-purple-100/50 dark:border-purple-800/50 backdrop-blur-sm'>
                 <h4 className='font-semibold text-gray-900 dark:text-gray-100 border-b border-purple-200/50 dark:border-purple-700/50 pb-2 flex items-center gap-2'>
-                  <span className='text-xl'>🎭</span>
+                  <Clapperboard className='w-5 h-5' />
                   片尾设置
                 </h4>
 
@@ -1234,16 +1235,19 @@ export default function SkipController({
                     📝 使用说明：
                   </p>
                   <p>
-                    🎬 <strong>片头设置:</strong> 播放到片头结束位置，点击"📍
+                    <Film className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    <strong>片头设置:</strong> 播放到片头结束位置，点击"📍
                     标记"按钮
                   </p>
                   <p>
-                    🎭 <strong>片尾设置:</strong> 播放到片尾开始位置，点击"📍
+                    <Clapperboard className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    <strong>片尾设置:</strong> 播放到片尾开始位置，点击"📍
                     标记"按钮
                   </p>
                   <p>💾 设置完成后点击"保存智能配置"即可</p>
                   <p className='mt-2'>
-                    💡 也可手动输入时间，支持格式: 1:30 (1分30秒) 或 90 (90秒)
+                    <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    也可手动输入时间，支持格式: 1:30 (1分30秒) 或 90 (90秒)
                   </p>
                 </div>
               </div>
@@ -1260,7 +1264,7 @@ export default function SkipController({
                 onClick={handleCloseDialog}
                 className='flex-1 px-6 py-3 bg-linear-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-sm'
               >
-                ❌ 取消
+                <XCircle className='w-5 h-5' /> 取消
               </button>
             </div>
 
@@ -1583,7 +1587,17 @@ export default function SkipController({
                 >
                   <span className='text-gray-800 dark:text-gray-200 flex-1 mr-2'>
                     <span className='font-medium'>
-                      {segment.type === 'opening' ? '🎬片头' : '🎭片尾'}
+                      {segment.type === 'opening' ? (
+                        <>
+                          <Film className='inline-block w-4 h-4 align-text-bottom' />
+                          片头
+                        </>
+                      ) : (
+                        <>
+                          <Clapperboard className='inline-block w-4 h-4 align-text-bottom' />
+                          片尾
+                        </>
+                      )}
                     </span>
                     <br />
                     <span className='text-gray-600 dark:text-gray-400'>

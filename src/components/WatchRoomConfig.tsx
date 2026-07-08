@@ -3,6 +3,7 @@
 
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   ExternalLink,
   Info,
@@ -267,7 +268,9 @@ const WatchRoomConfig = ({ config, refreshConfig }: WatchRoomConfigProps) => {
         <div className='flex items-start gap-3'>
           <AlertCircle className='w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5' />
           <div className='text-sm text-yellow-800 dark:text-yellow-200'>
-            <p className='font-medium mb-2'>⚠️ 重要提示：多站点共享</p>
+            <p className='font-medium mb-2'>
+              <AlertTriangle className='w-4 h-4 inline' /> 重要提示：多站点共享
+            </p>
             <ul className='space-y-1 list-disc list-inside'>
               <li>
                 <strong>

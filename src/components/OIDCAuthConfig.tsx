@@ -2,10 +2,12 @@
 
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Edit2,
   Globe,
   KeyRound,
+  Lightbulb,
   Plus,
   Save,
   Trash2,
@@ -408,7 +410,8 @@ export function OIDCAuthConfig({
                   </li>
                 </ul>
                 <p className='text-xs text-blue-600 dark:text-blue-300 mt-2'>
-                  💡 填写 Issuer URL 后点击"自动发现"可自动获取端点配置
+                  <Lightbulb className='w-4 h-4 inline' /> 填写 Issuer URL
+                  后点击"自动发现"可自动获取端点配置
                 </p>
               </div>
             </div>
@@ -837,7 +840,7 @@ function ProviderEditModal({
                 <div className='mt-1 text-xs text-gray-500 dark:text-gray-400 space-y-2'>
                   <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-2'>
                     <p className='font-semibold text-yellow-800 dark:text-yellow-200'>
-                      ⚠️ ID 规则说明：
+                      <AlertTriangle className='w-4 h-4 inline' /> ID 规则说明：
                     </p>
                   </div>
                   <div>

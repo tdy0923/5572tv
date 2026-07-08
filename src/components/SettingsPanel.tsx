@@ -1,6 +1,14 @@
 'use client';
 
-import { Check, ChevronDown, ExternalLink, RotateCcw, X } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  ExternalLink,
+  Film,
+  Lightbulb,
+  RotateCcw,
+  X,
+} from 'lucide-react';
 import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -949,9 +957,11 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                   onChange={handleRequireClearConfirmationToggle}
                 />
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800'>
-                💡
-                这些设置会作为新视频的默认配置。对于已配置的视频，请在播放页面的"跳过设置"中单独调整。
+              <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 flex items-start gap-2'>
+                <Lightbulb className='w-4 h-4 shrink-0 mt-0.5' />
+                <span>
+                  这些设置会作为新视频的默认配置。对于已配置的视频，请在播放页面的"跳过设置"中单独调整。
+                </span>
               </div>
             </div>
 
@@ -1095,7 +1105,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                     <div
                       className={`text-2xl ${downloadFormat === 'MP4' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}
                     >
-                      🎬
+                      <Film className='w-6 h-6' />
                     </div>
                     <div className='text-center'>
                       <div
@@ -1125,9 +1135,11 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                   </div>
                 </button>
               </div>
-              <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800'>
-                💡
-                TS格式下载速度快，兼容性好；MP4格式经过转码，体积略小，兼容性更广
+              <div className='text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800 flex items-start gap-2'>
+                <Lightbulb className='w-4 h-4 shrink-0 mt-0.5' />
+                <span>
+                  TS格式下载速度快，兼容性好；MP4格式经过转码，体积略小，兼容性更广
+                </span>
               </div>
             </div>
           </div>

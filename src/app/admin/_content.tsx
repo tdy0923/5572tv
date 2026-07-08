@@ -6,6 +6,7 @@
 
 import {
   Activity,
+  AlertTriangle,
   Brain,
   Database,
   Download,
@@ -1403,8 +1404,8 @@ function AdminPageClient() {
                           d='M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
                         />
                       </svg>
-                      <span className='text-sm font-medium text-yellow-800 dark:text-yellow-300'>
-                        ⚠️ 危险操作警告
+                      <span className='text-sm font-medium text-yellow-800 dark:text-yellow-300 flex items-center gap-1'>
+                        <AlertTriangle className='w-4 h-4' /> 危险操作警告
                       </span>
                     </div>
                     <p className='text-sm text-yellow-700 dark:text-yellow-400'>

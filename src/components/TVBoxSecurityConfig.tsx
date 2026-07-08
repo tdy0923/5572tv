@@ -2,10 +2,14 @@
 
 import {
   AlertCircle,
+  AlertTriangle,
+  Check,
   CheckCircle,
   Copy,
   ExternalLink,
+  Lightbulb,
   Shield,
+  XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -627,8 +631,8 @@ const TVBoxSecurityConfig = ({
               </div>
 
               <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3'>
-                <h4 className='text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2'>
-                  💡 功能说明
+                <h4 className='text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-1.5'>
+                  <Lightbulb className='w-4 h-4' /> 功能说明
                 </h4>
                 <ul className='text-xs text-blue-800 dark:text-blue-300 space-y-1'>
                   <li>• 通过Cloudflare全球CDN加速视频源API访问</li>
@@ -639,8 +643,8 @@ const TVBoxSecurityConfig = ({
               </div>
 
               <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3'>
-                <h4 className='text-sm font-semibold text-yellow-900 dark:text-yellow-300 mb-2'>
-                  ⚠️ 部署说明
+                <h4 className='text-sm font-semibold text-yellow-900 dark:text-yellow-300 mb-2 flex items-center gap-1.5'>
+                  <AlertTriangle className='w-4 h-4' /> 部署说明
                 </h4>
                 <p className='text-xs text-yellow-800 dark:text-yellow-300'>
                   如需自定义部署，可参考：
@@ -718,8 +722,8 @@ const TVBoxSecurityConfig = ({
           </div>
 
           <p className='text-xs text-blue-700 dark:text-blue-400 mt-3'>
-            💡 在TVBox中导入此URL即可使用。Base64格式请在URL后添加
-            &format=base64
+            <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+            在TVBox中导入此URL即可使用。Base64格式请在URL后添加 &format=base64
           </p>
         </div>
 
@@ -745,7 +749,18 @@ const TVBoxSecurityConfig = ({
                     : 'text-yellow-900 dark:text-yellow-300'
                 }`}
               >
-                诊断结果 {diagnoseResult.pass ? '✓ 通过' : '⚠ 发现问题'}
+                诊断结果{' '}
+                {diagnoseResult.pass ? (
+                  <>
+                    <Check className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    通过
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    发现问题
+                  </>
+                )}
               </h3>
             </div>
 
@@ -769,8 +784,8 @@ const TVBoxSecurityConfig = ({
                 </div>
                 <div className='text-gray-900 dark:text-gray-100 mb-1 sm:mb-0'>
                   {diagnoseResult.hasJson ? (
-                    <span className='text-green-600 dark:text-green-400'>
-                      ✓ 成功
+                    <span className='text-green-600 dark:text-green-400 inline-flex items-center gap-1'>
+                      <Check className='w-4 h-4' /> 成功
                     </span>
                   ) : (
                     <span className='text-red-600 dark:text-red-400'>
@@ -863,8 +878,8 @@ const TVBoxSecurityConfig = ({
                             ⚠ Spider 是私网地址
                           </span>
                         ) : (
-                          <span className='text-green-600 dark:text-green-400'>
-                            ✓ Spider 是公网地址
+                          <span className='text-green-600 dark:text-green-400 inline-flex items-center gap-1'>
+                            <Check className='w-4 h-4' /> Spider 是公网地址
                           </span>
                         )}
                       </div>
@@ -872,8 +887,8 @@ const TVBoxSecurityConfig = ({
                     {diagnoseResult.spiderReachable !== undefined && (
                       <div className='text-xs'>
                         {diagnoseResult.spiderReachable ? (
-                          <span className='text-green-600 dark:text-green-400'>
-                            ✓ Spider 可访问
+                          <span className='text-green-600 dark:text-green-400 inline-flex items-center gap-1'>
+                            <Check className='w-4 h-4' /> Spider 可访问
                             {diagnoseResult.spiderStatus &&
                               ` (状态码: ${diagnoseResult.spiderStatus})`}
                           </span>
@@ -895,7 +910,11 @@ const TVBoxSecurityConfig = ({
                               : 'text-green-600 dark:text-green-400'
                           }
                         >
-                          {diagnoseResult.spiderSizeKB < 50 ? '⚠' : '✓'}{' '}
+                          {diagnoseResult.spiderSizeKB < 50 ? (
+                            <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />
+                          ) : (
+                            <Check className='inline-block w-4 h-4 align-text-bottom' />
+                          )}{' '}
                           文件大小: {diagnoseResult.spiderSizeKB}KB
                         </span>
                       </div>
@@ -932,9 +951,14 @@ const TVBoxSecurityConfig = ({
                           undefined && (
                           <div>
                             • 缓存:{' '}
-                            {(diagnoseResult as any).spider_cached
-                              ? '✓ 是'
-                              : '✗ 否（实时下载）'}
+                            {(diagnoseResult as any).spider_cached ? (
+                              <>
+                                <Check className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                                是
+                              </>
+                            ) : (
+                              '✗ 否（实时下载）'
+                            )}
                           </div>
                         )}
                         {(diagnoseResult as any).spider_real_size !==
@@ -956,9 +980,14 @@ const TVBoxSecurityConfig = ({
                           undefined && (
                           <div>
                             • 状态:{' '}
-                            {(diagnoseResult as any).spider_success
-                              ? '✓ 成功'
-                              : '✗ 降级（使用fallback jar）'}
+                            {(diagnoseResult as any).spider_success ? (
+                              <>
+                                <Check className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                                成功
+                              </>
+                            ) : (
+                              '✗ 降级（使用fallback jar）'
+                            )}
                           </div>
                         )}
                       </div>
@@ -1048,7 +1077,17 @@ const TVBoxSecurityConfig = ({
                           : 'text-red-900 dark:text-red-300'
                       }`}
                     >
-                      {jarTestResult.success ? '✅ 测试成功' : '❌ 测试失败'}
+                      {jarTestResult.success ? (
+                        <>
+                          <CheckCircle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                          测试成功
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                          测试失败
+                        </>
+                      )}
                     </p>
                     {jarTestResult.success && (
                       <div className='mt-2 space-y-1 text-xs'>
@@ -1076,9 +1115,17 @@ const TVBoxSecurityConfig = ({
                             代理状态:
                           </span>
                           <span className='font-semibold text-gray-900 dark:text-white'>
-                            {jarTestResult.spiderSuccess === 'true'
-                              ? '✅ 成功'
-                              : '⚠️ 降级'}
+                            {jarTestResult.spiderSuccess === 'true' ? (
+                              <>
+                                <CheckCircle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                                成功
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                                降级
+                              </>
+                            )}
                           </span>
                         </div>
                       </div>
@@ -1097,7 +1144,8 @@ const TVBoxSecurityConfig = ({
 
             <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded p-3'>
               <p className='text-xs text-blue-700 dark:text-blue-300'>
-                💡 <strong>提示：</strong>留空则使用默认 JAR 源。配置后，TVBox
+                <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                <strong>提示：</strong>留空则使用默认 JAR 源。配置后，TVBox
                 将通过{' '}
                 <code className='bg-blue-100 dark:bg-blue-800 px-1 rounded'>
                   /api/proxy/spider.jar?url=你的URL

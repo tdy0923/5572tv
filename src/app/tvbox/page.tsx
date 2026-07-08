@@ -6,10 +6,14 @@
 import {
   Activity,
   AlertTriangle,
+  Check,
   CheckCircle2,
   Clock,
+  Film,
   Globe,
   Heart,
+  Lightbulb,
+  Lock,
   Search,
   Shield,
   Tv,
@@ -176,7 +180,9 @@ export default function TVBoxConfigPage() {
                     搜索不精确的问题
                   </p>
                   <p>
-                    <strong>🔒 成人内容过滤：</strong>
+                    <strong>
+                      <Lock className='w-4 h-4 inline' /> 成人内容过滤：
+                    </strong>
                     基于 29+ 敏感关键词智能过滤，保护家庭观看环境
                   </p>
                   <p>
@@ -184,7 +190,8 @@ export default function TVBoxConfigPage() {
                     过滤不相关结果，只返回高度匹配的内容
                   </p>
                   <p className='text-xs mt-2 pt-2 border-t border-blue-200 dark:border-blue-700'>
-                    💡 默认已启用家庭安全模式，您可以在下方自定义配置。TVBox
+                    <Lightbulb className='w-4 h-4 inline' />{' '}
+                    默认已启用家庭安全模式，您可以在下方自定义配置。TVBox
                     端无需任何设置，自动生效！
                   </p>
                 </div>
@@ -232,8 +239,8 @@ export default function TVBoxConfigPage() {
                 <div className='flex items-start gap-3'>
                   <Shield className='w-5 h-5 text-green-600 dark:text-green-400 mt-0.5' />
                   <div>
-                    <h3 className='font-semibold text-green-800 dark:text-green-200 mb-1'>
-                      🔒 已启用安全配置
+                    <h3 className='font-semibold text-green-800 dark:text-green-200 mb-1 flex items-center gap-1'>
+                      <Lock className='w-4 h-4' /> 已启用安全配置
                     </h3>
                     <div className='text-sm text-green-700 dark:text-green-300 space-y-1'>
                       {securityConfig.enableAuth && (
@@ -260,8 +267,8 @@ export default function TVBoxConfigPage() {
                 <div className='flex items-start gap-3'>
                   <AlertTriangle className='w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5' />
                   <div>
-                    <h3 className='font-semibold text-yellow-800 dark:text-yellow-200 mb-1'>
-                      ⚠️ 安全提醒
+                    <h3 className='font-semibold text-yellow-800 dark:text-yellow-200 mb-1 flex items-center gap-1'>
+                      <AlertTriangle className='w-4 h-4' /> 安全提醒
                     </h3>
                     <p className='text-sm text-yellow-700 dark:text-yellow-300'>
                       当前未启用任何安全配置，任何人都可以访问您的TVBox配置。建议在管理后台启用安全选项。
@@ -409,13 +416,21 @@ export default function TVBoxConfigPage() {
               </label>
             </div>
             <p className='text-xs text-gray-500 dark:text-gray-400 mt-2'>
-              {configMode === 'standard'
-                ? '📊 包含 IJK 优化、DoH DNS、广告过滤，适合日常使用'
-                : configMode === 'safe'
-                  ? '🔒 仅核心配置，TVBox 兼容性问题时使用'
-                  : configMode === 'fast'
-                    ? '⚡ 优化切换速度，移除超时配置，减少卡顿和 SSL 错误'
-                    : '🎬 专为影视仓优化，包含播放规则和兼容性修复'}
+              {configMode === 'standard' ? (
+                '📊 包含 IJK 优化、DoH DNS、广告过滤，适合日常使用'
+              ) : configMode === 'safe' ? (
+                <>
+                  <Lock className='w-4 h-4 inline' /> 仅核心配置，TVBox
+                  兼容性问题时使用
+                </>
+              ) : configMode === 'fast' ? (
+                '⚡ 优化切换速度，移除超时配置，减少卡顿和 SSL 错误'
+              ) : (
+                <>
+                  <Film className='w-4 h-4 inline' />{' '}
+                  专为影视仓优化，包含播放规则和兼容性修复
+                </>
+              )}
             </p>
           </div>
 
@@ -497,13 +512,21 @@ export default function TVBoxConfigPage() {
             <div className='mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg'>
               <p className='text-xs text-blue-800 dark:text-blue-300'>
                 <strong>提示：</strong>
-                {enableAdultFilter && enableSmartProxy
-                  ? ' 家庭模式已启用，搜索结果已优化且过滤不良内容'
-                  : !enableAdultFilter
-                    ? ' ⚠️ 成人内容过滤已关闭，搜索结果可能包含敏感内容'
-                    : !enableSmartProxy
-                      ? ' ⚠️ 智能搜索已关闭，将直连原始 API（可能不精确）'
-                      : ''}
+                {enableAdultFilter && enableSmartProxy ? (
+                  ' 家庭模式已启用，搜索结果已优化且过滤不良内容'
+                ) : !enableAdultFilter ? (
+                  <>
+                    <AlertTriangle className='w-4 h-4 inline' />{' '}
+                    成人内容过滤已关闭，搜索结果可能包含敏感内容
+                  </>
+                ) : !enableSmartProxy ? (
+                  <>
+                    <AlertTriangle className='w-4 h-4 inline' />{' '}
+                    智能搜索已关闭，将直连原始 API（可能不精确）
+                  </>
+                ) : (
+                  ''
+                )}
               </p>
             </div>
           </div>
@@ -691,7 +714,8 @@ export default function TVBoxConfigPage() {
 
               <div className='mt-3 p-2.5 bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg'>
                 <p className='text-xs text-purple-800 dark:text-purple-200 mb-1.5'>
-                  💡 <strong>提示：</strong>点击按钮即可复制对应模式的配置链接
+                  <Lightbulb className='w-4 h-4 inline' />{' '}
+                  <strong>提示：</strong>点击按钮即可复制对应模式的配置链接
                 </p>
                 <ul className='text-xs text-purple-700 dark:text-purple-300 space-y-0.5 ml-4'>
                   <li>
@@ -725,7 +749,13 @@ export default function TVBoxConfigPage() {
                   : 'bg-blue-500 hover:bg-blue-600 text-white'
               } transform hover:scale-105`}
             >
-              {copied ? '✓ 已复制' : '复制'}
+              {copied ? (
+                <>
+                  <Check className='w-4 h-4 inline' /> 已复制
+                </>
+              ) : (
+                '复制'
+              )}
             </button>
           </div>
         </div>
@@ -838,7 +868,7 @@ export default function TVBoxConfigPage() {
                         {/* 基本信息 */}
                         <div className='p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700'>
                           <h3 className='font-semibold text-green-900 dark:text-green-300 mb-3'>
-                            ✓ 基本信息
+                            <Check className='w-4 h-4 inline' /> 基本信息
                           </h3>
                           <div className='grid grid-cols-1 md:grid-cols-2 gap-2 text-sm'>
                             <div className='text-gray-600 dark:text-gray-400'>
@@ -865,7 +895,13 @@ export default function TVBoxConfigPage() {
                                   : 'text-red-600 dark:text-red-400 font-medium'
                               }
                             >
-                              {diagnosisResult.hasJson ? '✓ 成功' : '✗ 失败'}
+                              {diagnosisResult.hasJson ? (
+                                <>
+                                  <Check className='w-4 h-4 inline' /> 成功
+                                </>
+                              ) : (
+                                '✗ 失败'
+                              )}
                             </div>
 
                             {diagnosisResult.receivedToken && (
@@ -901,13 +937,13 @@ export default function TVBoxConfigPage() {
                           <div className='flex flex-wrap gap-2 text-xs'>
                             {diagnosisResult.spiderPrivate === false && (
                               <span className='px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded'>
-                                ✓ 公网地址
+                                <Check className='w-4 h-4 inline' /> 公网地址
                               </span>
                             )}
                             {diagnosisResult.spiderReachable !== undefined &&
                               (diagnosisResult.spiderReachable ? (
                                 <span className='px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded'>
-                                  ✓ 可访问{' '}
+                                  <Check className='w-4 h-4 inline' /> 可访问{' '}
                                   {diagnosisResult.spiderStatus &&
                                     `(${diagnosisResult.spiderStatus})`}
                                 </span>
@@ -926,7 +962,11 @@ export default function TVBoxConfigPage() {
                                     : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                                 }`}
                               >
-                                {diagnosisResult.spiderSizeKB < 50 ? '⚠' : '✓'}{' '}
+                                {diagnosisResult.spiderSizeKB < 50 ? (
+                                  <AlertTriangle className='w-3.5 h-3.5 inline' />
+                                ) : (
+                                  <Check className='w-3.5 h-3.5 inline' />
+                                )}{' '}
                                 {diagnosisResult.spiderSizeKB}KB
                               </span>
                             )}
@@ -971,9 +1011,13 @@ export default function TVBoxConfigPage() {
                               <div
                                 className={`font-medium ${diagnosisResult.spider_cached ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}
                               >
-                                {diagnosisResult.spider_cached
-                                  ? '✓ 已缓存'
-                                  : '⚡ 实时下载'}
+                                {diagnosisResult.spider_cached ? (
+                                  <>
+                                    <Check className='w-4 h-4 inline' /> 已缓存
+                                  </>
+                                ) : (
+                                  '⚡ 实时下载'
+                                )}
                               </div>
                             </div>
                             <div>
@@ -1003,9 +1047,13 @@ export default function TVBoxConfigPage() {
                               <div
                                 className={`font-medium ${diagnosisResult.spider_success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                               >
-                                {diagnosisResult.spider_success
-                                  ? '✓ 成功'
-                                  : '✗ 降级 (fallback)'}
+                                {diagnosisResult.spider_success ? (
+                                  <>
+                                    <Check className='w-4 h-4 inline' /> 成功
+                                  </>
+                                ) : (
+                                  '✗ 降级 (fallback)'
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1014,7 +1062,8 @@ export default function TVBoxConfigPage() {
                           {diagnosisResult.spider_success === false && (
                             <div className='mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg'>
                               <p className='text-sm text-yellow-800 dark:text-yellow-300 font-medium mb-1'>
-                                ⚠️ JAR 获取建议
+                                <AlertTriangle className='w-4 h-4 inline' /> JAR
+                                获取建议
                               </p>
                               <ul className='text-xs text-yellow-700 dark:text-yellow-400 space-y-1'>
                                 <li>
@@ -1030,7 +1079,8 @@ export default function TVBoxConfigPage() {
                             diagnosisResult.spider_tried > 2 && (
                               <div className='mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg'>
                                 <p className='text-sm text-blue-800 dark:text-blue-300 font-medium mb-1'>
-                                  💡 优化建议
+                                  <Lightbulb className='w-4 h-4 inline' />{' '}
+                                  优化建议
                                 </p>
                                 <ul className='text-xs text-blue-700 dark:text-blue-400 space-y-1'>
                                   <li>
@@ -1249,9 +1299,13 @@ export default function TVBoxConfigPage() {
                                 优化状态
                               </div>
                               <div className='text-green-600 dark:text-green-400 font-medium'>
-                                {smartHealthResult.network.optimized
-                                  ? '✓ 已优化'
-                                  : '○ 未优化'}
+                                {smartHealthResult.network.optimized ? (
+                                  <>
+                                    <Check className='w-4 h-4 inline' /> 已优化
+                                  </>
+                                ) : (
+                                  '○ 未优化'
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1355,7 +1409,7 @@ export default function TVBoxConfigPage() {
                         {/* 智能建议 */}
                         <div className='p-4 bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-700'>
                           <h3 className='font-semibold text-purple-900 dark:text-purple-300 mb-3'>
-                            💡 智能建议
+                            <Lightbulb className='w-4 h-4 inline' /> 智能建议
                           </h3>
                           <ul className='space-y-2'>
                             {smartHealthResult.recommendations.map(
@@ -1394,9 +1448,13 @@ export default function TVBoxConfigPage() {
                                   : 'text-yellow-600 dark:text-yellow-400 font-medium'
                               }
                             >
-                              {smartHealthResult.spider.current.success
-                                ? '✓ 成功'
-                                : '⚡ 备用'}
+                              {smartHealthResult.spider.current.success ? (
+                                <>
+                                  <Check className='w-4 h-4 inline' /> 成功
+                                </>
+                              ) : (
+                                '⚡ 备用'
+                              )}
                             </div>
                             <div className='text-gray-600 dark:text-gray-400'>
                               大小:
@@ -1542,7 +1600,8 @@ export default function TVBoxConfigPage() {
                         {jarFixResult.recommended_sources.length > 0 && (
                           <div className='p-4 bg-linear-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-700'>
                             <h3 className='font-semibold text-green-900 dark:text-green-300 mb-3'>
-                              ✅ 推荐源 (Top 3)
+                              <CheckCircle2 className='w-4 h-4 inline' /> 推荐源
+                              (Top 3)
                             </h3>
                             <div className='space-y-2'>
                               {jarFixResult.recommended_sources.map(
@@ -1653,7 +1712,7 @@ export default function TVBoxConfigPage() {
                             0 && (
                             <div className='p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700'>
                               <h3 className='font-semibold text-purple-900 dark:text-purple-300 mb-2'>
-                                ⚙️ 配置建议
+                                <Wrench className='w-4 h-4 inline' /> 配置建议
                               </h3>
                               <ul className='space-y-1'>
                                 {jarFixResult.recommendations.configuration.map(
@@ -1759,7 +1818,8 @@ export default function TVBoxConfigPage() {
                     <>
                       <div className='mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded'>
                         <p className='text-sm text-blue-700 dark:text-blue-300 mb-2'>
-                          ✅ 管理员已配置自定义 JAR URL
+                          <CheckCircle2 className='w-4 h-4 inline' />{' '}
+                          管理员已配置自定义 JAR URL
                         </p>
                         <div className='p-2 bg-white dark:bg-gray-800 rounded border border-blue-300 dark:border-blue-600'>
                           <p className='font-mono text-xs text-gray-900 dark:text-white break-all'>
@@ -1783,7 +1843,8 @@ export default function TVBoxConfigPage() {
                   ) : (
                     <div className='p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded'>
                       <p className='text-sm text-yellow-700 dark:text-yellow-300'>
-                        ⚠️ 未配置自定义 JAR
+                        <AlertTriangle className='w-4 h-4 inline' />{' '}
+                        未配置自定义 JAR
                         URL，使用默认源。如需配置，请前往管理后台 → TVBox
                         安全配置
                       </p>
@@ -1813,9 +1874,17 @@ export default function TVBoxConfigPage() {
                                 : 'text-red-900 dark:text-red-300'
                             }`}
                           >
-                            {customJarTestResult.success
-                              ? '✅ 代理测试成功'
-                              : '❌ 代理测试失败'}
+                            {customJarTestResult.success ? (
+                              <>
+                                <CheckCircle2 className='w-4 h-4 inline' />{' '}
+                                代理测试成功
+                              </>
+                            ) : (
+                              <>
+                                <XCircle className='w-4 h-4 inline' />{' '}
+                                代理测试失败
+                              </>
+                            )}
                           </p>
                           <div className='mt-2 space-y-1 text-sm'>
                             <div className='flex justify-between'>
@@ -1856,9 +1925,17 @@ export default function TVBoxConfigPage() {
                                   </span>
                                   <span className='font-semibold text-gray-900 dark:text-white'>
                                     {customJarTestResult.spiderSuccess ===
-                                    'true'
-                                      ? '✅ 成功'
-                                      : '⚠️ 降级'}
+                                    'true' ? (
+                                      <>
+                                        <CheckCircle2 className='w-4 h-4 inline' />{' '}
+                                        成功
+                                      </>
+                                    ) : (
+                                      <>
+                                        <AlertTriangle className='w-4 h-4 inline' />{' '}
+                                        降级
+                                      </>
+                                    )}
                                   </span>
                                 </div>
                                 <div className='flex justify-between'>
@@ -1972,7 +2049,7 @@ export default function TVBoxConfigPage() {
                         {/* 诊断建议 */}
                         <div className='p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700'>
                           <h3 className='font-semibold text-yellow-900 dark:text-yellow-300 mb-2'>
-                            💡 诊断建议
+                            <Lightbulb className='w-4 h-4 inline' /> 诊断建议
                           </h3>
                           <ul className='space-y-1'>
                             {deepDiagnosticResult.recommendations.map(
@@ -2026,13 +2103,27 @@ export default function TVBoxConfigPage() {
                                             : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                                       }`}
                                     >
-                                      {test.status === 'success'
-                                        ? '✅ 可用'
-                                        : test.status === 'timeout'
-                                          ? '⏱️ 超时'
-                                          : test.status === 'invalid'
-                                            ? '⚠️ 无效'
-                                            : '❌ 失败'}
+                                      {test.status === 'success' ? (
+                                        <>
+                                          <CheckCircle2 className='w-4 h-4 inline' />{' '}
+                                          可用
+                                        </>
+                                      ) : test.status === 'timeout' ? (
+                                        <>
+                                          <Clock className='w-4 h-4 inline' />{' '}
+                                          超时
+                                        </>
+                                      ) : test.status === 'invalid' ? (
+                                        <>
+                                          <AlertTriangle className='w-4 h-4 inline' />{' '}
+                                          无效
+                                        </>
+                                      ) : (
+                                        <>
+                                          <XCircle className='w-4 h-4 inline' />{' '}
+                                          失败
+                                        </>
+                                      )}
                                     </span>
                                   </div>
 
@@ -2081,9 +2172,14 @@ export default function TVBoxConfigPage() {
                                               : 'text-red-600 dark:text-red-400'
                                           }`}
                                         >
-                                          {test.isValidJar
-                                            ? '✓ 有效JAR'
-                                            : '✗ 无效'}
+                                          {test.isValidJar ? (
+                                            <>
+                                              <Check className='w-4 h-4 inline' />{' '}
+                                              有效JAR
+                                            </>
+                                          ) : (
+                                            '✗ 无效'
+                                          )}
                                         </span>
                                       </div>
                                     )}

@@ -457,7 +457,7 @@ const DataMigration = ({ onRefreshConfig }: DataMigrationProps) => {
                   数据导入
                 </h3>
                 <p className='text-sm text-red-600 dark:text-red-400'>
-                  ⚠️ 将清空现有数据
+                  <AlertTriangle className='w-4 h-4 inline' /> 将清空现有数据
                 </p>
               </div>
             </div>

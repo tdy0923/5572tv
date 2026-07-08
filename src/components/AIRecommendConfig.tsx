@@ -4,7 +4,13 @@
 
 'use client';
 
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Flame,
+  Lightbulb,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
@@ -431,8 +437,8 @@ const AIRecommendConfig = ({
           <div className='space-y-4'>
             {/* 配置模式提示 */}
             <div className='bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
-              <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2'>
-                💡 配置模式选择
+              <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5'>
+                <Lightbulb className='w-4 h-4' /> 配置模式选择
               </h4>
               <div className='text-xs text-gray-700 dark:text-gray-300 space-y-1'>
                 <p>
@@ -495,7 +501,8 @@ const AIRecommendConfig = ({
               <div className='mt-2 space-y-2'>
                 <p className='text-xs text-gray-500 dark:text-gray-400'>
                   <span className='text-yellow-600 dark:text-yellow-400'>
-                    💡 提示：
+                    <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    提示：
                   </span>
                   大多数OpenAI兼容API需要在地址末尾添加{' '}
                   <code className='bg-gray-100 dark:bg-gray-800 px-1 rounded'>
@@ -607,8 +614,9 @@ const AIRecommendConfig = ({
                 <p className='mb-1'>
                   常用模型参考（建议使用支持联网搜索的模型）：
                 </p>
-                <p className='mb-2 text-orange-600 dark:text-orange-400'>
-                  ⚠️ 请确保填入的模型名称与API提供商的官方文档一致
+                <p className='mb-2 text-orange-600 dark:text-orange-400 flex items-center gap-1'>
+                  <AlertTriangle className='w-4 h-4' />{' '}
+                  请确保填入的模型名称与API提供商的官方文档一致
                 </p>
                 <div className='flex flex-wrap gap-2'>
                   {MODEL_EXAMPLES.map((example, index) => (
@@ -676,7 +684,8 @@ const AIRecommendConfig = ({
                 <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                   限制AI回复的最大长度。推荐设置：GPT-5/o1/o3/o4推理模型建议2000+，普通模型500-4000即可。
                   <span className='text-yellow-600 dark:text-yellow-400'>
-                    ⚠️ 设置过低可能导致空回复！
+                    <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                    设置过低可能导致空回复！
                   </span>
                 </p>
               </div>
@@ -701,7 +710,7 @@ const AIRecommendConfig = ({
                 />
               </svg>
               <span>
-                🔥
+                <Flame className='inline-block w-4 h-4 align-text-bottom' />
                 开启后AI可自动判断是否需要联网搜索获取最新信息（如：最新上映、演员动态等）
               </span>
             </div>
@@ -765,7 +774,8 @@ const AIRecommendConfig = ({
                   <div className='mt-2 space-y-2'>
                     <p className='text-xs text-gray-500 dark:text-gray-400'>
                       <span className='text-green-600 dark:text-green-400'>
-                        💡 提示：
+                        <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                        提示：
                       </span>
                       多个API Key用<strong>逗号</strong>
                       分隔，系统会自动轮询使用以提高免费额度
@@ -796,7 +806,8 @@ const AIRecommendConfig = ({
                     </div>
                     {aiSettings.tavilyApiKeys.length > 0 && (
                       <p className='text-xs text-green-600 dark:text-green-400'>
-                        ✅ 已配置{' '}
+                        <CheckCircle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+                        已配置{' '}
                         <strong>{aiSettings.tavilyApiKeys.length}</strong> 个API
                         Key （预计每月{' '}
                         <strong>
@@ -854,7 +865,7 @@ const AIRecommendConfig = ({
                             />
                           </svg>
                           <span>
-                            💡
+                            <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />
                             提示：点击下方每个Key卡片的"查询"按钮可单独查询，或点击上方"查询全部"一次性查询所有Key
                           </span>
                         </div>
@@ -1073,11 +1084,16 @@ const AIRecommendConfig = ({
               d='M5 13l4 4L19 7'
             />
           </svg>
-          {isLoading
-            ? '保存中...'
-            : hasUnsavedChanges
-              ? '⚠️ 保存配置（有未保存更改）'
-              : '保存配置'}
+          {isLoading ? (
+            '保存中...'
+          ) : hasUnsavedChanges ? (
+            <>
+              <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
+              保存配置（有未保存更改）
+            </>
+          ) : (
+            '保存配置'
+          )}
         </button>
       </div>
     </div>

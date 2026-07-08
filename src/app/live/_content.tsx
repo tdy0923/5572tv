@@ -11,6 +11,8 @@ import {
   ChevronDown,
   ChevronUp,
   Heart,
+  Lock,
+  Play,
   Radio,
   Tv,
   X,
@@ -2035,9 +2037,7 @@ function LivePageClient() {
                     </>
                   ) : (
                     <>
-                      <span className='text-gray-600 dark:text-gray-400'>
-                        🔒
-                      </span>
+                      <Lock className='w-4 h-4 text-gray-600 dark:text-gray-400' />
                       <span className='text-gray-700 dark:text-gray-300'>
                         代理
                       </span>
@@ -2115,7 +2115,7 @@ function LivePageClient() {
                             {unsupportedType === 'network-error' ? (
                               '🌐'
                             ) : unsupportedType === 'channel-unavailable' ? (
-                              '🔒'
+                              <Lock className='w-12 h-12 text-white' />
                             ) : unsupportedType === 'decode-error' ? (
                               '🔧'
                             ) : unsupportedType === 'format-not-supported' ? (
@@ -2200,7 +2200,7 @@ function LivePageClient() {
                       <div className='flex items-center gap-3 flex-1'>
                         <div className='shrink-0'>
                           <div className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center'>
-                            <span className='text-lg'>⏯️</span>
+                            <Play className='w-5 h-5 text-white' />
                           </div>
                         </div>
                         <div className='flex-1 min-w-0'>

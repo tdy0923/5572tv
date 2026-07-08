@@ -13,6 +13,7 @@ import {
   Shield,
   Type,
   X,
+  XCircle,
 } from 'lucide-react';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -458,7 +459,11 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
                 {loadMeta.source === 'network' && '🌐 网络请求'}
                 {loadMeta.source === 'network-retry' && '🔄 网络重试'}
                 {loadMeta.source === 'empty' && '📭 空结果'}
-                {loadMeta.source === 'error' && '❌ 请求失败'}
+                {loadMeta.source === 'error' && (
+                  <>
+                    <XCircle className='w-4 h-4 inline-block' /> 请求失败
+                  </>
+                )}
                 {loadMeta.source === 'init' && '⏳ 初始化'}
               </span>
             </div>
@@ -494,7 +499,9 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
               border: '1px solid rgba(239, 68, 68, 0.3)',
             }}
           >
-            <p className='text-xs text-red-300 font-medium'>❌ 加载失败</p>
+            <p className='text-xs text-red-300 font-medium flex items-center gap-1'>
+              <XCircle className='w-4 h-4' /> 加载失败
+            </p>
             <p
               className='text-[11px] text-red-400/70 mt-0.5 truncate'
               title={error.message}

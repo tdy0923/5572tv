@@ -1,7 +1,7 @@
 'use client';
 
 import { UseMutateFunction } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Heart, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const VideoCard = dynamic(() => import('@/components/VideoCard'), {
@@ -392,7 +392,9 @@ export default function FavoritesView({
                   收藏夹空空如也
                 </h3>
                 <p className='text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs'>
-                  快去发现喜欢的影视作品，点击 ❤️ 添加到收藏吧！
+                  快去发现喜欢的影视作品，点击{' '}
+                  <Heart className='inline-block w-4 h-4 align-text-bottom text-red-500' />{' '}
+                  添加到收藏吧！
                 </p>
               </div>
             )}

@@ -7,6 +7,7 @@ import {
   Bell,
   Calendar,
   Download,
+  Film,
   Heart,
   KeyRound,
   LogOut,
@@ -1144,8 +1145,8 @@ export const UserMenu: React.FC = () => {
               ).length > 0 && (
                 <div className='mb-8'>
                   <div className='flex items-center gap-2 mb-4'>
-                    <h4 className='text-lg font-semibold text-gray-900 dark:text-white'>
-                      🎬 新上映
+                    <h4 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
+                      <Film className='w-5 h-5' /> 新上映
                     </h4>
                     <div className='flex items-center gap-1'>
                       <div className='w-2 h-2 bg-green-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
