@@ -1,6 +1,6 @@
 'use client';
 
-import { Smartphone, Tv } from 'lucide-react';
+import { Smartphone, Tv, X } from 'lucide-react';
 
 interface InstallGuideProps {
   platform: 'android' | 'ios' | 'tv' | 'desktop';
@@ -22,7 +22,7 @@ function AndroidSteps() {
           { step: 4, text: '安装完成，打开即可使用' },
         ].map((s) => (
           <div key={s.step} className='flex items-start gap-3'>
-            <div className='w-6 h-6 rounded-full bg-[#f4c24d]/20 text-[#f4c24d] flex items-center justify-center text-xs font-bold flex-shrink-0'>
+            <div className='w-6 h-6 rounded-full bg-[#f4c24d] text-black flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm'>
               {s.step}
             </div>
             <p className='text-sm text-gray-300'>{s.text}</p>
@@ -30,7 +30,7 @@ function AndroidSteps() {
         ))}
       </div>
       <p className='text-xs text-gray-500 mt-2'>
-        * 首次安装可能提示「风险应用」，这是系统安全机制，不影响使用
+        首次安装可能提示「风险应用」，这是系统安全机制，不影响使用
       </p>
     </div>
   );
@@ -48,32 +48,27 @@ function IOSSteps() {
           {
             step: 1,
             text: '用 Safari 浏览器打开 https://www.5572.net',
-            icon: '🌐',
           },
           {
             step: 2,
             text: '点击底部中间的「分享」按钮',
-            icon: '↗️',
           },
           {
             step: 3,
             text: '向下滚动，点击「添加到主屏幕」',
-            icon: '➕',
           },
           {
             step: 4,
             text: '点击右上角「添加」确认',
-            icon: '✅',
           },
           {
             step: 5,
             text: '回到主屏幕，找到 5572 影视图标打开',
-            icon: '📲',
           },
         ].map((s) => (
           <div key={s.step} className='flex items-center gap-3'>
-            <div className='w-8 h-8 rounded-xl bg-[#f4c24d]/20 flex items-center justify-center text-lg flex-shrink-0'>
-              {s.icon}
+            <div className='w-7 h-7 rounded-lg bg-[#f4c24d]/10 border border-[#f4c24d]/20 flex items-center justify-center text-xs font-bold text-[#f4c24d] flex-shrink-0'>
+              {s.step}
             </div>
             <p className='text-sm text-gray-300'>{s.text}</p>
           </div>
@@ -81,12 +76,12 @@ function IOSSteps() {
       </div>
       <div className='mt-4 p-3 rounded-xl bg-[#f4c24d]/10 border border-[#f4c24d]/20'>
         <p className='text-sm text-[#f4c24d]'>
-          💡 iOS 16+ 也可直接长按图标，选择「添加到主屏幕」
+          iOS 16+ 也可直接长按图标，选择「添加到主屏幕」
         </p>
       </div>
       <div className='mt-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20'>
         <p className='text-sm text-blue-400'>
-          📝 注意：请使用 Safari 浏览器，其他浏览器不支持添加到主屏幕
+          注意：请使用 Safari 浏览器，其他浏览器不支持添加到主屏幕
         </p>
       </div>
     </div>
@@ -108,7 +103,7 @@ function TVSteps() {
           { step: 4, text: '允许「安装未知来源应用」' },
         ].map((s) => (
           <div key={s.step} className='flex items-start gap-3'>
-            <div className='w-6 h-6 rounded-full bg-[#f4c24d]/20 text-[#f4c24d] flex items-center justify-center text-xs font-bold flex-shrink-0'>
+            <div className='w-6 h-6 rounded-full bg-[#f4c24d] text-black flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-sm'>
               {s.step}
             </div>
             <p className='text-sm text-gray-300'>{s.text}</p>
@@ -127,9 +122,9 @@ export default function InstallGuide({ platform, onClose }: InstallGuideProps) {
           <h2 className='text-xl font-bold text-white'>安装指南</h2>
           <button
             onClick={onClose}
-            className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-400 hover:text-white'
+            className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/20 transition-colors'
           >
-            ✕
+            <X className='w-4 h-4' />
           </button>
         </div>
 
