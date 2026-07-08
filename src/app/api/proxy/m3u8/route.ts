@@ -61,7 +61,7 @@ export async function GET(request: Request) {
 
   const ua = await getSourceUserAgent(source);
 
-  // 已知封锁服务器IP的CDN列表 - 直接返回原始URL
+  // 已知封锁服务器IP的CDN列表 - 先尝试服务端代理，失败则返回302
   const BLOCKED_CDNS = [
     'cdnlz29.com',
     'bfllvip.com',
@@ -79,25 +79,10 @@ export async function GET(request: Request) {
     'power34play.vip',
   ];
 
-  // 检查是否为已知被封锁的CDN
+  let isBlockedCdn = false;
   try {
     const checkUrl = new URL(decodedUrl);
-    const isBlocked = BLOCKED_CDNS.some((cdn) =>
-      checkUrl.hostname.includes(cdn),
-    );
-    if (isBlocked) {
-      // 直接返回原始URL，让浏览器直接访问
-      // 但需要添加CORS头防止CORS错误
-      return new NextResponse(null, {
-        status: 302,
-        headers: {
-          Location: decodedUrl,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-          'Access-Control-Allow-Headers': '*',
-        },
-      });
-    }
+    isBlockedCdn = BLOCKED_CDNS.some((cdn) => checkUrl.hostname.includes(cdn));
   } catch {}
 
   let response: Response | null = null;
@@ -312,7 +297,19 @@ export async function GET(request: Request) {
     stats.errors++;
     clearTimeout(timeoutId);
 
-    // 处理不同类型的错误
+    // 对于已知被封锁的CDN，降级为302重定向（让浏览器直连）
+    if (isBlockedCdn) {
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: decodedUrl,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+        },
+      });
+    }
+
     if (error.name === 'AbortError') {
       return NextResponse.json({ error: 'Request timeout' }, { status: 408 });
     }
