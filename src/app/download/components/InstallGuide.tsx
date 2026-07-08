@@ -10,7 +10,7 @@ interface InstallGuideProps {
 function AndroidSteps() {
   return (
     <div className='space-y-4'>
-      <h3 className='text-lg font-bold flex items-center gap-2'>
+      <h3 className='text-lg font-bold flex items-center gap-2 text-white'>
         <Smartphone className='w-5 h-5 text-[#f4c24d]' />
         Android 安装步骤
       </h3>
@@ -39,7 +39,7 @@ function AndroidSteps() {
 function IOSSteps() {
   return (
     <div className='space-y-4'>
-      <h3 className='text-lg font-bold flex items-center gap-2'>
+      <h3 className='text-lg font-bold flex items-center gap-2 text-white'>
         <Smartphone className='w-5 h-5 text-[#f4c24d]' />
         iOS 安装步骤（PWA）
       </h3>
@@ -96,7 +96,7 @@ function IOSSteps() {
 function TVSteps() {
   return (
     <div className='space-y-4'>
-      <h3 className='text-lg font-bold flex items-center gap-2'>
+      <h3 className='text-lg font-bold flex items-center gap-2 text-white'>
         <Tv className='w-5 h-5 text-[#f4c24d]' />
         电视安装
       </h3>
@@ -122,9 +122,9 @@ function TVSteps() {
 export default function InstallGuide({ platform, onClose }: InstallGuideProps) {
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'>
-      <div className='w-full max-w-md bg-[#1a1a1a] rounded-3xl p-6 border border-white/10'>
+      <div className='w-full max-w-md bg-[#1a1a1a] rounded-3xl p-6 border border-white/10 text-white'>
         <div className='flex items-center justify-between mb-6'>
-          <h2 className='text-xl font-bold'>安装指南</h2>
+          <h2 className='text-xl font-bold text-white'>安装指南</h2>
           <button
             onClick={onClose}
             className='w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-gray-400 hover:text-white'

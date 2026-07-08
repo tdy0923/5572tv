@@ -380,39 +380,39 @@ export default function DownloadPage() {
               </div>
 
               {/* QR */}
-              {selectedPlatform !== 'ios' && (
-                <div
-                  className='inline-flex items-center gap-4 p-4 rounded-lg transition-all duration-200 group cursor-pointer'
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'rgba(244,194,77,0.3)';
-                    e.currentTarget.style.boxShadow =
-                      '0 0 30px rgba(244,194,77,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor =
-                      'rgba(255,255,255,0.06)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent('https://www.5572.net/static/download/5572tv-android.apk')}`}
-                    alt='扫码下载'
-                    className='w-24 h-24 rounded-md transition-transform duration-300 group-hover:scale-110'
-                    width={96}
-                    height={96}
-                  />
-                  <div>
-                    <p className='text-sm font-medium text-white'>扫码下载</p>
-                    <p className='text-xs mt-1' style={{ color: '#767676' }}>
-                      {APK_VERSION} · {APK_SIZE}MB
-                    </p>
-                  </div>
+              <div
+                className='inline-flex items-center gap-4 p-4 rounded-lg transition-all duration-200 group cursor-pointer'
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(244,194,77,0.3)';
+                  e.currentTarget.style.boxShadow =
+                    '0 0 30px rgba(244,194,77,0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/static/download/5572tv-android.apk')}`}
+                  alt='扫码下载'
+                  className='w-24 h-24 rounded-md transition-transform duration-300 group-hover:scale-110'
+                  width={96}
+                  height={96}
+                  loading='lazy'
+                />
+                <div>
+                  <p className='text-sm font-medium text-white'>扫码下载</p>
+                  <p className='text-xs mt-1' style={{ color: '#767676' }}>
+                    {selectedPlatform === 'ios'
+                      ? '访问网站安装 PWA'
+                      : `${APK_VERSION} · ${APK_SIZE}MB`}
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Right - Phone preview */}
