@@ -77,10 +77,11 @@ async function fetchTrailerFromDouban(
 async function fetchTrailerFromBilibili(
   title: string,
   mediaType: string,
+  baseOrigin: string,
 ): Promise<{ embedUrl: string; title: string } | null> {
   try {
     const resp = await fetch(
-      `/api/bilibili/trailer?q=${encodeURIComponent(title)}&type=${mediaType}`,
+      `${baseOrigin}/api/bilibili/trailer?q=${encodeURIComponent(title)}&type=${mediaType}`,
       { signal: AbortSignal.timeout(10000) },
     );
     if (!resp.ok) return null;
@@ -96,17 +97,21 @@ async function fetchTrailerFromBilibili(
 export async function GET(request: Request) {
   const t0 = Date.now();
   const mem0 = process.memoryUsage().heapUsed;
-  const { searchParams } = new URL(request.url);
+  const url = new URL(request.url);
+  const { searchParams } = url;
   const id = searchParams.get('id');
   const title = searchParams.get('title') || '';
   const mediaType = searchParams.get('type') || 'movie';
 
   if (!id) {
+    console.warn(`[refresh-trailer] 400: missing id, URL=${request.url}`);
     return NextResponse.json(
       { code: 400, message: '缺少参数: id' },
       { status: 400 },
     );
   }
+
+  const baseOrigin = url.origin;
 
   // 1. 成功缓存命中（24h）
   const okCache = await getCache<any>(successCacheKey(id));
@@ -143,7 +148,7 @@ export async function GET(request: Request) {
 
   // 4. Douban 无预告片或限流 → 尝试 Bilibili
   if (!trailerUrl && title) {
-    const bili = await fetchTrailerFromBilibili(title, mediaType);
+    const bili = await fetchTrailerFromBilibili(title, mediaType, baseOrigin);
     if (bili) {
       trailerUrl = bili.embedUrl;
       source = 'bilibili';

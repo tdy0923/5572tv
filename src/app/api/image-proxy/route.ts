@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await fetchWithRetry(url, 2);
+    const data = await fetchWithRetry(url, 3);
     const contentType = detectImageType(data);
     return new NextResponse(data, {
       headers: {
@@ -49,7 +49,20 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch {
-    return new NextResponse('Image fetch failed', { status: 502 });
+    return new NextResponse(
+      Buffer.from(
+        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+        'base64',
+      ),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/gif',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'public, max-age=3600',
+        },
+      },
+    );
   }
 }
 
@@ -98,7 +111,7 @@ async function fetchWithRetry(
           Referer: referer,
           Accept: 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(15000),
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
