@@ -5,7 +5,16 @@
 'use client';
 
 import Hls from 'hls.js';
-import { ChevronDown, ChevronUp, Heart, Radio, Tv, X } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Heart,
+  Radio,
+  Tv,
+  X,
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
@@ -1821,7 +1830,7 @@ function LivePageClient() {
             {/* 动画直播图标 */}
             <div className='relative mb-8'>
               <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                <div className='text-white text-4xl'>📺</div>
+                <Tv className='w-12 h-12 text-white' />
                 {/* 旋转光环 */}
                 <div className='absolute -inset-2 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl opacity-20 animate-spin'></div>
               </div>
@@ -1902,7 +1911,7 @@ function LivePageClient() {
             {/* 错误图标 */}
             <div className='relative mb-8'>
               <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                <div className='text-white text-4xl'>😵</div>
+                <AlertCircle className='text-white w-12 h-12' />
                 {/* 脉冲效果 */}
                 <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
               </div>
@@ -2103,15 +2112,17 @@ function LivePageClient() {
                       <div className='relative mb-8'>
                         <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
                           <div className='text-white text-4xl'>
-                            {unsupportedType === 'network-error'
-                              ? '🌐'
-                              : unsupportedType === 'channel-unavailable'
-                                ? '🔒'
-                                : unsupportedType === 'decode-error'
-                                  ? '🔧'
-                                  : unsupportedType === 'format-not-supported'
-                                    ? '📼'
-                                    : '⚠️'}
+                            {unsupportedType === 'network-error' ? (
+                              '🌐'
+                            ) : unsupportedType === 'channel-unavailable' ? (
+                              '🔒'
+                            ) : unsupportedType === 'decode-error' ? (
+                              '🔧'
+                            ) : unsupportedType === 'format-not-supported' ? (
+                              '📼'
+                            ) : (
+                              <AlertTriangle className='w-12 h-12 text-white' />
+                            )}
                           </div>
                           <div className='absolute -inset-2 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                         </div>
@@ -2232,7 +2243,7 @@ function LivePageClient() {
                     <div className='text-center max-w-md mx-auto px-6'>
                       <div className='relative mb-8'>
                         <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                          <div className='text-white text-4xl'>📺</div>
+                          <Tv className='w-12 h-12 text-white' />
                           <div className='absolute -inset-2 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl opacity-20 animate-spin'></div>
                         </div>
                       </div>

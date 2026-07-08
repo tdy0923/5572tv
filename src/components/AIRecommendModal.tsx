@@ -3,7 +3,16 @@
 
 'use client';
 
-import { Brain, ExternalLink, Play, Send, Sparkles, X } from 'lucide-react';
+import {
+  Brain,
+  Clapperboard,
+  ExternalLink,
+  Play,
+  Send,
+  Sparkles,
+  Tv,
+  X,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   memo,
@@ -182,7 +191,8 @@ const MessageItem = memo(
               <div className='text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-between'>
                 <div className='flex items-center gap-2'>
                   <span className='bg-linear-to-br from-blue-100 to-blue-50 dark:from-blue-900 dark:to-blue-950 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm ring-1 ring-blue-200/50 dark:ring-blue-800/50'>
-                    🎬 点击搜索
+                    <Clapperboard className='inline-block w-4 h-4 mr-1' />
+                    点击搜索
                   </span>
                   <span className='font-medium'>推荐影片</span>
                 </div>
@@ -241,7 +251,8 @@ const MessageItem = memo(
               <div className='text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-between'>
                 <div className='flex items-center'>
                   <span className='bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 px-2 py-1 rounded-full text-xs font-medium mr-2'>
-                    📺 点击播放
+                    <Tv className='inline-block w-4 h-4 mr-1' />
+                    点击播放
                   </span>
                   YouTube视频推荐
                 </div>
@@ -1052,7 +1063,7 @@ export default function AIRecommendModal({
                     <button
                       onClick={() =>
                         handlePresetClick({
-                          title: '🎬 相似推荐',
+                          title: '相似推荐',
                           message:
                             '有没有类似的影片推荐？请推荐5部相似的电影或电视剧',
                         })
@@ -1060,7 +1071,7 @@ export default function AIRecommendModal({
                       className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 hover:shadow-lg hover:scale-105 transition-all group'
                       disabled={isPending}
                     >
-                      <div className='text-3xl mb-2'>🎬</div>
+                      <Clapperboard className='w-8 h-8 mx-auto mb-2' />
                       <div className='font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors'>
                         相似推荐
                       </div>

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { ChevronUp } from 'lucide-react';
+import { Calendar, ChevronUp, Clapperboard, Film, Tv } from 'lucide-react';
 import Image from 'next/image';
 import React from 'react';
 
@@ -29,7 +29,7 @@ const USER_LEVELS = [
   {
     level: 2,
     name: '常客影迷',
-    icon: '🎬',
+    icon: 'Film',
     minLogins: 10,
     maxLogins: 49,
     description: '热爱电影的观众',
@@ -38,7 +38,7 @@ const USER_LEVELS = [
   {
     level: 3,
     name: '资深观众',
-    icon: '📺',
+    icon: 'Tv',
     minLogins: 50,
     maxLogins: 199,
     description: '对剧集有独特品味',
@@ -47,7 +47,7 @@ const USER_LEVELS = [
   {
     level: 4,
     name: '影院达人',
-    icon: '🎭',
+    icon: 'Clapperboard',
     minLogins: 200,
     maxLogins: 499,
     description: '深度电影爱好者',
@@ -167,6 +167,19 @@ const PlayStatsPage: React.FC = () => {
     handleCloseWatchingUpdates,
     formatLastUpdate,
   } = useContinueWatching(!!authInfo);
+
+  const renderLevelIcon = (iconName: string, className: string) => {
+    switch (iconName) {
+      case 'Film':
+        return <Film className={className} />;
+      case 'Tv':
+        return <Tv className={className} />;
+      case 'Clapperboard':
+        return <Clapperboard className={className} />;
+      default:
+        return <span className={className}>{iconName}</span>;
+    }
+  };
 
   // 未授权时显示加载
   if (!authInfo) {
@@ -611,7 +624,10 @@ const PlayStatsPage: React.FC = () => {
                                     <div className='space-y-1'>
                                       <div className='flex items-center gap-1.5'>
                                         <span className='text-base shrink-0'>
-                                          {loginDisplay.level.icon}
+                                          {renderLevelIcon(
+                                            loginDisplay.level.icon,
+                                            'w-4 h-4',
+                                          )}
                                         </span>
                                         <span className='font-medium text-gray-700 dark:text-gray-300 text-xs leading-tight'>
                                           {loginDisplay.level.name}
@@ -872,7 +888,10 @@ const PlayStatsPage: React.FC = () => {
                       <div className='space-y-2'>
                         <div className='flex items-center gap-2'>
                           <span className='text-2xl shrink-0'>
-                            {loginDisplay.level.icon}
+                            {renderLevelIcon(
+                              loginDisplay.level.icon,
+                              'w-6 h-6',
+                            )}
                           </span>
                           <div className='flex-1 min-w-0'>
                             <div className='text-base font-bold text-red-800 dark:text-red-300 leading-tight'>
@@ -974,7 +993,7 @@ const PlayStatsPage: React.FC = () => {
                     <div className='flex items-center justify-between mb-4'>
                       <div>
                         <h3 className='text-lg font-bold flex items-center gap-2'>
-                          📅 即将上映
+                          <Calendar className='inline-block w-5 h-5' /> 即将上映
                         </h3>
                         <p className='text-purple-100 text-sm mt-1'>
                           {upcomingLoading
@@ -1026,7 +1045,7 @@ const PlayStatsPage: React.FC = () => {
                           ).length > 0 && (
                             <div className='w-full'>
                               <div className='text-sm font-medium text-purple-100 mb-3 flex items-center gap-2 border-b border-white/20 pb-2'>
-                                🎬 电影
+                                <Film className='inline-block w-4 h-4' /> 电影
                               </div>
                               <div className='flex space-x-3 overflow-x-auto pb-1 w-full'>
                                 {upcomingReleases
@@ -1065,7 +1084,7 @@ const PlayStatsPage: React.FC = () => {
                             .length > 0 && (
                             <div className='w-full'>
                               <div className='text-sm font-medium text-purple-100 mb-3 flex items-center gap-2 border-b border-white/20 pb-2'>
-                                📺 电视剧
+                                <Tv className='inline-block w-4 h-4' /> 电视剧
                               </div>
                               <div className='flex space-x-3 overflow-x-auto pb-1 w-full'>
                                 {upcomingReleases
@@ -1105,7 +1124,7 @@ const PlayStatsPage: React.FC = () => {
                             upcomingInitialized && (
                               <div className='text-center py-6'>
                                 <div className='text-purple-100 text-sm mb-2'>
-                                  📅
+                                  <Calendar className='inline-block w-5 h-5 text-purple-100' />
                                 </div>
                                 <div className='text-purple-100 text-sm'>
                                   暂无即将上映的内容
@@ -1580,7 +1599,7 @@ const PlayStatsPage: React.FC = () => {
                   <div className='space-y-2'>
                     <div className='flex items-center gap-2'>
                       <span className='text-2xl shrink-0'>
-                        {loginDisplay.level.icon}
+                        {renderLevelIcon(loginDisplay.level.icon, 'w-6 h-6')}
                       </span>
                       <div className='flex-1 min-w-0'>
                         <div className='text-base font-bold text-red-800 dark:text-red-300 leading-tight'>
@@ -1682,7 +1701,7 @@ const PlayStatsPage: React.FC = () => {
                 <div className='flex items-center justify-between mb-4'>
                   <div>
                     <h3 className='text-lg font-bold flex items-center gap-2'>
-                      📅 即将上映
+                      <Calendar className='inline-block w-5 h-5' /> 即将上映
                     </h3>
                     <p className='text-purple-100 text-sm mt-1'>
                       {upcomingLoading
@@ -1732,7 +1751,7 @@ const PlayStatsPage: React.FC = () => {
                         .length > 0 && (
                         <div className='w-full'>
                           <div className='text-sm font-medium text-purple-100 mb-3 flex items-center gap-2 border-b border-white/20 pb-2'>
-                            🎬 电影
+                            <Film className='inline-block w-4 h-4' /> 电影
                           </div>
                           <div className='flex space-x-3 overflow-x-auto pb-1 w-full'>
                             {upcomingReleases
@@ -1771,7 +1790,7 @@ const PlayStatsPage: React.FC = () => {
                         .length > 0 && (
                         <div className='w-full'>
                           <div className='text-sm font-medium text-purple-100 mb-3 flex items-center gap-2 border-b border-white/20 pb-2'>
-                            📺 电视剧
+                            <Tv className='inline-block w-4 h-4' /> 电视剧
                           </div>
                           <div className='flex space-x-3 overflow-x-auto pb-1 w-full'>
                             {upcomingReleases
@@ -1811,7 +1830,7 @@ const PlayStatsPage: React.FC = () => {
                         upcomingInitialized && (
                           <div className='text-center py-6'>
                             <div className='text-purple-100 text-sm mb-2'>
-                              📅
+                              <Calendar className='inline-block w-5 h-5 text-purple-100' />
                             </div>
                             <div className='text-purple-100 text-sm'>
                               暂无即将上映的内容

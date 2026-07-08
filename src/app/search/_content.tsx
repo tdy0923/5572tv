@@ -4,7 +4,7 @@
 
 'use client';
 
-import { ChevronUp, Grid2x2, List, Play, Search, X } from 'lucide-react';
+import { ChevronUp, Flame, Grid2x2, List, Play, Search, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, {
   Suspense,
@@ -837,7 +837,8 @@ function SearchPageClient() {
               {!searchQuery && trendingSearches.length > 0 && (
                 <div className='mt-3 sm:mt-4'>
                   <p className='text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-2'>
-                    🔥 热门搜索
+                    <Flame className='inline-block w-3.5 h-3.5 sm:w-4 sm:h-4 mr-0.5 text-orange-500' />{' '}
+                    热门搜索
                   </p>
                   <div className='flex flex-wrap gap-2'>
                     {trendingSearches.map((term) => (

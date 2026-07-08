@@ -4,6 +4,8 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Film,
+  Frown,
   Heart,
   Maximize,
   Minimize,
@@ -273,7 +275,7 @@ export default function ShortDramaVerticalPlayer({
           ) : (
             <div className='w-full h-full flex items-center justify-center text-gray-500'>
               <div className='text-center'>
-                <div className='text-4xl mb-2'>🎬</div>
+                <Film className='text-4xl mb-2 text-gray-500' />
                 <div className='text-sm'>暂无播放源</div>
               </div>
             </div>
@@ -290,7 +292,7 @@ export default function ShortDramaVerticalPlayer({
           {videoError && (
             <div className='absolute inset-0 flex items-center justify-center bg-black/60 z-30'>
               <div className='text-center'>
-                <div className='text-4xl mb-3'>😞</div>
+                <Frown className='text-4xl mb-3 text-gray-500' />
                 <p className='text-white text-sm mb-4'>视频加载失败</p>
                 <button
                   onClick={(e) => {

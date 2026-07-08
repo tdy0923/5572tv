@@ -1,5 +1,6 @@
 'use client';
 
+import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Error({
@@ -12,7 +13,9 @@ export default function Error({
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black px-4'>
       <div className='text-center max-w-md'>
-        <div className='text-6xl mb-4'>⚠️</div>
+        <div className='text-6xl mb-4'>
+          <AlertTriangle className='w-16 h-16 mx-auto text-yellow-500' />
+        </div>
         <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
           出错了
         </h1>

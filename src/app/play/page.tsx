@@ -4,7 +4,7 @@
 
 'use client';
 
-import { X } from 'lucide-react';
+import { Film, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -4937,7 +4937,7 @@ function PlayPageClient() {
               <div className='md:col-span-3'>
                 <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
                   <div className='flex items-center gap-2 mb-3'>
-                    <span className='text-sm'>🎬</span>
+                    <Film className='w-4 h-4' />
                     <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200'>
                       相关推荐
                     </h3>

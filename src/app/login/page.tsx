@@ -7,10 +7,12 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Lightbulb,
   Lock,
   QrCode,
   Send,
   Sparkles,
+  Tv,
   User,
   UserPlus,
 } from 'lucide-react';
@@ -378,7 +380,8 @@ function LoginPageClient() {
               />
             </div>
             <p className='mt-1.5 sm:mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400'>
-              💡 输入您的 Telegram 用户名（不含 @）
+              <Lightbulb className='inline-block w-3.5 h-3.5 sm:w-4 sm:h-4 mr-0.5 text-yellow-500' />{' '}
+              输入您的 Telegram 用户名（不含 @）
             </p>
           </div>
 
@@ -529,7 +532,7 @@ function LoginPageClient() {
             rel='noopener noreferrer'
             className='flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors group'
           >
-            <span className='text-xl sm:text-2xl'>📺</span>
+            <Tv className='w-6 h-6 sm:w-8 sm:h-8' />
             <span className='text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#f4c24d] transition-colors'>
               OrionTV
             </span>

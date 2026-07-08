@@ -1,5 +1,6 @@
 'use client';
 
+import { Film } from 'lucide-react';
 import { memo } from 'react';
 
 import PageLayout from '@/components/PageLayout';
@@ -37,7 +38,9 @@ const LoadingScreen = memo(function LoadingScreen({
               <div className='text-white text-4xl'>
                 {loadingStage === 'searching' && '🔍'}
                 {loadingStage === 'preferring' && '⚡'}
-                {loadingStage === 'fetching' && '🎬'}
+                {loadingStage === 'fetching' && (
+                  <Film className='inline-block w-5 h-5' />
+                )}
                 {loadingStage === 'ready' && '✨'}
               </div>
               {/* 旋转光环 */}

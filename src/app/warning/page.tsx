@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -40,7 +41,8 @@ export default function WarningPage() {
         <div className='space-y-4 sm:space-y-6 text-gray-700'>
           <div className='bg-red-50 border-l-4 border-red-500 p-3 sm:p-4 rounded-r-lg'>
             <p className='text-base sm:text-lg font-semibold text-red-800 mb-2'>
-              ⚠️ 安全风险提示
+              <AlertTriangle className='inline-block w-5 h-5 mr-1 text-red-500' />{' '}
+              安全风险提示
             </p>
             <p className='text-sm sm:text-base text-red-700'>
               检测到您的站点未配置访问控制，存在潜在的安全风险和法律合规问题。

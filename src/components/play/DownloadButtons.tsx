@@ -50,7 +50,9 @@ const DownloadButtons = memo(function DownloadButtons({
         title='下载管理'
       >
         <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/0 to-transparent group-hover:via-white/30 dark:group-hover:via-white/10 transition-all duration-500'></div>
-        <span className='relative z-10 text-sm sm:text-base'>📥</span>
+        <span className='relative z-10 text-sm sm:text-base'>
+          <Download className='w-4 h-4 inline-block' />
+        </span>
         <span className='relative z-10 hidden sm:inline text-xs font-medium text-gray-600 dark:text-gray-300'>
           下载管理
         </span>

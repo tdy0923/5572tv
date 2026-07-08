@@ -1,6 +1,7 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
 'use client';
+import { Clapperboard } from 'lucide-react';
 import { memo } from 'react';
 
 import { resolvePosterUrl } from '@/lib/utils';
@@ -451,7 +452,8 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
             {shortdramaDetails.metadata.author && (
               <div className='flex items-start gap-2'>
                 <span className='text-gray-600 dark:text-gray-400 shrink-0'>
-                  🎭 演员:
+                  <Clapperboard className='inline-block w-4 h-4 mr-1' />
+                  演员:
                 </span>
                 <span className='text-gray-800 dark:text-gray-200'>
                   {shortdramaDetails.metadata.author}

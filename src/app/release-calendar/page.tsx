@@ -6,10 +6,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Calendar,
+  CheckCircle,
   ChevronUp,
   Clock,
   Film,
   Filter,
+  Flame,
   MapPin,
   Search,
   Tag,
@@ -485,7 +487,7 @@ export default function ReleaseCalendarPage() {
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
-                  📅 日历视图
+                  <Calendar className='inline-block w-5 h-5' /> 日历视图
                 </button>
                 <button
                   onClick={() => setViewMode('timeline')}
@@ -573,7 +575,8 @@ export default function ReleaseCalendarPage() {
                         <div className='absolute top-3 right-3 z-10'>
                           {isToday && (
                             <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
-                              🔥 今日上映
+                              <Flame className='inline-block w-3.5 h-3.5 mr-1' />
+                              今日上映
                             </span>
                           )}
                           {isUpcoming && !isToday && (
@@ -583,7 +586,8 @@ export default function ReleaseCalendarPage() {
                           )}
                           {isPast && (
                             <span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                              ✅ 已上映
+                              <CheckCircle className='inline-block w-3.5 h-3.5 mr-1' />
+                              已上映
                             </span>
                           )}
                         </div>
@@ -1044,7 +1048,7 @@ export default function ReleaseCalendarPage() {
                       return (
                         <div className='bg-linear-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg p-6 border border-red-200 dark:border-red-800'>
                           <div className='flex items-center gap-2 mb-4'>
-                            <span className='text-2xl'>🔥</span>
+                            <Flame className='inline-block w-6 h-6' />
                             <h3 className='text-lg font-bold text-red-800 dark:text-red-300'>
                               今日上映 ({uniqueTodayItems.length} 部)
                             </h3>
@@ -1193,7 +1197,8 @@ export default function ReleaseCalendarPage() {
                                   <div className='flex items-center gap-2'>
                                     {isToday && (
                                       <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
-                                        🔥 今日上映
+                                        <Flame className='inline-block w-3.5 h-3.5 mr-1' />
+                                        今日上映
                                       </span>
                                     )}
                                     {isUpcoming && !isToday && (
@@ -1203,7 +1208,8 @@ export default function ReleaseCalendarPage() {
                                     )}
                                     {isPast && (
                                       <span className='inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                                        ✅ 已上映
+                                        <CheckCircle className='inline-block w-3.5 h-3.5 mr-1' />
+                                        已上映
                                       </span>
                                     )}
                                   </div>
