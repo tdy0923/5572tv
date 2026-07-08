@@ -1,16 +1,36 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
+
+async function requireAdmin(request: NextRequest): Promise<Response | null> {
+  const authInfo = await getAuthInfoFromCookie(request);
+  if (!authInfo || !authInfo.username) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const config = await getConfig();
+  const userConfig = config.UserConfig?.Users?.find(
+    (u: any) => u.username === authInfo.username,
+  );
+  const role = userConfig?.role || authInfo.role;
+  if (role !== 'owner' && role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  return null;
+}
 
 /**
  * 保存自定义 JAR URL 配置
  * POST /api/tvbox/custom-jar
  */
 export async function POST(request: NextRequest) {
+  const authError = await requireAdmin(request);
+  if (authError) return authError;
+
   try {
     const { jarUrl } = await request.json();
 
@@ -60,7 +80,10 @@ export async function POST(request: NextRequest) {
  * 获取自定义 JAR URL 配置
  * GET /api/tvbox/custom-jar
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authError = await requireAdmin(request);
+  if (authError) return authError;
+
   try {
     const config = await getConfig();
     const customJarUrl = config.CustomSpiderJar || null;
@@ -85,7 +108,10 @@ export async function GET() {
  * 删除自定义 JAR URL 配置
  * DELETE /api/tvbox/custom-jar
  */
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  const authError = await requireAdmin(request);
+  if (authError) return authError;
+
   try {
     const config = await getConfig();
     delete config.CustomSpiderJar;

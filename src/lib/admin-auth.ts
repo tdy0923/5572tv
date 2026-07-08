@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextRequest } from 'next/server';
 
 import { AdminConfig } from '@/lib/admin.types';
@@ -33,8 +34,15 @@ export async function getAdminRoleFromRequest(
   const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
 
   if (storageType === 'localstorage') {
-    const password = authInfo.password;
-    if (password && password === process.env.PASSWORD) {
+    const password = authInfo.password || '';
+    const expectedPassword = process.env.PASSWORD || '';
+    const pwBuf = Buffer.from(password);
+    const expectedBuf = Buffer.from(expectedPassword);
+    if (
+      password &&
+      pwBuf.length === expectedBuf.length &&
+      crypto.timingSafeEqual(pwBuf, expectedBuf)
+    ) {
       return 'owner';
     }
     return null;

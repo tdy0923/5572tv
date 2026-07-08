@@ -315,6 +315,13 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: '缺少新密码' }, { status: 400 });
         }
 
+        if (targetPassword.length < 8) {
+          return NextResponse.json(
+            { error: '密码长度至少8位' },
+            { status: 400 },
+          );
+        }
+
         // 权限检查：不允许修改站长密码
         if (targetEntry.role === 'owner') {
           return NextResponse.json(

@@ -1,15 +1,16 @@
 /* eslint-disable no-console */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { ensureAdmin } from '@/lib/admin-auth';
 
 export const runtime = 'nodejs';
 
-// 导入 cron route 中的统计数据
-// 注意：这里我们需要从父模块导出 currentCronStats
 let cachedStats: any = null;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    await ensureAdmin(request);
     // 从全局获取最新的 cron 统计数据
     // 这里需要修改 cron/route.ts 来导出统计数据
     const stats = (global as any).currentCronStats || cachedStats;
@@ -53,7 +54,6 @@ export async function GET() {
       {
         success: false,
         message: 'Failed to retrieve cron statistics',
-        error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       },
       { status: 500 },

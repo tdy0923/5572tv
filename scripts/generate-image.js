@@ -5,17 +5,21 @@
  * 示例: node scripts/generate-image.js "A futuristic city at night" "1024x768"
  */
 
-const API_KEY = process.env.AGNES_API_KEY || 'sk-LEcnBdzOvy4CG0XRf3d9noOrdOA5oXY96DXkfdMdyslAn19y';
+const API_KEY = process.env.AGNES_API_KEY;
+if (!API_KEY) {
+  console.error('错误: 需要设置 AGNES_API_KEY 环境变量');
+  process.exit(1);
+}
 const API_BASE = 'https://apihub.agnes-ai.com/v1';
 
 async function generateImage(prompt, size = '1024x768') {
   console.log(`正在生成图片: ${prompt}`);
   console.log(`尺寸: ${size}`);
-  
+
   const response = await fetch(`${API_BASE}/images/generations`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -39,10 +43,12 @@ async function generateImage(prompt, size = '1024x768') {
 // 主函数
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.log('用法: node scripts/generate-image.js "prompt" [size]');
-    console.log('示例: node scripts/generate-image.js "A futuristic city at night" "1024x768"');
+    console.log(
+      '示例: node scripts/generate-image.js "A futuristic city at night" "1024x768"',
+    );
     process.exit(1);
   }
 

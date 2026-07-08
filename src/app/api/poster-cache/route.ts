@@ -120,8 +120,7 @@ export async function GET(request: NextRequest) {
       return new NextResponse(data, {
         headers: {
           'Content-Type': 'image/jpeg',
-          'Cache-Control':
-            'public, max-age=2592000, s-maxage=2592000, immutable',
+          'Cache-Control': 'public, max-age=604800, s-maxage=604800',
           'Access-Control-Allow-Origin': '*',
           Vary: '',
         },
@@ -171,7 +170,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(imageData, {
       headers: {
         'Content-Type': response.headers.get('content-type') || 'image/jpeg',
-        'Cache-Control': 'public, max-age=2592000, s-maxage=2592000, immutable',
+        'Cache-Control': 'public, max-age=604800, s-maxage=604800',
         'Access-Control-Allow-Origin': '*',
         Vary: '',
       },

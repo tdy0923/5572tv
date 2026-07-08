@@ -278,23 +278,24 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
           >
             <div className='p-2 sm:p-4 overflow-y-auto flex-1 min-h-0'>
               <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2'>
-                {categories
-                  .find((cat) => cat.key === activeCategory)
-                  ?.options.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() =>
-                        handleOptionSelect(activeCategory, option.value)
-                      }
-                      className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 text-left ${
-                        isOptionSelected(activeCategory, option.value)
-                          ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.2)]'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+                {(
+                  categories.find((cat) => cat.key === activeCategory)
+                    ?.options ?? []
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() =>
+                      handleOptionSelect(activeCategory, option.value)
+                    }
+                    className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 text-left ${
+                      isOptionSelected(activeCategory, option.value)
+                        ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.2)]'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
           </GlassPanel>,

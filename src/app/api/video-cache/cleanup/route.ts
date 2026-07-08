@@ -1,16 +1,14 @@
 /* eslint-disable no-console */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
+import { ensureAdmin } from '@/lib/admin-auth';
 import { cleanupExpiredCache, getCacheStats } from '@/lib/video-cache';
 
 export const runtime = 'nodejs';
 
-/**
- * 清理过期的视频缓存
- * 可以通过 cron job 定期调用
- */
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    await ensureAdmin(request);
     const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE;
 
     if (storageType !== 'kvrocks') {
@@ -44,7 +42,6 @@ export async function POST() {
       {
         code: 500,
         message: '清理失败',
-        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

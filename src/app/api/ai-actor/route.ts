@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const UNLIMITED_API_KEY =
-  process.env.UNLIMITED_AI_KEY || 'ua_DyQKfu0RBU_Daj879dXqYpsczzCJH7q4';
+const UNLIMITED_API_KEY = process.env.UNLIMITED_AI_KEY || '';
 const UNLIMITED_API_URL = 'https://unlimited.surf/api/chat';
 
 async function analyzeActor(actorName: string): Promise<{
@@ -24,6 +23,10 @@ async function analyzeActor(actorName: string): Promise<{
 }`;
 
   const userPrompt = `演员：${actorName}`;
+
+  if (!UNLIMITED_API_KEY) {
+    return { biography: '', famousWorks: [], collaborators: [], style: '' };
+  }
 
   try {
     const response = await fetch(UNLIMITED_API_URL, {

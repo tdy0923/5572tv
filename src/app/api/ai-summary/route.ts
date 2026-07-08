@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const UNLIMITED_API_KEY =
-  process.env.UNLIMITED_AI_KEY || 'ua_DyQKfu0RBU_Daj879dXqYpsczzCJH7q4';
+const UNLIMITED_API_KEY = process.env.UNLIMITED_AI_KEY || '';
 const UNLIMITED_API_URL = 'https://unlimited.surf/api/chat';
 
 async function generateSummary(
@@ -32,6 +31,10 @@ async function generateSummary(
 
   const userPrompt = `影片：${title}（${year}年）
 简介：${description || '暂无简介'}`;
+
+  if (!UNLIMITED_API_KEY) {
+    return { summary: description || '暂无摘要', highlights: [], review: '' };
+  }
 
   try {
     const response = await fetch(UNLIMITED_API_URL, {

@@ -37,9 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (userData['username'] != null) {
       _usernameController.text = userData['username']!;
     }
-    if (userData['password'] != null) {
-      _passwordController.text = userData['password']!;
-    }
   }
 
   @override

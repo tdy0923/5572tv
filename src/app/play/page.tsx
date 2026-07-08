@@ -6,6 +6,7 @@
 
 import { X } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -94,6 +95,7 @@ const OwnerChangeDialog = dynamic(
   { ssr: false },
 );
 import PlayErrorDisplay from '@/components/play/PlayErrorDisplay';
+import ShareButton from '@/components/play/ShareButton';
 const ExternalPlayerButton = dynamic(
   () => import('@/components/play/ExternalPlayerButton'),
   { ssr: false },
@@ -528,6 +530,27 @@ function PlayPageClient() {
     videoYear,
     videoDoubanId,
   ]);
+
+  // 动态更新 OG 标签（用于社交分享，客户端兜底）
+  useEffect(() => {
+    if (!detail?.poster && !detail?.desc) return;
+    const poster = detail.poster ? resolveCardPosterUrl(detail.poster) : '';
+    const desc = detail.desc || detail.title || '';
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    const twitterImage = document.querySelector('meta[name="twitter:image"]');
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    const twitterDesc = document.querySelector(
+      'meta[name="twitter:description"]',
+    );
+    if (poster) {
+      if (ogImage) ogImage.setAttribute('content', poster);
+      if (twitterImage) twitterImage.setAttribute('content', poster);
+    }
+    if (desc) {
+      if (ogDesc) ogDesc.setAttribute('content', desc);
+      if (twitterDesc) twitterDesc.setAttribute('content', desc);
+    }
+  }, [detail]);
 
   // 🎬 更新全屏标题层内容（集数变化时）
   // portalContainer 作为依赖确保 ArtPlayer 初始化后再执行
@@ -1939,9 +1962,32 @@ function PlayPageClient() {
   useEffect(() => {
     // 页面即将卸载时保存播放进度和清理资源
     const handleBeforeUnload = () => {
+      // 用 sendBeacon 确保进度保存完成（beforeunload 中 fetch 可能被取消）
+      if (
+        artPlayerRef.current &&
+        currentSourceRef.current &&
+        currentIdRef.current &&
+        videoTitleRef.current
+      ) {
+        const player = artPlayerRef.current;
+        const currentTime = player.currentTime || 0;
+        const duration = player.duration || 0;
+        if (currentTime >= 1 && duration) {
+          const payload = JSON.stringify({
+            source: currentSourceRef.current,
+            id: currentIdRef.current,
+            record: {
+              title: videoTitleRef.current,
+              play_time: currentTime,
+              duration,
+            },
+          });
+          navigator.sendBeacon('/api/playrecords', payload);
+        }
+      }
       saveCurrentPlayProgress();
       releaseWakeLock();
-      cleanupPlayer(); // 不await，让它异步执行
+      cleanupPlayer();
     };
 
     // 页面可见性变化时保存播放进度和释放 Wake Lock
@@ -4597,16 +4643,41 @@ function PlayPageClient() {
       {!(isMobileGlobal && currentSourceRef.current === 'shortdrama') && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
-            {/* 第一行：影片标题 */}
-            <div className='py-1'>
-              <h1 className='text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate'>
+            {/* 面包屑导航 */}
+            <nav className='flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500'>
+              <Link
+                href='/'
+                className='hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              >
+                首页
+              </Link>
+              {detail?.type_name && (
+                <>
+                  <span>/</span>
+                  <span className='text-gray-500 dark:text-gray-400'>
+                    {detail.type_name}
+                  </span>
+                </>
+              )}
+              <span>/</span>
+              <span className='text-gray-600 dark:text-gray-300 truncate max-w-[200px]'>
+                {videoTitle || '影片'}
+              </span>
+            </nav>
+            {/* 第一行：影片标题 + 分享 */}
+            <div className='py-1 flex items-center gap-3'>
+              <h2 className='text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 truncate flex-1'>
                 {videoTitle || '影片标题'}
                 {totalEpisodes > 1 && (
                   <span className='text-gray-500 dark:text-gray-400'>
                     {` > ${detail?.episodes_titles?.[currentEpisodeIndex] || `第 ${currentEpisodeIndex + 1} 集`}`}
                   </span>
                 )}
-              </h1>
+              </h2>
+              <ShareButton
+                title={videoTitle}
+                url={typeof window !== 'undefined' ? window.location.href : ''}
+              />
             </div>
             {/* 第二行：播放器和选集 */}
             <div className='space-y-2'>

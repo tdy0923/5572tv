@@ -6,6 +6,21 @@ import { db } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// 简单限流：每用户每分钟最多10条
+const danmuRateLimit = new Map<string, number[]>();
+
+function checkDanmuRateLimit(username: string): boolean {
+  const now = Date.now();
+  const window = 60000;
+  const max = 10;
+  const timestamps = danmuRateLimit.get(username) || [];
+  const recent = timestamps.filter((t) => now - t < window);
+  if (recent.length >= max) return false;
+  recent.push(now);
+  danmuRateLimit.set(username, recent);
+  return true;
+}
+
 interface DanmuItem {
   text: string;
   color: string;
@@ -20,6 +35,13 @@ export async function POST(request: NextRequest) {
     const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    }
+
+    if (!checkDanmuRateLimit(authInfo.username)) {
+      return NextResponse.json(
+        { error: '发送太频繁，请稍后再试' },
+        { status: 429 },
+      );
     }
 
     const body = await request.json();

@@ -161,6 +161,7 @@ export const UserMenu: React.FC = () => {
   }, []);
 
   // 修改密码相关状态
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -527,6 +528,7 @@ export const UserMenu: React.FC = () => {
   const handleChangePassword = () => {
     setIsOpen(false);
     setIsChangePasswordOpen(true);
+    setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
@@ -534,6 +536,7 @@ export const UserMenu: React.FC = () => {
 
   const handleCloseChangePassword = () => {
     setIsChangePasswordOpen(false);
+    setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
@@ -592,7 +595,11 @@ export const UserMenu: React.FC = () => {
   const handleSubmitChangePassword = async () => {
     setPasswordError('');
 
-    // 验证密码
+    if (!oldPassword) {
+      setPasswordError('旧密码不得为空');
+      return;
+    }
+
     if (!newPassword) {
       setPasswordError('新密码不得为空');
       return;
@@ -603,15 +610,18 @@ export const UserMenu: React.FC = () => {
       return;
     }
 
-    changePasswordMutation.mutate(newPassword, {
-      onSuccess: async () => {
-        setIsChangePasswordOpen(false);
-        await handleLogout();
+    changePasswordMutation.mutate(
+      { oldPassword, newPassword },
+      {
+        onSuccess: async () => {
+          setIsChangePasswordOpen(false);
+          await handleLogout();
+        },
+        onError: (error) => {
+          setPasswordError(error.message || '网络错误，请稍后重试');
+        },
       },
-      onError: (error) => {
-        setPasswordError(error.message || '网络错误，请稍后重试');
-      },
-    });
+    );
   };
 
   const handleSettings = () => {
@@ -965,6 +975,21 @@ export const UserMenu: React.FC = () => {
 
           {/* 表单 */}
           <div className='space-y-4'>
+            {/* 旧密码输入 */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                旧密码
+              </label>
+              <input
+                type='password'
+                className='ui-input w-full text-sm'
+                placeholder='请输入旧密码'
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                disabled={changePasswordMutation.isPending}
+              />
+            </div>
+
             {/* 新密码输入 */}
             <div>
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -1017,6 +1042,7 @@ export const UserMenu: React.FC = () => {
               className='ui-primary-button flex-1 justify-center text-sm'
               disabled={
                 changePasswordMutation.isPending ||
+                !oldPassword ||
                 !newPassword ||
                 !confirmPassword
               }

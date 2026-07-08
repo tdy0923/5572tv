@@ -52,7 +52,7 @@ const EXTERNAL_PLAYERS: ExternalPlayer[] = [
     name: 'nPlayer',
     protocol: 'nplayer',
     platforms: ['ios', 'android'],
-    buildUrl: (url) => `nplayer-${url}`,
+    buildUrl: (url) => `nplayer-http://${url}`,
   },
   {
     id: 'mxplayer',

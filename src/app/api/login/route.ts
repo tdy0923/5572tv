@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { setAuthClientCookies } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import {
@@ -242,15 +244,15 @@ export async function POST(req: NextRequest) {
         false,
       );
       const expires = new Date();
-      expires.setDate(expires.getDate() + 7); // 7天过期
+      expires.setDate(expires.getDate() + 7);
 
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
+      setAuthClientCookies(
+        response,
+        cookieValue,
         expires,
-        sameSite: 'lax',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-      });
+        'local_user',
+        'user',
+      );
 
       return response;
     }
@@ -267,33 +269,39 @@ export async function POST(req: NextRequest) {
       }
 
       // 可能是站长，直接读环境变量
-      if (
-        username === process.env.USERNAME &&
-        password === process.env.PASSWORD
-      ) {
-        // 记录设备信息
-        const userAgent = req.headers.get('user-agent') || '';
-        await trackDevice(username, userAgent, ip);
+      if (username === process.env.USERNAME) {
+        const expectedPw = process.env.PASSWORD || '';
+        const pwBuffer = Buffer.from(password);
+        const expectedBuffer = Buffer.from(expectedPw);
+        const isOwner =
+          pwBuffer.length === expectedBuffer.length &&
+          crypto.timingSafeEqual(pwBuffer, expectedBuffer);
 
-        // 验证成功，设置认证cookie
-        const response = NextResponse.json({ ok: true });
-        const cookieValue = await generateAuthCookie(
-          username,
-          undefined,
-          'owner',
-          false,
-        ); // 不包含 password
-        const expires = new Date();
-        expires.setDate(expires.getDate() + 7); // 7天过期
+        if (isOwner) {
+          // 记录设备信息
+          const userAgent = req.headers.get('user-agent') || '';
+          await trackDevice(username, userAgent, ip);
 
-        response.cookies.set('user_auth', cookieValue, {
-          path: '/',
-          expires,
-          sameSite: 'lax',
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-        });
-        return response;
+          // 验证成功，设置认证cookie
+          const response = NextResponse.json({ ok: true });
+          const cookieValue = await generateAuthCookie(
+            username,
+            undefined,
+            'owner',
+            false,
+          );
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 7);
+
+          setAuthClientCookies(
+            response,
+            cookieValue,
+            expires,
+            username,
+            'owner',
+          );
+          return response;
+        }
       }
 
       const config = await getConfig();
@@ -338,35 +346,26 @@ export async function POST(req: NextRequest) {
           false,
         );
         const expires = new Date();
-        expires.setDate(expires.getDate() + 7); // 7天过期
+        expires.setDate(expires.getDate() + 7);
 
-        response.cookies.set('user_auth', cookieValue, {
-          path: '/',
+        setAuthClientCookies(
+          response,
+          cookieValue,
           expires,
-          sameSite: 'lax',
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-        });
+          username,
+          user?.role || 'user',
+        );
         return response;
       } catch (dbErr: any) {
         console.error('数据库验证失败', dbErr);
-        return NextResponse.json(
-          { error: '数据库错误', detail: String(dbErr?.message || dbErr) },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
       }
     } catch (error: any) {
       console.error('登录接口异常', error);
-      return NextResponse.json(
-        { error: '服务器错误', detail: String(error?.message || error) },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
     }
   } catch (error: any) {
     console.error('登录接口异常', error);
-    return NextResponse.json(
-      { error: '服务器错误', detail: String(error?.message || error) },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
   }
 }

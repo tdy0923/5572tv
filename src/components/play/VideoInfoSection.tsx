@@ -325,25 +325,27 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                       movieDetails.countries
                         .slice(0, 2)
                         .map((country: string, index: number) => (
-                          <span
+                          <a
                             key={`country-${country}`}
+                            href={`/search?q=${encodeURIComponent(country)}`}
                             className='relative group bg-linear-to-r from-blue-500/90 to-cyan-500/90 dark:from-blue-600/90 dark:to-cyan-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105'
                           >
                             <span className='absolute inset-0 bg-linear-to-r from-blue-400 to-cyan-400 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity duration-300'></span>
                             <span className='relative'>{country}</span>
-                          </span>
+                          </a>
                         ))}
                     {movieDetails.languages &&
                       movieDetails.languages
                         .slice(0, 2)
                         .map((language: string, index: number) => (
-                          <span
+                          <a
                             key={`language-${language}`}
+                            href={`/search?q=${encodeURIComponent(language)}`}
                             className='relative group bg-linear-to-r from-purple-500/90 to-pink-500/90 dark:from-purple-600/90 dark:to-pink-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105'
                           >
                             <span className='absolute inset-0 bg-linear-to-r from-purple-400 to-pink-400 rounded-full opacity-0 group-hover:opacity-20 blur transition-opacity duration-300'></span>
                             <span className='relative'>{language}</span>
-                          </span>
+                          </a>
                         ))}
                     {movieDetails.episodes && (
                       <span className='relative group bg-linear-to-r from-green-500/90 to-emerald-500/90 dark:from-green-600/90 dark:to-emerald-600/90 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md hover:shadow-lg hover:shadow-green-500/30 transition-all duration-300 hover:scale-105'>

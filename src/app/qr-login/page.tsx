@@ -128,8 +128,20 @@ function QRLoginClient() {
             clearInterval(countdownRef.current!);
             setStatus('confirmed');
 
-            // Set auth cookie
+            // Set auth cookies
             document.cookie = `user_auth=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+
+            // Also set user_info for client-side reads
+            try {
+              const parsed = JSON.parse(data.token);
+              const userInfo = JSON.stringify({
+                username: parsed.username,
+                role: parsed.role,
+              });
+              document.cookie = `user_info=${userInfo}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+            } catch {
+              // fallback: user_auth will be parsed directly
+            }
 
             // Redirect after short delay
             setTimeout(() => {

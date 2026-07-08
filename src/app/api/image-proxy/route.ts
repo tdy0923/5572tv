@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -29,6 +30,11 @@ export async function GET(request: NextRequest) {
       { error: 'Missing url parameter' },
       { status: 400 },
     );
+  }
+
+  const safe = await isUrlSafeDeep(url);
+  if (!safe) {
+    return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
   }
 
   try {

@@ -1,15 +1,14 @@
 /* eslint-disable no-console */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
+import { ensureAdmin } from '@/lib/admin-auth';
 import { getCacheStats } from '@/lib/video-cache';
 
 export const runtime = 'nodejs';
 
-/**
- * 获取视频缓存统计信息
- */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    await ensureAdmin(request);
     const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE;
 
     if (storageType !== 'kvrocks') {
@@ -42,7 +41,6 @@ export async function GET() {
       {
         code: 500,
         message: '获取统计失败',
-        error: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

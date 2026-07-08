@@ -52,6 +52,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '请提供解密密码' }, { status: 400 });
     }
 
+    if (file.size > 50 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: '备份文件过大，最大支持 50MB' },
+        { status: 400 },
+      );
+    }
+
     // 读取文件内容
     const encryptedData = await file.text();
 

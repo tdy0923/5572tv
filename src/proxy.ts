@@ -212,62 +212,43 @@ function isIPTrusted(clientIP: string, trustedIPs: string[]): boolean {
 
 // 生成信任网络的自动登录 cookie
 function generateTrustedAuthCookie(request: NextRequest): NextResponse {
-  // 如果未设置密码，禁止信任网络自动登录
   if (!process.env.PASSWORD) {
     return NextResponse.next();
   }
 
   const response = NextResponse.next();
 
-  const storageType = process.env.STORAGE_TYPE || 'localstorage';
   const username = process.env.USERNAME || 'admin';
+  const role =
+    (process.env.TRUSTED_NETWORK_ROLE as 'user' | 'admin') || 'admin';
+  const signData = `${username}:${role}`;
+  const hmac = crypto.createHmac('sha256', process.env.PASSWORD);
+  const signature = hmac.update(signData).digest('hex');
 
-  if (storageType === 'localstorage') {
-    // localstorage 模式：使用 HMAC 签名 cookie（不再存储明文密码）
-    const role = 'admin';
-    const signData = `${username}:${role}`;
-    const hmac = crypto.createHmac('sha256', process.env.PASSWORD);
-    const signature = hmac.update(signData).digest('hex');
+  const authInfo = {
+    username,
+    role,
+    signature,
+    timestamp: Date.now(),
+    loginTime: Date.now(),
+    trustedNetwork: true,
+  };
+  response.cookies.set('user_auth', JSON.stringify(authInfo), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60,
+    path: '/',
+  });
 
-    const authInfo = {
-      username,
-      role,
-      signature,
-      timestamp: Date.now(),
-      loginTime: Date.now(),
-      trustedNetwork: true,
-    };
-    response.cookies.set('user_auth', JSON.stringify(authInfo), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-  } else {
-    // 数据库模式：生成签名 cookie（需要异步，这里简化处理）
-    // 在信任网络模式下，设置带签名的用户角色（非 owner）
-    const role = 'admin';
-    const signData = `${username}:${role}`;
-    const hmac = crypto.createHmac('sha256', process.env.PASSWORD);
-    const signature = hmac.update(signData).digest('hex');
-
-    const authInfo = {
-      username,
-      trustedNetwork: true,
-      timestamp: Date.now(),
-      loginTime: Date.now(),
-      role,
-      signature,
-    };
-    response.cookies.set('user_auth', JSON.stringify(authInfo), {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60,
-      path: '/',
-    });
-  }
+  const userInfo = JSON.stringify({ username, role });
+  response.cookies.set('user_info', userInfo, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60,
+    path: '/',
+  });
 
   return response;
 }
@@ -371,7 +352,14 @@ async function handleAuthentication(
 
   // localstorage模式：在middleware中完成验证
   if (storageType === 'localstorage') {
-    if (!authInfo.password || authInfo.password !== process.env.PASSWORD) {
+    const storedPassword = authInfo.password || '';
+    const expectedPassword = process.env.PASSWORD || '';
+    const storedBuf = Buffer.from(storedPassword);
+    const expectedBuf = Buffer.from(expectedPassword);
+    if (
+      storedBuf.length !== expectedBuf.length ||
+      !crypto.timingSafeEqual(storedBuf, expectedBuf)
+    ) {
       return handleAuthFailure(request, pathname);
     }
     return response || NextResponse.next();

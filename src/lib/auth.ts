@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 
+import type { NextResponse as NextResponseType } from 'next/server';
 import { NextRequest } from 'next/server';
 
 // ── Token Revocation (Redis-backed) ──
@@ -40,6 +41,57 @@ export async function isTokenRevoked(
   const key = tokenKey(username, timestamp);
   const result = await client.get(key);
   return result === '1';
+}
+
+// Set auth cookies on response — user_auth (httpOnly) + user_info (client-readable)
+export function setAuthClientCookies(
+  response: NextResponseType,
+  authCookieValue: string,
+  expires: Date,
+  username: string,
+  role: 'owner' | 'admin' | 'user' = 'user',
+): void {
+  response.cookies.set('user_auth', authCookieValue, {
+    path: '/',
+    expires,
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  const userInfo = JSON.stringify({ username, role });
+  response.cookies.set('user_info', userInfo, {
+    path: '/',
+    expires,
+    sameSite: 'lax',
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+  });
+}
+
+// Clear both auth cookies on logout
+export function clearAuthClientCookies(response: NextResponseType): void {
+  response.cookies.set('user_auth', '', {
+    path: '/',
+    expires: new Date(0),
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
+  response.cookies.set('user_info', '', {
+    path: '/',
+    expires: new Date(0),
+    sameSite: 'lax',
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+  });
+  response.cookies.set('auth', '', {
+    path: '/',
+    expires: new Date(0),
+    sameSite: 'lax',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  });
 }
 
 function getPasswordSecret(): string {
@@ -220,6 +272,16 @@ export function getAuthInfoFromBrowserCookie(): {
       },
       {} as Record<string, string>,
     );
+
+    // 优先读取 user_info（轻量级客户端 cookie），回退到 user_auth
+    const infoCookie = cookies['user_info'];
+    if (infoCookie) {
+      let decoded = decodeURIComponent(infoCookie);
+      if (decoded.includes('%')) {
+        decoded = decodeURIComponent(decoded);
+      }
+      return JSON.parse(decoded);
+    }
 
     const authCookie = cookies['user_auth'] || cookies['auth'];
     if (!authCookie) {

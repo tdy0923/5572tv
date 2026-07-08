@@ -15,6 +15,23 @@ NC='\033[0m' # No Color
 # 版本信息
 APP_VERSION=""
 
+# 准备签名配置（从环境变量读取，用于 CI 构建）
+prepare_signing() {
+    if [ -n "$ANDROID_STORE_PASSWORD" ] && [ -n "$ANDROID_KEY_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ]; then
+        log_info "从环境变量生成 android/key.properties..."
+        mkdir -p android
+        cat > android/key.properties << EOF
+storePassword=${ANDROID_STORE_PASSWORD}
+keyPassword=${ANDROID_KEY_PASSWORD}
+keyAlias=${ANDROID_KEY_ALIAS}
+storeFile=${ANDROID_STORE_FILE:-../release.keystore}
+EOF
+        log_success "android/key.properties 已生成"
+    else
+        log_warning "ANDROID_STORE_PASSWORD 等环境变量未设置，APK 将不签名或使用已存在的 key.properties"
+    fi
+}
+
 # 读取版本号
 read_version() {
     log_info "读取项目版本号..."
@@ -408,6 +425,7 @@ main() {
     check_flutter
     clean_build
     get_dependencies
+    prepare_signing
     
     # 并行构建模式
     if [ "$PARALLEL_BUILD" = true ]; then

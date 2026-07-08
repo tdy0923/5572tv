@@ -23,7 +23,10 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 export async function generateMetadata(): Promise<Metadata> {
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   return {
-    title: siteName,
+    title: {
+      default: siteName,
+      template: `%s - ${siteName}`,
+    },
     description: '5572影视 - 智能影视播放平台，海量资源，AI搜索，弹幕互动',
     manifest: '/manifest.json',
     icons: {
@@ -51,6 +54,16 @@ export async function generateMetadata(): Promise<Metadata> {
       description: '5572影视 - 智能影视播放平台',
       type: 'website',
       siteName: siteName,
+      images: [{ url: '/icons/icon-512x512.png', width: 512, height: 512 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description: '5572影视 - 智能影视播放平台',
+      images: ['/icons/icon-512x512.png'],
+    },
+    alternates: {
+      canonical: '/',
     },
   };
 }

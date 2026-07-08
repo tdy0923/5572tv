@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { setAuthClientCookies } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import { consumeInviteCode, validateInviteCode } from '@/lib/invite-code';
@@ -167,13 +168,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: '密码长度至少6位' }, { status: 400 });
+    if (password.length < 8) {
+      return NextResponse.json({ error: '密码长度至少8位' }, { status: 400 });
     }
 
-    if (!/[A-Z]/.test(password) && !/[0-9]/.test(password)) {
+    if (!/[A-Z]/.test(password)) {
       return NextResponse.json(
-        { error: '密码需包含至少一个大写字母或数字' },
+        { error: '密码需包含至少一个大写字母' },
+        { status: 400 },
+      );
+    }
+
+    if (!/[a-z]/.test(password)) {
+      return NextResponse.json(
+        { error: '密码需包含至少一个小写字母' },
+        { status: 400 },
+      );
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return NextResponse.json(
+        { error: '密码需包含至少一个数字' },
         { status: 400 },
       );
     }
@@ -260,15 +275,9 @@ export async function POST(req: NextRequest) {
         false,
       );
       const expires = new Date();
-      expires.setDate(expires.getDate() + 7); // 7天过期
+      expires.setDate(expires.getDate() + 7);
 
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
-        expires,
-        sameSite: 'lax',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-      });
+      setAuthClientCookies(response, cookieValue, expires, username, 'user');
 
       return response;
     } catch (err) {

@@ -2,6 +2,7 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 
+import { setAuthClientCookies } from '@/lib/auth';
 import { clearConfigCache } from '@/lib/config';
 import { db } from '@/lib/db';
 import {
@@ -372,27 +373,7 @@ export async function GET(request: Request) {
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
 
-    // Set auth cookie - 直接使用 JSON 字符串，Next.js 会自动 URL 编码
-    console.log(
-      `[Verify ${requestId}] Setting auth cookie via response.cookies.set()...`,
-    );
-    console.log(`[Verify ${requestId}] Cookie settings:`, {
-      path: '/',
-      expires: expires.toISOString(),
-      sameSite: 'lax',
-      secure: isSecure,
-      httpOnly: false,
-    });
-
-    response.cookies.set('user_auth', authDataString, {
-      path: '/',
-      expires: expires,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: false,
-    });
-
-    console.log(`[Verify ${requestId}] Auth cookie set, verifying...`);
+    setAuthClientCookies(response, authDataString, expires, username, 'user');
 
     // Set new user cookie if needed
     if (isNewUser && initialPassword) {

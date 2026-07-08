@@ -152,6 +152,7 @@ export async function GET(request: Request) {
     let bytesTransferred = 0;
 
     // 优化的流式传输，带背压控制
+    let streamCancelled = false;
     const stream = new ReadableStream(
       {
         start(controller) {
@@ -162,17 +163,16 @@ export async function GET(request: Request) {
           }
 
           reader = response?.body?.getReader();
-          const isCancelled = false;
 
           function pump(): void {
-            if (isCancelled || !reader) {
+            if (streamCancelled || !reader) {
               return;
             }
 
             reader
               .read()
               .then(({ done, value }) => {
-                if (isCancelled) {
+                if (streamCancelled) {
                   return;
                 }
 
@@ -210,7 +210,7 @@ export async function GET(request: Request) {
                 pump();
               })
               .catch((error) => {
-                if (!isCancelled) {
+                if (!streamCancelled) {
                   if (process.env.NODE_ENV === 'development') {
                     console.warn('Stream pump error:', error);
                   }
@@ -235,6 +235,7 @@ export async function GET(request: Request) {
           pump();
         },
         cancel() {
+          streamCancelled = true;
           // 当流被取消时，确保释放所有资源
           if (reader) {
             try {

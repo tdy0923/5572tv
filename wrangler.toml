@@ -1,7 +1,6 @@
 name = "5572tv-proxy"
 main = "proxy.worker.js"
 compatibility_date = "2026-01-01"
-account_id = "0934ef7fb31492896f3871b281726e9d"
 
 # 只保留海报图片代理（豆瓣需要），移除视频代理
 # 视频让浏览器直接访问源站，和其他电影站一样

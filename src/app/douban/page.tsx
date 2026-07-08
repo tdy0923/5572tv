@@ -975,7 +975,7 @@ function DoubanPageClient() {
           {useVirtualization ? (
             <>
               {loading || !selectorsReady ? (
-                <div className='justify-start grid grid-cols-3 gap-x-2 gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
+                <div className='justify-start grid grid-cols-2 gap-x-2 gap-y-10 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8 sm:gap-y-20'>
                   {skeletonData.map((index) => (
                     <DoubanCardSkeleton key={index} />
                   ))}
@@ -983,7 +983,7 @@ function DoubanPageClient() {
               ) : (
                 <VirtualGrid
                   items={doubanData}
-                  className='grid-cols-3 gap-x-2 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8'
+                  className='grid-cols-2 gap-x-2 px-2 sm:px-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:gap-x-8'
                   rowGapClass='pb-12 sm:pb-20'
                   estimateRowHeight={320}
                   endReached={() => {

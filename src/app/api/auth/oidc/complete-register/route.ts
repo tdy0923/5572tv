@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { setAuthClientCookies } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 
@@ -210,13 +211,7 @@ export async function POST(request: NextRequest) {
       const expires = new Date();
       expires.setDate(expires.getDate() + 7);
 
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
-        expires,
-        sameSite: 'lax',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-      });
+      setAuthClientCookies(response, cookieValue, expires, username, 'user');
 
       // 清除OIDC session
       response.cookies.delete('oidc_session');

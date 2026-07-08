@@ -25,3 +25,4 @@ jobs:
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

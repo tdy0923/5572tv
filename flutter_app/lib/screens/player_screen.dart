@@ -303,6 +303,10 @@ class _PlayerScreenState extends State<PlayerScreen>
       updateLoadingEmoji('⚡');
       currentDetail = await preferBestSource();
       if (!_isActiveLoad(loadGeneration)) return;
+      if (currentDetail == null) {
+        showError('优选后未找到可用源');
+        return;
+      }
     }
     setInfosByDetail(currentDetail!);
 

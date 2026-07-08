@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { setAuthClientCookies } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import {
@@ -130,6 +131,117 @@ async function trackDevice(
     await db.setCache(devicesKey, devices);
   } catch (error) {
     console.error('记录设备信息失败:', error);
+  }
+}
+
+// 验证标准 OIDC Provider 的 JWT 签名
+async function verifyStandardOidcJwt(
+  idToken: string,
+  oidcConfig: any,
+): Promise<void> {
+  const tokenParts = idToken.split('.');
+  if (tokenParts.length !== 3) {
+    throw new Error('Invalid id_token format');
+  }
+
+  const header = JSON.parse(Buffer.from(tokenParts[0], 'base64').toString());
+  const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+
+  const kid = header.kid;
+  const alg = header.alg || 'RS256';
+  const iss = payload.iss;
+
+  if (!kid) {
+    throw new Error('Missing kid in JWT header');
+  }
+
+  if (!iss) {
+    throw new Error('Missing iss in JWT payload');
+  }
+
+  // OIDC issuer validation
+  if (oidcConfig.issuer && oidcConfig.issuer !== iss) {
+    throw new Error(
+      `Invalid iss claim: expected ${oidcConfig.issuer}, got ${iss}`,
+    );
+  }
+
+  const clientId = oidcConfig.clientId;
+  if (
+    payload.aud !== clientId &&
+    !(Array.isArray(payload.aud) && payload.aud.includes(clientId))
+  ) {
+    throw new Error(`Invalid aud claim: expected ${clientId}`);
+  }
+
+  if (payload.exp && payload.exp * 1000 < Date.now()) {
+    throw new Error('JWT expired');
+  }
+
+  let jwksUri = oidcConfig.jwksUri;
+  if (!jwksUri) {
+    jwksUri = `${iss}/.well-known/openid-configuration`;
+    const wellKnownResp = await fetch(jwksUri);
+    if (wellKnownResp.ok) {
+      const wellKnown = await wellKnownResp.json();
+      jwksUri = wellKnown.jwks_uri;
+    }
+  }
+
+  if (!jwksUri) {
+    throw new Error('Cannot determine JWKS URI');
+  }
+
+  const keysResponse = await fetch(jwksUri);
+  const keysData = await keysResponse.json();
+  const publicKey = keysData.keys.find((k: any) => k.kid === kid);
+  if (!publicKey) {
+    throw new Error('Public key not found for kid: ' + kid);
+  }
+
+  const signingInput = tokenParts[0] + '.' + tokenParts[1];
+  const signature = Buffer.from(tokenParts[2], 'base64');
+
+  let subtleAlg: any;
+  if (alg === 'RS256') {
+    subtleAlg = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+  } else if (alg === 'RS384') {
+    subtleAlg = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-384' };
+  } else if (alg === 'RS512') {
+    subtleAlg = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-512' };
+  } else if (alg === 'ES256') {
+    subtleAlg = {
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+      hash: { name: 'SHA-256' },
+    };
+  } else if (alg === 'ES384') {
+    subtleAlg = {
+      name: 'ECDSA',
+      namedCurve: 'P-384',
+      hash: { name: 'SHA-384' },
+    };
+  } else {
+    throw new Error('Unsupported algorithm: ' + alg);
+  }
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'jwk',
+    publicKey,
+    subtleAlg,
+    false,
+    ['verify'],
+  );
+
+  const valid = await crypto.subtle.verify(
+    subtleAlg,
+    cryptoKey,
+    signature,
+    Buffer.from(signingInput),
+  );
+
+  if (!valid) {
+    throw new Error('JWT signature verification failed');
   }
 }
 
@@ -332,6 +444,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // 验证标准 OIDC Provider JWT 签名（Apple 独立处理）
+    if (
+      idToken &&
+      providerId !== 'apple' &&
+      providerId !== 'facebook' &&
+      providerId !== 'wechat' &&
+      providerId !== 'github'
+    ) {
+      try {
+        await verifyStandardOidcJwt(idToken, oidcConfig);
+      } catch (jwtError) {
+        console.error('OIDC JWT verification failed:', jwtError);
+        recordFailedAttempt(ip);
+        return NextResponse.redirect(
+          new URL('/login?error=' + encodeURIComponent('身份验证失败'), origin),
+        );
+      }
+    }
+
     // 获取用户信息
     let userInfo: any;
 
@@ -364,7 +495,7 @@ export async function GET(request: NextRequest) {
         const signingInput = tokenParts[0] + '.' + tokenParts[1];
         const signature = Buffer.from(tokenParts[2], 'base64');
         const crypto = await import('crypto');
-        const verifier = crypto.webcrypto.subtle.verify(
+        const verifier = await crypto.webcrypto.subtle.verify(
           'RS256',
           await crypto.webcrypto.subtle.importKey(
             'jwk',
@@ -543,13 +674,7 @@ export async function GET(request: NextRequest) {
       const expires = new Date();
       expires.setDate(expires.getDate() + 7);
 
-      response.cookies.set('user_auth', cookieValue, {
-        path: '/',
-        expires,
-        sameSite: 'lax',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-      });
+      setAuthClientCookies(response, cookieValue, expires, username, userRole);
 
       // 清除state cookie
       response.cookies.delete('oidc_state');
