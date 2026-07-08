@@ -255,7 +255,7 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
 
 // 为页面响应设置 CSP nonce 头
 function applyCSPHeaders(response: NextResponse, nonce: string): NextResponse {
-  const csp = `default-src 'self' https: http:; script-src 'self' 'nonce-${nonce}' https://tg.yunku.de https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';`;
+  const csp = `default-src 'self' https: http:; script-src 'self' 'unsafe-inline' https://tg.yunku.de https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';`;
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('x-csp-nonce', nonce);
   return response;
