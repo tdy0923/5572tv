@@ -9,10 +9,10 @@ interface PlaySearchParams {
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: PlaySearchParams;
+  searchParams: Promise<PlaySearchParams>;
 }): Promise<Metadata> {
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
-  const { source, id, title } = searchParams;
+  const { source, id, title } = await searchParams;
   const decodedTitle = title
     ? decodeURIComponent(title.replace(/\+/g, ' '))
     : '';
