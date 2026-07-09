@@ -1,17 +1,5 @@
-import { Suspense } from 'react';
-
-import PlayPageClientWrapper from './PlayPageClient';
+import ClientPage from './ClientPage';
 
 export default function PlayPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className='flex items-center justify-center min-h-screen text-white'>
-          加载中...
-        </div>
-      }
-    >
-      <PlayPageClientWrapper />
-    </Suspense>
-  );
+  return <ClientPage />;
 }

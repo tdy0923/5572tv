@@ -1074,16 +1074,17 @@ function PlayPageClient() {
         // // console.log('🎵 换集时应用音轨参数:', currentAudioTrackRef.current);
       }
 
-      // 🛡️ 外部 CDN 的 m3u8 链接 - 优先让客户端直接获取（绕过CDN防盗链）
       if (
         newUrl &&
         newUrl.includes('.m3u8') &&
         !newUrl.includes(window.location.host) &&
         !isEmbySource
       ) {
-        // 优先使用原始URL让客户端直接获取（CDN防盗链通常只拦截服务器IP）
-        // 如果客户端获取失败，hls.js会自动重试或显示错误
-        // 不再强制使用代理，因为代理会被CDN服务器封锁
+        const encodedUrl = encodeURIComponent(newUrl);
+        const source = detailData.source || '';
+        newUrl = source
+          ? `/api/proxy/m3u8?url=${encodedUrl}&5572tv-source=${encodeURIComponent(source)}`
+          : `/api/proxy/m3u8?url=${encodedUrl}`;
       }
 
       if (newUrl !== videoUrl) {
@@ -4624,7 +4625,7 @@ function PlayPageClient() {
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
             title={videoTitle || detail.title || ''}
-            poster={detail.poster}
+            poster={resolveCardPosterUrl(detail.poster)}
             onFavorite={handleToggleFavorite}
             isFavorited={favorited}
             onShare={() => {
@@ -4988,7 +4989,7 @@ function PlayPageClient() {
                           <div className='aspect-[2/3] rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 mb-1.5 transition-transform duration-200 group-hover:scale-105'>
                             {m.poster && (
                               <img
-                                src={m.poster}
+                                src={resolveCardPosterUrl(m.poster)}
                                 alt={m.title}
                                 className='w-full h-full object-cover'
                                 loading='lazy'
