@@ -142,19 +142,17 @@ export async function GET(request: Request) {
       stats.errors++;
       clearTimeout(timeoutId);
 
-      // 直接返回原始的HTTP错误，让hls.js处理
-      // 不返回JSON，因为hls.js期望的是M3U8内容或标准HTTP错误
-      return new NextResponse(
-        `HTTP Error ${response.status}: ${response.statusText}`,
-        {
-          status: response.status,
-          statusText: response.statusText,
-          headers: {
-            'Content-Type': 'text/plain',
-            'Access-Control-Allow-Origin': '*',
-          },
+      // CDN 封锁了服务端 → 降级为 302 重定向（让浏览器直连）
+      // 浏览器直连可能因 CORS 失败，但比直接返回 403 有更高成功率
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: decodedUrl,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
         },
-      );
+      });
     }
 
     const contentType = response.headers.get('Content-Type') || '';
@@ -297,41 +295,16 @@ export async function GET(request: Request) {
     stats.errors++;
     clearTimeout(timeoutId);
 
-    // 对于已知被封锁的CDN，降级为302重定向（让浏览器直连）
-    if (isBlockedCdn) {
-      return new NextResponse(null, {
-        status: 302,
-        headers: {
-          Location: decodedUrl,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-          'Access-Control-Allow-Headers': '*',
-        },
-      });
-    }
-
-    if (error.name === 'AbortError') {
-      return NextResponse.json({ error: 'Request timeout' }, { status: 408 });
-    }
-
-    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-      return NextResponse.json(
-        { error: 'Network connection failed' },
-        { status: 503 },
-      );
-    }
-
-    if (process.env.NODE_ENV === 'development') {
-      console.error('M3U8 proxy error:', error);
-    }
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch m3u8',
-        details:
-          process.env.NODE_ENV === 'development' ? error.message : undefined,
+    // 服务端获取失败 → 降级为 302 重定向（让浏览器直连）
+    return new NextResponse(null, {
+      status: 302,
+      headers: {
+        Location: decodedUrl,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
       },
-      { status: 500 },
-    );
+    });
   } finally {
     clearTimeout(timeoutId);
 
