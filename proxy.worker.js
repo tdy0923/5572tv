@@ -67,24 +67,24 @@ async function handleM3U8Proxy(request, url) {
     return jsonResponse({ error: 'Invalid url' }, 400, true, request);
   }
 
-  let targetOrigin = '';
-  try {
-    targetOrigin = new URL(targetUrl).origin;
-  } catch {}
-
   const sourceParam = source
     ? `&5572tv-source=${encodeURIComponent(source)}`
     : '';
 
   try {
     const response = await fetch(targetUrl, {
-      headers: buildHeaders(targetOrigin),
+      headers: buildHeaders(source),
       redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
-      return fallbackRedirect(targetUrl, request);
+      return jsonResponse(
+        { error: 'Proxy fetch failed: ' + response.status },
+        response.status,
+        true,
+        request,
+      );
     }
 
     const contentType = response.headers.get('Content-Type') || '';
@@ -133,7 +133,7 @@ async function handleM3U8Proxy(request, url) {
       headers: respHeaders,
     });
   } catch (err) {
-    return fallbackRedirect(targetUrl, request);
+    return jsonResponse({ error: 'Proxy fetch error' }, 502, true, request);
   }
 }
 
@@ -141,6 +141,9 @@ async function handleM3U8Proxy(request, url) {
 
 async function handleSegmentProxy(request, url) {
   const targetUrl = decodeURIComponent(url.searchParams.get('url') || '');
+  const source =
+    url.searchParams.get('5572tv-source') ||
+    url.searchParams.get('moontv-source');
   if (!targetUrl) {
     return jsonResponse({ error: 'Missing url' }, 400, true, request);
   }
@@ -152,9 +155,9 @@ async function handleSegmentProxy(request, url) {
 
   try {
     const response = await fetch(targetUrl, {
-      headers: buildHeaders(targetOrigin),
+      headers: buildHeaders(source || targetOrigin),
       redirect: 'follow',
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
@@ -186,6 +189,9 @@ const KEY_CACHE_TTL = 600000; // 10 min
 
 async function handleKeyProxy(request, url) {
   const targetUrl = decodeURIComponent(url.searchParams.get('url') || '');
+  const source =
+    url.searchParams.get('5572tv-source') ||
+    url.searchParams.get('moontv-source');
   if (!targetUrl) {
     return jsonResponse({ error: 'Missing url' }, 400, true, request);
   }
@@ -401,7 +407,7 @@ function substituteVars(text, vars) {
 
 // ---------- Helpers ----------
 
-function buildHeaders(origin) {
+function buildHeaders(sourceDomain) {
   const h = {
     'User-Agent': UA,
     Accept: '*/*',
@@ -413,23 +419,15 @@ function buildHeaders(origin) {
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'cross-site',
   };
-  if (origin) {
+  let origin = '';
+  if (sourceDomain) {
+    origin = sourceDomain.startsWith('http')
+      ? sourceDomain
+      : 'https://' + sourceDomain;
     h['Referer'] = origin + '/';
     h['Origin'] = origin;
   }
   return h;
-}
-
-function fallbackRedirect(targetUrl, request) {
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: targetUrl,
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-      'Access-Control-Allow-Headers': '*',
-    },
-  });
 }
 
 // ---------- Douban Trailer Cache ----------

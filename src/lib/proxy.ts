@@ -127,13 +127,12 @@ export async function fetchWithRetry(
       ua: UA_POOL[Math.floor(Math.random() * UA_POOL.length)],
       via: 'ua_rotate',
       setup: (h) => {
+        if (h.has('Referer') && h.has('Origin')) return;
         try {
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {
-          /* URL parse or fetch error — safe to skip */
-        }
+        } catch {}
       },
     });
     attempts.push({ ua: DEFAULT_USER_AGENT, via: 'direct' });
@@ -143,26 +142,24 @@ export async function fetchWithRetry(
       ua: originalUA,
       via: 'direct',
       setup: (h) => {
+        if (h.has('Referer') && h.has('Origin')) return;
         try {
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {
-          /* URL parse or fetch error — safe to skip */
-        }
+        } catch {}
       },
     });
     attempts.push({
       ua: UA_POOL[Math.floor(Math.random() * UA_POOL.length)],
       via: 'ua_rotate',
       setup: (h) => {
+        if (h.has('Referer') && h.has('Origin')) return;
         try {
           const p = new URL(url);
           h.set('Referer', p.origin + '/');
           h.set('Origin', p.origin);
-        } catch {
-          /* URL parse or fetch error — safe to skip */
-        }
+        } catch {}
       },
     });
     attempts.push({ ua: getRandomUserAgent(), via: 'proxy' });

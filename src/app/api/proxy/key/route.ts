@@ -133,12 +133,15 @@ export async function GET(request: Request) {
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
-    // 构建目标域名的 Referer 和 Origin（防盗链绕过）
-    let targetOrigin = '';
-    try {
-      const targetUrlObj = new URL(decodedUrl);
-      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
-    } catch {}
+    let refererOrigin = '';
+    if (source && source.includes('.')) {
+      refererOrigin = `https://${source}`;
+    } else {
+      try {
+        const targetUrlObj = new URL(decodedUrl);
+        refererOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+      } catch {}
+    }
 
     const response = await fetchWithRetry(
       decodedUrl,
@@ -148,9 +151,8 @@ export async function GET(request: Request) {
           'User-Agent': ua,
           Accept: 'application/octet-stream, */*',
           'Cache-Control': 'no-cache',
-          // 防盗链绕过
-          ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
-          ...(targetOrigin ? { Origin: targetOrigin } : {}),
+          ...(refererOrigin ? { Referer: refererOrigin + '/' } : {}),
+          ...(refererOrigin ? { Origin: refererOrigin } : {}),
           'Sec-Fetch-Dest': 'empty',
           'Sec-Fetch-Mode': 'cors',
           'Sec-Fetch-Site': 'cross-site',

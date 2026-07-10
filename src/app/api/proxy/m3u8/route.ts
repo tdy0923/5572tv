@@ -91,18 +91,20 @@ export async function GET(request: Request) {
   const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时（减少超时时间）
 
   try {
-    // 选择合适的 agent
     const isHttps = decodedUrl.startsWith('https:');
     const agent = isHttps ? httpsAgent : httpAgent;
 
-    // 构建目标域名的 Referer 和 Origin（防盗链绕过）
-    let targetOrigin = '';
-    try {
-      const targetUrlObj = new URL(decodedUrl);
-      targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
-    } catch {}
+    // 防盗链绕过：用来源站域名（5572tv-source）作为 Referer，而非 CDN 自己的域名
+    let refererOrigin = '';
+    if (source && source.includes('.')) {
+      refererOrigin = `https://${source}`;
+    } else {
+      try {
+        const targetUrlObj = new URL(decodedUrl);
+        refererOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
+      } catch {}
+    }
 
-    // 参考 hls.js fetch-loader + GitHub 影视源码最佳实践，构建完整浏览器 headers
     const headers: Record<string, string> = {
       'User-Agent': ua,
       Accept:
@@ -112,10 +114,8 @@ export async function GET(request: Request) {
       'Cache-Control': 'no-cache',
       Pragma: 'no-cache',
       Connection: 'keep-alive',
-      // 防盗链绕过：Referer + Origin（最关键）
-      ...(targetOrigin ? { Referer: targetOrigin + '/' } : {}),
-      ...(targetOrigin ? { Origin: targetOrigin } : {}),
-      // Sec-CH-UA Client Hints（Cloudflare 等 CDN 检查）
+      ...(refererOrigin ? { Referer: refererOrigin + '/' } : {}),
+      ...(refererOrigin ? { Origin: refererOrigin } : {}),
       'Sec-Fetch-Dest': 'empty',
       'Sec-Fetch-Mode': 'cors',
       'Sec-Fetch-Site': 'cross-site',
@@ -137,22 +137,14 @@ export async function GET(request: Request) {
 
     clearTimeout(timeoutId);
 
-    // 参考 hls.js fetch-loader 的错误处理逻辑
     if (!response.ok) {
       stats.errors++;
       clearTimeout(timeoutId);
 
-      // CDN 封锁了服务端 → 降级为 302 重定向（让浏览器直连）
-      // 浏览器直连可能因 CORS 失败，但比直接返回 403 有更高成功率
-      return new NextResponse(null, {
-        status: 302,
-        headers: {
-          Location: decodedUrl,
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-          'Access-Control-Allow-Headers': '*',
-        },
-      });
+      return NextResponse.json(
+        { error: 'Proxy fetch failed: ' + response.status },
+        { status: response.status },
+      );
     }
 
     const contentType = response.headers.get('Content-Type') || '';
