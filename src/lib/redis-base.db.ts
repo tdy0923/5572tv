@@ -576,8 +576,7 @@ export abstract class BaseRedisStorage implements IStorage {
       return false;
     }
 
-    const hashedPassword = await this.hashPassword(password);
-    return userInfo.password === hashedPassword;
+    return verifyPassword(password, userInfo.password);
   }
 
   // 获取用户信息（新版本）

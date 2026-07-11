@@ -320,6 +320,9 @@ export async function POST(req: NextRequest) {
 
         if (userV2) {
           pass = await db.verifyUserV2(username, password);
+          if (!pass) {
+            pass = await db.verifyUser(username, password);
+          }
         } else {
           pass = await db.verifyUser(username, password);
         }
