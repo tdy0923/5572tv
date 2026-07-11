@@ -79,12 +79,16 @@ async function handleM3U8Proxy(request, url) {
     });
 
     if (!response.ok) {
-      return jsonResponse(
-        { error: 'Proxy fetch failed: ' + response.status },
-        response.status,
-        true,
-        request,
-      );
+      // 服务端获取失败 → 302 重定向，让浏览器直连 CDN
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: targetUrl,
+          'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+        },
+      });
     }
 
     const contentType = response.headers.get('Content-Type') || '';
@@ -133,7 +137,16 @@ async function handleM3U8Proxy(request, url) {
       headers: respHeaders,
     });
   } catch (err) {
-    return jsonResponse({ error: 'Proxy fetch error' }, 502, true, request);
+    // 网络错误也降级为 302，让浏览器尝试直连
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: targetUrl,
+        'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': '*',
+      },
+    });
   }
 }
 

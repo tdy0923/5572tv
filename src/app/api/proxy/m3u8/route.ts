@@ -141,10 +141,16 @@ export async function GET(request: Request) {
       stats.errors++;
       clearTimeout(timeoutId);
 
-      return NextResponse.json(
-        { error: 'Proxy fetch failed: ' + response.status },
-        { status: response.status },
-      );
+      // 服务端获取失败 → 降级为 302 重定向（让浏览器直连 CDN）
+      return new NextResponse(null, {
+        status: 302,
+        headers: {
+          Location: decodedUrl,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+        },
+      });
     }
 
     const contentType = response.headers.get('Content-Type') || '';
