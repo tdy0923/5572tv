@@ -172,27 +172,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '密码长度至少8位' }, { status: 400 });
     }
 
-    if (!/[A-Z]/.test(password)) {
-      return NextResponse.json(
-        { error: '密码需包含至少一个大写字母' },
-        { status: 400 },
-      );
-    }
-
-    if (!/[a-z]/.test(password)) {
-      return NextResponse.json(
-        { error: '密码需包含至少一个小写字母' },
-        { status: 400 },
-      );
-    }
-
-    if (!/[0-9]/.test(password)) {
-      return NextResponse.json(
-        { error: '密码需包含至少一个数字' },
-        { status: 400 },
-      );
-    }
-
     // 检查是否与管理员用户名冲突
     if (username === process.env.USERNAME) {
       return NextResponse.json({ error: '该用户名已被使用' }, { status: 400 });
