@@ -68,9 +68,9 @@ export function ThemeToggle() {
       <div className='absolute inset-0 rounded-2xl bg-linear-to-br from-amber-400/0 via-transparent to-orange-500/0 group-hover:from-amber-400/20 group-hover:to-orange-500/10 dark:group-hover:from-amber-300/20 dark:group-hover:to-orange-400/10 transition-all duration-300'></div>
 
       {resolvedTheme === 'dark' ? (
-        <Sun className='relative z-10 h-5 w-5 group-hover:rotate-180 transition-transform duration-500' />
+        <Sun className='relative z-10 h-6 w-6 group-hover:rotate-180 transition-transform duration-500' />
       ) : (
-        <Moon className='relative z-10 h-5 w-5 group-hover:rotate-180 transition-transform duration-500' />
+        <Moon className='relative z-10 h-6 w-6 group-hover:rotate-180 transition-transform duration-500' />
       )}
     </button>
   );

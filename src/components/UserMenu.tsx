@@ -1538,7 +1538,7 @@ export const UserMenu: React.FC = () => {
           {/* 微光背景效果 */}
           <div className='absolute inset-0 rounded-2xl bg-linear-to-br from-blue-400/0 to-purple-600/0 group-hover:from-blue-400/18 group-hover:to-purple-600/12 dark:group-hover:from-blue-300/18 dark:group-hover:to-purple-500/10 transition-all duration-300'></div>
 
-          <User className='relative z-10 h-5 w-5 group-hover:scale-110 transition-transform duration-300' />
+          <User className='relative z-10 h-6 w-6 group-hover:scale-110 transition-transform duration-300' />
         </button>
         {/* 统一更新提醒点：版本更新或剧集更新都显示橙色点 */}
         {(updateStatus === UpdateStatus.HAS_UPDATE ||
