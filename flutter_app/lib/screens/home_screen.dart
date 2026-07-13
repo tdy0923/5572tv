@@ -27,6 +27,7 @@ import 'movie_screen.dart';
 import 'tv_screen.dart';
 import 'anime_screen.dart';
 import 'show_screen.dart';
+import '../widgets/category_loading_widget.dart';
 import 'player_screen.dart';
 import 'live_screen.dart';
 import 'short_drama_screen.dart';
@@ -435,9 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       children: List.generate(_totalScreens, (index) {
         if (!_builtScreens.contains(index)) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const CategoryLoadingWidget();
         }
         switch (index) {
           case 0: return _buildHomeContentWithPageView();
