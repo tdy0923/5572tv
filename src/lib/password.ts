@@ -22,7 +22,7 @@ export function hashPassword(password: string): string {
 /**
  * 判断是否为 SHA-256 哈希格式（旧版 V2 使用）
  */
-function isSha256Hash(value: string): boolean {
+export function isSha256Hash(value: string): boolean {
   return /^[0-9a-f]{64}$/i.test(value);
 }
 

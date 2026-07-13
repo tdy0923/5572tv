@@ -5,7 +5,12 @@
 import { Redis } from '@upstash/redis';
 
 import { AdminConfig } from './admin.types';
-import { hashPassword as hashPwd, isHashed, verifyPassword } from './password';
+import {
+  hashPassword as hashPwd,
+  isHashed,
+  isSha256Hash,
+  verifyPassword,
+} from './password';
 import {
   ContentStat,
   EpisodeSkipConfig,
@@ -290,7 +295,7 @@ export class UpstashRedisStorage implements IStorage {
     );
 
     if (userInfo && Object.keys(userInfo).length > 0) {
-      const hashedPassword = await this.hashPassword(newPassword);
+      const hashedPassword = hashPwd(newPassword);
       await withRetry(() =>
         this.client.hset(this.userInfoKey(userName), {
           password: hashedPassword,
@@ -357,12 +362,6 @@ export class UpstashRedisStorage implements IStorage {
     return `oidc:sub:${oidcSub}`;
   }
 
-  // SHA256加密密码
-  private async hashPassword(password: string): Promise<string> {
-    const { hashPassword: hashPw } = await import('@/lib/password');
-    return hashPw(password);
-  }
-
   // 创建新用户（新版本）
   async createUserV2(
     userName: string,
@@ -372,7 +371,7 @@ export class UpstashRedisStorage implements IStorage {
     oidcSub?: string,
     enabledApis?: string[],
   ): Promise<void> {
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = hashPwd(password);
     const createdAt = Date.now();
 
     // 存储用户信息到Hash
@@ -422,7 +421,15 @@ export class UpstashRedisStorage implements IStorage {
       return false;
     }
 
-    return verifyPassword(password, String(userInfo.password));
+    const stored = String(userInfo.password);
+    const ok = verifyPassword(password, stored);
+    if (ok && isSha256Hash(stored)) {
+      const hashed = hashPwd(password);
+      await withRetry(() =>
+        this.client.hset(this.userInfoKey(userName), { password: hashed }),
+      ).catch(() => {});
+    }
+    return ok;
   }
 
   // 获取用户信息（新版本）

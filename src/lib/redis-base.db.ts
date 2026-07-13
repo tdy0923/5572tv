@@ -5,7 +5,12 @@
 import { createClient, RedisClientType } from 'redis';
 
 import { AdminConfig } from './admin.types';
-import { hashPassword as hashPwd, isHashed, verifyPassword } from './password';
+import {
+  hashPassword as hashPwd,
+  isHashed,
+  isSha256Hash,
+  verifyPassword,
+} from './password';
 import {
   ContentStat,
   EpisodeSkipConfig,
@@ -439,7 +444,7 @@ export abstract class BaseRedisStorage implements IStorage {
     );
 
     if (userInfo && Object.keys(userInfo).length > 0) {
-      const hashedPassword = await this.hashPassword(newPassword);
+      const hashedPassword = hashPwd(newPassword);
       await this.withRetry(() =>
         this.client.hSet(this.userInfoKey(userName), {
           password: hashedPassword,
@@ -512,11 +517,6 @@ export abstract class BaseRedisStorage implements IStorage {
   }
 
   // SHA256加密密码
-  private async hashPassword(password: string): Promise<string> {
-    const { hashPassword: hashPw } = await import('@/lib/password');
-    return hashPw(password);
-  }
-
   // 创建新用户（新版本）
   async createUserV2(
     userName: string,
@@ -526,7 +526,7 @@ export abstract class BaseRedisStorage implements IStorage {
     oidcSub?: string,
     enabledApis?: string[],
   ): Promise<void> {
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = hashPwd(password);
     const createdAt = Date.now();
 
     // 存储用户信息到Hash
@@ -576,7 +576,14 @@ export abstract class BaseRedisStorage implements IStorage {
       return false;
     }
 
-    return verifyPassword(password, userInfo.password);
+    const ok = verifyPassword(password, userInfo.password);
+    if (ok && isSha256Hash(userInfo.password)) {
+      const hashed = hashPwd(password);
+      await this.withRetry(() =>
+        this.client.hSet(this.userInfoKey(userName), { password: hashed }),
+      ).catch(() => {});
+    }
+    return ok;
   }
 
   // 获取用户信息（新版本）
