@@ -128,19 +128,33 @@ export async function GET(request: NextRequest) {
 
     const drama = data.list[0];
     const playUrl = drama.vod_play_url || '';
-    // 解析播放地址：格式为 "01$url1#02$url2"
-    const episodes = playUrl.split('#').map((ep: string) => {
-      const parts = ep.split('$');
-      return { name: parts[0], url: parts[1] || '' };
-    });
+    // 解析播放地址：格式为 "第1集$url1#第2集$url2$$$第1集$m3u8url1#第2集$m3u8url2"
+    // 先按 $$$ 分割不同播放源，再按 # 分割集数，再按 $ 分割名称和URL
+    const formatGroups = playUrl.split('$$$').filter(Boolean);
+    let bestEpisodes: { name: string; url: string }[] = [];
 
-    const totalEpisodes = Math.max(episodes.length || 1, 1);
+    for (const group of formatGroups) {
+      const eps = group
+        .split('#')
+        .map((ep: string) => {
+          const parts = ep.split('$');
+          return { name: parts[0] || '', url: parts[1] || '' };
+        })
+        .filter((ep) => ep.url);
+
+      if (eps.length === 0) continue;
+
+      // Prefer hnm3u8 format (HLS streams) over hnyun (HTML player pages)
+      const hasM3u8 = eps.some((ep) => ep.url.includes('.m3u8'));
+      if (hasM3u8 || bestEpisodes.length === 0) {
+        bestEpisodes = eps;
+      }
+    }
+
+    const totalEpisodes = Math.max(bestEpisodes.length || 1, 1);
 
     // 直接提取所有集数的视频URL
-    // 注意：不使用代理，让用户浏览器直接播放（CDN封锁云服务器IP，但住宅IP可访问）
-    const episodeUrls: string[] = episodes.map((ep: any) => {
-      return ep.url || '';
-    });
+    const episodeUrls: string[] = bestEpisodes.map((ep) => ep.url);
 
     // 转换为兼容格式
     // 注意：始终使用请求的原始ID（主API的ID），不使用result.data.videoId（可能是备用API的ID）
