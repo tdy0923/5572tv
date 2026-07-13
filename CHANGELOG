@@ -1,3 +1,17 @@
+## [1.9.1] - 2026-07-11
+
+### Fixed
+
+- 🐛 修复 V2 用户无法登录：`verifyUserV2` 每次生成新 salt 导致比对永远失败
+- 🐛 Upstash Redis 类型错误导致 Docker 构建失败，修复未部署到生产
+- 🐛 CDN geo-block 导致视频无法播放：代理降级为 302 重定向，浏览器直连
+- 🐛 登录路由 V2 验证失败后未回退到 V1
+- 🐛 移除注册密码大小写/数字强制要求（之前无此限制的用户无法注册）
+
+### Changed
+
+- 🔧 APP 默认代理 URL 保持 `/api/video-proxy?url=`，APP 不走代理（原生播放器无 CORS 问题）
+
 ## [1.9.0] - 2026-07-03
 
 ### Changed — Fluent 2 Design System

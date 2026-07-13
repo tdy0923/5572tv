@@ -3,17 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 const VERSION_INFO = {
-  version: '1.6.0',
+  version: '1.9.1',
   buildNumber: 1,
-  releaseNotes: '5572 影视 v1.6.0 更新内容：\n\n' +
-    '1. 海报修复：图片加载问题已彻底解决\n' +
-    '2. 搜索功能：手机端搜索恢复正常\n' +
-    '3. 导航优化：统一导航系统，体验更流畅\n' +
-    '4. 首页改版：热门推荐数据全面更新',
+  releaseNotes:
+    '5572 影视 v1.9.1 更新内容：\n\n' +
+    '1. 修复登录密码验证错误（V2 用户无法登录）\n' +
+    '2. 视频代理 CDN geo-block 降级处理\n' +
+    '3. 移除注册密码复杂度过高要求',
   downloadUrl: 'https://www.5572.net/download/5572tv-android.apk',
   minRequiredVersion: '1.4.0',
   forceUpdate: false,
-  releaseDate: '2025-06-28',
+  releaseDate: '2026-07-11',
 };
 
 export async function GET(_request: NextRequest) {

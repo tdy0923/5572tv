@@ -23,7 +23,7 @@ import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
 const APK_SIZE = '53';
-const APK_VERSION = 'v1.9.0';
+const APK_VERSION = 'v1.9.1';
 
 /* ─── Feature Card ─── */
 function FeatureCard({
