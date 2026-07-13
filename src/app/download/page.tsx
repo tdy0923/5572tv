@@ -397,7 +397,7 @@ export default function DownloadPage() {
                 }}
               >
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/static/download/5572tv-android.apk')}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
                   alt='扫码下载'
                   className='w-24 h-24 rounded-md transition-transform duration-300 group-hover:scale-110'
                   width={96}
