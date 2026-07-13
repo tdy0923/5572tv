@@ -435,7 +435,9 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       children: List.generate(_totalScreens, (index) {
         if (!_builtScreens.contains(index)) {
-          return const SizedBox.shrink();
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
         switch (index) {
           case 0: return _buildHomeContentWithPageView();
@@ -462,6 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       _currentBottomNavIndex = index;
+      _builtScreens.add(index);
     });
 
     // 使用动画切换到对应页面
