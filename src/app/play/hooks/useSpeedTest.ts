@@ -200,5 +200,10 @@ export function useSpeedTest() {
     [],
   );
 
-  return { speedTestProgress, precomputedVideoInfo, fullSpeedTest };
+  return {
+    speedTestProgress,
+    precomputedVideoInfo,
+    fullSpeedTest,
+    setSpeedTestProgress,
+  };
 }

@@ -467,8 +467,12 @@ function PlayPageClient() {
     manualOverride: activeManualDanmuOverride,
   });
 
-  const { speedTestProgress, precomputedVideoInfo, fullSpeedTest } =
-    useSpeedTest();
+  const {
+    speedTestProgress,
+    precomputedVideoInfo,
+    fullSpeedTest,
+    setSpeedTestProgress,
+  } = useSpeedTest();
 
   const {
     webGPUSupported,
@@ -945,8 +949,14 @@ function PlayPageClient() {
     // // console.log('开始轻量级测速，仅测试连通性');
 
     const results = await Promise.all(
-      sources.map(async (source) => {
+      sources.map(async (source, i) => {
         try {
+          setSpeedTestProgress({
+            current: i + 1,
+            total: sources.length,
+            currentSource: source.source_name,
+            result: '测试中...',
+          });
           if (!source.episodes || source.episodes.length === 0) {
             return {
               source,
@@ -1002,6 +1012,7 @@ function PlayPageClient() {
 
     if (sortedResults.length === 0) {
       console.warn('所有源都不可用，返回第一个');
+      setSpeedTestProgress(null);
       return sources[0];
     }
 
@@ -1010,6 +1021,7 @@ function PlayPageClient() {
     // sortedResults.map((r) => `${r.source.source_name}: ${r.pingTime}ms`),
     // );
 
+    setSpeedTestProgress(null);
     return sortedResults[0].source;
   };
 
