@@ -422,7 +422,7 @@ export class UpstashRedisStorage implements IStorage {
       return false;
     }
 
-    return verifyPassword(password, userInfo.password);
+    return verifyPassword(password, String(userInfo.password));
   }
 
   // 获取用户信息（新版本）
