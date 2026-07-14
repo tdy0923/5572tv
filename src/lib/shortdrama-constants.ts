@@ -140,11 +140,13 @@ export interface MappedShortDramaItem {
   vod_name: string;
   type_id?: number;
   type_name?: string;
+  source_api?: string;
 }
 
 // 将原始API项映射为标准短剧项
 export function mapApiItemToShortDramaItem(
   item: RawApiItem,
+  sourceApi?: string,
 ): MappedShortDramaItem {
   return {
     id: item.vod_id,
@@ -164,6 +166,7 @@ export function mapApiItemToShortDramaItem(
     vod_name: item.vod_name || '',
     type_id: item.type_id,
     type_name: item.type_name,
+    source_api: sourceApi,
   };
 }
 

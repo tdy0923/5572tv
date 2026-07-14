@@ -11,6 +11,7 @@ import 'services/user_data_service.dart';
 import 'services/api_service.dart';
 import 'services/theme_service.dart';
 import 'services/douban_cache_service.dart';
+import 'widgets/splash_screen.dart';
 
 class GlobalErrorHandler {
   static void init() {
@@ -158,59 +159,21 @@ class _AppWrapperState extends State<AppWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Consumer<ThemeService>(
-        builder: (context, themeService, child) {
-          return Scaffold(
-            body: Container(
-              decoration: BoxDecoration(
-                color: themeService.isDarkMode
-                    ? AppTheme.gray950
-                    : null,
-                gradient: themeService.isDarkMode
-                    ? null
-                    : const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppTheme.gray100,
-                          AppTheme.gray100,
-                          AppTheme.backgroundSubtle,
-                          AppTheme.gray200,
-                          AppTheme.gray300,
-                        ],
-                        stops: [0.0, 0.18, 0.38, 0.60, 1.0],
-                      ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          themeService.isDarkMode
-                              ? AppTheme.background
-                              : AppTheme.foreground),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      '正在检查登录状态...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: themeService.isDarkMode
-                            ? AppTheme.background
-                            : AppTheme.foreground,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
+    return SplashScreen(
+      child: _isLoading ? const _LoadingPlaceholder() : const LoginScreen(),
+    );
+  }
+}
 
-    return const LoginScreen();
+class _LoadingPlaceholder extends StatelessWidget {
+  const _LoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
   }
 }

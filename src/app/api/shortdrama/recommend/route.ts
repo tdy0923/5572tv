@@ -93,7 +93,9 @@ async function fetchFromShortDramaSource(api: string, size: number) {
       new Date(b.vod_time || 0).getTime() - new Date(a.vod_time || 0).getTime(),
   );
 
-  return uniqueItems.slice(0, size).map(mapApiItemToShortDramaItem);
+  return uniqueItems
+    .slice(0, size)
+    .map((item) => mapApiItemToShortDramaItem(item));
 }
 
 // 从指定分类获取短剧数据
@@ -119,7 +121,7 @@ async function fetchFromShortDramaCategory(
   const data = await response.json();
   const items = data.list || [];
 
-  return items.slice(0, size).map(mapApiItemToShortDramaItem);
+  return items.slice(0, size).map((item) => mapApiItemToShortDramaItem(item));
 }
 
 // 服务端专用函数，从所有短剧源聚合数据

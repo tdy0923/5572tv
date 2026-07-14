@@ -14,6 +14,7 @@ class SearchResult {
   final String? desc;
   final String? typeName;
   final int? doubanId;
+  final String? sourceApi;
 
   SearchResult({
     required this.id,
@@ -28,6 +29,7 @@ class SearchResult {
     this.desc,
     this.typeName,
     this.doubanId,
+    this.sourceApi,
   });
 
   /// 从JSON创建SearchResult
@@ -49,6 +51,7 @@ class SearchResult {
       desc: json['desc'],
       typeName: json['type_name'],
       doubanId: json['douban_id'],
+      sourceApi: json['source_api'],
     );
   }
 
@@ -67,6 +70,7 @@ class SearchResult {
       'desc': desc,
       'type_name': typeName,
       'douban_id': doubanId,
+      'source_api': sourceApi,
     };
   }
 

@@ -44,7 +44,9 @@ async function fetchListFromCategory(
 
   const limitedItems = items.slice(0, size);
 
-  const list = limitedItems.map(mapApiItemToShortDramaItem);
+  const list = limitedItems.map((item: any) =>
+    mapApiItemToShortDramaItem(item, api),
+  );
 
   return {
     list,

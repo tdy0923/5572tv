@@ -848,6 +848,7 @@ class ApiService {
                   'episodes_titles': <String>[],
                   'source': 'shortdrama',
                   'source_name': '短剧',
+                  'source_api': item['source_api'],
                 }))
             .toList();
       }
@@ -859,10 +860,12 @@ class ApiService {
   }
 
   /// 获取短剧详情（包含所有集数URL）
-  static Future<SearchResult?> getShortDramaDetail(String id) async {
+  static Future<SearchResult?> getShortDramaDetail(String id, {String? sourceApi}) async {
     try {
+      final params = <String, String>{'id': id, 'episode': '1'};
+      if (sourceApi != null) params['source'] = sourceApi;
       final uri = Uri.parse(await _buildUrl('/api/shortdrama/detail'))
-          .replace(queryParameters: {'id': id, 'episode': '1'});
+          .replace(queryParameters: params);
       final headers = await _buildHeaders();
       final response = await http.get(uri, headers: headers);
       if (response.statusCode == 200) {

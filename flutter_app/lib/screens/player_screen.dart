@@ -30,6 +30,7 @@ class PlayerScreen extends StatefulWidget {
   final String? stitle;
   final String? stype;
   final String? prefer;
+  final String? sourceApi;
 
   const PlayerScreen({
     super.key,
@@ -40,6 +41,7 @@ class PlayerScreen extends StatefulWidget {
     this.stitle,
     this.stype,
     this.prefer,
+    this.sourceApi,
   });
 
   @override
@@ -232,7 +234,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       updateLoadingMessage('正在获取短剧详情...');
       updateLoadingProgress(0.5);
       updateLoadingEmoji('🎬');
-      final detail = await ApiService.getShortDramaDetail(widget.id!);
+      final detail = await ApiService.getShortDramaDetail(widget.id!, sourceApi: widget.sourceApi);
       if (!_isActiveLoad(loadGeneration)) return;
       if (detail == null) {
         showError('未找到短剧详情');

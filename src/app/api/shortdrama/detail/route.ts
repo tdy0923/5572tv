@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const id = searchParams.get('id');
     const episode = searchParams.get('episode');
-    const _name = searchParams.get('name'); // 可选：用于备用API
+    const sourceApi = searchParams.get('source'); // 可选：指定来源API
 
     if (!id) {
       const errorResponse = { error: '缺少必要参数: id' };
@@ -77,12 +77,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // Build all source APIs to try (primary + enabled multi-sources)
-    const enabledSources = getEnabledSources();
-    const allApis = [DEFAULT_SHORT_DRAMA_API];
-    for (const source of enabledSources) {
-      if (source.api !== DEFAULT_SHORT_DRAMA_API) {
-        allApis.push(source.api);
+    // If a specific source API was provided, only query that one
+    // Otherwise try all enabled sources
+    const apisToTry: string[] = [];
+    if (sourceApi) {
+      apisToTry.push(sourceApi);
+    } else {
+      const enabledSources = getEnabledSources();
+      apisToTry.push(DEFAULT_SHORT_DRAMA_API);
+      for (const source of enabledSources) {
+        if (source.api !== DEFAULT_SHORT_DRAMA_API) {
+          apisToTry.push(source.api);
+        }
       }
     }
 
@@ -96,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     // Try all sources in parallel, use first successful result
     const results = await Promise.allSettled(
-      allApis.map(async (api) => {
+      apisToTry.map(async (api) => {
         const response = await fetch(`${api}?${params.toString()}`, {
           headers: {
             'User-Agent': DEFAULT_USER_AGENT,

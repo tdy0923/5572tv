@@ -79,7 +79,7 @@ async function searchFromSource(
   );
   const limitedItems = shortDramaItems.slice(0, size);
 
-  const list = limitedItems.map(mapApiItemToShortDramaItem);
+  const list = limitedItems.map((item) => mapApiItemToShortDramaItem(item));
 
   return {
     list,

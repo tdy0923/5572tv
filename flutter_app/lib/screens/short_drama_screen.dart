@@ -119,6 +119,7 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
           id: drama.id,
           title: drama.title,
           year: drama.year,
+          sourceApi: drama.sourceApi,
         ),
       ),
     );
