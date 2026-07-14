@@ -892,13 +892,14 @@ class ApiService {
 
   /// 解析短剧集数的播放地址
   static Future<String?> parseShortDramaEpisode(
-      String id, int episode, {String? name}) async {
+      String id, int episode, {String? name, String? sourceApi}) async {
     try {
       final params = <String, String>{
         'id': id,
         'episode': episode.toString(),
       };
       if (name != null) params['name'] = name;
+      if (sourceApi != null) params['source'] = sourceApi;
       final uri = Uri.parse(await _buildUrl('/api/shortdrama/parse'))
           .replace(queryParameters: params);
       final headers = await _buildHeaders();

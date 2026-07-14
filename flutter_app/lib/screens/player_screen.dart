@@ -722,6 +722,7 @@ class _PlayerScreenState extends State<PlayerScreen>
           final resolvedUrl = await ApiService.parseShortDramaEpisode(
             dramaId,
             episodeNum,
+            sourceApi: widget.sourceApi,
           );
           if (resolvedUrl != null) {
             finalUrl = resolvedUrl;

@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     const id = searchParams.get('id');
     const episode = searchParams.get('episode');
     const name = searchParams.get('name'); // 可选：用于备用API
+    const sourceApi = searchParams.get('source'); // 可选：指定来源API
 
     if (!id || !episode) {
       const errorResponse = { error: '缺少必要参数: id, episode' };
@@ -77,11 +78,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // Build all source APIs to try (primary + enabled multi-sources)
+    // Build all source APIs to try (prefer specified source, fall back to others)
     const enabledSources = getEnabledSources();
-    const allApis = [DEFAULT_SHORT_DRAMA_API];
+    const allApis: string[] = [];
+    if (sourceApi) allApis.push(sourceApi);
+    allApis.push(DEFAULT_SHORT_DRAMA_API);
     for (const source of enabledSources) {
-      if (source.api !== DEFAULT_SHORT_DRAMA_API) {
+      if (source.api !== DEFAULT_SHORT_DRAMA_API && source.api !== sourceApi) {
         allApis.push(source.api);
       }
     }
