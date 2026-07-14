@@ -1,18 +1,90 @@
 import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../services/device_service.dart';
 import '../services/version_service.dart';
 import '../services/theme_service.dart';
 import '../utils/font_utils.dart';
 
-class UpdateDialog extends StatelessWidget {
+class UpdateDialog extends StatefulWidget {
   final VersionInfo versionInfo;
 
   const UpdateDialog({
     super.key,
     required this.versionInfo,
   });
+
+  @override
+  State<UpdateDialog> createState() => _UpdateDialogState();
+
+  static Future<void> show(
+      BuildContext context, VersionInfo versionInfo) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => UpdateDialog(versionInfo: versionInfo),
+    );
+  }
+}
+
+class _UpdateDialogState extends State<UpdateDialog> {
+  bool _downloading = false;
+  double _progress = 0;
+  String _status = '';
+
+  Future<void> _startDownload() async {
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+      _status = '检测设备架构...';
+    });
+
+    try {
+      final abi = await DeviceService.getCpuAbi();
+      const baseUrl = 'https://www.5572.net/download';
+      final url = DeviceService.getDownloadUrl(baseUrl, abi);
+
+      setState(() => _status = '准备下载...');
+
+      final dir = await getTemporaryDirectory();
+      final filePath = '${dir.path}/5572tv-${widget.versionInfo.latestVersion}.apk';
+
+      final dio = Dio();
+      await dio.download(
+        url,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            final p = received / total;
+            final mb = received / 1024 / 1024;
+            final totalMb = total / 1024 / 1024;
+            setState(() {
+              _progress = p;
+              _status = '${mb.toStringAsFixed(1)}MB / ${totalMb.toStringAsFixed(1)}MB';
+            });
+          }
+        },
+      );
+
+      setState(() => _status = '正在安装...');
+      await OpenFilex.open(filePath);
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      setState(() {
+        _downloading = false;
+        _progress = 0;
+        _status = '下载失败: $e';
+      });
+    }
+  }
+
+  String _formatProgress() {
+    return '${(_progress * 100).toStringAsFixed(0)}%';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +114,6 @@ class UpdateDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // 顶部装饰区域
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
@@ -60,18 +131,32 @@ class UpdateDialog extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.success.withOpacity(0.1),
+                          color: _downloading
+                              ? AppTheme.primary.withValues(alpha: 0.1)
+                              : AppTheme.success.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.rocket_launch_rounded,
-                          size: 40,
-                          color: AppTheme.success,
-                        ),
+                        child: _downloading
+                            ? SizedBox(
+                                width: 40,
+                                height: 40,
+                                child: CircularProgressIndicator(
+                                  value: _progress > 0 ? _progress : null,
+                                  strokeWidth: 3,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                          AppTheme.primary),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.rocket_launch_rounded,
+                                size: 40,
+                                color: AppTheme.success,
+                              ),
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '发现新版本',
+                        _downloading ? '正在更新' : '发现新版本',
                         style: FontUtils.systemFont(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -84,13 +169,11 @@ class UpdateDialog extends StatelessWidget {
                   ),
                 ),
 
-                // 内容区域
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 版本信息卡片
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -103,10 +186,9 @@ class UpdateDialog extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _buildVersionChip(
-                              context,
                               themeService,
                               '当前版本',
-                              versionInfo.currentVersion,
+                              widget.versionInfo.currentVersion,
                               Icons.info_outline_rounded,
                               themeService.isDarkMode
                                   ? AppTheme.foregroundMuted
@@ -120,10 +202,9 @@ class UpdateDialog extends StatelessWidget {
                                   : AppTheme.gray300,
                             ),
                             _buildVersionChip(
-                              context,
                               themeService,
                               '最新版本',
-                              versionInfo.latestVersion,
+                              widget.versionInfo.latestVersion,
                               Icons.new_releases_rounded,
                               AppTheme.success,
                             ),
@@ -131,8 +212,48 @@ class UpdateDialog extends StatelessWidget {
                         ),
                       ),
 
-                      // 更新说明
-                      if (versionInfo.releaseNotes.isNotEmpty) ...[
+                      if (_downloading) ...[
+                        const SizedBox(height: 20),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: _progress,
+                            minHeight: 8,
+                            backgroundColor: themeService.isDarkMode
+                                ? AppTheme.gray700
+                                : AppTheme.gray200,
+                            valueColor:
+                                const AlwaysStoppedAnimation<Color>(
+                                    AppTheme.primary),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _status,
+                              style: FontUtils.systemFont(
+                                fontSize: 13,
+                                color: themeService.isDarkMode
+                                    ? AppTheme.gray400
+                                    : AppTheme.foregroundSubtle,
+                              ),
+                            ),
+                            Text(
+                              _formatProgress(),
+                              style: FontUtils.systemFont(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+
+                      if (!_downloading &&
+                          widget.versionInfo.releaseNotes.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Row(
                           children: [
@@ -168,7 +289,7 @@ class UpdateDialog extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(12),
                               child: Text(
-                                versionInfo.releaseNotes,
+                                widget.versionInfo.releaseNotes,
                                 style: FontUtils.systemFont(
                                   fontSize: 14,
                                   height: 1.6,
@@ -185,38 +306,38 @@ class UpdateDialog extends StatelessWidget {
                   ),
                 ),
 
-                // 底部按钮区域
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: Column(
                     children: [
-                      // 主要操作按钮
                       SizedBox(
                         width: double.infinity,
                         height: 44,
                         child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final url = VersionService.getReleaseUrl(
-                                versionInfo.latestVersion);
-                            final uri = Uri.parse(url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                          onPressed:
+                              _downloading ? null : _startDownload,
+                          icon: _downloading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.download_rounded,
+                                  size: 18),
                           label: Text(
-                            '查看新版本',
+                            _downloading ? '下载中...' : '立即更新',
                             style: FontUtils.systemFont(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.success,
+                            backgroundColor: _downloading
+                                ? AppTheme.primary.withValues(alpha: 0.7)
+                                : AppTheme.success,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -225,46 +346,47 @@ class UpdateDialog extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      // 次要操作按钮
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () async {
-                                await VersionService.dismissVersion(
-                                    versionInfo.latestVersion);
-                                if (context.mounted) {
+                      if (!_downloading) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () async {
+                                  await VersionService.dismissVersion(
+                                      widget.versionInfo.latestVersion);
+                                  if (mounted) Navigator.of(context).pop();
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: themeService.isDarkMode
+                                      ? AppTheme.foregroundMuted
+                                      : AppTheme.foregroundSubtle,
+                                ),
+                                child: Text(
+                                  '忽略',
+                                  style:
+                                      FontUtils.systemFont(fontSize: 14),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
                                   Navigator.of(context).pop();
-                                }
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: themeService.isDarkMode
-                                    ? AppTheme.foregroundMuted
-                                    : AppTheme.foregroundSubtle,
-                              ),
-                              child: Text(
-                                '忽略',
-                                style: FontUtils.systemFont(fontSize: 14),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppTheme.success,
-                              ),
-                              child: Text(
-                                '稍后',
-                                style: FontUtils.systemFont(fontSize: 14),
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppTheme.success,
+                                ),
+                                child: Text(
+                                  '稍后',
+                                  style:
+                                      FontUtils.systemFont(fontSize: 14),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -277,7 +399,6 @@ class UpdateDialog extends StatelessWidget {
   }
 
   Widget _buildVersionChip(
-    BuildContext context,
     ThemeService themeService,
     String label,
     String version,
@@ -307,16 +428,6 @@ class UpdateDialog extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  /// 显示更新对话框
-  static Future<void> show(
-      BuildContext context, VersionInfo versionInfo) async {
-    return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => UpdateDialog(versionInfo: versionInfo),
     );
   }
 }
