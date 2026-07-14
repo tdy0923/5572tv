@@ -4,24 +4,18 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VersionService {
-  static const String githubRepoUrl = 'https://www.5572.net/download';
-  static const String githubApiUrl = 'https://www.5572.net/api/version-check';
+  static const String apiUrl = 'https://www.5572.net/api/version-check';
   static const String _lastCheckKey = 'last_version_check';
   static const String _dismissedVersionKey = 'dismissed_version';
   
   /// 检查是否有新版本
   static Future<VersionInfo?> checkForUpdate() async {
     try {
-      // 获取当前版本
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
       
-      // 从 GitHub API 获取最新 Release 信息
       final response = await http.get(
-        Uri.parse(githubApiUrl),
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-        },
+        Uri.parse(apiUrl),
       ).timeout(const Duration(seconds: 10));
       
       if (response.statusCode == 200) {

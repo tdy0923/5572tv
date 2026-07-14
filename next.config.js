@@ -53,6 +53,16 @@ const nextConfig = {
     ],
   },
 
+  // Redirect old APK check URLs to the download page
+  async redirects() {
+    return [
+      {
+        source: '/download/releases/:path*',
+        destination: '/download',
+        permanent: true,
+      },
+    ];
+  },
   // Security headers (CSP is set dynamically in proxy.ts with per-request nonce)
   async headers() {
     return [
