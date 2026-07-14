@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 
 const VERSION_INFO = {
-  version: '1.9.2',
-  buildNumber: 2,
+  version: '1.9.3',
+  buildNumber: 3,
   releaseNotes:
-    '5572 影视 v1.9.2 更新内容：\n\n' +
-    '1. 修复短剧无法播放（黑屏/卡死）\n' +
-    '2. 修复切换栏目时黑屏，增加加载动画\n' +
-    '3. 优化短剧播放体验',
+    '5572 影视 v1.9.3 更新内容：\n\n' +
+    '1. 修复短剧列表海报不显示\n' +
+    '2. 修复短剧栏目卡死/无响应\n' +
+    '3. 优化短剧列表加载性能',
   downloadUrl: 'https://www.5572.net/download/5572tv-android.apk',
   minRequiredVersion: '1.4.0',
   forceUpdate: false,
