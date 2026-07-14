@@ -22,8 +22,8 @@ import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '53';
-const APK_VERSION = 'v1.9.1';
+const APK_SIZE = '19';
+const APK_VERSION = 'v1.9.3';
 
 /* ─── Feature Card ─── */
 function FeatureCard({
@@ -413,6 +413,22 @@ export default function DownloadPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Arch info */}
+              {selectedPlatform !== 'ios' && (
+                <p className='text-xs mt-2' style={{ color: '#545454' }}>
+                  arm64-v8a（64位，2015年后设备）。
+                  <br />
+                  老旧/低配设备请下载{' '}
+                  <a
+                    href='/download/5572tv-android-armv7a.apk'
+                    className='underline hover:text-[#f4c24d] transition-colors'
+                    download
+                  >
+                    armeabi-v7a 兼容版
+                  </a>
+                </p>
+              )}
             </div>
 
             {/* Right - Phone preview */}
