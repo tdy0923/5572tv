@@ -363,7 +363,9 @@ export default function DownloadPage() {
                     }}
                   >
                     <Download className='w-4 h-4' /> 下载{' '}
-                    {selectedPlatform === 'android' ? 'Android' : 'TV'}
+                    {selectedPlatform === 'android'
+                      ? 'Android 版（arm64-v8a）'
+                      : 'TV 版（arm64-v8a）'}
                   </a>
                 )}
                 <Link
@@ -378,6 +380,43 @@ export default function DownloadPage() {
                   网页版体验
                 </Link>
               </div>
+
+              {/* Version selector */}
+              {selectedPlatform !== 'ios' && (
+                <div className='mb-6 flex flex-wrap gap-2 justify-center lg:justify-start'>
+                  <span
+                    className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold'
+                    style={{
+                      background: '#f4c24d',
+                      color: '#1a1a1a',
+                    }}
+                  >
+                    arm64-v8a 64位（推荐）
+                  </span>
+                  <a
+                    href='/download/5572tv-android-armv7a.apk'
+                    download
+                    className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150'
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      color: '#a3a3a3',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background =
+                        'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.color = '#d4d4d4';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background =
+                        'rgba(255,255,255,0.06)';
+                      e.currentTarget.style.color = '#a3a3a3';
+                    }}
+                  >
+                    armeabi-v7a 兼容版（老旧/低配设备）
+                  </a>
+                </div>
+              )}
 
               {/* QR */}
               <div
@@ -409,26 +448,10 @@ export default function DownloadPage() {
                   <p className='text-xs mt-1' style={{ color: '#767676' }}>
                     {selectedPlatform === 'ios'
                       ? '访问网站安装 PWA'
-                      : `${APK_VERSION} · ${APK_SIZE}MB`}
+                      : `${APK_VERSION} · ${APK_SIZE}MB · arm64-v8a`}
                   </p>
                 </div>
               </div>
-
-              {/* Arch info */}
-              {selectedPlatform !== 'ios' && (
-                <p className='text-xs mt-2' style={{ color: '#545454' }}>
-                  arm64-v8a（64位，2015年后设备）。
-                  <br />
-                  老旧/低配设备请下载{' '}
-                  <a
-                    href='/download/5572tv-android-armv7a.apk'
-                    className='underline hover:text-[#f4c24d] transition-colors'
-                    download
-                  >
-                    armeabi-v7a 兼容版
-                  </a>
-                </p>
-              )}
             </div>
 
             {/* Right - Phone preview */}
