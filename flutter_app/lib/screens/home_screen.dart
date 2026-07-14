@@ -18,10 +18,8 @@ import '../models/play_record.dart';
 import '../models/video_info.dart';
 import '../utils/font_utils.dart';
 import '../services/page_cache_service.dart';
-import '../services/version_service.dart';
 import '../services/announcement_service.dart';
 import '../widgets/tv_remote_adapter.dart';
-import '../widgets/update_dialog.dart';
 import '../widgets/announcement_dialog.dart';
 import 'movie_screen.dart';
 import 'tv_screen.dart';
@@ -56,27 +54,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _bottomNavPageController = PageController(initialPage: 0);
     // 进入首页时直接刷新播放记录和收藏夹缓存
     _refreshCacheOnHomeEnter();
-    // 检查应用更新
-    _checkForUpdates();
+    // 检查公告（不自动检查更新，用户可在菜单中手动检查）
+    _checkAnnouncement();
   }
 
-  /// 检查应用更新和公告
-  void _checkForUpdates() async {
+  /// 检查公告
+  void _checkAnnouncement() async {
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
     try {
-      // 检查版本更新
-      final versionInfo = await VersionService.checkForUpdate();
-      if (versionInfo != null && mounted) {
-        final shouldShow = await VersionService.shouldShowUpdatePrompt(versionInfo.latestVersion);
-        if (shouldShow && mounted) {
-          UpdateDialog.show(context, versionInfo);
-          return;
-        }
-      }
-
-      // 检查公告
       final announcement = await AnnouncementService.fetchAnnouncement('https://www.5572.net');
       if (announcement != null && mounted) {
         final shouldShow = await AnnouncementService.shouldShow(announcement);
@@ -85,8 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      // 静默失败，不影响用户体验
-      print('检查更新失败: $e');
+      print('检查公告失败: $e');
     }
   }
 

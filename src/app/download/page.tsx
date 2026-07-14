@@ -22,7 +22,7 @@ import PlatformTabs from './components/PlatformTabs';
 import { detectPlatform } from './utils';
 
 const APK_SIZE = '19';
-const APK_VERSION = 'v1.9.3';
+const APK_VERSION = 'v1.9.5';
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
