@@ -77,18 +77,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
-    // If a specific source API was provided, only query that one
-    // Otherwise try all enabled sources
+    // Try the specific source first (to avoid cross-source ID conflicts),
+    // then fall back to all other sources if the specific one is down
     const apisToTry: string[] = [];
     if (sourceApi) {
       apisToTry.push(sourceApi);
-    } else {
-      const enabledSources = getEnabledSources();
-      apisToTry.push(DEFAULT_SHORT_DRAMA_API);
-      for (const source of enabledSources) {
-        if (source.api !== DEFAULT_SHORT_DRAMA_API) {
-          apisToTry.push(source.api);
-        }
+    }
+    const enabledSources = getEnabledSources();
+    apisToTry.push(DEFAULT_SHORT_DRAMA_API);
+    for (const source of enabledSources) {
+      if (source.api !== DEFAULT_SHORT_DRAMA_API && source.api !== sourceApi) {
+        apisToTry.push(source.api);
       }
     }
 

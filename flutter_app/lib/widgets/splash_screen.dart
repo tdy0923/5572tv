@@ -19,38 +19,44 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
-  late Animation<double> _pulse;
+  late Animation<Offset> _slideUp;
+  late Animation<double> _progressPulse;
   bool _ready = false;
-  String _status = '初始化...';
+  String _status = '';
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1500),
     );
     _fadeIn = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
     );
-    _pulse = Tween<double>(begin: 1.0, end: 1.08).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.3, 0.8, curve: Curves.easeInOut),
-      ),
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 16),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.2, 0.6, curve: Curves.easeOutCubic),
+    ));
+    _progressPulse = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
     );
     _controller.forward();
     _runInit();
   }
 
   Future<void> _runInit() async {
-    setState(() => _status = '初始化播放器...');
+    setState(() => _status = '初始化...');
     if (widget.onInit != null) {
       await widget.onInit!();
     }
-    setState(() => _status = '加载中...');
-    await Future.delayed(const Duration(milliseconds: 800));
+    setState(() => _status = '准备就绪');
+    await Future.delayed(const Duration(milliseconds: 600));
     if (mounted) {
       setState(() => _ready = true);
     }
@@ -73,86 +79,65 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0A0A0A),
-              Color(0xFF0F0F0F),
-              Color(0xFF1A1A1A),
+              AppTheme.primary,
+              Color(0xFFE8B030),
             ],
           ),
         ),
         child: Center(
           child: FadeTransition(
             opacity: _fadeIn,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedBuilder(
-                  animation: _pulse,
-                  builder: (context, child) => Transform.scale(
-                    scale: _pulse.value,
-                    child: child,
+            child: SlideTransition(
+              position: _slideUp,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '5',
+                    style: TextStyle(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1A1A1A),
+                      letterSpacing: -2,
+                      height: 1,
+                    ),
                   ),
-                  child: Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(22),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppTheme.primary, AppTheme.primaryDark],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 32,
-                          spreadRadius: 8,
+                  const SizedBox(height: 40),
+                  Text(
+                    '5572 影视',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1A1A1A),
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  SizedBox(
+                    width: 180,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        backgroundColor:
+                            const Color(0xFF1A1A1A).withValues(alpha: 0.12),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF1A1A1A),
                         ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '5',
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
-                        ),
+                        minHeight: 3,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 28),
-                const Text(
-                  '5572 影视',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _status,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: 160,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppTheme.primary,
-                      ),
-                      minHeight: 3,
+                  const SizedBox(height: 12),
+                  Text(
+                    _status,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: const Color(0xFF1A1A1A).withValues(alpha: 0.5),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
