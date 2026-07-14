@@ -265,6 +265,11 @@ class _PlayerScreenState extends State<PlayerScreen>
       }
 
       startPlay(playEpisodeIndex, playTime);
+      Future.delayed(const Duration(seconds: 1), () {
+        if (_isActiveLoad(loadGeneration) && mounted) {
+          setState(() => _isLoading = false);
+        }
+      });
       return;
     }
 

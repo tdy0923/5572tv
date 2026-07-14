@@ -52,7 +52,7 @@ class _VideoCardState extends State<VideoCard> {
       builder: (context, themeService, child) {
         // 使用传入的宽度或默认宽度
         final double width = widget.cardWidth ?? 120.0;
-        final double height = width * 1.35; // 留更多空间给标题文字
+        final double height = width * 1.3; // 留更多空间给标题文字
 
         // 缓存计算结果
         final bool shouldShowEpisodeInfo = _shouldShowEpisodeInfo();
@@ -512,7 +512,7 @@ class _VideoCardState extends State<VideoCard> {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   // 标题和源名称容器，确保居中对齐
                   Center(
                     child: Column(
