@@ -7,7 +7,12 @@ import { useMemo, useState } from 'react';
 
 import { browserDownload } from '@/lib/browser-download';
 
-import { FluentFadeIn, FluentSlideUp } from '@/components/FluentTransition';
+import {
+  FluentFadeIn,
+  FluentScaleIn,
+  FluentStagger,
+} from '@/components/FluentTransition';
+import { GlassPanel } from '@/components/ui-surface';
 
 import AnimatedGradient from './components/AnimatedGradient';
 import FeatureShowcase from './components/FeatureShowcase';
@@ -18,41 +23,6 @@ import { detectPlatform } from './utils';
 
 const APK_SIZE = '19';
 const APK_VERSION = 'v1.9.3';
-
-function StepCard({
-  num,
-  title,
-  desc,
-  delay,
-}: {
-  num: number;
-  title: string;
-  desc: string;
-  delay: number;
-}) {
-  return (
-    <FluentSlideUp delay={delay}>
-      <div className='flex gap-4 items-start'>
-        <div
-          className='w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0'
-          style={{
-            background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
-            color: '#1a1a1a',
-            boxShadow: '0 4px 12px rgba(244,194,77,0.3)',
-          }}
-        >
-          {num}
-        </div>
-        <div>
-          <p className='text-sm font-medium text-white mb-0.5'>{title}</p>
-          <p className='text-xs' style={{ color: '#767676' }}>
-            {desc}
-          </p>
-        </div>
-      </div>
-    </FluentSlideUp>
-  );
-}
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
@@ -98,6 +68,7 @@ export default function DownloadPage() {
             <div className='flex flex-col lg:flex-row items-center gap-10 lg:gap-16'>
               {/* Left */}
               <div className='flex-1 text-center lg:text-left'>
+                {/* Logo + rating */}
                 <div className='flex items-center gap-3 mb-5 justify-center lg:justify-start'>
                   <Image
                     src='/icons/icon-192x192.png'
@@ -119,6 +90,7 @@ export default function DownloadPage() {
                   </div>
                 </div>
 
+                {/* Headline */}
                 <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight'>
                   想看的，
                   <span style={{ color: '#f4c24d' }}>这里都有</span>
@@ -130,6 +102,7 @@ export default function DownloadPage() {
                   海量影视资源聚合，AI智能搜索推荐。支持手机、平板、电视全平台。
                 </p>
 
+                {/* Stats */}
                 <div className='flex gap-6 mb-5 justify-center lg:justify-start'>
                   {[
                     { v: '100万+', l: '影视资源' },
@@ -151,7 +124,7 @@ export default function DownloadPage() {
                 </div>
 
                 {/* Platform tabs */}
-                <div className='mb-5 justify-center lg:justify-start'>
+                <div className='mb-5 flex justify-center lg:justify-start'>
                   <PlatformTabs
                     selected={selectedPlatform}
                     onSelect={setSelectedPlatform}
@@ -238,20 +211,13 @@ export default function DownloadPage() {
                 )}
 
                 {/* QR Code */}
-                <div
-                  className='inline-flex items-center gap-4 p-4 rounded-lg transition-all duration-200 group cursor-pointer'
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <img
+                <GlassPanel className='!inline-flex items-center gap-4 !p-4 !rounded-lg !border-white/10 !bg-white/[0.03] !shadow-none group cursor-pointer'>
+                  <Image
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
                     alt='扫码下载'
                     className='w-24 h-24 rounded-md transition-transform duration-300 group-hover:scale-110'
                     width={96}
                     height={96}
-                    loading='lazy'
                   />
                   <div>
                     <p className='text-sm font-medium text-white'>扫码下载</p>
@@ -261,13 +227,15 @@ export default function DownloadPage() {
                         : `${APK_VERSION} · ${APK_SIZE}MB · arm64-v8a`}
                     </p>
                   </div>
-                </div>
+                </GlassPanel>
               </div>
 
               {/* Right - Phone preview */}
-              <div className='flex-1 flex justify-center lg:justify-end'>
-                <PhonePreview />
-              </div>
+              <FluentScaleIn delay={200} duration={500}>
+                <div className='flex-1 flex justify-center lg:justify-end'>
+                  <PhonePreview />
+                </div>
+              </FluentScaleIn>
             </div>
           </FluentFadeIn>
         </div>
@@ -282,55 +250,64 @@ export default function DownloadPage() {
         style={{ background: '#0a0a0a' }}
       >
         <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10'>
-          <FluentFadeIn delay={100}>
-            <div>
-              <h2 className='text-xl font-bold text-white mb-6'>
-                {selectedPlatform === 'ios' ? 'iOS 安装' : '安装步骤'}
-              </h2>
-              <div className='space-y-5'>
+          <div>
+            <h2 className='text-xl font-bold text-white mb-6'>
+              {selectedPlatform === 'ios' ? 'iOS 安装' : '安装步骤'}
+            </h2>
+            <div className='space-y-5'>
+              <FluentStagger staggerMs={80}>
                 {steps.map((s, i) => (
-                  <StepCard
-                    key={i}
-                    num={i + 1}
-                    title={s.title}
-                    desc={s.desc}
-                    delay={i * 80}
-                  />
+                  <div key={i} className='flex gap-4 items-start'>
+                    <div
+                      className='w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0'
+                      style={{
+                        background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
+                        color: '#1a1a1a',
+                        boxShadow: '0 4px 12px rgba(244,194,77,0.3)',
+                      }}
+                    >
+                      {i + 1}
+                    </div>
+                    <div>
+                      <p className='text-sm font-medium text-white mb-0.5'>
+                        {s.title}
+                      </p>
+                      <p className='text-xs' style={{ color: '#767676' }}>
+                        {s.desc}
+                      </p>
+                    </div>
+                  </div>
                 ))}
-              </div>
+              </FluentStagger>
             </div>
-          </FluentFadeIn>
+          </div>
 
           <FluentFadeIn delay={200}>
             <div>
               <h2 className='text-xl font-bold text-white mb-6'>核心功能</h2>
               <div className='space-y-2'>
-                {[
-                  '多源聚合播放',
-                  'AI智能搜索推荐',
-                  '弹幕互动',
-                  '离线缓存',
-                  '多端同步',
-                ].map((f) => (
-                  <div
-                    key={f}
-                    className='flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150'
-                    style={{ color: '#d4d4d4' }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background =
-                        'rgba(255,255,255,0.04)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    <Check
-                      className='w-4 h-4 flex-shrink-0'
-                      style={{ color: '#f4c24d' }}
-                    />
-                    <span className='text-sm'>{f}</span>
-                  </div>
-                ))}
+                <FluentStagger staggerMs={60}>
+                  {[
+                    '多源聚合播放',
+                    'AI智能搜索推荐',
+                    '弹幕互动',
+                    '离线缓存',
+                    '多端同步',
+                  ].map((f) => (
+                    <GlassPanel
+                      key={f}
+                      className='!flex items-center gap-3 !px-3 !py-2.5 !rounded-lg !border-white/5 !bg-white/[0.02] !shadow-none hover:!bg-white/[0.04] transition-colors duration-150'
+                    >
+                      <Check
+                        className='w-4 h-4 flex-shrink-0'
+                        style={{ color: '#f4c24d' }}
+                      />
+                      <span className='text-sm' style={{ color: '#d4d4d4' }}>
+                        {f}
+                      </span>
+                    </GlassPanel>
+                  ))}
+                </FluentStagger>
               </div>
             </div>
           </FluentFadeIn>
