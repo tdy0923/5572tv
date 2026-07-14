@@ -366,16 +366,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (_player == null) {
-      return;
-    }
+    if (_player == null) return;
     switch (state) {
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
-        break;
+        _player!.pause();
+      case AppLifecycleState.inactive:
       case AppLifecycleState.resumed:
-        break;
       case AppLifecycleState.detached:
         break;
     }

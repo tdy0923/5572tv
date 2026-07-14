@@ -339,8 +339,8 @@ class PlayerDetailsPanel extends StatelessWidget {
                               decoration: BoxDecoration(
                                 border: Border.all(
                                     color: isDarkMode
-                                        ? Colors.grey[600]!
-                                        : Colors.grey[400]!),
+                                        ? Colors.grey.shade600
+                                        : Colors.grey.shade400),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

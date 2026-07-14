@@ -69,9 +69,9 @@ class _ShimmerEffectState extends State<ShimmerEffect>
                           AppTheme.foreground,
                         ]
                       : [
-                          Colors.grey[300]!,
-                          Colors.grey[100]!,
-                          Colors.grey[300]!,
+                          Colors.grey.shade300,
+                          Colors.grey.shade100,
+                          Colors.grey.shade300,
                         ],
                   stops: [
                     0.0,

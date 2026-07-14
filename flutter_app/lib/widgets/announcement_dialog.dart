@@ -63,6 +63,6 @@ class AnnouncementDialog extends StatelessWidget {
   }
 
   static Future<void> show(BuildContext context, AnnouncementInfo info) {
-    return showDialog(context: context, barrierDismissible: false, builder: (_) => AnnouncementDialog(info: info));
+    return showDialog(context: context, barrierDismissible: true, builder: (_) => AnnouncementDialog(info: info));
   }
 }

@@ -334,8 +334,8 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                               decoration: BoxDecoration(
                                 border: Border.all(
                                     color: widget.isDarkMode
-                                        ? Colors.grey[600]!
-                                        : Colors.grey[400]!),
+                                        ? Colors.grey.shade600
+                                        : Colors.grey.shade400),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

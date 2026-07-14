@@ -50,9 +50,11 @@ class _PlayerEpisodesPanelState extends State<PlayerEpisodesPanel> {
   }
 
   void _scrollToCurrent() {
-    if (_gridKey.currentContext == null) return;
-
-    final gridBox = _gridKey.currentContext!.findRenderObject() as RenderBox;
+    final ctx = _gridKey.currentContext;
+    if (ctx == null) return;
+    final renderObject = ctx.findRenderObject();
+    if (renderObject == null || renderObject is! RenderBox) return;
+    final gridBox = renderObject as RenderBox;
 
     final targetIndex = widget.isReversed
         ? widget.episodes.length - 1 - widget.currentEpisodeIndex

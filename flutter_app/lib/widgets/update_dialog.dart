@@ -34,6 +34,23 @@ class _UpdateDialogState extends State<UpdateDialog> {
   bool _downloading = false;
   double _progress = 0;
   String _status = '';
+  CancelToken? _cancelToken;
+
+  @override
+  void dispose() {
+    _cancelToken?.cancel('dialog dismissed');
+    super.dispose();
+  }
+
+  void _cancelDownload() {
+    _cancelToken?.cancel('user cancelled');
+    setState(() {
+      _cancelToken = null;
+      _downloading = false;
+      _progress = 0;
+      _status = '';
+    });
+  }
 
   Future<void> _startDownload() async {
     setState(() {
@@ -47,15 +64,18 @@ class _UpdateDialogState extends State<UpdateDialog> {
       const baseUrl = 'https://www.5572.net/download';
       final url = DeviceService.getDownloadUrl(baseUrl, abi);
 
+      if (!mounted) return;
       setState(() => _status = '准备下载...');
 
       final dir = await getTemporaryDirectory();
       final filePath = '${dir.path}/5572tv-${widget.versionInfo.latestVersion}.apk';
 
       final dio = Dio();
+      _cancelToken = CancelToken();
       await dio.download(
         url,
         filePath,
+        cancelToken: _cancelToken,
         onReceiveProgress: (received, total) {
           if (total > 0) {
             final p = received / total;
@@ -69,11 +89,23 @@ class _UpdateDialogState extends State<UpdateDialog> {
         },
       );
 
+      if (_cancelToken?.isCancelled ?? false) return;
+      if (!mounted) return;
+
       setState(() => _status = '正在安装...');
       await OpenFilex.open(filePath);
 
       if (mounted) Navigator.of(context).pop();
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) return;
+      if (!mounted) return;
+      setState(() {
+        _downloading = false;
+        _progress = 0;
+        _status = '下载失败: ${e.message}';
+      });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _downloading = false;
         _progress = 0;
@@ -105,7 +137,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -346,6 +378,25 @@ class _UpdateDialogState extends State<UpdateDialog> {
                           ),
                         ),
                       ),
+                      if (_downloading) ...[
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 36,
+                          child: TextButton(
+                            onPressed: _cancelDownload,
+                            style: TextButton.styleFrom(
+                              foregroundColor: themeService.isDarkMode
+                                  ? AppTheme.foregroundMuted
+                                  : AppTheme.foregroundSubtle,
+                            ),
+                            child: Text(
+                              '取消下载',
+                              style: FontUtils.systemFont(fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ],
                       if (!_downloading) ...[
                         const SizedBox(height: 8),
                         Row(
