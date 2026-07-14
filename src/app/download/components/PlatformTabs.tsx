@@ -5,6 +5,7 @@ import { Smartphone, Tv } from 'lucide-react';
 interface PlatformTabsProps {
   selected: string;
   onSelect: (platform: 'android' | 'ios' | 'tv') => void;
+  className?: string;
 }
 
 const platforms = [
@@ -13,9 +14,13 @@ const platforms = [
   { id: 'tv', name: 'TV', icon: Tv },
 ];
 
-export default function PlatformTabs({ selected, onSelect }: PlatformTabsProps) {
+export default function PlatformTabs({
+  selected,
+  onSelect,
+  className = '',
+}: PlatformTabsProps) {
   return (
-    <div className="flex justify-center gap-2 px-4 py-6">
+    <div className={`inline-flex justify-center gap-2 ${className}`}>
       {platforms.map((p) => (
         <button
           key={p.id}
@@ -26,7 +31,7 @@ export default function PlatformTabs({ selected, onSelect }: PlatformTabsProps) 
               : 'bg-white/5 text-gray-400 hover:bg-white/10'
           }`}
         >
-          <p.icon className="w-4 h-4" />
+          <p.icon className='w-4 h-4' />
           {p.name}
         </button>
       ))}

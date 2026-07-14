@@ -124,12 +124,11 @@ export default function DownloadPage() {
                 </div>
 
                 {/* Platform tabs */}
-                <div className='mb-5 flex justify-center lg:justify-start'>
-                  <PlatformTabs
-                    selected={selectedPlatform}
-                    onSelect={setSelectedPlatform}
-                  />
-                </div>
+                <PlatformTabs
+                  selected={selectedPlatform}
+                  onSelect={setSelectedPlatform}
+                  className='mb-5 lg:justify-start'
+                />
 
                 {/* CTA row */}
                 <div className='flex flex-col sm:flex-row gap-3 mb-6 justify-center lg:justify-start'>
