@@ -870,17 +870,6 @@ class ApiService {
       final response = await http.get(uri, headers: headers);
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final baseUrl = await _getBaseUrl();
-        if (baseUrl != null && data['episodes'] is List) {
-          final proxied = (data['episodes'] as List).map((url) {
-            final s = url as String;
-            if (s.startsWith('http')) {
-              return '$baseUrl/api/proxy/shortdrama?url=${Uri.encodeComponent(s)}';
-            }
-            return s;
-          }).toList();
-          data['episodes'] = proxied;
-        }
         return SearchResult.fromJson(data);
       }
       return null;

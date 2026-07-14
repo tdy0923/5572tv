@@ -19,44 +19,27 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
-  late Animation<Offset> _slideUp;
-  late Animation<double> _progressPulse;
   bool _ready = false;
-  String _status = '';
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 400),
     );
     _fadeIn = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-    );
-    _slideUp = Tween<Offset>(
-      begin: const Offset(0, 16),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.2, 0.6, curve: Curves.easeOutCubic),
-    ));
-    _progressPulse = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOut,
     );
     _controller.forward();
     _runInit();
   }
 
   Future<void> _runInit() async {
-    setState(() => _status = '初始化...');
     if (widget.onInit != null) {
       await widget.onInit!();
     }
-    setState(() => _status = '准备就绪');
-    await Future.delayed(const Duration(milliseconds: 600));
     if (mounted) {
       setState(() => _ready = true);
     }
@@ -87,57 +70,29 @@ class _SplashScreenState extends State<SplashScreen>
         child: Center(
           child: FadeTransition(
             opacity: _fadeIn,
-            child: SlideTransition(
-              position: _slideUp,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '5',
-                    style: TextStyle(
-                      fontSize: 72,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF1A1A1A),
-                      letterSpacing: -2,
-                      height: 1,
-                    ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '5',
+                  style: TextStyle(
+                    fontSize: 72,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF1A1A1A),
+                    height: 1,
                   ),
-                  const SizedBox(height: 40),
-                  Text(
-                    '5572 影视',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1A1A1A),
-                      letterSpacing: 1,
-                    ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  '5572 影视',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: 1,
                   ),
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: 180,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2),
-                      child: LinearProgressIndicator(
-                        backgroundColor:
-                            const Color(0xFF1A1A1A).withValues(alpha: 0.12),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF1A1A1A),
-                        ),
-                        minHeight: 3,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _status,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: const Color(0xFF1A1A1A).withValues(alpha: 0.5),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
