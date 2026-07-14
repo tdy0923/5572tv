@@ -837,7 +837,15 @@ class ApiService {
         final items = (data['list'] ?? data['items'] ?? data['results'] ?? []) as List;
         return items
             .map((item) => SearchResult.fromJson({
-                  ...Map<String, dynamic>.from(item as Map),
+                  'id': item['id'] ?? '',
+                  'title': item['name'] ?? '',
+                  'poster': item['cover'] ?? '',
+                  'year': item['vod_year'] ?? '',
+                  'vod_name': item['name'] ?? '',
+                  'vod_year': item['vod_year'] ?? '',
+                  'desc': item['description'] ?? '',
+                  'episodes': <String>[],
+                  'episodes_titles': <String>[],
                   'source': 'shortdrama',
                   'source_name': '短剧',
                 }))

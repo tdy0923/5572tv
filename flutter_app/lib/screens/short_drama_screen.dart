@@ -23,6 +23,7 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
   int? _selectedCategoryId;
   bool _isLoadingCategories = true;
   bool _isLoadingDramas = false;
+  bool _isLoadingMore = false;
   String? _error;
   int _currentPage = 1;
   bool _hasMore = true;
@@ -65,8 +66,13 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
       _currentPage = 1;
       _hasMore = true;
     }
+    if (loadMore && _isLoadingMore) return;
     setState(() {
-      if (!loadMore) _isLoadingDramas = true;
+      if (loadMore) {
+        _isLoadingMore = true;
+      } else {
+        _isLoadingDramas = true;
+      }
       _error = null;
     });
     try {
@@ -78,18 +84,21 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
       if (mounted) {
         setState(() {
           if (loadMore) {
+            _currentPage++;
             _dramas.addAll(dramas);
+            _isLoadingMore = false;
           } else {
             _dramas = dramas;
+            _isLoadingDramas = false;
           }
           _hasMore = dramas.length >= 20;
-          _isLoadingDramas = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoadingDramas = false;
+          _isLoadingMore = false;
           _error = '加载短剧失败: $e';
         });
       }
@@ -181,8 +190,10 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
                   ),
                   itemCount: _dramas.length + (_hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    if (index == _dramas.length) {
+                    if (index == _dramas.length && !_isLoadingMore) {
                       _loadDramas(_selectedCategoryId, loadMore: true);
+                    }
+                    if (index >= _dramas.length) {
                       return const Center(
                           child: Padding(
                         padding: EdgeInsets.all(16),
