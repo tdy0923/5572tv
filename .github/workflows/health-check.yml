@@ -17,9 +17,6 @@ jobs:
 
       - name: Notify on Failure
         if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            core.summary.addHeading('Health Check Failed', 2);
-            core.summary.addRaw('Some health checks failed. Check the run logs for details.');
-            core.summary.write();
+        run: |
+          echo "## Health Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Some health checks failed. Check the run logs for details." >> $GITHUB_STEP_SUMMARY

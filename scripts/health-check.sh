@@ -125,7 +125,7 @@ else
   check "VAR Substitution" "fail" "Missing substituteVariables"
 fi
 
-if grep "filterInvalidSources.*length.*===.*0" src/app/play/page.tsx 2>/dev/null; then
+if grep "filterInvalidSources.*length.*===.*0" src/app/play/page.tsx 2>/dev/null || grep "filterInvalidSources.*length.*===.*0" src/app/play/PlayPageClient.tsx 2>/dev/null; then
   check "Source Loop Protection" "ok"
 else
   check "Source Loop Protection" "fail" "Missing filterInvalidSources check"
