@@ -23,7 +23,7 @@ export function NavActionCluster({
   compact = false,
 }: NavActionClusterProps) {
   const actionHeight = compact ? 'h-10' : 'h-10';
-  const iconClass = 'h-6 w-6';
+  const iconClass = 'h-7 w-7';
   const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
 
   return (
