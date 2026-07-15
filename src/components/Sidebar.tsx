@@ -26,6 +26,11 @@ import {
 } from 'react';
 
 import { useSite } from './SiteProvider';
+import {
+  BASE_NAV_ITEMS,
+  getDynamicNavItems,
+  isActive as matchNavItem,
+} from '../lib/navigation';
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -126,70 +131,29 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
     isCollapsed,
   };
 
-  const baseMenuItems = useMemo(
-    () => [
-      {
-        icon: Globe,
-        label: '源浏览器',
-        href: '/source-browser',
-      },
-      {
-        icon: Film,
-        label: '电影',
-        href: '/douban?type=movie',
-      },
-      {
-        icon: Tv,
-        label: '剧集',
-        href: '/douban?type=tv',
-      },
-      {
-        icon: PlaySquare,
-        label: '短剧',
-        href: '/shortdrama',
-      },
-      {
-        icon: Cat,
-        label: '动漫',
-        href: '/douban?type=anime',
-      },
-      {
-        icon: Clover,
-        label: '综艺',
-        href: '/douban?type=show',
-      },
-    ],
-    [],
-  );
-
   const [runtimeConfig, setRuntimeConfig] = useState<any>(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRuntimeConfig((window as any).RUNTIME_CONFIG);
   }, []);
 
+  const iconMap: Record<string, any> = {
+    Globe,
+    Film,
+    Tv,
+    PlaySquare,
+    Cat,
+    Clover,
+    Radio,
+    Star,
+  };
+
   const menuItems = useMemo(() => {
-    const allowLive = runtimeConfig?.ENABLE_WEB_LIVE === true;
-    const nextItems = [...baseMenuItems];
-
-    if (allowLive) {
-      nextItems.push({
-        icon: Radio,
-        label: '直播',
-        href: '/live',
-      });
-    }
-
-    if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0) {
-      nextItems.push({
-        icon: Star,
-        label: '自定义',
-        href: '/douban?type=custom',
-      });
-    }
-
-    return nextItems;
-  }, [baseMenuItems, runtimeConfig]);
+    const baseItems = BASE_NAV_ITEMS.filter(
+      (item) => !['/', '/search', '/download'].includes(item.href),
+    );
+    return [...baseItems, ...getDynamicNavItems(runtimeConfig)];
+  }, [runtimeConfig]);
 
   return (
     <SidebarContext.Provider value={contextValue}>
@@ -289,18 +253,8 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
             <div className='flex-1 overflow-y-auto px-2 pt-4'>
               <div className='space-y-1'>
                 {menuItems.map((item, index) => {
-                  // 检查当前路径是否匹配这个菜单项
-                  const typeMatch = item.href.match(/type=([^&]+)/)?.[1];
-
-                  // 解码URL以进行正确的比较
-                  const decodedActive = decodeURIComponent(active);
-                  const decodedItemHref = decodeURIComponent(item.href);
-
-                  const isActive =
-                    decodedActive === decodedItemHref ||
-                    (decodedActive.startsWith('/douban') &&
-                      decodedActive.includes(`type=${typeMatch}`));
-                  const Icon = item.icon;
+                  const isItemActive = matchNavItem(item.href, active);
+                  const Icon = iconMap[item.iconName];
 
                   // 为每个菜单项定义独特的渐变色主题
                   const colorThemes = [
@@ -400,7 +354,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                     <Link
                       key={item.label}
                       href={item.href}
-                      data-active={isActive}
+                      data-active={isItemActive}
                       className={`group relative flex items-center rounded-lg px-2 py-2 pl-4 text-sm text-gray-700 hover:bg-linear-to-r ${theme.hover} ${theme.active} ${theme.text} transition-all duration-200 min-h-[40px] dark:text-gray-300 ${
                         isCollapsed ? 'w-full max-w-none mx-0' : 'mx-0'
                       } gap-3 justify-start hover:shadow-md ${theme.shadow} animate-[slideInFromLeft_0.3s_ease-out] opacity-0`}
@@ -421,7 +375,7 @@ const Sidebar = ({ onToggle, activePath = '/' }: SidebarProps) => {
                       {/* 激活状态的左侧边框指示器 */}
                       <div
                         className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-linear-to-b ${theme.border} rounded-r-full transition-all duration-200 data-[active=true]:h-8 opacity-0 data-[active=true]:opacity-100`}
-                        data-active={isActive}
+                        data-active={isItemActive}
                       ></div>
                     </Link>
                   );

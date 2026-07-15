@@ -448,7 +448,7 @@ export default function PrivateLibraryPage() {
               <input
                 type='text'
                 placeholder='搜索 Emby 视频...'
-                className='w-full rounded-xl border border-gray-200 bg-white/80 pl-11 pr-11 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent focus:bg-white shadow-sm hover:shadow-md focus:shadow-lg dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:border-gray-700 dark:focus:bg-gray-800 dark:focus:ring-primary-500 transition-all duration-300'
+                className='w-full rounded-xl border border-gray-200 bg-white/80 pl-11 pr-11 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white shadow-sm hover:shadow-md focus:shadow-lg dark:bg-gray-800/80 dark:text-white dark:placeholder-gray-500 dark:border-gray-700 dark:focus:bg-gray-800 transition-all duration-300'
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
               />

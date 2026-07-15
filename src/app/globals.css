@@ -357,36 +357,6 @@
       transform: translateY(0);
     }
   }
-
-  /* 弹窗淡入动画 */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* 弹窗缩放进入动画 */
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .animate-scaleIn {
-    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
 }
 
 :root {
@@ -543,36 +513,6 @@ div[data-media-provider] video {
   to {
     --shimmer-position: 200%;
   }
-}
-
-/* Netflix风格进度条闪烁动画 */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
-/* 平滑动画效果 */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out;
 }
 
 /* 状态过渡动画 */
@@ -766,37 +706,10 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 /* ============================================
    Skeleton loading animation (ImagePlaceholder)
    ============================================ */
-@keyframes shine {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
 
 :root {
   --skeleton-color: var(--color-background-muted);
   --skeleton-highlight: var(--color-background-subtle);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --skeleton-color: var(--color-background-muted);
-    --skeleton-highlight: var(--color-background-subtle);
-  }
-}
-
-.dark {
-  --skeleton-color: var(--color-background-muted);
-  --skeleton-highlight: var(--color-background-subtle);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --skeleton-color: #2d2d2d;
-    --skeleton-highlight: #3d3d3d;
-  }
 }
 
 .dark {
@@ -820,89 +733,6 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   --shadow-4: 0 2px 4px rgba(0, 0, 0, 0.32);
   --shadow-8: 0 4px 8px rgba(0, 0, 0, 0.32);
   --shadow-16: 0 8px 16px rgba(0, 0, 0, 0.32);
-}
-
-/* ============================================
-   Fluent 2 Reusable CSS Utilities
-   ============================================ */
-
-/* Fluent 2 Card Surface */
-.fluent2-card {
-  background: var(--color-background);
-  border: 1px solid var(--color-stroke-subtle);
-  border-radius: 8px;
-  box-shadow: var(--shadow-4);
-  transition: box-shadow 150ms cubic-bezier(0.33, 0, 0.67, 1);
-}
-
-.dark .fluent2-card {
-  background: var(--color-background-subtle);
-  border-color: var(--color-stroke);
-}
-
-.fluent2-card:hover {
-  box-shadow: var(--shadow-8);
-}
-
-/* Fluent 2 Primary Button */
-.fluent2-button-primary {
-  background: var(--color-primary-500);
-  color: var(--color-gray-950);
-  border: none;
-  border-radius: 4px;
-  box-shadow: var(--shadow-2);
-  font-weight: 600;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition:
-    box-shadow 150ms cubic-bezier(0.33, 0, 0.67, 1),
-    background 150ms cubic-bezier(0.33, 0, 0.67, 1);
-}
-
-.fluent2-button-primary:hover {
-  background: var(--color-primary-600);
-  box-shadow: var(--shadow-4);
-}
-
-.fluent2-button-primary:active {
-  box-shadow: var(--shadow-2);
-}
-
-/* Fluent 2 Input */
-.fluent2-input {
-  border: 1px solid var(--color-stroke);
-  border-radius: 4px;
-  background: var(--color-background);
-  padding: 10px 14px;
-  color: var(--color-foreground);
-  transition:
-    border-color 150ms cubic-bezier(0.33, 0, 0.67, 1),
-    box-shadow 150ms cubic-bezier(0.33, 0, 0.67, 1);
-}
-
-.fluent2-input:focus {
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 2px var(--color-primary-100);
-  outline: none;
-}
-
-.dark .fluent2-input:focus {
-  box-shadow: 0 0 0 2px rgba(244, 194, 77, 0.3);
-}
-
-/* Fluent 2 Subtle Button */
-.fluent2-button-subtle {
-  background: transparent;
-  color: var(--color-foreground);
-  border: 1px solid var(--color-stroke);
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: background 150ms cubic-bezier(0.33, 0, 0.67, 1);
-}
-
-.fluent2-button-subtle:hover {
-  background: var(--color-background-subtle);
 }
 
 /* 触摸设备减少动画，提升交互流畅度 */

@@ -26,6 +26,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final VoidCallback? onExitFullScreen;
   final bool live;
   final Function(bool isPipMode)? onPipModeChanged;
+  final VoidCallback? onRotate;
 
   const VideoPlayerWidget({
     super.key,
@@ -48,6 +49,7 @@ class VideoPlayerWidget extends StatefulWidget {
     this.onExitFullScreen,
     this.live = false,
     this.onPipModeChanged,
+    this.onRotate,
   });
 
   @override
@@ -117,6 +119,8 @@ class VideoPlayerWidgetController {
   }
 
   bool get isPipMode => _state._isPipMode;
+
+  ValueNotifier<double> get aspectRatio => _state.aspectRatioNotifier;
 }
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
@@ -134,9 +138,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   StreamSubscription<bool>? _completedSubscription;
   StreamSubscription<Duration>? _durationSubscription;
   final ValueNotifier<double> _playbackSpeed = ValueNotifier<double>(1.0);
+  final ValueNotifier<double> aspectRatioNotifier =
+      ValueNotifier<double>(16 / 9);
   bool _playerDisposed = false;
   VoidCallback? _exitWebFullscreenCallback;
   bool _isPipMode = false;
+  StreamSubscription<int>? _widthSubscription;
+  StreamSubscription<int>? _heightSubscription;
 
   @override
   void initState() {
@@ -188,6 +196,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       _isLoadingVideo = true;
     });
     try {
+      aspectRatioNotifier.value = 16 / 9;
       await _player!.open(
         Media(
           _currentUrl!,
@@ -263,6 +272,22 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         widget.onReady?.call();
       }
     });
+
+    _widthSubscription = _player!.stream.width.listen((width) {
+      if (!mounted || _player == null) return;
+      final height = _player!.state.height;
+      if (width > 0 && height > 0) {
+        aspectRatioNotifier.value = width / height;
+      }
+    });
+
+    _heightSubscription = _player!.stream.height.listen((height) {
+      if (!mounted || _player == null) return;
+      final width = _player!.state.width;
+      if (width > 0 && height > 0) {
+        aspectRatioNotifier.value = width / height;
+      }
+    });
   }
 
   Future<void> _updateDataSource(
@@ -288,6 +313,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     });
 
     try {
+      aspectRatioNotifier.value = 16 / 9;
       final currentSpeed = _player!.state.rate;
       await _player!.open(
         Media(
@@ -357,6 +383,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     _playingSubscription?.cancel();
     _completedSubscription?.cancel();
     _durationSubscription?.cancel();
+    _widthSubscription?.cancel();
+    _heightSubscription?.cancel();
     _progressListeners.clear();
     await _player?.dispose();
     _player = null;
@@ -383,6 +411,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     WidgetsBinding.instance.removeObserver(this);
     _disposePlayer();
     _playbackSpeed.dispose();
+    aspectRatioNotifier.dispose();
     super.dispose();
   }
 
@@ -391,57 +420,65 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     return Container(
       color: Colors.black,
       child: _isInitialized && _videoController != null
-          ? Video(
-              controller: _videoController!,
-              controls: (state) {
-                return widget.surface == VideoPlayerSurface.desktop
-                    ? PCPlayerControls(
-                        state: state,
-                        player: _player!,
-                        onBackPressed: widget.onBackPressed,
-                        onNextEpisode: widget.onNextEpisode,
-                        onPause: widget.onPause,
-                        videoUrl: _currentUrl ?? '',
-                        isLastEpisode: widget.isLastEpisode,
-                        isLoadingVideo: _isLoadingVideo,
-                        onCastStarted: widget.onCastStarted,
-                        videoTitle: widget.videoTitle,
-                        currentEpisodeIndex: widget.currentEpisodeIndex,
-                        totalEpisodes: widget.totalEpisodes,
-                        sourceName: widget.sourceName,
-                        onWebFullscreenChanged: widget.onWebFullscreenChanged,
-                        onExitWebFullscreenCallbackReady: (callback) {
-                          _exitWebFullscreenCallback = callback;
-                        },
-                        onExitFullScreen: widget.onExitFullScreen,
-                        live: widget.live,
-                        playbackSpeedListenable: _playbackSpeed,
-                        onSetSpeed: _setPlaybackSpeed,
-                      )
-                    : MobilePlayerControls(
-                        player: _player!,
-                        state: state,
-                        onControlsVisibilityChanged: (_) {},
-                        onBackPressed: widget.onBackPressed,
-                        onFullscreenChange: (_) {},
-                        onNextEpisode: widget.onNextEpisode,
-                        onPause: widget.onPause,
-                        videoUrl: _currentUrl ?? '',
-                        isLastEpisode: widget.isLastEpisode,
-                        isLoadingVideo: _isLoadingVideo,
-                        onCastStarted: widget.onCastStarted,
-                        videoTitle: widget.videoTitle,
-                        currentEpisodeIndex: widget.currentEpisodeIndex,
-                        totalEpisodes: widget.totalEpisodes,
-                        sourceName: widget.sourceName,
-                        onExitFullScreen: widget.onExitFullScreen,
-                        live: widget.live,
-                        playbackSpeedListenable: _playbackSpeed,
-                        onSetSpeed: _setPlaybackSpeed,
-                        onEnterPipMode: _enterPipMode,
-                        isPipMode: _isPipMode,
-                      );
-              },
+          ? Center(
+              child: AspectRatio(
+                aspectRatio: aspectRatioNotifier.value,
+                child: Video(
+                  controller: _videoController!,
+                  controls: (state) {
+                    return widget.surface == VideoPlayerSurface.desktop
+                        ? PCPlayerControls(
+                            state: state,
+                            player: _player!,
+                            onBackPressed: widget.onBackPressed,
+                            onNextEpisode: widget.onNextEpisode,
+                            onPause: widget.onPause,
+                            videoUrl: _currentUrl ?? '',
+                            isLastEpisode: widget.isLastEpisode,
+                            isLoadingVideo: _isLoadingVideo,
+                            onCastStarted: widget.onCastStarted,
+                            videoTitle: widget.videoTitle,
+                            currentEpisodeIndex: widget.currentEpisodeIndex,
+                            totalEpisodes: widget.totalEpisodes,
+                            sourceName: widget.sourceName,
+                            onWebFullscreenChanged:
+                                widget.onWebFullscreenChanged,
+                            onExitWebFullscreenCallbackReady: (callback) {
+                              _exitWebFullscreenCallback = callback;
+                            },
+                            onExitFullScreen: widget.onExitFullScreen,
+                            live: widget.live,
+                            playbackSpeedListenable: _playbackSpeed,
+                            onSetSpeed: _setPlaybackSpeed,
+                            onRotate: widget.onRotate,
+                          )
+                        : MobilePlayerControls(
+                            player: _player!,
+                            state: state,
+                            onControlsVisibilityChanged: (_) {},
+                            onBackPressed: widget.onBackPressed,
+                            onFullscreenChange: (_) {},
+                            onNextEpisode: widget.onNextEpisode,
+                            onPause: widget.onPause,
+                            videoUrl: _currentUrl ?? '',
+                            isLastEpisode: widget.isLastEpisode,
+                            isLoadingVideo: _isLoadingVideo,
+                            onCastStarted: widget.onCastStarted,
+                            videoTitle: widget.videoTitle,
+                            currentEpisodeIndex: widget.currentEpisodeIndex,
+                            totalEpisodes: widget.totalEpisodes,
+                            sourceName: widget.sourceName,
+                            onExitFullScreen: widget.onExitFullScreen,
+                            live: widget.live,
+                            playbackSpeedListenable: _playbackSpeed,
+                            onSetSpeed: _setPlaybackSpeed,
+                            onEnterPipMode: _enterPipMode,
+                            isPipMode: _isPipMode,
+                            onRotate: widget.onRotate,
+                          );
+                  },
+                ),
+              ),
             )
           : const Center(
               child: CircularProgressIndicator(

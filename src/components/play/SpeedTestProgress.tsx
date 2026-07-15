@@ -31,7 +31,10 @@ const SpeedTestProgress = memo(function SpeedTestProgress({
             }}
           >
             {/* 闪烁效果 */}
-            <div className='absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer'></div>
+            <div
+              className='absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent'
+              style={{ animation: 'fluent2-shimmer 2s ease-in-out infinite' }}
+            ></div>
           </div>
         </div>
 

@@ -68,6 +68,7 @@ class PCPlayerControls extends StatefulWidget {
   final bool live;
   final ValueNotifier<double> playbackSpeedListenable;
   final Future<void> Function(double speed) onSetSpeed;
+  final VoidCallback? onRotate;
 
   const PCPlayerControls({
     super.key,
@@ -91,6 +92,7 @@ class PCPlayerControls extends StatefulWidget {
     this.live = false,
     required this.playbackSpeedListenable,
     required this.onSetSpeed,
+    this.onRotate,
   });
 
   @override
@@ -901,6 +903,17 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                               ),
                             ),
                           if (widget.live) const Spacer(),
+                          HoverButton(
+                            onTap: () {
+                              _onUserInteraction();
+                              widget.onRotate?.call();
+                            },
+                            child: Icon(
+                              Icons.screen_rotation,
+                              color: Colors.white,
+                              size: effectiveFullscreen ? 28 : 24,
+                            ),
+                          ),
                           // 网页全屏按钮（仅在非真全屏时显示）
                           if (!_isFullscreen)
                             HoverButton(

@@ -23,12 +23,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { FastLink } from './FastLink';
 import { NavActionCluster } from './NavActionCluster';
 import { useSite } from './SiteProvider';
-
-interface NavItem {
-  icon: any;
-  label: string;
-  href: string;
-}
+import {
+  BASE_NAV_ITEMS,
+  getDynamicNavItems,
+  isActive,
+} from '../lib/navigation';
 
 interface ModernNavProps {
   showAIButton?: boolean;
@@ -73,64 +72,13 @@ export default function ModernNav({
   const searchParams = useSearchParams();
   const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const baseMenuItems = useMemo<NavItem[]>(
-    () => [
-      {
-        icon: Home,
-        label: '首页',
-        href: '/',
-      },
-      {
-        icon: Search,
-        label: '搜索',
-        href: '/search',
-      },
-      {
-        icon: Globe,
-        label: '源浏览器',
-        href: '/source-browser',
-      },
-      {
-        icon: Film,
-        label: '电影',
-        href: '/douban?type=movie',
-      },
-      {
-        icon: Tv,
-        label: '剧集',
-        href: '/douban?type=tv',
-      },
-      {
-        icon: PlaySquare,
-        label: '短剧',
-        href: '/shortdrama',
-      },
-      {
-        icon: Cat,
-        label: '动漫',
-        href: '/douban?type=anime',
-      },
-      {
-        icon: Clover,
-        label: '综艺',
-        href: '/douban?type=show',
-      },
-      {
-        icon: Download,
-        label: '下载App',
-        href: '/download',
-      },
-    ],
-    [],
-  );
-
   // 检查用户是否配置了 Emby
   const { data: userEmbyConfig } = useQuery(userEmbyConfigOptions());
 
   // 检查管理员是否设置了公共源
   const { data: publicSourcesData } = useQuery(publicSourcesOptions());
 
-  const active = useMemo(() => {
+  const currentActive = useMemo(() => {
     const queryString = searchParams.toString();
     return queryString ? `${pathname}?${queryString}` : pathname;
   }, [pathname, searchParams]);
@@ -141,52 +89,27 @@ export default function ModernNav({
     setRuntimeConfig((window as any).RUNTIME_CONFIG);
   }, []);
 
-  const menuItems = useMemo(() => {
-    const newItems = [...baseMenuItems];
-
-    if (runtimeConfig?.ENABLE_WEB_LIVE) {
-      newItems.push({
-        icon: Radio,
-        label: '直播',
-        href: '/live',
-      });
-    }
-
-    if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0) {
-      newItems.push({
-        icon: Star,
-        label: '自定义',
-        href: '/douban?type=custom',
-      });
-    }
-
-    const hasUserEmby = userEmbyConfig?.sources?.some(
-      (s: any) => s.enabled && s.ServerURL,
-    );
-    const hasPublicEmby = (publicSourcesData?.sources?.length ?? 0) > 0;
-    if (hasUserEmby || hasPublicEmby) {
-      newItems.push({
-        icon: FolderOpen,
-        label: 'Emby',
-        href: '/emby',
-      });
-    }
-
-    return newItems;
-  }, [baseMenuItems, userEmbyConfig, publicSourcesData, runtimeConfig]);
-
-  const isActive = (href: string) => {
-    const typeMatch = href.match(/type=([^&]+)/)?.[1];
-    const decodedActive = decodeURIComponent(active);
-    const decodedHref = decodeURIComponent(href);
-
-    return (
-      decodedActive === decodedHref ||
-      (decodedActive.startsWith('/douban') &&
-        typeMatch &&
-        decodedActive.includes(`type=${typeMatch}`))
-    );
+  const iconMap: Record<string, any> = {
+    Home,
+    Search,
+    Globe,
+    Film,
+    Tv,
+    PlaySquare,
+    Cat,
+    Clover,
+    Download,
+    Radio,
+    Star,
+    FolderOpen,
   };
+
+  const menuItems = useMemo(() => {
+    return [
+      ...BASE_NAV_ITEMS,
+      ...getDynamicNavItems(runtimeConfig, userEmbyConfig, publicSourcesData),
+    ];
+  }, [runtimeConfig, userEmbyConfig, publicSourcesData]);
 
   return (
     <>
@@ -212,8 +135,8 @@ export default function ModernNav({
             <div className='flex flex-1 items-center justify-center overflow-x-auto px-2 scrollbar-hide lg:px-4'>
               <div className='flex items-center gap-1.5'>
                 {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.href);
+                  const Icon = iconMap[item.iconName];
+                  const active = isActive(item.href, currentActive);
 
                   return (
                     <FastLink
@@ -292,8 +215,8 @@ export default function ModernNav({
             {/* All menu items in grid */}
             <div className='grid grid-cols-4 gap-4 p-4'>
               {menuItems.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
+                const Icon = iconMap[item.iconName];
+                const active = isActive(item.href, currentActive);
 
                 return (
                   <FastLink
@@ -346,8 +269,8 @@ export default function ModernNav({
         <div className='flex items-center justify-around px-2 py-2'>
           {/* Show first 4 items + More button */}
           {menuItems.slice(0, 4).map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
+            const Icon = iconMap[item.iconName];
+            const active = isActive(item.href, currentActive);
 
             return (
               <FastLink

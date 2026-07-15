@@ -131,6 +131,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   // 网页全屏状态
   bool _isWebFullscreen = false;
 
+  // 横屏锁定状态
+  bool _isLandscapeLocked = false;
+
   // 播放器的 GlobalKey，用于保持播放器状态
   final GlobalKey _playerKey = GlobalKey();
   int _loadGeneration = 0;
@@ -177,6 +180,21 @@ class _PlayerScreenState extends State<PlayerScreen>
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  /// 切换横屏锁定
+  void _toggleOrientationLock() {
+    if (_isLandscapeLocked) {
+      _restoreOrientation();
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+    setState(() {
+      _isLandscapeLocked = !_isLandscapeLocked;
+    });
   }
 
   void initParam() {
@@ -1178,6 +1196,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                 _isWebFullscreen = isWebFullscreen;
               });
             },
+            onRotate: _toggleOrientationLock,
           ),
         if (_isCasting && _dlnaDevice != null)
           Container(

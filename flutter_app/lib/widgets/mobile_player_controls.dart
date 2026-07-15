@@ -28,6 +28,7 @@ class MobilePlayerControls extends StatefulWidget {
   final Future<void> Function(double speed) onSetSpeed;
   final Future<void> Function() onEnterPipMode;
   final bool isPipMode;
+  final VoidCallback? onRotate;
 
   const MobilePlayerControls({
     super.key,
@@ -52,6 +53,7 @@ class MobilePlayerControls extends StatefulWidget {
     required this.onSetSpeed,
     required this.onEnterPipMode,
     required this.isPipMode,
+    this.onRotate,
   });
 
   @override
@@ -868,6 +870,21 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                       ),
                     ),
                   ),
+                GestureDetector(
+                  onTap: () {
+                    _onUserInteraction();
+                    widget.onRotate?.call();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.screen_rotation,
+                      color: Colors.white,
+                      size: _isFullscreen ? 22 : 20,
+                    ),
+                  ),
+                ),
                 if (Platform.isAndroid)
                   GestureDetector(
                     onTap: () async {

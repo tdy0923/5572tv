@@ -15,19 +15,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import {
+  BASE_NAV_ITEMS,
+  getDynamicNavItems,
+  isActive as matchNavItem,
+} from '../lib/navigation';
+
 // 简单的 className 合并函数
 function cn(...classes: (string | boolean | undefined | null)[]): string {
   return classes.filter(Boolean).join(' ');
-}
-
-interface NavItem {
-  icon: typeof Home;
-  label: string;
-  href: string;
-  // 选中状态的渐变色配置
-  activeGradient: string;
-  // 选中状态的文字/图标颜色
-  activeTextColor: string;
 }
 
 interface MobileBottomNavProps {
@@ -49,135 +45,37 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
   // 当前激活路径：优先使用传入的 activePath，否则回退到浏览器地址
   const currentActive = activePath ?? pathname;
 
-  // 导航项配置 - 统一色彩语言，避免彩虹色带来的违和感
-  const baseNavItems = useMemo<NavItem[]>(
-    () => [
-      {
-        icon: Home,
-        label: '首页',
-        href: '/',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Globe,
-        label: '源浏览',
-        href: '/source-browser',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Film,
-        label: '电影',
-        href: '/douban?type=movie',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Tv,
-        label: '剧集',
-        href: '/douban?type=tv',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: PlaySquare,
-        label: '短剧',
-        href: '/shortdrama',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Cat,
-        label: '动漫',
-        href: '/douban?type=anime',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Clover,
-        label: '综艺',
-        href: '/douban?type=show',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-      {
-        icon: Radio,
-        label: '直播',
-        href: '/live',
-        activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-        activeTextColor: 'text-white',
-      },
-    ],
-    [],
-  );
-
   const [runtimeConfig, setRuntimeConfig] = useState<any>(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRuntimeConfig((window as any).RUNTIME_CONFIG);
   }, []);
 
+  const iconMap: Record<string, any> = {
+    Home,
+    Globe,
+    Film,
+    Tv,
+    PlaySquare,
+    Cat,
+    Clover,
+    Radio,
+    Star,
+  };
+
   const navItems = useMemo(() => {
-    const allowLive = runtimeConfig?.ENABLE_WEB_LIVE === true;
-    const filteredBaseItems = allowLive
-      ? baseNavItems
-      : baseNavItems.filter((item) => item.href !== '/live');
-
-    if (runtimeConfig?.CUSTOM_CATEGORIES?.length > 0) {
-      return [
-        ...filteredBaseItems,
-        {
-          icon: Star,
-          label: '自定义',
-          href: '/douban?type=custom',
-          activeGradient: 'bg-gradient-to-r from-[#f4c24d] to-[#dba52b]',
-          activeTextColor: 'text-white',
-        },
-      ];
-    }
-
-    return filteredBaseItems;
-  }, [baseNavItems, runtimeConfig]);
+    const baseItems = BASE_NAV_ITEMS.filter(
+      (item) => !['/search', '/download'].includes(item.href),
+    ).map((item) => ({
+      ...item,
+      label: item.label === '源浏览器' ? '源浏览' : item.label,
+    }));
+    return [...baseItems, ...getDynamicNavItems(runtimeConfig)];
+  }, [runtimeConfig]);
 
   // 判断是否激活
   const isActive = useCallback(
-    (href: string) => {
-      const typeMatch = href.match(/type=([^&]+)/)?.[1];
-      const decodedActive = decodeURIComponent(currentActive);
-      const decodedItemHref = decodeURIComponent(href);
-
-      // 精确匹配
-      if (decodedActive === decodedItemHref) return true;
-
-      // 首页特殊处理
-      if (href === '/' && decodedActive === '/') return true;
-
-      // 源浏览特殊处理
-      if (
-        href === '/source-browser' &&
-        decodedActive.startsWith('/source-browser')
-      )
-        return true;
-
-      // 短剧特殊处理
-      if (href === '/shortdrama' && decodedActive.startsWith('/shortdrama'))
-        return true;
-
-      // 直播页特殊处理
-      if (href === '/live' && decodedActive.startsWith('/live')) return true;
-
-      // 豆瓣分类匹配
-      if (
-        typeMatch &&
-        decodedActive.startsWith('/douban') &&
-        decodedActive.includes(`type=${typeMatch}`)
-      ) {
-        return true;
-      }
-
-      return false;
-    },
+    (href: string) => matchNavItem(href, currentActive),
     [currentActive],
   );
 
@@ -240,7 +138,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
 
         {navItems.map((item, index) => {
           const active = isActive(item.href);
-          const Icon = item.icon;
+          const Icon = iconMap[item.iconName];
 
           return (
             <Link

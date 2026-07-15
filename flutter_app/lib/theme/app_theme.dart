@@ -74,6 +74,12 @@ class AppTheme {
   static List<BoxShadow> get darkShadow4 => [
     BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 4, offset: const Offset(0, 2)),
   ];
+  static List<BoxShadow> get darkShadow8 => [
+    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 8, offset: const Offset(0, 4)),
+  ];
+  static List<BoxShadow> get darkShadow16 => [
+    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 16, offset: const Offset(0, 8)),
+  ];
 
   // ==================== Fluent 2 Border Radius ====================
   static const double radiusSm = 2.0;
@@ -97,8 +103,8 @@ class AppTheme {
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationNormal = Duration(milliseconds: 250);
   static const Duration durationSlow = Duration(milliseconds: 400);
-  static const Curve easeStandard = Curves.easeInOut;
-  static const Curve easeDecelerate = Curves.easeOut;
+  static const Curve easeStandard = Cubic(0.33, 0.0, 0.67, 1.0);
+  static const Curve easeDecelerate = Cubic(0.0, 0.0, 0.0, 1.0);
   static const Curve easeAccelerate = Curves.easeIn;
 
   // ==================== Touch Target ====================

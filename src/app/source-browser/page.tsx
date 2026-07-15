@@ -936,13 +936,13 @@ export default function SourceBrowserPage() {
         {/* 预览弹层 */}
         {previewOpen && (
           <div
-            className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fadeIn sm:p-4 md:pb-4'
+            className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fluent2-fade-in sm:p-4 md:pb-4'
             role='dialog'
             aria-modal='true'
             onClick={() => setPreviewOpen(false)}
           >
             <div
-              className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-lg  animate-scaleIn dark:border-gray-700 dark:bg-gray-900/82 md:max-h-[90vh]'
+              className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-lg  animate-fluent2-scale-in dark:border-gray-700 dark:bg-gray-900/82 md:max-h-[90vh]'
               onClick={(e) => e.stopPropagation()}
             >
               {/* 头部 */}
