@@ -110,6 +110,7 @@ export default async function RootLayout({
     const cfg = await getConfig();
     adSettings = cfg?.SiteConfig?.AdSettings || undefined;
     customCSS = cfg?.SiteConfig?.CustomCSS || '';
+    aiRecommendEnabled = cfg?.AIRecommendConfig?.enabled || false;
   } catch {
     // ignore config load errors
   }

@@ -139,6 +139,45 @@ async function enrichRecommendations(titles: string[]) {
   return Promise.all(searchPromises);
 }
 
+// 从热门数据随机推荐（兜底方案）
+async function getTrendingFallback(
+  request: NextRequest,
+  cacheKey: string,
+): Promise<NextResponse> {
+  try {
+    const trendingRes = await fetch(
+      `${new URL(request.url).origin}/api/trending`,
+    );
+    if (trendingRes.ok) {
+      const trending = await trendingRes.json();
+      const allItems: any[] = [];
+      for (const group of trending.results || []) {
+        for (const item of group.items || []) {
+          allItems.push({
+            title: item.title || item.vod_name,
+            poster: item.poster || item.vod_pic || '',
+            year: item.year || '',
+            rate: item.rate || '',
+            source: item.source || 'douban',
+            id: item.id || '',
+            type: item.type_name || 'movie',
+          });
+        }
+      }
+      const shuffled = allItems.sort(() => Math.random() - 0.5).slice(0, 6);
+      recommendationCache.set(cacheKey, {
+        data: shuffled,
+        timestamp: Date.now(),
+      });
+      return NextResponse.json({
+        success: true,
+        recommendations: shuffled,
+      });
+    }
+  } catch {}
+  return NextResponse.json({ success: true, recommendations: [] });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authInfo = await getAuthInfoFromCookie(request);
@@ -158,40 +197,7 @@ export async function GET(request: NextRequest) {
 
     // 没有播放记录时，从热门数据中随机推荐
     if (userRecords.length === 0) {
-      try {
-        const trendingRes = await fetch(
-          `${new URL(request.url).origin}/api/trending`,
-        );
-        if (trendingRes.ok) {
-          const trending = await trendingRes.json();
-          const allItems: any[] = [];
-          for (const group of trending.results || []) {
-            for (const item of group.items || []) {
-              allItems.push({
-                title: item.title || item.vod_name,
-                poster: item.poster || item.vod_pic || '',
-                year: item.year || '',
-                rate: item.rate || '',
-                source: item.source || 'douban',
-                id: item.id || '',
-                type: item.type_name || 'movie',
-              });
-            }
-          }
-          // 随机取6个
-          const shuffled = allItems.sort(() => Math.random() - 0.5).slice(0, 6);
-          // 缓存结果
-          recommendationCache.set(cacheKey, {
-            data: shuffled,
-            timestamp: Date.now(),
-          });
-          return NextResponse.json({
-            success: true,
-            recommendations: shuffled,
-          });
-        }
-      } catch {}
-      return NextResponse.json({ success: true, recommendations: [] });
+      return await getTrendingFallback(request, cacheKey);
     }
 
     const viewingHistory = userRecords
@@ -210,11 +216,19 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([type]) => type);
 
-    const titles = await askAIForRecommendations(
-      viewingHistory,
-      favoriteGenres,
-    );
+    let titles: string[];
+    // 没有配置 AI Key 时直接回退到热门推荐，而不是返回空
+    if (!UNLIMITED_API_KEY) {
+      titles = [];
+    } else {
+      titles = await askAIForRecommendations(viewingHistory, favoriteGenres);
+    }
     const recommendations = await enrichRecommendations(titles);
+
+    // AI 推荐无结果时，回退到热门推荐兜底
+    if (recommendations.length === 0) {
+      return await getTrendingFallback(request, cacheKey);
+    }
 
     // 缓存结果
     recommendationCache.set(cacheKey, {
