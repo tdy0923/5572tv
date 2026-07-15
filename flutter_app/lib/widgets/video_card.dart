@@ -11,7 +11,7 @@ import 'video_menu_bottom_sheet.dart';
 import '../utils/image_url.dart';
 import '../models/search_result.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 
 /// 视频卡片组件
 class VideoCard extends StatefulWidget {
@@ -176,13 +176,11 @@ class _VideoCardState extends State<VideoCard> {
                                     .withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
-                              child: Text(
+                              child: AppText.body(
                                 widget.videoInfo.year,
-                                style: FontUtils.systemFont(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -206,13 +204,11 @@ class _VideoCardState extends State<VideoCard> {
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
-                                child: Text(
+                                child: AppText.body(
                                   widget.videoInfo.rate!,
-                                  style: FontUtils.systemFont(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -233,13 +229,11 @@ class _VideoCardState extends State<VideoCard> {
                                 color: AppTheme.success,
                                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
-                              child: Text(
+                              child: AppText.body(
                                 episodeText,
-                                style: FontUtils.systemFont(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -390,13 +384,11 @@ class _VideoCardState extends State<VideoCard> {
                                         shape: BoxShape.circle,
                                       ),
                                       child: Center(
-                                        child: Text(
+                                        child: AppText.body(
                                           '${widget.originalResults!.length}',
-                                          style: FontUtils.systemFont(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
@@ -519,17 +511,15 @@ class _VideoCardState extends State<VideoCard> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // 标题
-                        Text(
+                        AppText.body(
                           widget.videoInfo.title,
-                          style: FontUtils.systemFont(
-                            fontSize: width < 100 ? 12 : 13, // 根据宽度调整字体大小，调大字体
-                            fontWeight: FontWeight.w500,
-                            color: isPC && _isHovered
-                                ? Colors.green
-                                : (themeService.isDarkMode
-                                    ? AppTheme.background
-                                    : AppTheme.foreground),
-                          ),
+                          fontSize: width < 100 ? 12 : 13, // 根据宽度调整字体大小，调大字体
+                          fontWeight: FontWeight.w500,
+                          color: isPC && _isHovered
+                              ? Colors.green
+                              : (themeService.isDarkMode
+                                  ? AppTheme.background
+                                  : AppTheme.foreground),
                           textAlign: TextAlign.center,
                           maxLines: widget.from == 'douban'
                               ? 2
@@ -556,21 +546,19 @@ class _VideoCardState extends State<VideoCard> {
                               ),
                               borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                             ),
-                            child: Text(
+                            child: AppText.body(
                               widget.from == 'agg'
                                   ? _getAggregatedSourceText(
                                       widget.videoInfo.sourceName)
                                   : widget.videoInfo.sourceName,
-                              style: FontUtils.systemFont(
-                                fontSize:
-                                    width < 100 ? 11 : 12, // 根据宽度调整字体大小，调大字体
-                                color: isPC && _isHovered
-                                    ? Colors.green
-                                    : (widget.from == 'agg'
-                                        ? AppTheme.info // 聚合模式用紫色文字
-                                        : AppTheme.foregroundMuted), // 其他模式用灰色文字
-                                height: 1.0, // 进一步减少行高
-                              ),
+                              fontSize:
+                                  width < 100 ? 11 : 12, // 根据宽度调整字体大小，调大字体
+                              color: isPC && _isHovered
+                                  ? Colors.green
+                                  : (widget.from == 'agg'
+                                      ? AppTheme.info // 聚合模式用紫色文字
+                                      : AppTheme.foregroundMuted), // 其他模式用灰色文字
+                              height: 1.0, // 进一步减少行高
                               textAlign: TextAlign.center,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -851,15 +839,11 @@ class _VideoCardState extends State<VideoCard> {
                 // 标题
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Text(
+                  child: AppText.title(
                     '可用播放源',
-                    style: FontUtils.systemFont(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: themeService.isDarkMode
-                          ? AppTheme.background
-                          : AppTheme.darkBackground,
-                    ),
+                    color: themeService.isDarkMode
+                        ? AppTheme.background
+                        : AppTheme.darkBackground,
                   ),
                 ),
                 // 播放源列表
@@ -883,23 +867,19 @@ class _VideoCardState extends State<VideoCard> {
                                     const EdgeInsets.symmetric(vertical: 12),
                                 child: Row(
                                   children: [
-                                    Text(
+                                    AppText.body(
                                       source.sourceName,
-                                      style: FontUtils.systemFont(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                     const Spacer(),
                                     if (source.episodes.length > 1)
-                                      Text(
+                                      AppText.body(
                                         '${source.episodes.length}集',
-                                        style: FontUtils.systemFont(
-                                          fontSize: 14,
-                                          color: themeService.isDarkMode
-                                              ? Colors.white70
-                                              : Colors.black54,
-                                        ),
+                                        fontSize: 14,
+                                        color: themeService.isDarkMode
+                                            ? Colors.white70
+                                            : Colors.black54,
                                       ),
                                   ],
                                 ),

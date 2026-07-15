@@ -16,7 +16,10 @@ import '../widgets/search_result_agg_grid.dart';
 import '../widgets/search_results_grid.dart';
 import '../widgets/filter_options_selector.dart';
 import '../widgets/filter_pill_hover.dart';
+import '../components/app_bottom_sheet.dart';
 import '../widgets/main_layout.dart';
+import '../components/app_dialog.dart';
+import '../components/app_button.dart';
 import '../utils/font_utils.dart';
 import '../utils/device_utils.dart';
 import 'player_screen.dart';
@@ -299,119 +302,60 @@ class _SearchScreenState extends State<SearchScreen>
 
   /// 显示清空确认弹窗
   void _showClearConfirmation() {
-    showDialog(
+    AppDialog.show(
       context: context,
-      builder: (BuildContext context) {
-        return Consumer<ThemeService>(
-          builder: (context, themeService, child) {
-            return AlertDialog(
-              backgroundColor: themeService.isDarkMode
-                  ? AppTheme.darkBackground
-                  : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radius2xl),
+      title: '清空搜索历史',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.error.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.delete_outline,
+              color: AppTheme.error,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '确定要清空所有搜索历史吗？此操作无法撤销。',
+            style: FontUtils.systemFont(
+              fontSize: 14,
+              color: AppTheme.foregroundMuted,
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: '取消',
+                  onPressed: () => Navigator.of(context).pop(),
+                  variant: AppButtonVariant.text,
+                ),
               ),
-              contentPadding: const EdgeInsets.all(24),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 图标
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: AppTheme.error.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: AppTheme.error,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // 标题
-                  Text(
-                    '清空搜索历史',
-                    style: FontUtils.systemFont(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: themeService.isDarkMode
-                          ? AppTheme.background
-                          : AppTheme.foreground,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // 描述
-                  Text(
-                    '确定要清空所有搜索历史吗？此操作无法撤销。',
-                    style: FontUtils.systemFont(
-                      fontSize: 14,
-                      color: themeService.isDarkMode
-                          ? AppTheme.foregroundMuted
-                          : AppTheme.foregroundMuted,
-                      height: 1.4,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  // 按钮
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            ),
-                          ),
-                          child: Text(
-                            '取消',
-                            style: FontUtils.systemFont(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: themeService.isDarkMode
-                                  ? AppTheme.foregroundMuted
-                                  : AppTheme.foregroundMuted,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            _clearSearchHistory();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.error,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            '清空',
-                            style: FontUtils.systemFont(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppButton(
+                  label: '清空',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _clearSearchHistory();
+                  },
+                  color: AppTheme.error,
+                ),
               ),
-            );
-          },
-        );
-      },
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -694,26 +638,11 @@ class _SearchScreenState extends State<SearchScreen>
                         });
                       }
                     : null,
-                child: TextButton(
+                child: AppButton(
+                  label: '清空',
                   onPressed: _showClearConfirmation,
-                  style: TextButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    overlayColor: Colors.transparent,
-                  ),
-                  child: Text(
-                    '清空',
-                    style: FontUtils.systemFont(
-                      fontSize: 14,
-                      color: DeviceUtils.isPC() && _isClearHistoryButtonHovered
-                          ? AppTheme.error // hover 时红色
-                          : themeService.isDarkMode
-                              ? AppTheme.foregroundMuted
-                              : AppTheme.foregroundMuted,
-                    ),
-                  ),
+                  variant: AppButtonVariant.text,
+                  size: AppButtonSize.small,
                 ),
               ),
             ],
@@ -1564,10 +1493,8 @@ class _SearchScreenState extends State<SearchScreen>
       );
     } else {
       // 移动端显示底部弹出
-      showModalBottomSheet(
+      AppBottomSheet.show(
         context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
         builder: (context) {
           final screenWidth = MediaQuery.of(context).size.width;
           final modalWidth =
@@ -1577,83 +1504,71 @@ class _SearchScreenState extends State<SearchScreen>
           final itemWidth =
               (modalWidth - horizontalPadding * 2 - spacing * 2) / 3;
 
-          return Container(
-            width: DeviceUtils.isTablet(context)
-                ? modalWidth
-                : double.infinity, // 设置宽度为100%
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                Container(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    minHeight: 200.0,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: horizontalPadding, vertical: 8),
-                      child: Wrap(
-                        alignment: WrapAlignment.start, // 左对齐
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: options.map((option) {
-                          final isSelected = option.value == selectedValue;
-                          return SizedBox(
-                            width: itemWidth,
-                            child: InkWell(
-                              onTap: () {
-                                onSelected(option.value);
-                                Navigator.pop(context);
-                              },
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                alignment: Alignment.centerLeft, // 内容左对齐
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppTheme.success
-                                      : Theme.of(context)
-                                          .chipTheme
-                                          .backgroundColor,
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                                ),
-                                child: Text(
-                                  option.label,
-                                  textAlign: TextAlign.left, // 文字左对齐
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : null,
-                                  ),
+              ),
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  minHeight: 200.0,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 8),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: options.map((option) {
+                        final isSelected = option.value == selectedValue;
+                        return SizedBox(
+                          width: itemWidth,
+                          child: InkWell(
+                            onTap: () {
+                              onSelected(option.value);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              alignment: Alignment.centerLeft,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppTheme.success
+                                    : Theme.of(context)
+                                        .chipTheme
+                                        .backgroundColor,
+                                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                              ),
+                              child: Text(
+                                option.label,
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : null,
                                 ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+            ],
           );
         },
       );

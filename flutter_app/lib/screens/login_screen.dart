@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../services/user_data_service.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
+import '../components/app_button.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -194,32 +195,13 @@ class _LoginScreenState extends State<LoginScreen> {
           onFieldSubmitted: (_) => _handleSubmit(),
         ),
         const SizedBox(height: 32),
-        ElevatedButton(
+        AppButton(
+          label: _isLoading ? '登录中...' : '登录',
           onPressed: (_isLoading || !_isFormValid) ? null : _handleLogin,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _isFormValid && !_isLoading
-                ? AppTheme.success
-                : AppTheme.stroke,
-            foregroundColor: _isFormValid && !_isLoading
-                ? Colors.white
-                : AppTheme.foregroundMuted,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusXl)),
-            elevation: 0,
-            shadowColor: Colors.transparent,
-          ),
-          child: _isLoading
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 18, width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white))),
-                    const SizedBox(width: 12),
-                    Text('登录中...', style: FontUtils.systemFont(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white)),
-                  ],
-                )
-              : Text('登录', style: FontUtils.systemFont(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 1.0)),
+          loading: _isLoading,
+          color: _isFormValid && !_isLoading ? AppTheme.success : AppTheme.stroke,
+          fullWidth: true,
+          size: AppButtonSize.large,
         ),
       ],
     );

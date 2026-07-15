@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 import '../models/video_info.dart';
 import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
+import '../components/app_button.dart';
 import 'video_card.dart';
 import 'video_menu_bottom_sheet.dart';
 import 'shimmer_effect.dart';
@@ -171,15 +172,11 @@ class _RecommendationSectionState extends State<RecommendationSection> {
               children: [
                 Consumer<ThemeService>(
                   builder: (context, themeService, child) {
-                    return Text(
+                    return AppText.title(
                       widget.title,
-                      style: FontUtils.systemFont(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: themeService.isDarkMode
-                            ? AppTheme.background
-                            : AppTheme.foreground,
-                      ),
+                      color: themeService.isDarkMode
+                          ? AppTheme.background
+                          : AppTheme.foreground,
                     );
                   },
                 ),
@@ -202,24 +199,11 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                             });
                           }
                         : null,
-                    child: TextButton(
+                    child: AppButton(
+                      label: widget.moreText!,
                       onPressed: widget.onMoreTap,
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        overlayColor: Colors.transparent,
-                      ),
-                      child: Text(
-                        widget.moreText!,
-                        style: FontUtils.systemFont(
-                          fontSize: 14,
-                          color: DeviceUtils.isPC() && _isMoreButtonHovered
-                              ? AppTheme.success // hover 时绿色
-                              : AppTheme.foregroundMuted,
-                        ),
-                      ),
+                      variant: AppButtonVariant.text,
+                      size: AppButtonSize.small,
                     ),
                   ),
               ],
@@ -498,23 +482,19 @@ class _RecommendationSectionState extends State<RecommendationSection> {
               size: 32,
             ),
             const SizedBox(height: 8),
-            Text(
+            AppText.body(
               '加载失败',
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              fontSize: 14,
+              color: Colors.grey[600],
             ),
             if (widget.onRetry != null) ...[
               const SizedBox(height: 8),
               TextButton(
                 onPressed: widget.onRetry,
-                child: Text(
+                child: AppText.body(
                   '重试',
-                  style: FontUtils.systemFont(
-                    fontSize: 12,
-                    color: AppTheme.foreground,
-                  ),
+                  fontSize: 12,
+                  color: AppTheme.foreground,
                 ),
               ),
             ],

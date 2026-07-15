@@ -7,9 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:gal/gal.dart';
 import 'package:app_settings/app_settings.dart';
 import 'package:provider/provider.dart';
+import '../components/app_bottom_sheet.dart';
 import '../utils/image_url.dart';
 import '../utils/font_utils.dart';
 import '../services/theme_service.dart';
+import '../components/app_dialog.dart';
 
 /// 全屏图片查看器
 class FullscreenImageViewer extends StatefulWidget {
@@ -59,86 +61,65 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
 
   /// 显示保存图片选择菜单
   void _showSaveImageMenu() {
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Consumer<ThemeService>(
-        builder: (context, themeService, child) {
-          final isDark = themeService.isDarkMode;
-          final backgroundColor = isDark 
-              ? AppTheme.darkBackground.withOpacity(0.95)
-              : AppTheme.background.withOpacity(0.95);
-          final textColor = isDark ? Colors.white : AppTheme.foreground;
-          final secondaryTextColor = isDark 
-              ? Colors.white.withOpacity(0.7)
-              : AppTheme.foreground.withOpacity(0.7);
-          return Container(
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppTheme.radius2xl),
-                topRight: Radius.circular(AppTheme.radius2xl),
+      builder: (context) {
+        final themeService = context.watch<ThemeService>();
+        final isDark = themeService.isDarkMode;
+        final textColor = isDark ? Colors.white : AppTheme.foreground;
+        final secondaryTextColor = isDark 
+            ? Colors.white.withOpacity(0.7)
+            : AppTheme.foreground.withOpacity(0.7);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Text(
+                '保存图片',
+                style: FontUtils.systemFont(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 标题
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                    child: Text(
-                      '保存图片',
-                      style: FontUtils.systemFont(
-                        color: textColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  
-                  // 选项列表
-                  ListTile(
-                    leading: Icon(
-                      Icons.download,
-                      color: textColor,
-                    ),
-                    title: Text(
-                      '保存到相册',
-                      style: FontUtils.systemFont(
-                        color: textColor,
-                        fontSize: 16,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _saveImageToGallery();
-                    },
-                  ),
-                  
-                  ListTile(
-                    leading: Icon(
-                      Icons.close,
-                      color: secondaryTextColor,
-                    ),
-                    title: Text(
-                      '取消',
-                      style: FontUtils.systemFont(
-                        color: secondaryTextColor,
-                        fontSize: 16,
-                      ),
-                    ),
-                    onTap: () => Navigator.of(context).pop(),
-                  ),
-                  
-                  // 底部安全区域
-                  SizedBox(height: MediaQuery.of(context).padding.bottom),
-                ],
+            
+            ListTile(
+              leading: Icon(
+                Icons.download,
+                color: textColor,
               ),
+              title: Text(
+                '保存到相册',
+                style: FontUtils.systemFont(
+                  color: textColor,
+                  fontSize: 16,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                _saveImageToGallery();
+              },
             ),
-          );
-        },
-      ),
+            
+            ListTile(
+              leading: Icon(
+                Icons.close,
+                color: secondaryTextColor,
+              ),
+              title: Text(
+                '取消',
+                style: FontUtils.systemFont(
+                  color: secondaryTextColor,
+                  fontSize: 16,
+                ),
+              ),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -157,45 +138,25 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       
       if (!granted && mounted) {
         // 权限被拒绝，引导用户到设置页面
-        showDialog(
+        AppDialog.show(
           context: context,
-          builder: (context) => Consumer<ThemeService>(
-            builder: (context, themeService, child) {
-              final isDark = themeService.isDarkMode;
-              final textColor = isDark ? Colors.white : AppTheme.foreground;
-              
-              return AlertDialog(
-                backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
-                title: Text(
-                  '需要存储权限',
-                  style: FontUtils.systemFont(color: textColor),
-                ),
-                content: Text(
-                  '保存图片到相册需要存储权限，请在设置中允许此权限。',
-                  style: FontUtils.systemFont(color: textColor),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      '取消',
-                      style: FontUtils.systemFont(color: textColor),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await AppSettings.openAppSettings();
-                    },
-                    child: Text(
-                      '去设置',
-                      style: FontUtils.systemFont(color: textColor),
-                    ),
-                  ),
-                ],
-              );
-            },
+          title: '需要存储权限',
+          content: const Text(
+            '保存图片到相册需要存储权限，请在设置中允许此权限。',
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await AppSettings.openAppSettings();
+              },
+              child: const Text('去设置'),
+            ),
+          ],
         );
       }
       

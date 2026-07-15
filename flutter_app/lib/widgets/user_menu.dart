@@ -13,6 +13,8 @@ import '../services/local_search_cache_service.dart';
 import '../services/version_service.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
+import '../components/app_text.dart';
+import '../components/app_dialog.dart';
 import 'update_dialog.dart';
 
 class UserMenu extends StatefulWidget {
@@ -177,10 +179,10 @@ class _UserMenuState extends State<UserMenu> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '正在检查更新...',
-              style: FontUtils.systemFont(color: Colors.white),
-            ),
+          content: AppText.body(
+            '正在检查更新...',
+            color: Colors.white,
+          ),
             backgroundColor: Colors.black,
             duration: const Duration(seconds: 2),
           ),
@@ -198,10 +200,10 @@ class _UserMenuState extends State<UserMenu> {
         // 已是最新版本
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '当前已是最新版本',
-              style: FontUtils.systemFont(color: Colors.white),
-            ),
+        content: AppText.body(
+          '当前已是最新版本',
+          color: Colors.white,
+        ),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -210,10 +212,10 @@ class _UserMenuState extends State<UserMenu> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '检查更新失败: ${e.toString()}',
-              style: FontUtils.systemFont(color: Colors.white),
-            ),
+        content: AppText.body(
+          '检查更新失败: ${e.toString()}',
+          color: Colors.white,
+        ),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -250,13 +252,11 @@ class _UserMenuState extends State<UserMenu> {
         color: color,
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
-      child: Text(
+      child: AppText.body(
         label,
-        style: FontUtils.systemFont(
-          fontSize: 10,
-          color: Colors.white,
-          fontWeight: FontWeight.w500,
-        ),
+        fontSize: 10,
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
@@ -291,26 +291,20 @@ class _UserMenuState extends State<UserMenu> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    AppText.body(
                       title,
-                      style: FontUtils.systemFont(
-                        fontSize: 16,
-                        color: widget.isDarkMode
-                            ? AppTheme.background
-                            : AppTheme.darkBackgroundSubtle,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      fontSize: 16,
+                      color: widget.isDarkMode
+                          ? AppTheme.background
+                          : AppTheme.darkBackgroundSubtle,
+                      fontWeight: FontWeight.w500,
                     ),
                     const SizedBox(height: 2),
-                    Text(
+                    AppText.caption(
                       currentValue,
-                      style: FontUtils.systemFont(
-                        fontSize: 12,
-                        color: widget.isDarkMode
-                            ? AppTheme.foregroundMuted
-                            : AppTheme.foregroundSubtle,
-                        fontWeight: FontWeight.w400,
-                      ),
+                      color: widget.isDarkMode
+                          ? AppTheme.foregroundMuted
+                          : AppTheme.foregroundSubtle,
                     ),
                   ],
                 ),
@@ -334,19 +328,8 @@ class _UserMenuState extends State<UserMenu> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor:
-              widget.isDarkMode ? AppTheme.darkBackground : Colors.white,
-          title: Text(
-            title,
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              color: widget.isDarkMode
-                  ? AppTheme.background
-                  : AppTheme.darkBackgroundSubtle,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        return AppDialog(
+          title: title,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: options.map((option) {
@@ -379,15 +362,13 @@ class _UserMenuState extends State<UserMenu> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
+                          child: AppText.body(
                             option,
-                            style: FontUtils.systemFont(
-                              fontSize: 16,
-                              color: widget.isDarkMode
-                                  ? AppTheme.background
-                                  : AppTheme.darkBackgroundSubtle,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            fontSize: 16,
+                            color: widget.isDarkMode
+                                ? AppTheme.background
+                                : AppTheme.darkBackgroundSubtle,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -408,19 +389,8 @@ class _UserMenuState extends State<UserMenu> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor:
-              widget.isDarkMode ? AppTheme.darkBackground : Colors.white,
-          title: Text(
-            'M3U8 代理 URL',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              color: widget.isDarkMode
-                  ? AppTheme.background
-                  : AppTheme.darkBackgroundSubtle,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        return AppDialog(
+          title: 'M3U8 代理 URL',
           content: TextField(
             controller: controller,
             style: FontUtils.systemFont(
@@ -467,14 +437,12 @@ class _UserMenuState extends State<UserMenu> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(
+              child: AppText.body(
                 '取消',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: widget.isDarkMode
-                      ? AppTheme.foregroundMuted
-                      : AppTheme.foregroundSubtle,
-                ),
+                fontSize: 14,
+                color: widget.isDarkMode
+                    ? AppTheme.foregroundMuted
+                    : AppTheme.foregroundSubtle,
               ),
             ),
             TextButton(
@@ -489,13 +457,11 @@ class _UserMenuState extends State<UserMenu> {
                   Navigator.of(context).pop();
                 }
               },
-              child: Text(
+              child: AppText.body(
                 '保存',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: AppTheme.success,
-                  fontWeight: FontWeight.w600,
-                ),
+                fontSize: 14,
+                color: AppTheme.success,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -533,26 +499,20 @@ class _UserMenuState extends State<UserMenu> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    AppText.body(
                       title,
-                      style: FontUtils.systemFont(
-                        fontSize: 16,
-                        color: widget.isDarkMode
-                            ? AppTheme.background
-                            : AppTheme.darkBackgroundSubtle,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      fontSize: 16,
+                      color: widget.isDarkMode
+                          ? AppTheme.background
+                          : AppTheme.darkBackgroundSubtle,
+                      fontWeight: FontWeight.w500,
                     ),
                     const SizedBox(height: 2),
-                    Text(
+                    AppText.caption(
                       currentValue.isEmpty ? '未设置' : currentValue,
-                      style: FontUtils.systemFont(
-                        fontSize: 12,
-                        color: widget.isDarkMode
-                            ? AppTheme.foregroundMuted
-                            : AppTheme.foregroundSubtle,
-                        fontWeight: FontWeight.w400,
-                      ),
+                      color: widget.isDarkMode
+                          ? AppTheme.foregroundMuted
+                          : AppTheme.foregroundSubtle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -597,15 +557,13 @@ class _UserMenuState extends State<UserMenu> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
+              child: AppText.body(
                 title,
-                style: FontUtils.systemFont(
-                  fontSize: 16,
-                  color: widget.isDarkMode
-                      ? AppTheme.background
-                      : AppTheme.darkBackgroundSubtle,
-                  fontWeight: FontWeight.w500,
-                ),
+                fontSize: 16,
+                color: widget.isDarkMode
+                    ? AppTheme.background
+                    : AppTheme.darkBackgroundSubtle,
+                fontWeight: FontWeight.w500,
               ),
             ),
             GestureDetector(
@@ -685,42 +643,30 @@ class _UserMenuState extends State<UserMenu> {
                         children: [
                           // 本地模式下不显示"当前模式"标签
                           if (!_isLocalMode)
-                            Text(
+                            AppText.caption(
                               '当前用户',
-                              style: FontUtils.systemFont(
-                                fontSize: 12,
-                                color: widget.isDarkMode
-                                    ? AppTheme.foregroundMuted
-                                    : AppTheme.foregroundSubtle,
-                                fontWeight: FontWeight.w400,
-                              ),
+                              color: widget.isDarkMode
+                                  ? AppTheme.foregroundMuted
+                                  : AppTheme.foregroundSubtle,
                             ),
                           if (!_isLocalMode) const SizedBox(height: 8),
                           // 用户名或本地模式
                           if (_isLocalMode)
-                            Text(
+                            AppText.heading(
                               '本地模式',
-                              style: FontUtils.systemFont(
-                                fontSize: 18,
-                                color: widget.isDarkMode
-                                    ? AppTheme.background
-                                    : AppTheme.darkBackgroundSubtle,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              color: widget.isDarkMode
+                                  ? AppTheme.background
+                                  : AppTheme.darkBackgroundSubtle,
                             )
                           else
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
+                                AppText.heading(
                                   _username ?? '未知用户',
-                                  style: FontUtils.systemFont(
-                                    fontSize: 18,
-                                    color: widget.isDarkMode
-                                        ? AppTheme.background
-                                        : AppTheme.darkBackgroundSubtle,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  color: widget.isDarkMode
+                                      ? AppTheme.background
+                                      : AppTheme.darkBackgroundSubtle,
                                 ),
                                 const SizedBox(width: 8),
                                 // 角色标签
@@ -863,15 +809,13 @@ class _UserMenuState extends State<UserMenu> {
                                 color: AppTheme.warning,
                               ),
                               const SizedBox(width: 12),
-                              Text(
+                              AppText.body(
                                 '清除豆瓣缓存',
-                                style: FontUtils.systemFont(
-                                  fontSize: 16,
-                                  color: widget.isDarkMode
-                                      ? AppTheme.background
-                                      : AppTheme.darkBackgroundSubtle,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                fontSize: 16,
+                                color: widget.isDarkMode
+                                    ? AppTheme.background
+                                    : AppTheme.darkBackgroundSubtle,
+                                fontWeight: FontWeight.w500,
                               ),
                             ],
                           ),
@@ -903,15 +847,13 @@ class _UserMenuState extends State<UserMenu> {
                                 color: AppTheme.info,
                               ),
                               const SizedBox(width: 12),
-                              Text(
+                              AppText.body(
                                 '检查更新',
-                                style: FontUtils.systemFont(
-                                  fontSize: 16,
-                                  color: widget.isDarkMode
-                                      ? AppTheme.background
-                                      : AppTheme.darkBackgroundSubtle,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                fontSize: 16,
+                                color: widget.isDarkMode
+                                    ? AppTheme.background
+                                    : AppTheme.darkBackgroundSubtle,
+                                fontWeight: FontWeight.w500,
                               ),
                             ],
                           ),
@@ -943,13 +885,11 @@ class _UserMenuState extends State<UserMenu> {
                                 color: AppTheme.error,
                               ),
                               const SizedBox(width: 12),
-                              Text(
+                              AppText.body(
                                 '登出',
-                                style: FontUtils.systemFont(
-                                  fontSize: 16,
-                                  color: AppTheme.error,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                fontSize: 16,
+                                color: AppTheme.error,
+                                fontWeight: FontWeight.w500,
                               ),
                             ],
                           ),
@@ -983,15 +923,13 @@ class _UserMenuState extends State<UserMenu> {
                             vertical: 12,
                           ),
                           child: Center(
-                            child: Text(
+                            child: AppText.body(
                               _version.isEmpty ? 'v1.4.3' : 'v$_version',
-                              style: FontUtils.systemFont(
-                                fontSize: 14,
-                                color: widget.isDarkMode
-                                    ? AppTheme.foregroundMuted
-                                    : AppTheme.foregroundSubtle,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              fontSize: 14,
+                              color: widget.isDarkMode
+                                  ? AppTheme.foregroundMuted
+                                  : AppTheme.foregroundSubtle,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),

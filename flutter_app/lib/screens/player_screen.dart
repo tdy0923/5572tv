@@ -17,7 +17,9 @@ import '../models/play_record.dart';
 import '../services/page_cache_service.dart';
 import '../widgets/switch_loading_overlay.dart';
 import '../utils/device_utils.dart';
+import '../components/app_button.dart';
 import '../widgets/player_details_panel.dart';
+import '../components/app_dialog.dart';
 import '../widgets/player_episodes_panel.dart';
 import '../widgets/player_sources_panel.dart';
 import '../widgets/windows_title_bar.dart';
@@ -501,22 +503,20 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (_isCasting && _dlnaDevice != null) {
       try {
         // 显示弹窗让用户选择
-        final shouldStop = await showDialog<bool>(
+        final shouldStop = await AppDialog.show<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('停止投屏'),
-            content: const Text('DLNA 设备可继续保持播放，是否需要停止？\n\n（保持播放时无法同步进度和播放记录）'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('保持'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('停止'),
-              ),
-            ],
-          ),
+          title: '停止投屏',
+          content: const Text('DLNA 设备可继续保持播放，是否需要停止？\n\n（保持播放时无法同步进度和播放记录）'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('保持'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('停止'),
+            ),
+          ],
         );
         if (!mounted) return;
 
@@ -1471,18 +1471,16 @@ class _PlayerScreenState extends State<PlayerScreen>
   void _onRecommendTap(DoubanRecommendItem recommend) {
     // 投屏状态下，弹窗提示用户先关闭投屏
     if (_isCasting) {
-      showDialog(
+      AppDialog.show(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('提示'),
-          content: const Text('请先关闭投屏后再切换视频'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('确定'),
-            ),
-          ],
-        ),
+        title: '提示',
+        content: const Text('请先关闭投屏后再切换视频'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('确定'),
+          ),
+        ],
       );
       return;
     }
@@ -2406,72 +2404,33 @@ class _PlayerScreenState extends State<PlayerScreen>
                   child: Column(
                     children: [
                       // 返回按钮
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            hideError();
-                            _onBackPressed();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            ),
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                          ),
-                          child: const Text(
-                            '返回上页',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
+                      AppButton(
+                        label: '返回上页',
+                        onPressed: () {
+                          hideError();
+                          _onBackPressed();
+                        },
+                        color: Colors.green,
+                        fullWidth: true,
+                        size: AppButtonSize.large,
                       ),
                       const SizedBox(height: 12),
 
                       // 重试按钮
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            hideError();
-                            if (currentDetail != null &&
-                                currentEpisodeIndex <
-                                    currentDetail!.episodes.length) {
-                              updateVideoUrl(
-                                  currentDetail!.episodes[currentEpisodeIndex]);
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDarkMode
-                                ? AppTheme.gray800
-                                : AppTheme.gray200,
-                            foregroundColor: isDarkMode
-                                ? Colors.white
-                                : AppTheme.info,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            ),
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                          ),
-                          child: Text(
-                            '重新尝试',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: isDarkMode
-                                  ? Colors.white
-                                  : AppTheme.info,
-                            ),
-                          ),
-                        ),
+                      AppButton(
+                        label: '重新尝试',
+                        onPressed: () {
+                          hideError();
+                          if (currentDetail != null &&
+                              currentEpisodeIndex <
+                                  currentDetail!.episodes.length) {
+                            updateVideoUrl(
+                                currentDetail!.episodes[currentEpisodeIndex]);
+                          }
+                        },
+                        variant: AppButtonVariant.secondary,
+                        fullWidth: true,
+                        size: AppButtonSize.large,
                       ),
                     ],
                   ),

@@ -1,5 +1,6 @@
 import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import '../components/app_bottom_sheet.dart';
 import '../utils/device_utils.dart';
 import 'filter_pill_hover.dart';
 
@@ -101,57 +102,46 @@ void showFilterOptionsSelector({
     );
   } else {
     // 移动端显示底部弹出
-    showModalBottomSheet(
+    AppBottomSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
       builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child:
+                  Text(title, style: Theme.of(context).textTheme.titleLarge),
             ),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child:
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
-              ),
-              Container(
-                height: gridHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    childAspectRatio: 2.5,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: options.length,
-                  itemBuilder: (context, index) {
-                    final option = options[index];
-                    final isSelected = option.value == selectedValue;
-                    return FilterOptionHover(
-                      isPC: DeviceUtils.isPC(),
-                      isSelected: isSelected,
-                      label: option.label,
-                      onTap: () {
-                        onSelected(option.value);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
+            Container(
+              height: gridHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  childAspectRatio: 2.5,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
                 ),
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options[index];
+                  final isSelected = option.value == selectedValue;
+                  return FilterOptionHover(
+                    isPC: DeviceUtils.isPC(),
+                    isSelected: isSelected,
+                    label: option.label,
+                    onTap: () {
+                      onSelected(option.value);
+                      Navigator.pop(context);
+                    },
+                  );
+                },
               ),
-              const SizedBox(height: 16), // 底部间距
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+          ],
         );
       },
     );

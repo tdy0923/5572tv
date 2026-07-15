@@ -9,6 +9,7 @@ import '../widgets/tv_remote_adapter.dart';
 import '../services/theme_service.dart';
 import 'package:provider/provider.dart';
 import 'live_player_screen.dart';
+import '../components/app_button.dart';
 import '../widgets/filter_pill_hover.dart';
 import '../widgets/filter_options_selector.dart';
 
@@ -458,10 +459,8 @@ class _LiveScreenState extends State<LiveScreen>
       );
     } else {
       // 移动端显示底部弹出
-      showModalBottomSheet(
+      AppBottomSheet.show(
         context: context,
-        backgroundColor: Colors.transparent,
-        isScrollControlled: true,
         builder: (context) {
           final screenWidth = MediaQuery.of(context).size.width;
           final modalWidth =
@@ -471,83 +470,71 @@ class _LiveScreenState extends State<LiveScreen>
           final itemWidth =
               (modalWidth - horizontalPadding * 2 - spacing * 2) / 3;
 
-          return Container(
-            width: DeviceUtils.isTablet(context)
-                ? modalWidth
-                : double.infinity, // 设置宽度为100%
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start, // 左对齐
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                Container(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                    minHeight: 200.0,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: horizontalPadding, vertical: 8),
-                      child: Wrap(
-                        alignment: WrapAlignment.start, // 左对齐
-                        spacing: spacing,
-                        runSpacing: spacing,
-                        children: options.map((option) {
-                          final isSelected = option.value == selectedValue;
-                          return SizedBox(
-                            width: itemWidth,
-                            child: InkWell(
-                              onTap: () {
-                                onSelected(option.value);
-                                Navigator.pop(context);
-                              },
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                                alignment: Alignment.centerLeft, // 内容左对齐
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppTheme.success
-                                      : Theme.of(context)
-                                          .chipTheme
-                                          .backgroundColor,
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                                ),
-                                child: Text(
-                                  option.label,
-                                  textAlign: TextAlign.left, // 文字左对齐
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : null,
-                                  ),
+              ),
+              Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  minHeight: 200.0,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: horizontalPadding, vertical: 8),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      children: options.map((option) {
+                        final isSelected = option.value == selectedValue;
+                        return SizedBox(
+                          width: itemWidth,
+                          child: InkWell(
+                            onTap: () {
+                              onSelected(option.value);
+                              Navigator.pop(context);
+                            },
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              alignment: Alignment.centerLeft,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppTheme.success
+                                    : Theme.of(context)
+                                        .chipTheme
+                                        .backgroundColor,
+                                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                              ),
+                              child: Text(
+                                option.label,
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : null,
                                 ),
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+            ],
           );
         },
       );
@@ -620,18 +607,10 @@ class _LiveScreenState extends State<LiveScreen>
             ),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
+          AppButton(
+            label: '刷新',
             onPressed: refreshChannels,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.success,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              ),
-            ),
-            child: Text(
-              '刷新',
-              style: FontUtils.systemFont(color: Colors.white),
-            ),
+            color: AppTheme.success,
           ),
         ],
       ),

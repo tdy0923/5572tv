@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:media_5572/theme/app_theme.dart';
 import '../utils/font_utils.dart';
 import '../utils/device_utils.dart';
+import '../components/app_button.dart';
 import '../widgets/shimmer_effect.dart';
 import '../widgets/custom_refresh_indicator.dart';
 
@@ -128,22 +129,10 @@ class GridErrorState extends StatelessWidget {
           ),
           if (onRetry != null) ...[
             const SizedBox(height: 24),
-            ElevatedButton(
+            AppButton(
+              label: '重试',
               onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.success,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                ),
-              ),
-              child: Text(
-                '重试',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              color: AppTheme.success,
             ),
           ],
         ],

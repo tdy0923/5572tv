@@ -8,6 +8,7 @@ import '../services/device_service.dart';
 import '../services/version_service.dart';
 import '../services/theme_service.dart';
 import '../utils/font_utils.dart';
+import '../components/app_button.dart';
 
 class UpdateDialog extends StatefulWidget {
   final VersionInfo versionInfo;
@@ -342,59 +343,22 @@ class _UpdateDialogState extends State<UpdateDialog> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: Column(
                     children: [
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: ElevatedButton.icon(
-                          onPressed:
-                              _downloading ? null : _startDownload,
-                          icon: _downloading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.download_rounded,
-                                  size: 18),
-                          label: Text(
-                            _downloading ? '下载中...' : '立即更新',
-                            style: FontUtils.systemFont(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _downloading
-                                ? AppTheme.primary.withValues(alpha: 0.7)
-                                : AppTheme.success,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-                            ),
-                          ),
-                        ),
+                      AppButton(
+                        label: _downloading ? '下载中...' : '立即更新',
+                        onPressed: _downloading ? null : _startDownload,
+                        icon: _downloading ? null : const Icon(Icons.download_rounded, size: 18),
+                        loading: _downloading,
+                        color: _downloading ? AppTheme.primary.withValues(alpha: 0.7) : AppTheme.success,
+                        fullWidth: true,
                       ),
                       if (_downloading) ...[
                         const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 36,
-                          child: TextButton(
-                            onPressed: _cancelDownload,
-                            style: TextButton.styleFrom(
-                              foregroundColor: themeService.isDarkMode
-                                  ? AppTheme.foregroundMuted
-                                  : AppTheme.foregroundSubtle,
-                            ),
-                            child: Text(
-                              '取消下载',
-                              style: FontUtils.systemFont(fontSize: 14),
-                            ),
-                          ),
+                        AppButton(
+                          label: '取消下载',
+                          onPressed: _cancelDownload,
+                          variant: AppButtonVariant.text,
+                          fullWidth: true,
+                          size: AppButtonSize.small,
                         ),
                       ],
                       if (!_downloading) ...[
@@ -402,37 +366,27 @@ class _UpdateDialogState extends State<UpdateDialog> {
                         Row(
                           children: [
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '忽略',
                                 onPressed: () async {
                                   await VersionService.dismissVersion(
                                       widget.versionInfo.latestVersion);
                                   if (mounted) Navigator.of(context).pop();
                                 },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: themeService.isDarkMode
-                                      ? AppTheme.foregroundMuted
-                                      : AppTheme.foregroundSubtle,
-                                ),
-                                child: Text(
-                                  '忽略',
-                                  style:
-                                      FontUtils.systemFont(fontSize: 14),
-                                ),
+                                variant: AppButtonVariant.text,
+                                color: themeService.isDarkMode
+                                    ? AppTheme.foregroundMuted
+                                    : AppTheme.foregroundSubtle,
                               ),
                             ),
                             Expanded(
-                              child: TextButton(
+                              child: AppButton(
+                                label: '稍后',
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppTheme.success,
-                                ),
-                                child: Text(
-                                  '稍后',
-                                  style:
-                                      FontUtils.systemFont(fontSize: 14),
-                                ),
+                                variant: AppButtonVariant.text,
+                                color: AppTheme.success,
                               ),
                             ),
                           ],

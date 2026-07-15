@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/announcement_service.dart';
 import '../services/theme_service.dart';
 import '../utils/font_utils.dart';
+import '../components/app_button.dart';
 
 class AnnouncementDialog extends StatelessWidget {
   final AnnouncementInfo info;
@@ -47,10 +48,11 @@ class AnnouncementDialog extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
                   child: SizedBox(
                     width: double.infinity, height: 40,
-                    child: ElevatedButton(
+                    child: AppButton(
+                      label: '我知道了',
                       onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLg))),
-                      child: Text('我知道了', style: FontUtils.systemFont(fontWeight: FontWeight.w600)),
+                      color: AppTheme.success,
+                      fullWidth: true,
                     ),
                   ),
                 ),

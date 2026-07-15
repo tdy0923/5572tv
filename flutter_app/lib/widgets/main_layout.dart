@@ -9,6 +9,7 @@ import '../services/theme_service.dart';
 import '../services/api_service.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 import 'user_menu.dart';
 import 'dart:io' show Platform;
 import 'dart:async';
@@ -247,14 +248,12 @@ class _MainLayoutState extends State<MainLayout> {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
+                            child: AppText.body(
                               suggestion,
-                              style: FontUtils.systemFont(
-                                fontSize: 14,
-                                color: themeService.isDarkMode
-                                    ? AppTheme.background
-                                    : AppTheme.foreground,
-                              ),
+                              fontSize: 14,
+                              color: themeService.isDarkMode
+                                  ? AppTheme.background
+                                  : AppTheme.foreground,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -466,16 +465,14 @@ class _MainLayoutState extends State<MainLayout> {
             child: GestureDetector(
               onTap: widget.onHomeTap,
               behavior: HitTestBehavior.opaque,
-              child: Text(
+              child: AppText.monospace(
                 '5572 影视',
-                style: FontUtils.monospace(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w400,
-                  color: themeService.isDarkMode
-                      ? Colors.white
-                      : AppTheme.foreground,
-                  letterSpacing: 1.5,
-                ),
+                fontSize: 24,
+                fontWeight: FontWeight.w400,
+                color: themeService.isDarkMode
+                    ? Colors.white
+                    : AppTheme.foreground,
+                letterSpacing: 1.5,
               ),
             ),
           ),
@@ -998,20 +995,18 @@ class _MainLayoutState extends State<MainLayout> {
                             size: 24,
                           ),
                           const SizedBox(height: 4),
-                          Text(
+                          AppText.body(
                             item['label'],
-                            style: FontUtils.systemFont(
-                              fontSize: 12,
-                              fontWeight:
-                                  isSelected ? FontWeight.w600 : FontWeight.w400,
-                              color: isSelected
-                                  ? AppTheme.success
-                                  : _hoveredNavIndex == index
-                                      ? AppTheme.success
-                                      : themeService.isDarkMode
-                                          ? AppTheme.foregroundMuted
-                                          : AppTheme.foregroundMuted,
-                            ),
+                            fontSize: 12,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w400,
+                            color: isSelected
+                                ? AppTheme.success
+                                : _hoveredNavIndex == index
+                                    ? AppTheme.success
+                                    : themeService.isDarkMode
+                                        ? AppTheme.foregroundMuted
+                                        : AppTheme.foregroundMuted,
                           ),
                         ],
                       ),
