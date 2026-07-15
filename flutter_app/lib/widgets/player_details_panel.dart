@@ -226,7 +226,7 @@ class PlayerDetailsPanel extends StatelessWidget {
                               color: isDarkMode
                                   ? Colors.grey[700]
                                   : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                             ),
                             child: Text(
                               genre,
@@ -341,7 +341,7 @@ class PlayerDetailsPanel extends StatelessWidget {
                                     color: isDarkMode
                                         ? Colors.grey.shade600
                                         : Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
                               child: Text(
                                 sourceName,
@@ -406,7 +406,7 @@ class PlayerDetailsPanel extends StatelessWidget {
                               color: isDarkMode
                                   ? Colors.grey[700]
                                   : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                             ),
                             child: Text(
                               category.trim(),
@@ -453,7 +453,7 @@ class PlayerDetailsPanel extends StatelessWidget {
       width: 120,
       height: 160,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: cover.isNotEmpty
             ? FutureBuilder<String>(
                 future: getImageUrl(cover, source),
@@ -475,7 +475,7 @@ class PlayerDetailsPanel extends StatelessWidget {
                       height: 160,
                       decoration: BoxDecoration(
                         color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(

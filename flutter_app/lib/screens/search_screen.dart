@@ -309,7 +309,7 @@ class _SearchScreenState extends State<SearchScreen>
                   ? AppTheme.darkBackground
                   : Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               ),
               contentPadding: const EdgeInsets.all(24),
               content: Column(
@@ -364,7 +364,7 @@ class _SearchScreenState extends State<SearchScreen>
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                           ),
                           child: Text(
@@ -390,7 +390,7 @@ class _SearchScreenState extends State<SearchScreen>
                             backgroundColor: AppTheme.error,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                             elevation: 0,
                           ),
@@ -933,7 +933,7 @@ class _SearchScreenState extends State<SearchScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.error.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
         border: Border.all(
           color: AppTheme.error.withOpacity(0.3),
           width: 1,
@@ -1269,7 +1269,7 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -1286,7 +1286,7 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -1329,7 +1329,7 @@ class _SearchScreenState extends State<SearchScreen>
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -1349,7 +1349,7 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -1386,7 +1386,7 @@ class _SearchScreenState extends State<SearchScreen>
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -1407,7 +1407,7 @@ class _SearchScreenState extends State<SearchScreen>
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -1623,7 +1623,7 @@ class _SearchScreenState extends State<SearchScreen>
                                 onSelected(option.value);
                                 Navigator.pop(context);
                               },
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -1634,7 +1634,7 @@ class _SearchScreenState extends State<SearchScreen>
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                 ),
                                 child: Text(
                                   option.label,

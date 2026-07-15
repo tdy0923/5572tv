@@ -124,7 +124,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
       builder: (context, themeService, child) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
           ),
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -134,7 +134,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
               color: themeService.isDarkMode
                   ? AppTheme.darkBackground
                   : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -154,8 +154,8 @@ class _UpdateDialogState extends State<UpdateDialog> {
                         ? AppTheme.foreground
                         : AppTheme.gray100,
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
+                      topLeft: Radius.circular(AppTheme.radius2xl),
+                      topRight: Radius.circular(AppTheme.radius2xl),
                     ),
                   ),
                   child: Column(
@@ -212,7 +212,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
                           color: themeService.isDarkMode
                               ? AppTheme.foreground
                               : AppTheme.gray100,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -247,7 +247,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
                       if (_downloading) ...[
                         const SizedBox(height: 20),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           child: LinearProgressIndicator(
                             value: _progress,
                             minHeight: 8,
@@ -315,7 +315,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
                             color: themeService.isDarkMode
                                 ? AppTheme.foreground
                                 : AppTheme.gray100,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                           ),
                           child: SingleChildScrollView(
                             child: Padding(
@@ -373,7 +373,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                           ),
                         ),

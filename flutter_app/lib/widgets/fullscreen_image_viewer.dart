@@ -76,8 +76,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+                topLeft: Radius.circular(AppTheme.radius2xl),
+                topRight: Radius.circular(AppTheme.radius2xl),
               ),
             ),
             child: SafeArea(

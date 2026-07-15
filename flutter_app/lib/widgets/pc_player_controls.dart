@@ -3,49 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
-// 带 hover 效果的按钮组件
-class HoverButton extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTap;
-  final EdgeInsets padding;
-
-  const HoverButton({
-    super.key,
-    required this.child,
-    required this.onTap,
-    this.padding = const EdgeInsets.all(8),
-  });
-
-  @override
-  State<HoverButton> createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<HoverButton> {
-  bool _isHovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: widget.padding,
-          decoration: _isHovering
-              ? BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey.withOpacity(0.5),
-                )
-              : null,
-          child: widget.child,
-        ),
-      ),
-    );
-  }
-}
+import 'package:media_5572/theme/app_theme.dart';
+import '../components/app_hover_button.dart';
 
 class PCPlayerControls extends StatefulWidget {
   final VideoState state;
@@ -109,7 +68,11 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
   Duration _swipeStartPosition = Duration.zero;
   StreamSubscription? _playingSubscription;
   StreamSubscription? _positionSubscription;
+  StreamSubscription? _durationSubscription;
   bool _isFullscreen = false;
+  final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
+  final ValueNotifier<Duration> _durationNotifier = ValueNotifier(Duration.zero);
+  final ValueNotifier<bool> _isPlayingNotifier = ValueNotifier(false);
   bool _isWebFullscreen = false;
   bool _showSpeedMenu = false;
   final GlobalKey _speedButtonKey = GlobalKey();
@@ -141,6 +104,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
   void _setupPlayerListeners() {
     _playingSubscription = widget.player.stream.playing.listen((playing) {
       if (!mounted) return;
+      _isPlayingNotifier.value = playing;
 
       if (playing) {
         if (_controlsVisible) {
@@ -156,11 +120,14 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
       }
     });
 
-    // 监听播放位置变化，实时更新进度指示器
     _positionSubscription = widget.player.stream.position.listen((_) {
-      if (mounted && _controlsVisible && !_isSeekingViaSwipe) {
-        setState(() {});
-      }
+      if (!mounted) return;
+      _positionNotifier.value = widget.player.state.position;
+    });
+
+    _durationSubscription = widget.player.stream.duration.listen((_) {
+      if (!mounted) return;
+      _durationNotifier.value = widget.player.state.duration;
     });
   }
 
@@ -197,6 +164,10 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
     _volumeMenuHideTimer?.cancel();
     _playingSubscription?.cancel();
     _positionSubscription?.cancel();
+    _durationSubscription?.cancel();
+    _positionNotifier.dispose();
+    _durationNotifier.dispose();
+    _isPlayingNotifier.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -628,7 +599,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                 duration: const Duration(milliseconds: 200),
                 child: IgnorePointer(
                   ignoring: !_controlsVisible,
-                  child: HoverButton(
+                  child: AppHoverButton(
                     onTap: () async {
                       _onUserInteraction();
                       if (_isFullscreen) {
@@ -657,7 +628,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                 duration: const Duration(milliseconds: 200),
                 child: IgnorePointer(
                   ignoring: !_controlsVisible,
-                  child: HoverButton(
+                  child: AppHoverButton(
                     onTap: () async {
                       _onUserInteraction();
                       await _showDLNADialog();
@@ -713,6 +684,8 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     child: CustomVideoProgressBar(
                       player: widget.player,
+                      positionNotifier: _positionNotifier,
+                      durationNotifier: _durationNotifier,
                       onDragStart: _onSeekStart,
                       onDragEnd: _onSeekEnd,
                       onDragUpdate: () {
@@ -758,7 +731,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                       ),
                       child: Row(
                         children: [
-                          HoverButton(
+                          AppHoverButton(
                             onTap: () {
                               _onUserInteraction();
                               if (widget.player.state.playing) {
@@ -779,7 +752,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                           if (!widget.isLastEpisode && !widget.live)
                             Transform.translate(
                               offset: const Offset(-8, 0),
-                              child: HoverButton(
+                              child: AppHoverButton(
                                 onTap: () {
                                   _onUserInteraction();
                                   widget.onNextEpisode?.call();
@@ -903,7 +876,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                               ),
                             ),
                           if (widget.live) const Spacer(),
-                          HoverButton(
+                          AppHoverButton(
                             onTap: () {
                               _onUserInteraction();
                               widget.onRotate?.call();
@@ -916,7 +889,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                           ),
                           // 网页全屏按钮（仅在非真全屏时显示）
                           if (!_isFullscreen)
-                            HoverButton(
+                            AppHoverButton(
                               onTap: () {
                                 _onUserInteraction();
                                 _toggleWebFullscreen();
@@ -931,7 +904,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                             ),
                           // 完全全屏按钮（仅在非网页全屏时显示）
                           if (!_isWebFullscreen)
-                            HoverButton(
+                            AppHoverButton(
                               onTap: () {
                                 _onUserInteraction();
                                 _toggleFullscreen();
@@ -1024,14 +997,14 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
             width: menuWidth,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(effectiveFullscreen ? 8 : 6),
+              borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               border: Border.all(
                 color: Colors.white.withOpacity(0.1),
                 width: 1,
               ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(effectiveFullscreen ? 8 : 6),
+              borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: speeds.map((speed) {
@@ -1111,14 +1084,14 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
             height: menuHeight,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(effectiveFullscreen ? 8 : 6),
+              borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               border: Border.all(
                 color: Colors.white.withOpacity(0.1),
                 width: 1,
               ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(effectiveFullscreen ? 8 : 6),
+              borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -1211,17 +1184,25 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
   }
 
   Widget _buildPositionIndicator() {
-    final position = _dragPosition ?? widget.player.state.position;
-    final duration = widget.player.state.duration;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Text(
-        '${_formatDuration(position)} / ${_formatDuration(duration)}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-        ),
+      child: ValueListenableBuilder<Duration>(
+        valueListenable: _positionNotifier,
+        builder: (context, pos, _) {
+          final displayPosition = _dragPosition ?? pos;
+          return ValueListenableBuilder<Duration>(
+            valueListenable: _durationNotifier,
+            builder: (context, dur, _) {
+              return Text(
+                '${_formatDuration(displayPosition)} / ${_formatDuration(dur)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -1291,6 +1272,8 @@ class _SpeedMenuItemState extends State<_SpeedMenuItem> {
 
 class CustomVideoProgressBar extends StatefulWidget {
   final Player player;
+  final ValueNotifier<Duration> positionNotifier;
+  final ValueNotifier<Duration> durationNotifier;
   final VoidCallback? onDragStart;
   final VoidCallback? onDragEnd;
   final VoidCallback? onDragUpdate;
@@ -1302,6 +1285,8 @@ class CustomVideoProgressBar extends StatefulWidget {
   const CustomVideoProgressBar({
     super.key,
     required this.player,
+    required this.positionNotifier,
+    required this.durationNotifier,
     this.onDragStart,
     this.onDragEnd,
     this.onDragUpdate,
@@ -1319,43 +1304,28 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
   bool _isDragging = false;
   double _dragValue = 0.0;
   bool _isHoveringThumb = false;
-  bool _isSeeking = false; // 新增：标记是否正在 seek
-  StreamSubscription? _positionSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _positionSubscription = widget.player.stream.position.listen((_) {
-      if (mounted && !_isDragging && !_isSeeking) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _positionSubscription?.cancel();
-    super.dispose();
-  }
+  bool _isSeeking = false;
 
   @override
   Widget build(BuildContext context) {
-    final duration = widget.player.state.duration;
-    final position = widget.dragPosition ?? widget.player.state.position;
+    return ValueListenableBuilder<Duration>(
+      valueListenable: widget.positionNotifier,
+      builder: (context, position, _) {
+        final duration = widget.durationNotifier.value;
+        final displayPosition = widget.dragPosition ?? position;
 
-    double value = 0.0;
-    if (duration.inMilliseconds > 0) {
-      // live 模式下进度固定在最后
-      if (widget.live) {
-        value = 1.0;
-      } else {
-        value = position.inMilliseconds / duration.inMilliseconds;
-      }
-    }
+        double value = 0.0;
+        if (duration.inMilliseconds > 0) {
+          if (widget.live) {
+            value = 1.0;
+          } else {
+            value = displayPosition.inMilliseconds / duration.inMilliseconds;
+          }
+        }
 
-    if (_isDragging && !widget.live) {
-      value = _dragValue;
-    }
+        if (_isDragging && !widget.live) {
+          value = _dragValue;
+        }
 
     return MouseRegion(
       cursor: widget.live ? MouseCursor.defer : SystemMouseCursors.click,
@@ -1439,7 +1409,7 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
                       child: Container(
                         height: 6,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           color: Colors.white.withOpacity(0.3),
                         ),
                       ),
@@ -1452,7 +1422,7 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
                         width: progressValue * progressWidth,
                         height: 6,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           color: Colors.red,
                         ),
                       ),
@@ -1496,6 +1466,8 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
           ),
         ),
       ),
+    );
+      },
     );
   }
 

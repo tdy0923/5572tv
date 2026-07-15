@@ -248,7 +248,7 @@ class _UserMenuState extends State<UserMenu> {
       ),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
       child: Text(
         label,
@@ -438,7 +438,7 @@ class _UserMenuState extends State<UserMenu> {
                     : AppTheme.foregroundSubtle,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                 borderSide: BorderSide(
                   color: widget.isDarkMode
                       ? AppTheme.gray700
@@ -446,7 +446,7 @@ class _UserMenuState extends State<UserMenu> {
                 ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                 borderSide: BorderSide(
                   color: widget.isDarkMode
                       ? AppTheme.gray700
@@ -454,7 +454,7 @@ class _UserMenuState extends State<UserMenu> {
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                 borderSide: const BorderSide(
                   color: AppTheme.success,
                   width: 2,
@@ -619,7 +619,7 @@ class _UserMenuState extends State<UserMenu> {
                 width: 44,
                 height: 24,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                   color: value
                       ? AppTheme.success
                       : (widget.isDarkMode
@@ -666,7 +666,7 @@ class _UserMenuState extends State<UserMenu> {
                   color: widget.isDarkMode
                       ? AppTheme.darkBackground
                       : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),

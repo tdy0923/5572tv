@@ -1,4 +1,3 @@
-import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/douban_movie.dart';
@@ -8,6 +7,7 @@ import 'video_menu_bottom_sheet.dart';
 import '../models/video_info.dart';
 import '../utils/font_utils.dart';
 import 'shimmer_effect.dart';
+import '../components/grid_helpers.dart';
 
 class DoubanMoviesGrid extends StatelessWidget {
   final List<DoubanMovie>? movies;
@@ -90,7 +90,7 @@ class DoubanMoviesGrid extends StatelessWidget {
         ShimmerEffect(
           width: width,
           height: height,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         ),
         const SizedBox(height: 4),
         // 标题骨架
@@ -98,7 +98,7 @@ class DoubanMoviesGrid extends StatelessWidget {
           child: ShimmerEffect(
             width: width * 0.8,
             height: 12,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           ),
         ),
       ],
@@ -106,70 +106,17 @@ class DoubanMoviesGrid extends StatelessWidget {
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.error_outline,
-            size: 80,
-            color: AppTheme.stroke,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '加载失败',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            errorMessage ?? '未知错误',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    return GridErrorState(message: errorMessage);
   }
 
   Widget _buildEmptyState() {
     final bool isMovie = contentType == 'movie';
     final String contentName = isMovie ? '电影' : '剧集';
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isMovie ? Icons.movie_filter_outlined : Icons.tv_outlined,
-            size: 80,
-            color: AppTheme.stroke,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '暂无$contentName',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '当前分类下没有$contentName',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-        ],
-      ),
+
+    return GridEmptyState(
+      icon: isMovie ? Icons.movie_filter_outlined : Icons.tv_outlined,
+      message: '暂无$contentName',
+      subtitle: '当前分类下没有$contentName',
     );
   }
 

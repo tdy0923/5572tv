@@ -97,7 +97,7 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
               color: themeService.isDarkMode
                   ? AppTheme.foreground
                   : AppTheme.gray200,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
             ),
             child: Stack(
               children: [
@@ -117,7 +117,7 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                           color: themeService.isDarkMode
                               ? AppTheme.darkBackground
                               : Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                           boxShadow: [
                             BoxShadow(
                               color: themeService.isDarkMode

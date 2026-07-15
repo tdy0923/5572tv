@@ -9,6 +9,7 @@ import '../widgets/video_card.dart';
 import 'player_screen.dart';
 import '../utils/device_utils.dart';
 import '../widgets/tv_remote_adapter.dart';
+import '../widgets/custom_refresh_indicator.dart';
 
 class ShortDramaScreen extends StatefulWidget {
   const ShortDramaScreen({super.key});
@@ -179,7 +180,7 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
             )
           else
             Expanded(
-              child: RefreshIndicator(
+              child: AppRefreshIndicator(
                 onRefresh: () => _loadDramas(_selectedCategoryId),
                 child: GridView.builder(
                   padding: EdgeInsets.all(isTablet ? 20 : 12),

@@ -1,4 +1,3 @@
-import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/bangumi.dart';
@@ -8,6 +7,7 @@ import 'video_card.dart';
 import 'video_menu_bottom_sheet.dart';
 import '../models/video_info.dart';
 import 'shimmer_effect.dart';
+import '../components/grid_helpers.dart';
 
 class BangumiGrid extends StatelessWidget {
   final List<BangumiItem>? bangumiItems;
@@ -92,7 +92,7 @@ class BangumiGrid extends StatelessWidget {
         ShimmerEffect(
           width: width,
           height: height,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         ),
         const SizedBox(height: 4),
         // 标题骨架
@@ -100,7 +100,7 @@ class BangumiGrid extends StatelessWidget {
           child: ShimmerEffect(
             width: width * 0.8,
             height: 12,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           ),
         ),
       ],
@@ -108,70 +108,17 @@ class BangumiGrid extends StatelessWidget {
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.error_outline,
-            size: 80,
-            color: AppTheme.stroke,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '加载失败',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            errorMessage ?? '未知错误',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    return GridErrorState(message: errorMessage);
   }
 
   Widget _buildEmptyState() {
     final bool isAnime = contentType == 'anime';
     final String contentName = isAnime ? '番剧' : '内容';
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isAnime ? Icons.tv_outlined : Icons.movie_filter_outlined,
-            size: 80,
-            color: AppTheme.stroke,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '暂无$contentName',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '今日暂无新番放送',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-        ],
-      ),
+
+    return GridEmptyState(
+      icon: isAnime ? Icons.tv_outlined : Icons.movie_filter_outlined,
+      message: '暂无$contentName',
+      subtitle: '今日暂无新番放送',
     );
   }
 

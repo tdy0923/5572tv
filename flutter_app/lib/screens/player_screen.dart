@@ -21,6 +21,7 @@ import '../widgets/player_details_panel.dart';
 import '../widgets/player_episodes_panel.dart';
 import '../widgets/player_sources_panel.dart';
 import '../widgets/windows_title_bar.dart';
+import '../components/app_hover_button.dart';
 
 class PlayerScreen extends StatefulWidget {
   final String? source;
@@ -235,13 +236,9 @@ class _PlayerScreenState extends State<PlayerScreen>
         (widget.source != null &&
             widget.id != null &&
             (widget.prefer == null || widget.prefer != 'true'))) {
-      updateLoadingMessage('正在获取播放源详情...');
-      updateLoadingProgress(0.5);
-      updateLoadingEmoji('🔍');
+      _updateLoadingState(message: '正在获取播放源详情...', progress: 0.5, emoji: '🔍');
     } else {
-      updateLoadingMessage('正在搜索播放源...');
-      updateLoadingProgress(0.33);
-      updateLoadingEmoji('🔍');
+      _updateLoadingState(message: '正在搜索播放源...', progress: 0.33, emoji: '🔍');
     }
 
     // 初始化参数
@@ -249,9 +246,7 @@ class _PlayerScreenState extends State<PlayerScreen>
 
     // 短剧特殊处理：直接使用短剧详情API
     if (widget.source == 'shortdrama' && widget.id != null) {
-      updateLoadingMessage('正在获取短剧详情...');
-      updateLoadingProgress(0.5);
-      updateLoadingEmoji('🎬');
+      _updateLoadingState(message: '正在获取短剧详情...', progress: 0.5, emoji: '🎬');
       final detail = await ApiService.getShortDramaDetail(widget.id!, sourceApi: widget.sourceApi);
       if (!_isActiveLoad(loadGeneration)) return;
       if (detail == null) {
@@ -323,9 +318,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     // 未指定源和 id/需要优选，且优选测速开关打开时，执行优选
     if ((currentSource.isEmpty || currentID.isEmpty || needPrefer) &&
         preferSpeedTest) {
-      updateLoadingMessage('正在优选最佳播放源...');
-      updateLoadingProgress(0.66);
-      updateLoadingEmoji('⚡');
+      _updateLoadingState(message: '正在优选最佳播放源...', progress: 0.66, emoji: '⚡');
       currentDetail = await preferBestSource();
       if (!_isActiveLoad(loadGeneration)) return;
       if (currentDetail == null) {
@@ -355,10 +348,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       }
     }
 
-    // 设置进度为 100%
-    updateLoadingProgress(1.0);
-    updateLoadingMessage('准备就绪，即将开始播放...');
-    updateLoadingEmoji('✨');
+    _updateLoadingState(message: '准备就绪，即将开始播放...', progress: 1.0, emoji: '✨');
 
     if (mounted) {
       setState(() {
@@ -703,30 +693,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
   }
 
-  void updateLoadingMessage(String message) {
-    if (mounted) {
-      setState(() {
-        _loadingMessage = message;
-      });
-    }
-  }
-
-  /// 更新加载进度
-  void updateLoadingProgress(double progress) {
-    if (mounted) {
-      setState(() {
-        _loadingProgress = progress.clamp(0.0, 1.0);
-      });
-    }
-  }
-
-  /// 更新加载 emoji
-  void updateLoadingEmoji(String emoji) {
-    if (mounted) {
-      setState(() {
-        _loadingEmoji = emoji;
-      });
-    }
+  void _updateLoadingState({String? message, double? progress, String? emoji}) {
+    if (!mounted) return;
+    setState(() {
+      if (message != null) _loadingMessage = message;
+      if (progress != null) _loadingProgress = progress.clamp(0.0, 1.0);
+      if (emoji != null) _loadingEmoji = emoji;
+    });
   }
 
   /// 动态更新视频数据源
@@ -741,7 +714,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         if (parts.length >= 3) {
           final dramaId = parts[1];
           final episodeNum = int.tryParse(parts[2]) ?? 1;
-          updateLoadingMessage('正在解析短剧播放地址...');
+          _updateLoadingState(message: '正在解析短剧播放地址...');
           final resolvedUrl = await ApiService.parseShortDramaEpisode(
             dramaId,
             episodeNum,
@@ -1285,7 +1258,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                             isDarkMode ? Colors.grey[600]! : Colors.grey[400]!,
                         width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: Text(
                       currentDetail!.sourceName,
@@ -1557,7 +1530,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               const SizedBox(width: 16),
 
               // 正序/倒序按钮
-              _HoverButton(
+              AppHoverButton(
                 onTap: _toggleEpisodesOrder,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1591,7 +1564,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               // 滚动到当前集数按钮
               Transform.translate(
                 offset: const Offset(0, 3.5),
-                child: _HoverButton(
+                child: AppHoverButton(
                   onTap: _scrollToCurrentEpisode,
                   child: Container(
                     width: 18,
@@ -1622,7 +1595,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               const SizedBox(width: 20),
 
               // 展开按钮
-              _HoverButton(
+              AppHoverButton(
                 onTap: _showEpisodesPanel,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1960,7 +1933,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               // 刷新按钮
               Transform.translate(
                 offset: const Offset(0, 2.6),
-                child: _HoverButton(
+                child: AppHoverButton(
                   onTap: _isRefreshing ? null : _refreshSourcesSpeed,
                   enabled: !_isRefreshing,
                   child: RotationTransition(
@@ -1981,7 +1954,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               // 滚动到当前源按钮
               Transform.translate(
                 offset: const Offset(0, 3.5),
-                child: _HoverButton(
+                child: AppHoverButton(
                   onTap: _scrollToCurrentSource,
                   child: Container(
                     width: 18,
@@ -2012,7 +1985,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               const SizedBox(width: 20),
 
               // 展开按钮
-              _HoverButton(
+              AppHoverButton(
                 onTap: _showSourcesPanel,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -2303,39 +2276,45 @@ class _PlayerScreenState extends State<PlayerScreen>
       child: Stack(
         children: [
           // 装饰性圆点
-          Positioned(
+          const Positioned(
             top: 100,
             left: 40,
-            child: Container(
+            child: SizedBox(
               width: 12,
               height: 12,
-              decoration: const BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 140,
             left: 60,
-            child: Container(
+            child: SizedBox(
               width: 8,
               height: 8,
-              decoration: const BoxDecoration(
-                color: Colors.orange,
-                shape: BoxShape.circle,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
           ),
-          Positioned(
+          const Positioned(
             top: 120,
             right: 50,
-            child: Container(
+            child: SizedBox(
               width: 10,
               height: 10,
-              decoration: const BoxDecoration(
-                color: Colors.amber,
-                shape: BoxShape.circle,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
           ),
@@ -2392,7 +2371,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     color: AppTheme.gray600.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                     border: Border.all(
                       color: AppTheme.gray600.withOpacity(0.3),
                       width: 1,
@@ -2439,7 +2418,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                             elevation: 0,
                             shadowColor: Colors.transparent,
@@ -2477,7 +2456,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                                 ? Colors.white
                                 : AppTheme.info,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                             elevation: 0,
                             shadowColor: Colors.transparent,
@@ -2940,7 +2919,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                           end: Alignment.bottomRight,
                           colors: [AppTheme.success, AppTheme.success],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                       ),
                       child: Center(
                         child: Text(
@@ -2958,7 +2937,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                   height: 4,
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                   ),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
@@ -2966,7 +2945,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppTheme.success,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                       ),
                     ),
                   ),
@@ -3095,7 +3074,7 @@ class _EpisodeCardWithHoverState extends State<_EpisodeCardWithHover> {
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: widget.isCurrentEpisode
                 ? Border.all(color: Colors.green, width: 2)
                 : null,
@@ -3196,7 +3175,7 @@ class _SourceCardWithHoverState extends State<_SourceCardWithHover> {
                     : (widget.isDarkMode
                         ? Colors.grey[700]
                         : Colors.grey[300])),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: widget.isCurrentSource
                 ? Border.all(color: Colors.green, width: 2)
                 : null,
@@ -3290,53 +3269,4 @@ class _SourceCardWithHoverState extends State<_SourceCardWithHover> {
   }
 }
 
-/// 带 hover 效果的按钮组件（PC 端专用）
-class _HoverButton extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final bool enabled;
 
-  const _HoverButton({
-    required this.child,
-    this.onTap,
-    this.enabled = true,
-  });
-
-  @override
-  State<_HoverButton> createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<_HoverButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isPC = DeviceUtils.isPC();
-
-    return MouseRegion(
-      cursor: (isPC && widget.enabled && widget.onTap != null)
-          ? SystemMouseCursors.click
-          : MouseCursor.defer,
-      onEnter: isPC ? (_) => setState(() => _isHovered = true) : null,
-      onExit: isPC ? (_) => setState(() => _isHovered = false) : null,
-      child: GestureDetector(
-        onTap: widget.enabled ? widget.onTap : null,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: ColorFiltered(
-            colorFilter: (isPC && _isHovered && widget.enabled)
-                ? const ColorFilter.mode(
-                    Colors.green,
-                    BlendMode.modulate,
-                  )
-                : const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.modulate,
-                  ),
-            child: widget.child,
-          ),
-        ),
-      ),
-    );
-  }
-}

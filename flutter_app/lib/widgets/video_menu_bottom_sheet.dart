@@ -605,8 +605,8 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       ? AppTheme.darkBackground
                       : Colors.white,
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+                    topLeft: Radius.circular(AppTheme.radius2xl),
+                    topRight: Radius.circular(AppTheme.radius2xl),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -697,7 +697,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                             width: 60,
                                             height: 80,
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: Colors.black.withOpacity(0.1),
@@ -707,7 +707,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                               ],
                                             ),
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                               child: CachedNetworkImage(
                                                 imageUrl: thumbUrl,
                                                 httpHeaders: headers,
@@ -821,7 +821,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                                   : AppTheme.gray200,
                                               width: 1,
                                             ),
-                                            borderRadius: BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                                           ),
                                           child: Text(
                                             widget.videoInfo.sourceName,
@@ -970,7 +970,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.warning.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1003,7 +1003,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                         : AppTheme.gray200,
                     width: 1,
                   ),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: Text(
                   _doubanDetails!.year,
@@ -1030,7 +1030,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   color: themeService.isDarkMode 
                       ? AppTheme.gray700
                       : AppTheme.gray100,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: Text(
                   genre,
@@ -1134,7 +1134,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.error.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1168,7 +1168,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                           : AppTheme.gray200,
                       width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: Text(
                     _bangumiDetails!.date!.split('-').first,
@@ -1196,7 +1196,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   color: themeService.isDarkMode 
                       ? AppTheme.gray700
                       : AppTheme.gray100,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
                 child: Text(
                   tag,
@@ -1643,7 +1643,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 height: 24,
                 decoration: BoxDecoration(
                   color: iconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                 ),
                 child: Icon(
                   icon,
@@ -1770,7 +1770,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               color: themeService.isDarkMode
                   ? AppTheme.darkBackground
                   : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -1813,7 +1813,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                 widget.onClose(); // Close menu
                                 widget.onSourceSelected?.call(source);
                               },
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 child: Row(

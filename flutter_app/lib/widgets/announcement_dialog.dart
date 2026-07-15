@@ -15,13 +15,13 @@ class AnnouncementDialog extends StatelessWidget {
       builder: (context, themeService, _) {
         final isDark = themeService.isDarkMode;
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radius2xl)),
           backgroundColor: Colors.transparent,
           child: Container(
             constraints: const BoxConstraints(maxWidth: 380),
             decoration: BoxDecoration(
               color: isDark ? AppTheme.darkBackground : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -31,7 +31,7 @@ class AnnouncementDialog extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: isDark ? AppTheme.gray800 : AppTheme.gray100,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radius2xl)),
                   ),
                   child: Column(children: [
                     const Icon(Icons.campaign_rounded, size: 36, color: AppTheme.warning),
@@ -49,7 +49,7 @@ class AnnouncementDialog extends StatelessWidget {
                     width: double.infinity, height: 40,
                     child: ElevatedButton(
                       onPressed: () { AnnouncementService.dismiss(info.content); Navigator.pop(context); },
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.success, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusLg))),
                       child: Text('我知道了', style: FontUtils.systemFont(fontWeight: FontWeight.w600)),
                     ),
                   ),

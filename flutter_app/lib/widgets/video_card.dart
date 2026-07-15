@@ -81,7 +81,7 @@ class _VideoCardState extends State<VideoCard> {
                         width: width,
                         height: height,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.1),
@@ -91,7 +91,7 @@ class _VideoCardState extends State<VideoCard> {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                           child: CachedNetworkImage(
                             imageUrl: imageUrl,
                             fit: BoxFit.cover,
@@ -113,7 +113,7 @@ class _VideoCardState extends State<VideoCard> {
                                 color: themeService.isDarkMode
                                     ? AppTheme.foreground
                                     : Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               ),
                             ),
                             // 错误占位符
@@ -144,7 +144,7 @@ class _VideoCardState extends State<VideoCard> {
                             width: width,
                             height: height,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
@@ -174,7 +174,7 @@ class _VideoCardState extends State<VideoCard> {
                               decoration: BoxDecoration(
                                 color: AppTheme.foreground
                                     .withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
                               child: Text(
                                 widget.videoInfo.year,
@@ -231,7 +231,7 @@ class _VideoCardState extends State<VideoCard> {
                                   horizontal: 7, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppTheme.success,
-                                borderRadius: BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
                               child: Text(
                                 episodeText,
@@ -255,8 +255,8 @@ class _VideoCardState extends State<VideoCard> {
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.3),
                               borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
+                                bottomLeft: Radius.circular(AppTheme.radiusLg),
+                                bottomRight: Radius.circular(AppTheme.radiusLg),
                               ),
                             ),
                             child: FractionallySizedBox(
@@ -266,8 +266,8 @@ class _VideoCardState extends State<VideoCard> {
                                 decoration: const BoxDecoration(
                                   color: AppTheme.success,
                                   borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(8),
-                                    bottomRight: Radius.circular(8),
+                                    bottomLeft: Radius.circular(AppTheme.radiusLg),
+                                    bottomRight: Radius.circular(AppTheme.radiusLg),
                                   ),
                                 ),
                               ),
@@ -554,7 +554,7 @@ class _VideoCardState extends State<VideoCard> {
                                     : AppTheme.foregroundMuted,
                                 width: 0.8,
                               ),
-                              borderRadius: BorderRadius.circular(3),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                             ),
                             child: Text(
                               widget.from == 'agg'
@@ -659,7 +659,7 @@ class _VideoCardState extends State<VideoCard> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                   border: _isFocused
                       ? Border.all(color: AppTheme.success, width: 3)
                       : null,
@@ -836,7 +836,7 @@ class _VideoCardState extends State<VideoCard> {
               color: themeService.isDarkMode
                   ? AppTheme.darkBackground
                   : Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
@@ -877,7 +877,7 @@ class _VideoCardState extends State<VideoCard> {
                                 Navigator.of(context).pop();
                                 widget.onSourceSelected?.call(source);
                               },
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),

@@ -262,7 +262,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                     : (widget.isDarkMode
                         ? Colors.grey[850]
                         : Colors.grey[200])),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
             border: widget.isCurrent
                 ? Border.all(color: Colors.green, width: 2)
                 : null,
@@ -277,7 +277,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                     children: [
                       // Left side: Cover
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                         child: AspectRatio(
                           aspectRatio: 2 / 3,
                           child: CachedNetworkImage(
@@ -288,7 +288,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                                 color: widget.isDarkMode
                                     ? AppTheme.foreground
                                     : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
@@ -296,7 +296,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                                 color: widget.isDarkMode
                                     ? AppTheme.foreground
                                     : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               ),
                               child: Icon(
                                 Icons.movie,
@@ -336,7 +336,7 @@ class _SourcePanelItemWithHoverState extends State<_SourcePanelItemWithHover> {
                                     color: widget.isDarkMode
                                         ? Colors.grey.shade600
                                         : Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                               ),
                               child: Text(
                                 widget.source.sourceName,

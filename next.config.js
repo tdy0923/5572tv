@@ -29,12 +29,7 @@ const nextConfig = {
   // 性能优化：包体积优化和模块化导入
   experimental: {
     // 自动优化大型库的导入，只打包实际使用的部分
-    optimizePackageImports: [
-      'lucide-react',
-      '@heroicons/react',
-      'framer-motion',
-      'react-icons',
-    ],
+    optimizePackageImports: ['lucide-react', '@heroicons/react', 'react-icons'],
   },
 
   // 图片优化配置

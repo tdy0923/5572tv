@@ -234,7 +234,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                   ? AppTheme.darkBackground
                   : Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               ),
               contentPadding: const EdgeInsets.all(24),
               content: Column(
@@ -289,7 +289,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                           ),
                           child: Text(
@@ -316,7 +316,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                             ),
                             elevation: 0,
                           ),
@@ -361,7 +361,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
               backgroundColor: AppTheme.success,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -379,7 +379,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -398,7 +398,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -768,7 +768,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
         ShimmerEffect(
           width: width,
           height: height,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         ),
         const SizedBox(height: 6),
         // 标题骨架
@@ -776,7 +776,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
           child: ShimmerEffect(
             width: width * 0.8,
             height: 14,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           ),
         ),
         const SizedBox(height: 4),
@@ -785,7 +785,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
           child: ShimmerEffect(
             width: width * 0.6,
             height: 10,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
           ),
         ),
       ],

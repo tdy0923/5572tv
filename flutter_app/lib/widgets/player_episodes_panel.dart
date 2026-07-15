@@ -204,7 +204,7 @@ class _EpisodePanelItemWithHoverState extends State<_EpisodePanelItemWithHover> 
                         ? AppTheme.darkBackground  // 深色模式下的浅绿色
                         : AppTheme.gray100)  // 浅色模式下的浅绿色
                     : (widget.isDarkMode ? Colors.grey[800] : Colors.grey[200])),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             border: widget.isCurrentEpisode
                 ? Border.all(color: Colors.green, width: 2)
                 : null,

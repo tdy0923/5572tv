@@ -1,4 +1,3 @@
-import 'package:media_5572/theme/app_theme.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/play_record.dart';
@@ -6,9 +5,9 @@ import '../models/video_info.dart';
 import '../widgets/video_card.dart';
 import '../services/page_cache_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/grid_helpers.dart';
+import 'custom_refresh_indicator.dart';
 import 'video_menu_bottom_sheet.dart';
-import 'shimmer_effect.dart';
 
 class HistoryGrid extends StatefulWidget {
   final Function(PlayRecord) onVideoTap;
@@ -160,170 +159,24 @@ class _HistoryGridState extends State<HistoryGrid>
   }
 
   Widget _buildLoadingState() {
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      color: AppTheme.success,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // 平板模式根据宽度动态展示6～9列，手机模式3列
-          final int crossAxisCount = DeviceUtils.getTabletColumnCount(context);
-          final isTablet = DeviceUtils.isTablet(context);
-
-          // 计算每列的宽度
-          final double screenWidth = constraints.maxWidth;
-          const double padding = 16.0;
-          const double spacing = 12.0;
-          final double availableWidth =
-              screenWidth - (padding * 2) - (spacing * (crossAxisCount - 1));
-          const double minItemWidth = 80.0;
-          final double calculatedItemWidth = availableWidth / crossAxisCount;
-          final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
-          final double itemHeight = itemWidth * 2.0;
-
-          return FocusTraversalGroup(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: itemWidth / itemHeight,
-                crossAxisSpacing: spacing,
-                mainAxisSpacing: isTablet ? 0 : 16,
-              ),
-              itemCount: isTablet ? crossAxisCount * 2 : 6,
-              itemBuilder: (context, index) {
-                return _buildSkeletonCard(itemWidth);
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  /// 构建骨架卡片
-  Widget _buildSkeletonCard(double width) {
-    final double height = width * 1.4;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        ShimmerEffect(
-          width: width,
-          height: height,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        const SizedBox(height: 4),
-        Center(
-          child: ShimmerEffect(
-            width: width * 0.8,
-            height: 12,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Center(
-          child: ShimmerEffect(
-            width: width * 0.6,
-            height: 8,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-      ],
-    );
+    return GridLoadingState(onRefresh: _loadData);
   }
 
   Widget _buildErrorState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.error_outline,
-            size: 80,
-            color: AppTheme.stroke,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '加载失败',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            _errorMessage ?? '未知错误',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _loadPlayRecords,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.success,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              '重试',
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return GridErrorState(message: _errorMessage, onRetry: _loadPlayRecords);
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 120.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.history,
-              size: 80,
-              color: AppTheme.stroke,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '暂无播放历史',
-              style: FontUtils.systemFont(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.foregroundMuted,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '您观看过的视频将显示在这里',
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                color: AppTheme.foregroundMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return GridEmptyState(
+      icon: Icons.history,
+      message: '暂无播放历史',
+      subtitle: '您观看过的视频将显示在这里',
     );
   }
 
   Widget _buildHistoryGrid() {
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _loadPlayRecords,
-      color: AppTheme.success,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // 平板模式根据宽度动态展示6～9列，手机模式3列

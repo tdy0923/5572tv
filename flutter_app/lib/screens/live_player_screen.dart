@@ -16,6 +16,7 @@ import '../widgets/windows_title_bar.dart';
 import '../widgets/switch_loading_overlay.dart';
 import '../widgets/filter_pill_hover.dart';
 import '../widgets/filter_options_selector.dart';
+import '../components/app_hover_button.dart';
 
 class LivePlayerScreen extends StatefulWidget {
   final LiveChannel channel;
@@ -797,10 +798,10 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     color: themeService.isDarkMode
                         ? AppTheme.darkBackground
                         : AppTheme.gray300,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     child: Image.network(
                       _currentChannel.logo,
                       fit: BoxFit.contain,
@@ -866,7 +867,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             color: themeService.isDarkMode
                 ? AppTheme.darkBackground
                 : AppTheme.gray300,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
           child: const Icon(
             Icons.tv,
@@ -935,10 +936,10 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       color: themeService.isDarkMode
                           ? AppTheme.darkBackground
                           : AppTheme.gray300,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       child: Image.network(
                         channel.logo,
                         fit: BoxFit.contain,
@@ -960,7 +961,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       color: themeService.isDarkMode
                           ? AppTheme.darkBackground
                           : AppTheme.gray300,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                     ),
                     child: const Icon(
                       Icons.tv,
@@ -1084,7 +1085,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
 
   /// 构建滚动到当前频道按钮
   Widget _buildScrollToCurrentChannelButton(ThemeService themeService) {
-    return _HoverButton(
+    return AppHoverButton(
       onTap: _scrollToCurrentChannel,
       child: Container(
         width: 18,
@@ -1213,7 +1214,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                                 onSelected(option.value);
                                 Navigator.pop(context);
                               },
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -1224,7 +1225,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                 ),
                                 child: Text(
                                   option.label,
@@ -1335,7 +1336,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
           ),
           const SizedBox(width: 20),
           // 查看节目单按钮
-          _HoverButton(
+          AppHoverButton(
             onTap: () => _showProgramListDropdown(theme, themeService),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1624,7 +1625,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
 
   /// 构建滚动到当前节目按钮
   Widget _buildScrollToCurrentButton(ThemeService themeService) {
-    return _HoverButton(
+    return AppHoverButton(
       onTap: _scrollToCurrentProgram,
       child: Container(
         width: 18,
@@ -1783,7 +1784,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
           color: borderColor,
           width: 1,
@@ -1855,51 +1856,4 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
   }
 }
 
-/// 带 hover 效果的按钮组件（PC 端专用）
-class _HoverButton extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
 
-  const _HoverButton({
-    required this.child,
-    this.onTap,
-  });
-
-  @override
-  State<_HoverButton> createState() => _HoverButtonState();
-}
-
-class _HoverButtonState extends State<_HoverButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final isPC = DeviceUtils.isPC();
-
-    return MouseRegion(
-      cursor: (isPC && widget.onTap != null)
-          ? SystemMouseCursors.click
-          : MouseCursor.defer,
-      onEnter: isPC ? (_) => setState(() => _isHovered = true) : null,
-      onExit: isPC ? (_) => setState(() => _isHovered = false) : null,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: ColorFiltered(
-            colorFilter: (isPC && _isHovered)
-                ? const ColorFilter.mode(
-                    Colors.green,
-                    BlendMode.modulate,
-                  )
-                : const ColorFilter.mode(
-                    Colors.white,
-                    BlendMode.modulate,
-                  ),
-            child: widget.child,
-          ),
-        ),
-      ),
-    );
-  }
-}

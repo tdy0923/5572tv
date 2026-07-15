@@ -208,10 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// 构建首页标签内容
   Widget _buildHomeTabContent() {
-    return StyledRefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _refreshHomeData,
-      refreshText: '刷新中...',
-      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -331,10 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// 构建播放历史标签内容
   Widget _buildHistoryTabContent() {
-    return StyledRefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _refreshHomeData,
-      refreshText: '刷新中...',
-      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -351,10 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// 构建收藏夹标签内容
   Widget _buildFavoritesTabContent() {
-    return StyledRefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: _refreshHomeData,
-      refreshText: '刷新中...',
-      primaryColor: AppTheme.success,
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -632,7 +626,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -649,7 +643,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -695,7 +689,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -779,7 +773,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
               margin: const EdgeInsets.all(16),
             ),
@@ -799,7 +793,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -836,7 +830,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),
@@ -856,7 +850,7 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             margin: const EdgeInsets.all(16),
           ),

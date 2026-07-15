@@ -80,7 +80,7 @@ class SwitchLoadingOverlay extends StatelessWidget {
                             end: Alignment.bottomRight,
                             colors: [AppTheme.success, AppTheme.success],
                           ),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                         ),
                         child: const Center(
                           child: Text(

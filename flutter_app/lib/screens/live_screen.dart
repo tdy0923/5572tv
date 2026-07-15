@@ -262,7 +262,7 @@ class _LiveScreenState extends State<LiveScreen>
         backgroundColor: AppTheme.info,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         ),
         margin: const EdgeInsets.all(16),
       ),
@@ -517,7 +517,7 @@ class _LiveScreenState extends State<LiveScreen>
                                 onSelected(option.value);
                                 Navigator.pop(context);
                               },
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -528,7 +528,7 @@ class _LiveScreenState extends State<LiveScreen>
                                       : Theme.of(context)
                                           .chipTheme
                                           .backgroundColor,
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                 ),
                                 child: Text(
                                   option.label,
@@ -625,7 +625,7 @@ class _LiveScreenState extends State<LiveScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.success,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
               ),
             ),
             child: Text(
@@ -795,12 +795,12 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
                       color: widget.themeService.isDarkMode
                           ? AppTheme.darkBackground
                           : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                     ),
                     child: Stack(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                           child: widget.buildChannelLogo(
                               widget.channel, widget.themeService),
                         ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
 import '../widgets/capsule_tab_switcher.dart';
 import '../widgets/custom_refresh_indicator.dart';
+
 import '../widgets/douban_movies_grid.dart';
 import '../services/douban_service.dart';
 import '../services/bangumi_service.dart';
@@ -564,10 +565,8 @@ class _AnimeScreenState extends State<AnimeScreen> {
   Widget build(BuildContext context) {
     return TVRemoteAdapter(
       onBack: () => Navigator.of(context).maybePop(),
-      child: StyledRefreshIndicator(
+      child: AppRefreshIndicator(
         onRefresh: _refreshAnimeData,
-        refreshText: '刷新动漫数据...',
-        primaryColor: AppTheme.success,
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(
@@ -663,7 +662,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
         color: themeService.isDarkMode
             ? Colors.white.withOpacity(0.1)
             : Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -913,7 +912,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
               color: themeService.isDarkMode
                   ? Colors.white.withOpacity(0.3)
                   : Colors.grey.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
           ),
           const SizedBox(height: 12),

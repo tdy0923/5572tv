@@ -19,7 +19,7 @@ class TVFocusable extends StatefulWidget {
     this.onSelect,
     this.focusNode,
     this.autofocus = false,
-    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(AppTheme.radiusLg)),
     this.focusScale = 1.05,
     this.focusColor = AppTheme.success,
   });

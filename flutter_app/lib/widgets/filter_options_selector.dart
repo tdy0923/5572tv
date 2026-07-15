@@ -26,7 +26,7 @@ void showFilterOptionsSelector({
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
           ),
           child: Container(
             width: 480,
@@ -35,7 +35,7 @@ void showFilterOptionsSelector({
               color: isDark
                   ? AppTheme.darkBackground
                   : Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXl),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

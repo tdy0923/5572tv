@@ -127,7 +127,7 @@ class _FilterOptionHoverState extends State<FilterOptionHover> {
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: Container(
           alignment: Alignment.center,
           padding: shouldUseCompactLayout
@@ -137,7 +137,7 @@ class _FilterOptionHoverState extends State<FilterOptionHover> {
             color: widget.isSelected
                 ? AppTheme.success
                 : Theme.of(context).chipTheme.backgroundColor,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
           child: Text(
             widget.label,

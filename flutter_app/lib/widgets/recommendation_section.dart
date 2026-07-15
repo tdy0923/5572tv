@@ -466,7 +466,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
             ShimmerEffect(
               width: width,
               height: height,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
             ),
             const SizedBox(height: 6),
             // 标题骨架
@@ -474,7 +474,7 @@ class _RecommendationSectionState extends State<RecommendationSection> {
               child: ShimmerEffect(
                 width: width * 0.8,
                 height: 14,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               ),
             ),
           ],

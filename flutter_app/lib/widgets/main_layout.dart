@@ -212,7 +212,7 @@ class _MainLayoutState extends State<MainLayout> {
           offset: const Offset(0, 42), // 紧贴搜索框
           child: Material(
             elevation: 8,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
             color: themeService.isDarkMode
                 ? AppTheme.darkBackground
                 : Colors.white,
@@ -498,7 +498,7 @@ class _MainLayoutState extends State<MainLayout> {
         decoration: BoxDecoration(
           color:
               themeService.isDarkMode ? AppTheme.darkBackground : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
         ),
         child: Focus(
           onFocusChange: (hasFocus) {
@@ -981,7 +981,7 @@ class _MainLayoutState extends State<MainLayout> {
                         color: _hoveredNavIndex == index
                             ? AppTheme.success.withOpacity(0.15)
                             : null,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
