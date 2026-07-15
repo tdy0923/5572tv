@@ -1,4 +1,4 @@
-const CACHE_NAME = '5572tv-v3';
+const CACHE_NAME = '5572tv-v4';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -74,11 +74,17 @@ self.addEventListener('message', (event) => {
   const data = event.data;
   const port = event.ports[0];
 
+  if (!data) return;
   if (data === 'ping') return;
 
   // 跳过缓存
   if (data === 'skipWaiting') {
     self.skipWaiting();
+    return;
+  }
+
+  // 处理流下载相关消息
+  if (typeof data !== 'object' || !data.pathname) {
     return;
   }
 

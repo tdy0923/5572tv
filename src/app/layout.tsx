@@ -171,8 +171,20 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                  window.location.reload();
+                });
                 window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').catch(function(e) { console.warn('SW registration failed:', e); });
+                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    reg.addEventListener('updatefound', function() {
+                      var newSW = reg.installing;
+                      newSW.addEventListener('statechange', function() {
+                        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                          newSW.postMessage('skipWaiting');
+                        }
+                      });
+                    });
+                  }).catch(function(e) { console.warn('SW registration failed:', e); });
                 });
               }
             `,
