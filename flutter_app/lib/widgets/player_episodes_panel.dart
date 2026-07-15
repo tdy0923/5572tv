@@ -54,7 +54,7 @@ class _PlayerEpisodesPanelState extends State<PlayerEpisodesPanel> {
     if (ctx == null) return;
     final renderObject = ctx.findRenderObject();
     if (renderObject == null || renderObject is! RenderBox) return;
-    final gridBox = renderObject as RenderBox;
+    final gridBox = renderObject;
 
     final targetIndex = widget.isReversed
         ? widget.episodes.length - 1 - widget.currentEpisodeIndex

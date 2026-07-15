@@ -1171,7 +1171,6 @@ class _MobileVideoProgressBar extends StatefulWidget {
 class _MobileVideoProgressBarState extends State<_MobileVideoProgressBar> {
   bool _isDragging = false;
   double _dragValue = 0.0;
-  bool _isSeeking = false;
 
   @override
   void initState() {
@@ -1231,7 +1230,6 @@ class _MobileVideoProgressBarState extends State<_MobileVideoProgressBar> {
 
                 setState(() {
                   _isDragging = false;
-                  _isSeeking = true; // 标记开始 seek
                 });
 
                 await widget.player.seek(seekPosition);
@@ -1240,9 +1238,6 @@ class _MobileVideoProgressBarState extends State<_MobileVideoProgressBar> {
                 await Future.delayed(const Duration(milliseconds: 100));
 
                 if (!mounted) return;
-                setState(() {
-                  _isSeeking = false; // 标记 seek 完成
-                });
 
                 widget.onDragEnd?.call();
               }
@@ -1256,9 +1251,7 @@ class _MobileVideoProgressBarState extends State<_MobileVideoProgressBar> {
                 milliseconds: (_dragValue * duration.inMilliseconds).round(),
               );
 
-              setState(() {
-                _isSeeking = true; // 标记开始 seek
-              });
+              setState(() {});
 
               await widget.player.seek(seekPosition);
 
@@ -1266,9 +1259,6 @@ class _MobileVideoProgressBarState extends State<_MobileVideoProgressBar> {
               await Future.delayed(const Duration(milliseconds: 100));
 
               if (!mounted) return;
-              setState(() {
-                _isSeeking = false; // 标记 seek 完成
-              });
 
               widget.onDragEnd?.call();
             },

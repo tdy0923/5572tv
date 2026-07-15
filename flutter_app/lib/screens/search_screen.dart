@@ -66,7 +66,6 @@ class _SearchScreenState extends State<SearchScreen>
   String? _hoveredDeleteButton;
   String? _hoveredFilterPill;
   bool _isYearSortHovered = false;
-  bool _isClearHistoryButtonHovered = false;
 
   late SSESearchService _searchService;
   StreamSubscription<List<SearchResult>>? _incrementalResultsSubscription;
@@ -618,16 +617,12 @@ class _SearchScreenState extends State<SearchScreen>
                     : MouseCursor.defer,
                 onEnter: DeviceUtils.isPC()
                     ? (_) {
-                        setState(() {
-                          _isClearHistoryButtonHovered = true;
-                        });
+                        setState(() {});
                       }
                     : null,
                 onExit: DeviceUtils.isPC()
                     ? (_) {
-                        setState(() {
-                          _isClearHistoryButtonHovered = false;
-                        });
+                        setState(() {});
                       }
                     : null,
                 child: AppButton(

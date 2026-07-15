@@ -100,7 +100,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   void setInfosByDetail(SearchResult detail) {
-    _state.setInfosByDetail(detail);
+    _state.setInfosByDetail(detail, context);
   }
 
   void _onBackPressed() async {

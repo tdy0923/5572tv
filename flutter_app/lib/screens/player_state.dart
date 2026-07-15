@@ -934,7 +934,8 @@ class PlayerState extends ChangeNotifier {
     performScrollToCurrentEpisode(context, force: true);
   }
 
-  void scrollToCurrentSource() {
+  void scrollToCurrentSource([BuildContext? context]) {
+    performScrollToCurrentSource(context, force: true);
   }
 
   bool performScrollToCurrentEpisode(BuildContext? context, {bool force = false}) {
@@ -983,12 +984,17 @@ class PlayerState extends ChangeNotifier {
     return true;
   }
 
-  bool performScrollToCurrentSource(BuildContext context) {
-    if (!mounted ||
-        _currentDetail == null ||
-        !_sourcesScrollController.hasClients) {
+  bool performScrollToCurrentSource(BuildContext? context, {bool force = false}) {
+    if (!mounted || _currentDetail == null) return false;
+    if (!_sourcesScrollController.hasClients) {
+      if (force) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          performScrollToCurrentSource(context, force: false);
+        });
+      }
       return false;
     }
+    if (context == null) return false;
 
     final currentSourceIndex = _allSources.indexWhere(
         (s) => s.source == _currentSource && s.id == _currentID);

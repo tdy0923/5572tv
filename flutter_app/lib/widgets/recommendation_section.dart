@@ -49,9 +49,8 @@ class _RecommendationSectionState extends State<RecommendationSection> {
   bool _showLeftScroll = false;
   bool _showRightScroll = false;
   bool _isHovered = false;
-  
+
   // hover 状态
-  bool _isMoreButtonHovered = false;
 
   @override
   void initState() {
@@ -187,16 +186,12 @@ class _RecommendationSectionState extends State<RecommendationSection> {
                         : MouseCursor.defer,
                     onEnter: DeviceUtils.isPC()
                         ? (_) {
-                            setState(() {
-                              _isMoreButtonHovered = true;
-                            });
+                            setState(() {});
                           }
                         : null,
                     onExit: DeviceUtils.isPC()
                         ? (_) {
-                            setState(() {
-                              _isMoreButtonHovered = false;
-                            });
+                            setState(() {});
                           }
                         : null,
                     child: AppButton(
