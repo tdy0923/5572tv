@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 
 class CapsuleTabSwitcher extends StatefulWidget {
   final List<String> tabs;
@@ -167,8 +168,8 @@ class _CapsuleTabSwitcherState extends State<CapsuleTabSwitcher>
                           boxShadow: [
                             BoxShadow(
                               color: themeService.isDarkMode
-                                  ? Colors.black.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.1),
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.black.withValues(alpha: 0.1),
                               blurRadius: 3,
                               offset: const Offset(0, 1),
                             ),
@@ -308,13 +309,11 @@ class _CapsuleTabHoverState extends State<_CapsuleTabHover> {
               final fontWeight =
                   progress > 0.5 ? FontWeight.w600 : FontWeight.w400;
 
-              return Text(
+              return AppText.body(
                 widget.label,
-                style: FontUtils.systemFont(
-                  fontSize: 12,
-                  fontWeight: fontWeight,
-                  color: color,
-                ),
+                fontSize: 12,
+                fontWeight: fontWeight,
+                color: color,
               );
             },
           ),

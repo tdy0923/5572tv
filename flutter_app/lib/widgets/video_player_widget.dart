@@ -143,8 +143,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   bool _playerDisposed = false;
   VoidCallback? _exitWebFullscreenCallback;
   bool _isPipMode = false;
-  StreamSubscription<int>? _widthSubscription;
-  StreamSubscription<int>? _heightSubscription;
+  StreamSubscription<int?>? _widthSubscription;
+  StreamSubscription<int?>? _heightSubscription;
 
   @override
   void initState() {
@@ -273,19 +273,19 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       }
     });
 
-    _widthSubscription = _player!.stream.width.listen((width) {
+    _widthSubscription = _player!.stream.width.listen((w) {
       if (!mounted || _player == null) return;
-      final height = _player!.state.height;
-      if (width > 0 && height > 0) {
-        aspectRatioNotifier.value = width / height;
+      final h = _player!.state.height;
+      if (w != null && w > 0 && h != null && h > 0) {
+        aspectRatioNotifier.value = w / h;
       }
     });
 
-    _heightSubscription = _player!.stream.height.listen((height) {
+    _heightSubscription = _player!.stream.height.listen((h) {
       if (!mounted || _player == null) return;
-      final width = _player!.state.width;
-      if (width > 0 && height > 0) {
-        aspectRatioNotifier.value = width / height;
+      final w = _player!.state.width;
+      if (h != null && h > 0 && w != null && w > 0) {
+        aspectRatioNotifier.value = w / h;
       }
     });
   }

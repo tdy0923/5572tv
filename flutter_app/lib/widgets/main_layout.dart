@@ -378,8 +378,8 @@ class _MainLayoutState extends State<MainLayout> {
                 ? AppTheme.gray950
                 : AppTheme.gray100
             : themeService.isDarkMode
-                ? AppTheme.darkBackground.withOpacity(0.9)
-                : Colors.white.withOpacity(0.8),
+                ? AppTheme.darkBackground.withValues(alpha: 0.9)
+                : Colors.white.withValues(alpha: 0.8),
       ),
       child: widget.isSearchMode
           ? _buildSearchHeader(context, themeService, isTablet)
@@ -897,13 +897,13 @@ class _MainLayoutState extends State<MainLayout> {
     return Container(
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? AppTheme.darkBackground.withOpacity(0.9)
-            : Colors.white.withOpacity(0.9),
+            ? AppTheme.darkBackground.withValues(alpha: 0.9)
+            : Colors.white.withValues(alpha: 0.9),
         border: Border(
           top: BorderSide(
             color: themeService.isDarkMode
-                ? AppTheme.foreground.withOpacity(0.3)
-                : Colors.white.withOpacity(0.2),
+                ? AppTheme.foreground.withValues(alpha: 0.3)
+                : Colors.white.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -976,7 +976,7 @@ class _MainLayoutState extends State<MainLayout> {
                       ),
                       decoration: BoxDecoration(
                         color: _hoveredNavIndex == index
-                            ? AppTheme.success.withOpacity(0.15)
+                            ? AppTheme.success.withValues(alpha: 0.15)
                             : null,
                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       ),

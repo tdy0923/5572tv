@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import '../services/live_service.dart';
 import '../models/live_channel.dart';
 import '../models/live_source.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 import '../utils/device_utils.dart';
-import '../widgets/tv_remote_adapter.dart';
 import '../services/theme_service.dart';
 import 'package:provider/provider.dart';
+import '../components/app_bottom_sheet.dart';
 import 'live_player_screen.dart';
 import '../components/app_button.dart';
 import '../widgets/filter_pill_hover.dart';
@@ -256,9 +256,9 @@ class _LiveScreenState extends State<LiveScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
+        content: AppText.body(
           message,
-          style: FontUtils.systemFont(color: Colors.white),
+          color: Colors.white,
         ),
         backgroundColor: AppTheme.info,
         behavior: SnackBarBehavior.floating,
@@ -325,8 +325,8 @@ class _LiveScreenState extends State<LiveScreen>
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? AppTheme.darkBackground.withOpacity(0.9)
-            : Colors.white.withOpacity(0.8),
+            ? AppTheme.darkBackground.withValues(alpha: 0.9)
+            : Colors.white.withValues(alpha: 0.8),
       ),
       child: Row(
         children: [
@@ -550,13 +550,11 @@ class _LiveScreenState extends State<LiveScreen>
             valueColor: AlwaysStoppedAnimation<Color>(AppTheme.success),
           ),
           const SizedBox(height: 16),
-          Text(
+          AppText.body(
             '加载中...',
-            style: FontUtils.systemFont(
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
         ],
       ),
@@ -572,13 +570,11 @@ class _LiveScreenState extends State<LiveScreen>
             valueColor: AlwaysStoppedAnimation<Color>(AppTheme.success),
           ),
           const SizedBox(height: 16),
-          Text(
+          AppText.body(
             '刷新中...',
-            style: FontUtils.systemFont(
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
         ],
       ),
@@ -598,13 +594,11 @@ class _LiveScreenState extends State<LiveScreen>
                 : AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 16),
-          Text(
+          AppText.body(
             _errorMessage ?? '加载失败',
-            style: FontUtils.systemFont(
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 16),
           AppButton(
@@ -622,13 +616,11 @@ class _LiveScreenState extends State<LiveScreen>
 
     if (channels.isEmpty) {
       return Center(
-        child: Text(
+        child: AppText.body(
           '暂无频道',
-          style: FontUtils.systemFont(
-            color: themeService.isDarkMode
-                ? AppTheme.foregroundMuted
-                : AppTheme.foregroundMuted,
-          ),
+          color: themeService.isDarkMode
+              ? AppTheme.foregroundMuted
+              : AppTheme.foregroundMuted,
         ),
       );
     }
@@ -790,17 +782,15 @@ class _LiveChannelCardState extends State<_LiveChannelCard> {
               ),
               // 标题 - 放在卡片下方居中
               const SizedBox(height: 8),
-              Text(
+              AppText.body(
                 widget.channel.name,
-                style: FontUtils.systemFont(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isPC && _isHovered
-                      ? AppTheme.success
-                      : (widget.themeService.isDarkMode
-                          ? Colors.white
-                          : AppTheme.foreground),
-                ),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isPC && _isHovered
+                    ? AppTheme.success
+                    : (widget.themeService.isDarkMode
+                        ? Colors.white
+                        : AppTheme.foreground),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

@@ -51,34 +51,34 @@ class AppTheme {
 
   // ==================== Fluent 2 Elevation (Shadows) ====================
   static List<BoxShadow> get shadow2 => [
-    BoxShadow(color: Colors.black.withOpacity(0.12), blurRadius: 2, offset: const Offset(0, 1)),
-    BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 2),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 2, offset: const Offset(0, 1)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 2),
   ];
   static List<BoxShadow> get shadow4 => [
-    BoxShadow(color: Colors.black.withOpacity(0.14), blurRadius: 4, offset: const Offset(0, 2)),
-    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 2),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 4, offset: const Offset(0, 2)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 2),
   ];
   static List<BoxShadow> get shadow8 => [
-    BoxShadow(color: Colors.black.withOpacity(0.14), blurRadius: 8, offset: const Offset(0, 4)),
-    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 2),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 8, offset: const Offset(0, 4)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 2),
   ];
   static List<BoxShadow> get shadow16 => [
-    BoxShadow(color: Colors.black.withOpacity(0.14), blurRadius: 16, offset: const Offset(0, 8)),
-    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 2),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.14), blurRadius: 16, offset: const Offset(0, 8)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 2),
   ];
 
   // Dark mode shadows
   static List<BoxShadow> get darkShadow2 => [
-    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 2, offset: const Offset(0, 1)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 2, offset: const Offset(0, 1)),
   ];
   static List<BoxShadow> get darkShadow4 => [
-    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 4, offset: const Offset(0, 2)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 4, offset: const Offset(0, 2)),
   ];
   static List<BoxShadow> get darkShadow8 => [
-    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 8, offset: const Offset(0, 4)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 8, offset: const Offset(0, 4)),
   ];
   static List<BoxShadow> get darkShadow16 => [
-    BoxShadow(color: Colors.black.withOpacity(0.32), blurRadius: 16, offset: const Offset(0, 8)),
+    BoxShadow(color: Colors.black.withValues(alpha: 0.32), blurRadius: 16, offset: const Offset(0, 8)),
   ];
 
   // ==================== Fluent 2 Border Radius ====================
@@ -132,7 +132,7 @@ class AppTheme {
       onError: Colors.white,
       outline: stroke,
       outlineVariant: strokeSubtle,
-      shadow: Colors.black.withOpacity(0.14),
+      shadow: Colors.black.withValues(alpha: 0.14),
       surfaceTint: primary,
     ),
     scaffoldBackgroundColor: backgroundSubtle,
@@ -166,8 +166,8 @@ class AppTheme {
         textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ).copyWith(
         overlayColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.pressed)) return Colors.black.withOpacity(0.05);
-          if (states.contains(WidgetState.hovered)) return Colors.black.withOpacity(0.03);
+          if (states.contains(WidgetState.pressed)) return Colors.black.withValues(alpha: 0.05);
+          if (states.contains(WidgetState.hovered)) return Colors.black.withValues(alpha: 0.03);
           return null;
         }),
       ),
@@ -254,7 +254,7 @@ class AppTheme {
       onError: Colors.white,
       outline: darkStroke,
       outlineVariant: darkStrokeSubtle,
-      shadow: Colors.black.withOpacity(0.32),
+      shadow: Colors.black.withValues(alpha: 0.32),
       surfaceTint: primary,
     ),
     scaffoldBackgroundColor: darkBackground,
@@ -288,8 +288,8 @@ class AppTheme {
         textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ).copyWith(
         overlayColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.pressed)) return Colors.black.withOpacity(0.1);
-          if (states.contains(WidgetState.hovered)) return Colors.white.withOpacity(0.05);
+          if (states.contains(WidgetState.pressed)) return Colors.black.withValues(alpha: 0.1);
+          if (states.contains(WidgetState.hovered)) return Colors.white.withValues(alpha: 0.05);
           return null;
         }),
       ),

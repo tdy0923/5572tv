@@ -6,7 +6,7 @@ import '../models/aggregated_search_result.dart';
 import '../models/video_info.dart';
 import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 import 'video_card.dart';
 import 'video_menu_bottom_sheet.dart';
 
@@ -170,21 +170,17 @@ class _SearchResultAggGridState extends State<SearchResultAggGrid>
             color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
-          Text(
+          AppText.body(
             '暂无搜索结果',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 12),
-          Text(
+          AppText.body(
             '请尝试其他关键词',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 14,
+            color: AppTheme.foregroundMuted,
           ),
         ],
       ),

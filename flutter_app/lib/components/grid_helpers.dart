@@ -82,7 +82,7 @@ class GridLoadingState extends StatelessWidget {
               ),
               itemCount: isTablet ? crossAxisCount * 2 : 6,
               itemBuilder: (context, index) {
-                return GridSkeletonCard(itemWidth: itemWidth);
+                return GridSkeletonCard(width: itemWidth);
               },
             ),
           );

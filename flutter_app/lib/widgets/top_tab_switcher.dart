@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 
 class TopTabSwitcher extends StatefulWidget {
   final String selectedTab;
@@ -121,8 +121,8 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
                           boxShadow: [
                             BoxShadow(
                               color: themeService.isDarkMode
-                                  ? Colors.black.withOpacity(0.3)
-                                  : Colors.black.withOpacity(0.1),
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.black.withValues(alpha: 0.1),
                               blurRadius: 3,
                               offset: const Offset(0, 1),
                             ),
@@ -264,13 +264,11 @@ class _TopTabSwitcherState extends State<TopTabSwitcher>
               }
 
               return Center(
-                child: Text(
+                child: AppText.body(
                   label,
-                  style: FontUtils.systemFont(
-                    fontSize: 11,
-                    fontWeight: fontWeight,
-                    color: textColor,
-                  ),
+                  fontSize: 11,
+                  fontWeight: fontWeight,
+                  color: textColor,
                 ),
               );
             },

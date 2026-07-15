@@ -9,7 +9,7 @@ import '../models/live_source.dart';
 import '../models/epg_program.dart';
 import '../services/live_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 import '../services/theme_service.dart';
 import 'package:provider/provider.dart';
 import '../components/app_bottom_sheet.dart';
@@ -712,15 +712,13 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       // 顶部栏
                       Container(
                         padding: const EdgeInsets.only(top: 16),
-                        child: Text(
+                        child: AppText.body(
                           '频道列表',
-                          style: FontUtils.systemFont(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: themeService.isDarkMode
-                                ? Colors.white
-                                : AppTheme.foreground,
-                          ),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: themeService.isDarkMode
+                              ? Colors.white
+                              : AppTheme.foreground,
                         ),
                       ),
                       // 内容区域
@@ -825,15 +823,13 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
+                      child: AppText.body(
                         _currentChannel.name,
-                        style: FontUtils.systemFont(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: themeService.isDarkMode
-                              ? Colors.white
-                              : AppTheme.foreground,
-                        ),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: themeService.isDarkMode
+                            ? Colors.white
+                            : AppTheme.foreground,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -841,14 +837,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
+                AppText.body(
                   '${_currentSource.name} > ${_currentChannel.group}',
-                  style: FontUtils.systemFont(
-                    fontSize: 14,
-                    color: themeService.isDarkMode
-                        ? AppTheme.foregroundMuted
-                        : AppTheme.foregroundMuted,
-                  ),
+                  fontSize: 14,
+                  color: themeService.isDarkMode
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                 ),
               ],
             ),
@@ -896,14 +890,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(
+          child: AppText.body(
             '暂无频道',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            fontSize: 14,
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
         ),
       );
@@ -926,7 +918,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
           child: ListTile(
             key: itemKey,
             selected: isSelected,
-            selectedTileColor: AppTheme.success.withOpacity(0.1),
+            selectedTileColor: AppTheme.success.withValues(alpha: 0.1),
             visualDensity: const VisualDensity(vertical: -1),
             leading: channel.logo.isNotEmpty
               ? AspectRatio(
@@ -971,28 +963,24 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     ),
                   ),
                 ),
-          title: Text(
+          title: AppText.body(
             channel.name,
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected
-                  ? AppTheme.success
-                  : themeService.isDarkMode
-                      ? Colors.white
-                      : AppTheme.foreground,
-            ),
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: isSelected
+                ? AppTheme.success
+                : themeService.isDarkMode
+                    ? Colors.white
+                    : AppTheme.foreground,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: Text(
+          subtitle: AppText.body(
             channel.group,
-            style: FontUtils.systemFont(
-              fontSize: 12,
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            fontSize: 12,
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
           onTap: () => _switchChannel(channel),
           ),
@@ -1269,51 +1257,43 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
           Expanded(
             child: Row(
               children: [
-                Text(
+                AppText.body(
                   '正在播放: ',
-                  style: FontUtils.systemFont(
-                    fontSize: 14,
-                    color: themeService.isDarkMode
-                        ? AppTheme.foregroundMuted
-                        : AppTheme.foregroundMuted,
-                  ),
+                  fontSize: 14,
+                  color: themeService.isDarkMode
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundMuted,
                 ),
                 Expanded(
                   child: _isLoadingEpg
-                      ? Text(
+                      ? AppText.body(
                           '加载中...',
-                          style: FontUtils.systemFont(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: themeService.isDarkMode
-                                ? Colors.white
-                                : AppTheme.foreground,
-                          ),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: themeService.isDarkMode
+                              ? Colors.white
+                              : AppTheme.foreground,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         )
                       : currentProgram != null
-                          ? Text(
+                          ? AppText.body(
                               currentProgram.title,
-                              style: FontUtils.systemFont(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: themeService.isDarkMode
-                                    ? Colors.white
-                                    : AppTheme.foreground,
-                              ),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: themeService.isDarkMode
+                                  ? Colors.white
+                                  : AppTheme.foreground,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             )
-                          : Text(
+                          : AppText.body(
                               '暂无节目信息',
-                              style: FontUtils.systemFont(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: themeService.isDarkMode
-                                    ? AppTheme.foregroundSubtle
-                                    : AppTheme.foregroundMuted,
-                              ),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: themeService.isDarkMode
+                                  ? AppTheme.foregroundSubtle
+                                  : AppTheme.foregroundMuted,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1392,15 +1372,13 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                 ),
                 child: Row(
                   children: [
-                    Text(
+                    AppText.body(
                       '节目单',
-                      style: FontUtils.systemFont(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: themeService.isDarkMode
-                            ? Colors.white
-                            : AppTheme.foreground,
-                      ),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: themeService.isDarkMode
+                          ? Colors.white
+                          : AppTheme.foreground,
                     ),
                     const Spacer(),
                     IconButton(
@@ -1440,14 +1418,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              Text(
+              AppText.body(
                 '加载节目单中...',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: themeService.isDarkMode
-                      ? AppTheme.foregroundMuted
-                      : AppTheme.foregroundMuted,
-                ),
+                fontSize: 14,
+                color: themeService.isDarkMode
+                    ? AppTheme.foregroundMuted
+                    : AppTheme.foregroundMuted,
               ),
             ],
           ),
@@ -1470,14 +1446,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     : AppTheme.foregroundMuted,
               ),
               const SizedBox(height: 16),
-              Text(
+              AppText.body(
                 '暂无节目单信息',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: themeService.isDarkMode
-                      ? AppTheme.foregroundMuted
-                      : AppTheme.foregroundMuted,
-                ),
+                fontSize: 14,
+                color: themeService.isDarkMode
+                    ? AppTheme.foregroundMuted
+                    : AppTheme.foregroundMuted,
               ),
             ],
           ),
@@ -1545,24 +1519,20 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
       child: Row(
         children: [
           // 时间
-          Text(
+          AppText.monospace(
             program.timeRange,
-            style: FontUtils.monospace(
-              fontSize: 13,
-              color: timeColor,
-              fontWeight: FontWeight.w600,
-            ),
+            fontSize: 13,
+            color: timeColor,
+            fontWeight: FontWeight.w600,
           ),
           const SizedBox(width: 16),
           // 节目标题
           Expanded(
-            child: Text(
+            child: AppText.body(
               program.title,
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                fontWeight: isLive ? FontWeight.w600 : FontWeight.w400,
-                color: textColor,
-              ),
+              fontSize: 14,
+              fontWeight: isLive ? FontWeight.w600 : FontWeight.w400,
+              color: textColor,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1587,15 +1557,13 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
               children: [
-                Text(
+                AppText.body(
                   '节目单',
-                  style: FontUtils.systemFont(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: themeService.isDarkMode
-                        ? Colors.white
-                        : AppTheme.foreground,
-                  ),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: themeService.isDarkMode
+                      ? Colors.white
+                      : AppTheme.foreground,
                 ),
                 const Spacer(),
                 // 滚动到当前节目按钮
@@ -1646,14 +1614,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Text(
+          child: AppText.body(
             '加载节目单中...',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: themeService.isDarkMode
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundMuted,
-            ),
+            fontSize: 14,
+            color: themeService.isDarkMode
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundMuted,
           ),
         ),
       );
@@ -1674,14 +1640,12 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     : AppTheme.foregroundMuted,
               ),
               const SizedBox(height: 12),
-              Text(
+              AppText.body(
                 '暂无节目单信息',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: themeService.isDarkMode
-                      ? AppTheme.foregroundMuted
-                      : AppTheme.foregroundMuted,
-                ),
+                fontSize: 14,
+                color: themeService.isDarkMode
+                    ? AppTheme.foregroundMuted
+                    : AppTheme.foregroundMuted,
               ),
             ],
           ),
@@ -1726,9 +1690,9 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     if (isLive) {
       // 正在播放 - 绿色背景 + 绿色边框
       backgroundColor = themeService.isDarkMode
-          ? AppTheme.success.withOpacity(0.2)
-          : AppTheme.success.withOpacity(0.1);
-      borderColor = AppTheme.success.withOpacity(0.3);
+          ? AppTheme.success.withValues(alpha: 0.2)
+          : AppTheme.success.withValues(alpha: 0.1);
+      borderColor = AppTheme.success.withValues(alpha: 0.3);
       textColor = themeService.isDarkMode
           ? AppTheme.success
           : AppTheme.success;
@@ -1738,8 +1702,8 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     } else if (isPast) {
       // 过去的节目 - 灰色背景 + 灰色边框
       backgroundColor = themeService.isDarkMode
-          ? AppTheme.gray700.withOpacity(0.5)
-          : AppTheme.gray300.withOpacity(0.5);
+          ? AppTheme.gray700.withValues(alpha: 0.5)
+          : AppTheme.gray300.withValues(alpha: 0.5);
       borderColor = themeService.isDarkMode
           ? AppTheme.gray600
           : AppTheme.gray300;
@@ -1752,9 +1716,9 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
     } else {
       // 未开始的节目 - 蓝色背景 + 蓝色边框
       backgroundColor = themeService.isDarkMode
-          ? AppTheme.info.withOpacity(0.2)
-          : AppTheme.info.withOpacity(0.1);
-      borderColor = AppTheme.info.withOpacity(0.3);
+          ? AppTheme.info.withValues(alpha: 0.2)
+          : AppTheme.info.withValues(alpha: 0.1);
+      borderColor = AppTheme.info.withValues(alpha: 0.3);
       textColor = themeService.isDarkMode
           ? AppTheme.info
           : AppTheme.info;
@@ -1783,13 +1747,11 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         children: [
           Row(
             children: [
-              Text(
+              AppText.body(
                 program.timeRange,
-                style: FontUtils.systemFont(
-                  fontSize: 9,
-                  color: timeColor,
-                  fontWeight: FontWeight.w500,
-                ),
+                fontSize: 9,
+                color: timeColor,
+                fontWeight: FontWeight.w500,
               ),
               const Spacer(),
               if (isLive)
@@ -1804,25 +1766,21 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Text(
+                    AppText.body(
                       '直播',
-                      style: FontUtils.systemFont(
-                        fontSize: 8,
-                        color: timeColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      fontSize: 8,
+                      color: timeColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ],
                 ),
             ],
           ),
-          Text(
+          AppText.body(
             program.title,
-            style: FontUtils.systemFont(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: textColor,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

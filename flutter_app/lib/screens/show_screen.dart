@@ -566,8 +566,8 @@ class _ShowScreenState extends State<ShowScreen> {
           vertical: 12, horizontal: 16), // 恢复原来的padding设置
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? Colors.white.withOpacity(0.1)
-            : Colors.white.withOpacity(0.8),
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
       child: Column(
@@ -771,8 +771,8 @@ class _ShowScreenState extends State<ShowScreen> {
             height: 2,
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.4),
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : Colors.grey.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
           ),
@@ -782,7 +782,7 @@ class _ShowScreenState extends State<ShowScreen> {
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.6)
+                  ? Colors.white.withValues(alpha: 0.6)
                   : Colors.grey[600],
               fontWeight: FontWeight.w400,
             ),
@@ -793,7 +793,7 @@ class _ShowScreenState extends State<ShowScreen> {
             style: FontUtils.systemFont(
               fontSize: 12,
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.4)
+                  ? Colors.white.withValues(alpha: 0.4)
                   : Colors.grey[500],
               fontWeight: FontWeight.w300,
             ),

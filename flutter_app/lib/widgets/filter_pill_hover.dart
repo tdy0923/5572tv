@@ -1,6 +1,6 @@
 import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 
 class SelectorOption {
   final String label;
@@ -59,14 +59,12 @@ class _FilterPillHoverState extends State<FilterPillHover> {
           ),
           child: Row(
             children: [
-              Text(
+              AppText.body(
                 widget.isDefault ? widget.title : widget.selectedOption.label,
-                style: FontUtils.systemFont(
-                  fontSize: 13,
-                  color: textColor,
-                  fontWeight:
-                      widget.isDefault ? FontWeight.normal : FontWeight.w500,
-                ),
+                fontSize: 13,
+                color: textColor,
+                fontWeight:
+                    widget.isDefault ? FontWeight.normal : FontWeight.w500,
               ),
               const SizedBox(width: 4),
               Icon(

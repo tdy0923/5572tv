@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 
 class SimpleTabSwitcher extends StatelessWidget {
   final List<String> tabs;
@@ -99,13 +99,11 @@ class _SimpleTabHoverState extends State<_SimpleTabHover> {
           height: 32, // 确保与容器高度一致
           padding: const EdgeInsets.symmetric(horizontal: 8),
           alignment: Alignment.center, // 垂直居中
-          child: Text(
+          child: AppText.body(
             widget.label,
-            style: FontUtils.systemFont(
-              fontSize: 13,
-              fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: color,
-            ),
+            fontSize: 13,
+            fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+            color: color,
           ),
         ),
       ),

@@ -16,7 +16,6 @@ import 'player_screen.dart';
 import '../widgets/filter_pill_hover.dart';
 import '../utils/device_utils.dart';
 import '../widgets/tv_remote_adapter.dart';
-import '../widgets/tv_remote_adapter.dart';
 import '../utils/font_utils.dart';
 import '../widgets/filter_options_selector.dart';
 
@@ -550,8 +549,8 @@ class _MovieScreenState extends State<MovieScreen> {
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? Colors.white.withOpacity(0.1)
-            : Colors.white.withOpacity(0.8),
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
       ),
       child: Column(
@@ -749,8 +748,8 @@ class _MovieScreenState extends State<MovieScreen> {
             height: 2,
             decoration: BoxDecoration(
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.4),
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : Colors.grey.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
           ),
@@ -760,7 +759,7 @@ class _MovieScreenState extends State<MovieScreen> {
             style: FontUtils.systemFont(
               fontSize: 14,
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.6)
+                  ? Colors.white.withValues(alpha: 0.6)
                   : Colors.grey[600],
               fontWeight: FontWeight.w400,
             ),
@@ -771,7 +770,7 @@ class _MovieScreenState extends State<MovieScreen> {
             style: FontUtils.systemFont(
               fontSize: 12,
               color: themeService.isDarkMode
-                  ? Colors.white.withOpacity(0.4)
+                  ? Colors.white.withValues(alpha: 0.4)
                   : Colors.grey[500],
               fontWeight: FontWeight.w300,
             ),

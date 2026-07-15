@@ -11,6 +11,7 @@ import {
 import { cleanExpiredCache } from '@/lib/shortdrama-cache';
 import { ShortDramaCategory, ShortDramaItem } from '@/lib/types';
 
+import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
 import ShortDramaCard from '@/components/ShortDramaCard';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
@@ -222,394 +223,397 @@ export default function ShortDramaPage() {
 
   return (
     <PageLayout activePath='/shortdrama'>
-      <div className='min-h-screen -mt-6 md:mt-0'>
-        <div className=''>
-          <SiteAdSlot position='footer' className='mb-6' />
-          {/* 页面标题 */}
-          <div className='mb-6'>
-            <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
-              短剧频道
-            </h1>
-            <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
-              精彩短剧，一刷到底
-            </p>
-          </div>
-
-          {/* 搜索栏 */}
-          <div className='mb-6'>
-            <div className='relative group'>
-              <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
-              <PanelField
-                type='text'
-                placeholder='搜索短剧名称...'
-                className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
-                value={searchQuery}
-                onFocus={() => setIsSearchInputFocused(true)}
-                onBlur={() =>
-                  setTimeout(() => setIsSearchInputFocused(false), 200)
-                }
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSearchQuery(value);
-                  if (searchTimerRef.current)
-                    clearTimeout(searchTimerRef.current);
-                  searchTimerRef.current = setTimeout(() => {
-                    if (value.trim()) {
-                      handleSearch(value.trim());
-                    } else {
-                      setIsSearchMode(false);
-                    }
-                  }, 300);
-                }}
-              />
-            </div>
-            {/* 搜索历史 */}
-            {isSearchInputFocused &&
-              !searchQuery &&
-              searchHistory.length > 0 && (
-                <div className='mt-3'>
-                  <div className='flex items-center justify-between mb-2'>
-                    <span className='text-xs text-gray-500 dark:text-gray-400'>
-                      搜索历史
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSearchHistory([]);
-                        localStorage.removeItem('shortdrama-search-history');
-                      }}
-                      className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                    >
-                      清除
-                    </button>
-                  </div>
-                  <div className='flex flex-wrap gap-2'>
-                    {searchHistory.map((item, index) => (
-                      <button
-                        key={item}
-                        onClick={() => {
-                          setSearchQuery(item);
-                          handleSearch(item);
-                        }}
-                        className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-          </div>
-
-          {/* 分类筛选 */}
-          {!isSearchMode && categories.length > 0 && (
+      <MountAnimation>
+        <div className='min-h-screen -mt-6 md:mt-0'>
+          <div className=''>
+            <SiteAdSlot position='footer' className='mb-6' />
+            {/* 页面标题 */}
             <div className='mb-6'>
-              <div className='mb-4 flex items-center justify-between gap-4'>
-                <div className='flex items-center gap-2'>
-                  <Filter className='h-4 w-4 text-gray-500' />
-                  <span className='text-base font-semibold text-gray-900 dark:text-gray-100'>
-                    分类
-                  </span>
-                </div>
-                <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-gray-800 dark:text-gray-300 font-medium'>
-                  {categories.length}
-                </span>
-              </div>
-              <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
-                {categories.map((category, index) => (
-                  <PillButton
-                    key={category.type_id}
-                    onClick={() => {
-                      setSelectedCategory(category.type_id);
-                    }}
-                    active={selectedCategory === category.type_id}
-                    className='px-4 py-2 duration-300'
-                    style={{
-                      animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
-                    }}
-                  >
-                    {category.type_name}
-                  </PillButton>
-                ))}
-              </PillGroup>
+              <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
+                短剧频道
+              </h1>
+              <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
+                精彩短剧，一刷到底
+              </p>
             </div>
-          )}
 
-          {/* 排序选项 */}
-          {!isSearchMode && (
-            <div className='flex items-center gap-2 mb-4'>
-              <span className='text-xs text-gray-500 dark:text-gray-400'>
-                排序:
-              </span>
-              <PillButton
-                active={sortBy === 'latest'}
-                onClick={() => setSortBy('latest')}
-                className='px-3 py-1 text-xs'
-              >
-                最新
-              </PillButton>
-              <PillButton
-                active={sortBy === 'popular'}
-                onClick={() => setSortBy('popular')}
-                className='px-3 py-1 text-xs'
-              >
-                最热
-              </PillButton>
-              <PillButton
-                active={sortBy === 'name'}
-                onClick={() => setSortBy('name')}
-                className='px-3 py-1 text-xs'
-              >
-                名称
-              </PillButton>
-            </div>
-          )}
-
-          {/* 虚拟化开关 */}
-          <div className='flex justify-end mb-4'>
-            <label className='flex items-center gap-3 cursor-pointer select-none group'>
-              <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors'>
-                虚拟滑动
-              </span>
-              <div className='relative inline-flex items-center rounded-full border border-black/6 bg-white/75 p-1 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-gray-800'>
-                <input
-                  type='checkbox'
-                  className='sr-only peer'
-                  checked={useVirtualization}
-                  onChange={toggleVirtualization}
-                />
-                <div className='relative flex h-6 w-11 items-center rounded-full bg-gray-200 transition-all duration-300 peer-checked:bg-linear-to-r peer-checked:from-[#f4c24d] peer-checked:via-[#f0b938] peer-checked:to-[#d89c18] dark:bg-gray-700'></div>
-                <div className='absolute left-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 peer-checked:translate-x-5'>
-                  <span className='text-[10px] text-gray-500'>
-                    {useVirtualization ? '✨' : '○'}
-                  </span>
-                </div>
-              </div>
-            </label>
-          </div>
-
-          {/* 短剧网格 */}
-          {useVirtualization ? (
-            <VirtualGrid
-              items={sortedDramas}
-              className='grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-              rowGapClass='pb-4'
-              estimateRowHeight={280}
-              endReached={() => {
-                if (hasMore && !loading) {
-                  setPage((prevPage) => prevPage + 1);
-                }
-              }}
-              endReachedThreshold={3}
-              renderItem={(drama, index) => (
-                <ShortDramaCard drama={drama} priority={index < 30} />
-              )}
-            />
-          ) : (
-            <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-              {sortedDramas.map((drama, index) => (
-                <div
-                  key={`${drama.id}-${index}`}
-                  ref={
-                    index === sortedDramas.length - 1
-                      ? lastDramaElementRef
-                      : null
+            {/* 搜索栏 */}
+            <div className='mb-6'>
+              <div className='relative group'>
+                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
+                <PanelField
+                  type='text'
+                  placeholder='搜索短剧名称...'
+                  className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
+                  value={searchQuery}
+                  onFocus={() => setIsSearchInputFocused(true)}
+                  onBlur={() =>
+                    setTimeout(() => setIsSearchInputFocused(false), 200)
                   }
-                >
-                  <ShortDramaCard drama={drama} />
-                </div>
-              ))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSearchQuery(value);
+                    if (searchTimerRef.current)
+                      clearTimeout(searchTimerRef.current);
+                    searchTimerRef.current = setTimeout(() => {
+                      if (value.trim()) {
+                        handleSearch(value.trim());
+                      } else {
+                        setIsSearchMode(false);
+                      }
+                    }, 300);
+                  }}
+                />
+              </div>
+              {/* 搜索历史 */}
+              {isSearchInputFocused &&
+                !searchQuery &&
+                searchHistory.length > 0 && (
+                  <div className='mt-3'>
+                    <div className='flex items-center justify-between mb-2'>
+                      <span className='text-xs text-gray-500 dark:text-gray-400'>
+                        搜索历史
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSearchHistory([]);
+                          localStorage.removeItem('shortdrama-search-history');
+                        }}
+                        className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      >
+                        清除
+                      </button>
+                    </div>
+                    <div className='flex flex-wrap gap-2'>
+                      {searchHistory.map((item, index) => (
+                        <button
+                          key={item}
+                          onClick={() => {
+                            setSearchQuery(item);
+                            handleSearch(item);
+                          }}
+                          className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
-          )}
 
-          {/* 加载更多按钮 - 虚拟化模式下隐藏（由滚动自动加载） */}
-          {!useVirtualization &&
-            hasMore &&
-            !loading &&
-            sortedDramas.length > 0 && (
-              <div className='flex justify-center mt-8'>
-                <button
-                  onClick={() => setPage((prevPage) => prevPage + 1)}
-                  className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
-                >
-                  加载更多
-                </button>
+            {/* 分类筛选 */}
+            {!isSearchMode && categories.length > 0 && (
+              <div className='mb-6'>
+                <div className='mb-4 flex items-center justify-between gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <Filter className='h-4 w-4 text-gray-500' />
+                    <span className='text-base font-semibold text-gray-900 dark:text-gray-100'>
+                      分类
+                    </span>
+                  </div>
+                  <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-gray-800 dark:text-gray-300 font-medium'>
+                    {categories.length}
+                  </span>
+                </div>
+                <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
+                  {categories.map((category, index) => (
+                    <PillButton
+                      key={category.type_id}
+                      onClick={() => {
+                        setSelectedCategory(category.type_id);
+                      }}
+                      active={selectedCategory === category.type_id}
+                      className='px-4 py-2 duration-300'
+                      style={{
+                        animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
+                      }}
+                    >
+                      {category.type_name}
+                    </PillButton>
+                  ))}
+                </PillGroup>
               </div>
             )}
 
-          {/* 加载状态 */}
-          {loading && (isInitialLoad || page > 1) && (
-            <div className='mt-8'>
-              {/* Fluent 2 动态加载指示器 */}
-              <div className='flex justify-center mb-6'>
-                <div
-                  className='flex items-center gap-3 px-6 py-3 rounded-full'
-                  style={{
-                    background: 'var(--color-background-subtle)',
-                    border: '1px solid var(--color-stroke-subtle)',
-                    boxShadow: 'var(--shadow-2)',
-                  }}
+            {/* 排序选项 */}
+            {!isSearchMode && (
+              <div className='flex items-center gap-2 mb-4'>
+                <span className='text-xs text-gray-500 dark:text-gray-400'>
+                  排序:
+                </span>
+                <PillButton
+                  active={sortBy === 'latest'}
+                  onClick={() => setSortBy('latest')}
+                  className='px-3 py-1 text-xs'
                 >
-                  {/* 品牌色脉冲圆点动画 */}
-                  <div className='relative flex items-center gap-1'>
-                    <span
-                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                      style={{ animationDelay: '0ms' }}
-                    ></span>
-                    <span
-                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                      style={{ animationDelay: '160ms' }}
-                    ></span>
-                    <span
-                      className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                      style={{ animationDelay: '320ms' }}
-                    ></span>
-                  </div>
-                  <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                    加载更多短剧...
-                  </span>
-                </div>
+                  最新
+                </PillButton>
+                <PillButton
+                  active={sortBy === 'popular'}
+                  onClick={() => setSortBy('popular')}
+                  className='px-3 py-1 text-xs'
+                >
+                  最热
+                </PillButton>
+                <PillButton
+                  active={sortBy === 'name'}
+                  onClick={() => setSortBy('name')}
+                  className='px-3 py-1 text-xs'
+                >
+                  名称
+                </PillButton>
               </div>
+            )}
+
+            {/* 虚拟化开关 */}
+            <div className='flex justify-end mb-4'>
+              <label className='flex items-center gap-3 cursor-pointer select-none group'>
+                <span className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors'>
+                  虚拟滑动
+                </span>
+                <div className='relative inline-flex items-center rounded-full border border-black/6 bg-white/75 p-1 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-gray-800'>
+                  <input
+                    type='checkbox'
+                    className='sr-only peer'
+                    checked={useVirtualization}
+                    onChange={toggleVirtualization}
+                  />
+                  <div className='relative flex h-6 w-11 items-center rounded-full bg-gray-200 transition-all duration-300 peer-checked:bg-linear-to-r peer-checked:from-[#f4c24d] peer-checked:via-[#f0b938] peer-checked:to-[#d89c18] dark:bg-gray-700'></div>
+                  <div className='absolute left-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 peer-checked:translate-x-5'>
+                    <span className='text-[10px] text-gray-500'>
+                      {useVirtualization ? '✨' : '○'}
+                    </span>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {/* 短剧网格 */}
+            {useVirtualization ? (
+              <VirtualGrid
+                items={sortedDramas}
+                className='grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                rowGapClass='pb-4'
+                estimateRowHeight={280}
+                endReached={() => {
+                  if (hasMore && !loading) {
+                    setPage((prevPage) => prevPage + 1);
+                  }
+                }}
+                endReachedThreshold={3}
+                renderItem={(drama, index) => (
+                  <ShortDramaCard drama={drama} priority={index < 30} />
+                )}
+              />
+            ) : (
               <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-                {Array.from({ length: 12 }).map((_, index) => (
+                {sortedDramas.map((drama, index) => (
                   <div
-                    key={`skeleton-${index}`}
-                    className='relative overflow-hidden'
-                    style={{
-                      animation: `fluent2-fade-in 250ms cubic-bezier(0,0,0,1) ${index * 40}ms both`,
-                    }}
+                    key={`${drama.id}-${index}`}
+                    ref={
+                      index === sortedDramas.length - 1
+                        ? lastDramaElementRef
+                        : null
+                    }
                   >
-                    <div
-                      className='aspect-[2/3] w-full rounded-lg'
-                      style={{
-                        background:
-                          'linear-gradient(135deg, var(--color-background-muted), var(--color-background-subtle), var(--color-background-muted))',
-                        backgroundSize: '200% 100%',
-                        animation: 'fluent2-shimmer 1.5s ease-in-out infinite',
-                      }}
-                    />
-                    <div
-                      className='mt-2 h-4 rounded'
-                      style={{
-                        background: 'var(--color-background-muted)',
-                        width: '70%',
-                      }}
-                    />
-                    <div
-                      className='mt-1 h-3 rounded'
-                      style={{
-                        background: 'var(--color-background-muted)',
-                        width: '45%',
-                      }}
-                    />
+                    <ShortDramaCard drama={drama} />
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* 无更多数据提示 */}
-          {!loading && !hasMore && sortedDramas.length > 0 && (
-            <div className='flex justify-center mt-12 py-8'>
-              <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-gray-800 border border-black/6 dark:border-white/8 shadow-md  overflow-hidden'>
-                <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
-
-                {/* 内容 */}
-                <div className='relative flex flex-col items-center gap-2'>
-                  {/* 完成图标 */}
-                  <div className='relative'>
-                    <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
-                      <svg
-                        className='w-7 h-7 text-white'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='2.5'
-                          d='M5 13l4 4L19 7'
-                        ></path>
-                      </svg>
-                    </div>
-                    {/* 光圈效果 */}
-                    <div className='absolute inset-0 rounded-full bg-purple-400/30 animate-ping'></div>
-                  </div>
-
-                  {/* 文字 */}
-                  <div className='text-center'>
-                    <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
-                      已经到底了～
-                    </p>
-                    <p className='text-xs text-gray-600 dark:text-gray-400'>
-                      共 {sortedDramas.length} 部短剧
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 无搜索结果 */}
-          {!loading && sortedDramas.length === 0 && isSearchMode && (
-            <div className='flex justify-center py-16'>
-              <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-                {/* 装饰性元素 */}
-                <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl'></div>
-                <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
-
-                {/* 内容 */}
-                <div className='relative flex flex-col items-center gap-4'>
-                  {/* 搜索图标 */}
-                  <div className='relative'>
-                    <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                      <svg
-                        className='w-12 h-12 text-gray-400 dark:text-gray-500'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='1.5'
-                          d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-                        ></path>
-                      </svg>
-                    </div>
-                    {/* 浮动小点装饰 */}
-                    <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
-                    <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                  </div>
-
-                  {/* 文字内容 */}
-                  <div className='text-center space-y-2'>
-                    <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                      没有找到相关短剧
-                    </h3>
-                    <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
-                      换个关键词试试，或者浏览其他分类
-                    </p>
-                  </div>
-
-                  {/* 按钮 */}
+            {/* 加载更多按钮 - 虚拟化模式下隐藏（由滚动自动加载） */}
+            {!useVirtualization &&
+              hasMore &&
+              !loading &&
+              sortedDramas.length > 0 && (
+                <div className='flex justify-center mt-8'>
                   <button
-                    onClick={() => {
-                      handleSearch('');
-                    }}
-                    className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
+                    onClick={() => setPage((prevPage) => prevPage + 1)}
+                    className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
                   >
-                    清除搜索条件
+                    加载更多
                   </button>
+                </div>
+              )}
 
-                  {/* 装饰线 */}
-                  <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
+            {/* 加载状态 */}
+            {loading && (isInitialLoad || page > 1) && (
+              <div className='mt-8'>
+                {/* Fluent 2 动态加载指示器 */}
+                <div className='flex justify-center mb-6'>
+                  <div
+                    className='flex items-center gap-3 px-6 py-3 rounded-full'
+                    style={{
+                      background: 'var(--color-background-subtle)',
+                      border: '1px solid var(--color-stroke-subtle)',
+                      boxShadow: 'var(--shadow-2)',
+                    }}
+                  >
+                    {/* 品牌色脉冲圆点动画 */}
+                    <div className='relative flex items-center gap-1'>
+                      <span
+                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                        style={{ animationDelay: '0ms' }}
+                      ></span>
+                      <span
+                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                        style={{ animationDelay: '160ms' }}
+                      ></span>
+                      <span
+                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
+                        style={{ animationDelay: '320ms' }}
+                      ></span>
+                    </div>
+                    <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                      加载更多短剧...
+                    </span>
+                  </div>
+                </div>
+                <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                  {Array.from({ length: 12 }).map((_, index) => (
+                    <div
+                      key={`skeleton-${index}`}
+                      className='relative overflow-hidden'
+                      style={{
+                        animation: `fluent2-fade-in 250ms cubic-bezier(0,0,0,1) ${index * 40}ms both`,
+                      }}
+                    >
+                      <div
+                        className='aspect-[2/3] w-full rounded-lg'
+                        style={{
+                          background:
+                            'linear-gradient(135deg, var(--color-background-muted), var(--color-background-subtle), var(--color-background-muted))',
+                          backgroundSize: '200% 100%',
+                          animation:
+                            'fluent2-shimmer 1.5s ease-in-out infinite',
+                        }}
+                      />
+                      <div
+                        className='mt-2 h-4 rounded'
+                        style={{
+                          background: 'var(--color-background-muted)',
+                          width: '70%',
+                        }}
+                      />
+                      <div
+                        className='mt-1 h-3 rounded'
+                        style={{
+                          background: 'var(--color-background-muted)',
+                          width: '45%',
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* 无更多数据提示 */}
+            {!loading && !hasMore && sortedDramas.length > 0 && (
+              <div className='flex justify-center mt-12 py-8'>
+                <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-gray-800 border border-black/6 dark:border-white/8 shadow-md  overflow-hidden'>
+                  <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
+
+                  {/* 内容 */}
+                  <div className='relative flex flex-col items-center gap-2'>
+                    {/* 完成图标 */}
+                    <div className='relative'>
+                      <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
+                        <svg
+                          className='w-7 h-7 text-white'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='2.5'
+                            d='M5 13l4 4L19 7'
+                          ></path>
+                        </svg>
+                      </div>
+                      {/* 光圈效果 */}
+                      <div className='absolute inset-0 rounded-full bg-purple-400/30 animate-ping'></div>
+                    </div>
+
+                    {/* 文字 */}
+                    <div className='text-center'>
+                      <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
+                        已经到底了～
+                      </p>
+                      <p className='text-xs text-gray-600 dark:text-gray-400'>
+                        共 {sortedDramas.length} 部短剧
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 无搜索结果 */}
+            {!loading && sortedDramas.length === 0 && isSearchMode && (
+              <div className='flex justify-center py-16'>
+                <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
+                  {/* 装饰性元素 */}
+                  <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl'></div>
+                  <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
+
+                  {/* 内容 */}
+                  <div className='relative flex flex-col items-center gap-4'>
+                    {/* 搜索图标 */}
+                    <div className='relative'>
+                      <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
+                        <svg
+                          className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='1.5'
+                            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                          ></path>
+                        </svg>
+                      </div>
+                      {/* 浮动小点装饰 */}
+                      <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
+                      <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
+                    </div>
+
+                    {/* 文字内容 */}
+                    <div className='text-center space-y-2'>
+                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+                        没有找到相关短剧
+                      </h3>
+                      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
+                        换个关键词试试，或者浏览其他分类
+                      </p>
+                    </div>
+
+                    {/* 按钮 */}
+                    <button
+                      onClick={() => {
+                        handleSearch('');
+                      }}
+                      className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
+                    >
+                      清除搜索条件
+                    </button>
+
+                    {/* 装饰线 */}
+                    <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </MountAnimation>
 
       {/* 返回顶部悬浮按钮 */}
       <button

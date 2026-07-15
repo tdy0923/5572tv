@@ -9,8 +9,8 @@ import '../services/theme_service.dart';
 import '../utils/device_utils.dart';
 import 'video_card.dart';
 import '../utils/image_url.dart';
-import '../utils/font_utils.dart';
 import '../components/app_button.dart';
+import '../components/app_text.dart';
 import '../components/app_dialog.dart';
 import 'video_menu_bottom_sheet.dart';
 import 'shimmer_effect.dart';
@@ -236,7 +236,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.error.withOpacity(0.1),
+              color: AppTheme.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -246,13 +246,11 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          AppText.body(
             '确定要清空所有播放记录吗？此操作无法撤销。',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-              height: 1.4,
-            ),
+            fontSize: 14,
+            color: AppTheme.foregroundMuted,
+            height: 1.4,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -297,9 +295,9 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
+              content: AppText.body(
                 '播放记录已清空',
-                style: FontUtils.systemFont(color: Colors.white),
+                color: Colors.white,
               ),
               backgroundColor: AppTheme.success,
               behavior: SnackBarBehavior.floating,
@@ -314,12 +312,12 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
         // 显示错误提示
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '清空失败',
-                style: FontUtils.systemFont(color: Colors.white),
-              ),
-              backgroundColor: AppTheme.error,
+          SnackBar(
+            content: AppText.body(
+              '清空失败',
+              color: Colors.white,
+            ),
+            backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusLg),
@@ -334,9 +332,9 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: AppText.body(
               '清空失败: ${e.toString()}',
-              style: FontUtils.systemFont(color: Colors.white),
+              color: Colors.white,
             ),
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
@@ -377,15 +375,13 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                   children: [
                     Consumer<ThemeService>(
                       builder: (context, themeService, child) {
-                        return Text(
+                        return AppText.body(
                           '继续观看',
-                          style: FontUtils.systemFont(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: themeService.isDarkMode
-                                ? AppTheme.background
-                                : AppTheme.foreground,
-                          ),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: themeService.isDarkMode
+                              ? AppTheme.background
+                              : AppTheme.foreground,
                         );
                       },
                     ),
@@ -561,7 +557,7 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -724,22 +720,18 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
               size: 32,
             ),
             const SizedBox(height: 8),
-            Text(
+            AppText.body(
               '加载播放记录失败',
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              fontSize: 14,
+              color: Colors.grey[600],
             ),
             const SizedBox(height: 8),
             TextButton(
               onPressed: _loadPlayRecords,
-              child: Text(
+              child: AppText.body(
                 '重试',
-                style: FontUtils.systemFont(
-                  fontSize: 12,
-                  color: AppTheme.foreground,
-                ),
+                fontSize: 12,
+                color: AppTheme.foreground,
               ),
             ),
           ],

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import '../models/video_info.dart';
 import '../models/douban_movie.dart';
 import '../models/bangumi.dart';
@@ -14,7 +14,10 @@ import '../services/bangumi_service.dart';
 import '../utils/image_url.dart';
 import 'fullscreen_image_viewer.dart';
 import '../models/search_result.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
+import 'collapsible_scroll_physics.dart';
+export 'video_menu_action.dart';
+import 'video_menu_action.dart';
 
 /// 判断是否为iOS平台
 bool get _isIOS {
@@ -24,64 +27,6 @@ bool get _isIOS {
   } catch (e) {
     return false;
   }
-}
-
-/// 自定义滚动物理，在展开状态下的顶部向下拖拽时触发收起
-class CollapsibleScrollPhysics extends ScrollPhysics {
-  final bool isAtMaxHeight;
-  final VoidCallback? onCollapseTriggered;
-  final bool isIOS;
-
-  const CollapsibleScrollPhysics({
-    super.parent,
-    this.isAtMaxHeight = false,
-    this.onCollapseTriggered,
-    this.isIOS = false,
-  });
-
-  @override
-  CollapsibleScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return CollapsibleScrollPhysics(
-      parent: buildParent(ancestor),
-      isAtMaxHeight: isAtMaxHeight,
-      onCollapseTriggered: onCollapseTriggered,
-      isIOS: isIOS,
-    );
-  }
-
-  @override
-  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    // 如果已展开到最大高度且在顶部，向下拖拽时触发收起回调
-    // iOS 需要更宽松的条件，因为 bouncing 效果会产生负值
-    if (isAtMaxHeight &&
-        ((isIOS && position.pixels <= 1.0) || (!isIOS && position.pixels <= 0)) &&
-        offset > 0) {
-      // 触发收起回调
-      if (onCollapseTriggered != null) {
-        // 使用 Future.microtask 确保回调在当前帧完成后执行
-        Future.microtask(() => onCollapseTriggered!());
-      }
-      return 0.0; // 不应用滚动物理
-    }
-    return super.applyPhysicsToUserOffset(position, offset);
-  }
-
-  @override
-  ScrollPhysics buildParent(ScrollPhysics? ancestor) {
-    // 根据平台选择合适的父物理效果
-    final parentPhysics = isIOS ? BouncingScrollPhysics() : ClampingScrollPhysics();
-    return parent?.applyTo(ancestor ?? parentPhysics) ?? parentPhysics;
-  }
-}
-
-/// 视频菜单选项
-enum VideoMenuAction {
-  play,
-  favorite,
-  unfavorite,
-  deleteRecord,
-  doubanDetail,
-  bangumiDetail,
 }
 
 /// 视频菜单底部弹窗组件
@@ -125,7 +70,7 @@ class VideoMenuBottomSheet extends StatefulWidget {
       isScrollControlled: true,
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.5), // 添加半透明的遮罩层
+      barrierColor: Colors.black.withValues(alpha: 0.5), // 添加半透明的遮罩层
       transitionAnimationController: transitionController,
       builder: (context) => VideoMenuBottomSheet(
         videoInfo: videoInfo,
@@ -266,7 +211,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
         });
       }
     } catch (e) {
-      print('捕获初始高度失败: $e');
+      if (kDebugMode) debugPrint('捕获初始高度失败: $e');
     }
   }
 
@@ -293,7 +238,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
         });
       }
     } catch (e) {
-      print('计算内容最大高度失败: $e');
+      if (kDebugMode) debugPrint('计算内容最大高度失败: $e');
     }
   }
 
@@ -413,10 +358,11 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
     } catch (e) {
       // 静默处理错误
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingDoubanDetails = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingDoubanDetails = false;
+        });
+      }
     }
   }
 
@@ -453,10 +399,11 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
     } catch (e) {
       // 静默处理错误
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingBangumiDetails = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingBangumiDetails = false;
+        });
+      }
     }
   }
 
@@ -610,7 +557,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, -2),
                     ),
@@ -700,7 +647,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Colors.black.withOpacity(0.1),
+                                                  color: Colors.black.withValues(alpha: 0.1),
                                                   blurRadius: 4,
                                                   offset: const Offset(0, 2),
                                                 ),
@@ -754,15 +701,13 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             // 标题
-                                            Text(
+                                            AppText.body(
                                               widget.videoInfo.title,
-                                              style: FontUtils.systemFont(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: themeService.isDarkMode 
-                                                    ? AppTheme.background
-                                                    : AppTheme.darkBackground,
-                                              ),
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: themeService.isDarkMode 
+                                                  ? AppTheme.background
+                                                  : AppTheme.darkBackground,
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -772,14 +717,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                             // 源名称标签或播放源数量
                             (widget.videoInfo.source == 'douban' || widget.videoInfo.source == 'bangumi')
                                 ? // 豆瓣或Bangumi来源：纯文本，无边框
-                                  Text(
+                                  AppText.body(
                                     widget.videoInfo.source == 'douban' ? '来自豆瓣' : '来自 Bangumi',
-                                    style: FontUtils.systemFont(
-                                      fontSize: 12,
-                                      color: themeService.isDarkMode 
-                                          ? AppTheme.foregroundMuted
-                                          : AppTheme.foregroundSubtle,
-                                    ),
+                                    fontSize: 12,
+                                    color: themeService.isDarkMode 
+                                        ? AppTheme.foregroundMuted
+                                        : AppTheme.foregroundSubtle,
                                   )
                                 : // 聚合来源：显示播放源数量并可点击
                                   widget.from == 'agg'
@@ -788,14 +731,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text(
+                                              AppText.body(
                                                 '共 ${widget.videoInfo.sourceName.split(', ').length} 个播放源',
-                                                style: FontUtils.systemFont(
-                                                  fontSize: 12,
-                                                  color: themeService.isDarkMode 
-                                                      ? AppTheme.foregroundMuted
-                                                      : AppTheme.foregroundSubtle,
-                                                ),
+                                                fontSize: 12,
+                                                color: themeService.isDarkMode 
+                                                    ? AppTheme.foregroundMuted
+                                                    : AppTheme.foregroundSubtle,
                                               ),
                                               const SizedBox(width: 4),
                                               Icon(
@@ -823,14 +764,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                             ),
                                             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                                           ),
-                                          child: Text(
+                                          child: AppText.body(
                                             widget.videoInfo.sourceName,
-                                            style: FontUtils.systemFont(
-                                              fontSize: 12,
-                                              color: themeService.isDarkMode 
-                                                  ? AppTheme.foregroundMuted
-                                                  : AppTheme.foregroundSubtle,
-                                            ),
+                                            fontSize: 12,
+                                            color: themeService.isDarkMode 
+                                                ? AppTheme.foregroundMuted
+                                                : AppTheme.foregroundSubtle,
                                           ),
                                         ),
                                           ],
@@ -840,7 +779,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                       // 关闭按钮
                                       GestureDetector(
                                         onTap: widget.onClose,
-                                        child: Container(
+                                        child: SizedBox(
                                           width: 32,
                                           height: 32,
                                           child: Icon(
@@ -949,15 +888,13 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           ),
           
           // 豆瓣详情标题
-          Text(
+          AppText.body(
             '豆瓣简介',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: themeService.isDarkMode 
-                  ? AppTheme.background
-                  : AppTheme.darkBackground,
-            ),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: themeService.isDarkMode 
+                ? AppTheme.background
+                : AppTheme.darkBackground,
           ),
           
           const SizedBox(height: 16),
@@ -969,25 +906,23 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.warning.withOpacity(0.1),
+                    color: AppTheme.warning.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.star,
                         size: 16,
                         color: AppTheme.warning,
                       ),
                       const SizedBox(width: 4),
-                      Text(
+                      AppText.body(
                         _doubanDetails!.rate!,
-                        style: FontUtils.systemFont(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.warning,
-                        ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.warning,
                       ),
                     ],
                   ),
@@ -1005,14 +940,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                   ),
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
-                child: Text(
+                child: AppText.body(
                   _doubanDetails!.year,
-                  style: FontUtils.systemFont(
-                    fontSize: 14,
-                    color: themeService.isDarkMode 
-                        ? AppTheme.foregroundMuted
-                        : AppTheme.foregroundSubtle,
-                  ),
+                  fontSize: 14,
+                  color: themeService.isDarkMode 
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundSubtle,
                 ),
               ),
             ],
@@ -1032,14 +965,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       : AppTheme.gray100,
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
-                child: Text(
+                child: AppText.body(
                   genre,
-                  style: FontUtils.systemFont(
-                    fontSize: 12,
-                    color: themeService.isDarkMode 
-                        ? AppTheme.gray300
-                        : AppTheme.foregroundSubtle,
-                  ),
+                  fontSize: 12,
+                  color: themeService.isDarkMode 
+                      ? AppTheme.gray300
+                      : AppTheme.foregroundSubtle,
                 ),
               )).toList(),
             ),
@@ -1059,26 +990,22 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           // 简介
           if (_doubanDetails!.summary != null && _doubanDetails!.summary!.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(
+            AppText.body(
               '简介',
-              style: FontUtils.systemFont(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: themeService.isDarkMode 
-                    ? AppTheme.background
-                    : AppTheme.darkBackground,
-              ),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: themeService.isDarkMode 
+                  ? AppTheme.background
+                  : AppTheme.darkBackground,
             ),
             const SizedBox(height: 8),
-            Text(
+            AppText.body(
               _doubanDetails!.summary!,
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                height: 1.5,
-                color: themeService.isDarkMode 
-                    ? AppTheme.gray300
-                    : AppTheme.foregroundSubtle,
-              ),
+              fontSize: 14,
+              height: 1.5,
+              color: themeService.isDarkMode 
+                  ? AppTheme.gray300
+                  : AppTheme.foregroundSubtle,
             ),
           ],
           
@@ -1113,15 +1040,13 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           ),
           
           // Bangumi 详情标题
-          Text(
+          AppText.body(
             'Bangumi 简介',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: themeService.isDarkMode 
-                  ? AppTheme.background
-                  : AppTheme.darkBackground,
-            ),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: themeService.isDarkMode 
+                ? AppTheme.background
+                : AppTheme.darkBackground,
           ),
           
           const SizedBox(height: 16),
@@ -1133,25 +1058,23 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.error.withOpacity(0.1),
+                    color: AppTheme.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.star,
                         size: 16,
                         color: AppTheme.error,
                       ),
                       const SizedBox(width: 4),
-                      Text(
+                      AppText.body(
                         _bangumiDetails!.rating.score.toStringAsFixed(1),
-                        style: FontUtils.systemFont(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.error,
-                        ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.error,
                       ),
                     ],
                   ),
@@ -1170,14 +1093,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                     ),
                     borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                   ),
-                  child: Text(
+                  child: AppText.body(
                     _bangumiDetails!.date!.split('-').first,
-                    style: FontUtils.systemFont(
-                      fontSize: 14,
-                      color: themeService.isDarkMode 
-                          ? AppTheme.foregroundMuted
-                          : AppTheme.foregroundSubtle,
-                    ),
+                    fontSize: 14,
+                    color: themeService.isDarkMode 
+                        ? AppTheme.foregroundMuted
+                        : AppTheme.foregroundSubtle,
                   ),
                 ),
               ],
@@ -1198,14 +1119,12 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                       : AppTheme.gray100,
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 ),
-                child: Text(
+                child: AppText.body(
                   tag,
-                  style: FontUtils.systemFont(
-                    fontSize: 12,
-                    color: themeService.isDarkMode 
-                        ? AppTheme.gray300
-                        : AppTheme.foregroundSubtle,
-                  ),
+                  fontSize: 12,
+                  color: themeService.isDarkMode 
+                      ? AppTheme.gray300
+                      : AppTheme.foregroundSubtle,
                 ),
               )).toList(),
             ),
@@ -1217,26 +1136,22 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
           // 简介
           if (_bangumiDetails!.summary.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(
+            AppText.body(
               '简介',
-              style: FontUtils.systemFont(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: themeService.isDarkMode 
-                    ? AppTheme.background
-                    : AppTheme.darkBackground,
-              ),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: themeService.isDarkMode 
+                  ? AppTheme.background
+                  : AppTheme.darkBackground,
             ),
             const SizedBox(height: 8),
-            Text(
+            AppText.body(
               _bangumiDetails!.summary,
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                height: 1.5,
-                color: themeService.isDarkMode 
-                    ? AppTheme.gray300
-                    : AppTheme.foregroundSubtle,
-              ),
+              fontSize: 14,
+              height: 1.5,
+              color: themeService.isDarkMode 
+                  ? AppTheme.gray300
+                  : AppTheme.foregroundSubtle,
             ),
           ],
           
@@ -1253,25 +1168,21 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
       children: [
         SizedBox(
           width: 50,
-          child: Text(
+          child: AppText.body(
             label,
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: themeService.isDarkMode 
-                  ? AppTheme.foregroundMuted
-                  : AppTheme.foregroundSubtle,
-            ),
+            fontSize: 14,
+            color: themeService.isDarkMode 
+                ? AppTheme.foregroundMuted
+                : AppTheme.foregroundSubtle,
           ),
         ),
         Expanded(
-          child: Text(
+          child: AppText.body(
             value,
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: themeService.isDarkMode 
-                  ? AppTheme.gray300
-                  : AppTheme.foreground,
-            ),
+            fontSize: 14,
+            color: themeService.isDarkMode 
+                ? AppTheme.gray300
+                : AppTheme.foreground,
           ),
         ),
       ],
@@ -1642,7 +1553,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                 ),
                 child: Icon(
@@ -1656,28 +1567,24 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               
               // 标题
               Expanded(
-                child: Text(
+                child: AppText.body(
                   title,
-                  style: FontUtils.systemFont(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: themeService.isDarkMode 
-                        ? AppTheme.background
-                        : AppTheme.darkBackground,
-                  ),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: themeService.isDarkMode 
+                      ? AppTheme.background
+                      : AppTheme.darkBackground,
                 ),
               ),
               
               // 副标题（集数信息）
               if (subtitle != null)
-                Text(
+                AppText.body(
                   subtitle,
-                  style: FontUtils.systemFont(
-                    fontSize: 14,
-                    color: themeService.isDarkMode 
-                        ? AppTheme.foregroundMuted
-                        : AppTheme.foregroundSubtle,
-                  ),
+                  fontSize: 14,
+                  color: themeService.isDarkMode 
+                      ? AppTheme.foregroundMuted
+                      : AppTheme.foregroundSubtle,
                 ),
             ],
           ),
@@ -1773,7 +1680,7 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
               borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -1785,15 +1692,13 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                 // 标题
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                  child: Text(
+                  child: AppText.body(
                     '可用播放源',
-                    style: FontUtils.systemFont(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: themeService.isDarkMode
-                          ? AppTheme.background
-                          : AppTheme.darkBackground,
-                    ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: themeService.isDarkMode
+                        ? AppTheme.background
+                        : AppTheme.darkBackground,
                   ),
                 ),
 
@@ -1818,23 +1723,19 @@ class _VideoMenuBottomSheetState extends State<VideoMenuBottomSheet>
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 child: Row(
                                   children: [
-                                    Text(
+                                    AppText.body(
                                       source.sourceName,
-                                      style: FontUtils.systemFont(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                     const Spacer(),
                                     if (source.episodes.length > 1)
-                                      Text(
+                                      AppText.body(
                                         '${source.episodes.length}集',
-                                        style: FontUtils.systemFont(
-                                          fontSize: 14,
-                                          color: themeService.isDarkMode
-                                              ? Colors.white70
-                                              : Colors.black54,
-                                        ),
+                                        fontSize: 14,
+                                        color: themeService.isDarkMode
+                                            ? Colors.white70
+                                            : Colors.black54,
                                       ),
                                     const SizedBox(width: 8),
                                     const Icon(Icons.chevron_right, size: 20),

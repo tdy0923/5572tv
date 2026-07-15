@@ -32,8 +32,8 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> {
             (widget.forceBlack
                 ? Colors.transparent
                 : (isDark 
-                    ? AppTheme.darkBackground.withOpacity(0.9)
-                    : Colors.white.withOpacity(0.8)));
+                    ? AppTheme.darkBackground.withValues(alpha: 0.9)
+                    : Colors.white.withValues(alpha: 0.8)));
         
         // Windows 11 风格的文字和图标颜色
         final foregroundColor = widget.forceBlack 
@@ -54,7 +54,7 @@ class _WindowsTitleBarState extends State<WindowsTitleBar> {
                   widget.title!,
                   style: TextStyle(
                     fontSize: 12,
-                    color: foregroundColor.withOpacity(0.7),
+                    color: foregroundColor.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -144,14 +144,14 @@ class _WindowsButtonHoverState extends State<_WindowsButtonHover> {
       backgroundColor = widget.isCloseButton
           ? AppTheme.error // 深红色
           : (widget.isDark 
-              ? Colors.white.withOpacity(0.1)
-              : Colors.black.withOpacity(0.06));
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.06));
     } else if (_isHovered) {
       backgroundColor = widget.isCloseButton
           ? AppTheme.error // Windows 11 红色
           : (widget.isDark 
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.04));
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.04));
     }
 
     return MouseRegion(

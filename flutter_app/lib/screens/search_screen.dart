@@ -20,7 +20,7 @@ import '../components/app_bottom_sheet.dart';
 import '../widgets/main_layout.dart';
 import '../components/app_dialog.dart';
 import '../components/app_button.dart';
-import '../utils/font_utils.dart';
+import '../components/app_text.dart';
 import '../utils/device_utils.dart';
 import 'player_screen.dart';
 
@@ -312,7 +312,7 @@ class _SearchScreenState extends State<SearchScreen>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppTheme.error.withOpacity(0.1),
+              color: AppTheme.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -322,13 +322,11 @@ class _SearchScreenState extends State<SearchScreen>
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          AppText.body(
             '确定要清空所有搜索历史吗？此操作无法撤销。',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-              height: 1.4,
-            ),
+            fontSize: 14,
+            color: AppTheme.foregroundMuted,
+            height: 1.4,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -573,25 +571,21 @@ class _SearchScreenState extends State<SearchScreen>
                     : AppTheme.stroke,
               ),
               const SizedBox(height: 24),
-              Text(
+              AppText.body(
                 '暂无搜索历史',
-                style: FontUtils.systemFont(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: themeService.isDarkMode
-                      ? AppTheme.foregroundSubtle
-                      : AppTheme.foregroundMuted,
-                ),
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: themeService.isDarkMode
+                    ? AppTheme.foregroundSubtle
+                    : AppTheme.foregroundMuted,
               ),
               const SizedBox(height: 12),
-              Text(
+              AppText.body(
                 '开始搜索你喜欢的内容吧',
-                style: FontUtils.systemFont(
-                  fontSize: 14,
-                  color: themeService.isDarkMode
-                      ? AppTheme.gray600
-                      : AppTheme.foregroundMuted,
-                ),
+                fontSize: 14,
+                color: themeService.isDarkMode
+                    ? AppTheme.gray600
+                    : AppTheme.foregroundMuted,
               ),
             ],
           ),
@@ -610,15 +604,13 @@ class _SearchScreenState extends State<SearchScreen>
             textBaseline: TextBaseline.alphabetic, // 使用字母基线
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              AppText.body(
                 '搜索历史',
-                style: FontUtils.systemFont(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: themeService.isDarkMode
-                      ? AppTheme.background
-                      : AppTheme.foreground,
-                ),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: themeService.isDarkMode
+                    ? AppTheme.background
+                    : AppTheme.foreground,
               ),
               MouseRegion(
                 cursor: DeviceUtils.isPC()
@@ -716,7 +708,7 @@ class _SearchScreenState extends State<SearchScreen>
                           themeService.isDarkMode
                               ? AppTheme.darkBackground
                               : Colors.white,
-                          AppTheme.error.withOpacity(0.2),
+                          AppTheme.error.withValues(alpha: 0.2),
                           animationValue,
                         )!;
 
@@ -775,12 +767,10 @@ class _SearchScreenState extends State<SearchScreen>
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
+                                AppText.body(
                                   history,
-                                  style: FontUtils.systemFont(
-                                    fontSize: 14,
-                                    color: textColor,
-                                  ),
+                                  fontSize: 14,
+                                  color: textColor,
                                 ),
                                 if (isDeleting) ...[
                                   const SizedBox(width: 8),
@@ -824,7 +814,7 @@ class _SearchScreenState extends State<SearchScreen>
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.2),
+                                          color: Colors.black.withValues(alpha: 0.2),
                                           blurRadius: 2,
                                           offset: const Offset(0, 1),
                                         ),
@@ -861,10 +851,10 @@ class _SearchScreenState extends State<SearchScreen>
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.error.withOpacity(0.1),
+        color: AppTheme.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
         border: Border.all(
-          color: AppTheme.error.withOpacity(0.3),
+          color: AppTheme.error.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -877,12 +867,10 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
+            child: AppText.body(
               error,
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                color: AppTheme.error,
-              ),
+              fontSize: 14,
+              color: AppTheme.error,
             ),
           ),
           TextButton(
@@ -891,13 +879,11 @@ class _SearchScreenState extends State<SearchScreen>
                 _searchError = null;
               });
             },
-            child: Text(
+            child: AppText.body(
               '重试',
-              style: FontUtils.systemFont(
-                fontSize: 12,
-                color: AppTheme.error,
-                fontWeight: FontWeight.w500,
-              ),
+              fontSize: 12,
+              color: AppTheme.error,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -931,28 +917,24 @@ class _SearchScreenState extends State<SearchScreen>
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
+                  AppText.body(
                     '搜索结果',
-                    style: FontUtils.systemFont(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: themeService.isDarkMode
-                          ? AppTheme.background
-                          : AppTheme.foreground,
-                    ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: themeService.isDarkMode
+                        ? AppTheme.background
+                        : AppTheme.foreground,
                   ),
                   if (_hasSearched) ...[
                     const SizedBox(width: 8),
                     if (_hasReceivedStart)
-                      Text(
+                      AppText.body(
                         _getProgressText(),
-                        style: FontUtils.systemFont(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: themeService.isDarkMode
-                              ? AppTheme.foregroundMuted
-                              : AppTheme.foregroundMuted,
-                        ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: themeService.isDarkMode
+                            ? AppTheme.foregroundMuted
+                            : AppTheme.foregroundMuted,
                       )
                   ],
                 ],
@@ -963,15 +945,13 @@ class _SearchScreenState extends State<SearchScreen>
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
+                    AppText.body(
                       '聚合',
-                      style: FontUtils.systemFont(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: themeService.isDarkMode
-                            ? AppTheme.background
-                            : AppTheme.foreground,
-                      ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: themeService.isDarkMode
+                          ? AppTheme.background
+                          : AppTheme.foreground,
                     ),
                     const SizedBox(width: 6),
                     MouseRegion(
@@ -1091,21 +1071,17 @@ class _SearchScreenState extends State<SearchScreen>
             color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
-          Text(
+          AppText.body(
             '未找到结果',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 12),
-          Text(
+          AppText.body(
             '请尝试更换关键词',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 14,
+            color: AppTheme.foregroundMuted,
           ),
         ],
       );
@@ -1120,21 +1096,17 @@ class _SearchScreenState extends State<SearchScreen>
             color: AppTheme.stroke,
           ),
           const SizedBox(height: 24),
-          Text(
+          AppText.body(
             '搜索中...',
-            style: FontUtils.systemFont(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foregroundMuted,
           ),
           const SizedBox(height: 12),
-          Text(
+          AppText.body(
             '聚合搜索中，请稍候',
-            style: FontUtils.systemFont(
-              fontSize: 14,
-              color: AppTheme.foregroundMuted,
-            ),
+            fontSize: 14,
+            color: AppTheme.foregroundMuted,
           ),
         ],
       );
@@ -1191,9 +1163,9 @@ class _SearchScreenState extends State<SearchScreen>
         // 豆瓣详情 - 已在组件内部处理URL跳转
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: AppText.body(
               '正在打开豆瓣详情: ${videoInfo.title}',
-              style: FontUtils.systemFont(color: Colors.white),
+              color: Colors.white,
             ),
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
@@ -1208,9 +1180,9 @@ class _SearchScreenState extends State<SearchScreen>
         // Bangumi详情 - 已在组件内部处理URL跳转
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: AppText.body(
               '正在打开 Bangumi 详情: ${videoInfo.title}',
-              style: FontUtils.systemFont(color: Colors.white),
+              color: Colors.white,
             ),
             backgroundColor: AppTheme.info,
             behavior: SnackBarBehavior.floating,
@@ -1251,9 +1223,9 @@ class _SearchScreenState extends State<SearchScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
+              content: AppText.body(
                 result.errorMessage ?? '收藏失败',
-                style: FontUtils.systemFont(color: Colors.white),
+                color: Colors.white,
               ),
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
@@ -1271,9 +1243,9 @@ class _SearchScreenState extends State<SearchScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: AppText.body(
               '收藏失败: ${e.toString()}',
-              style: FontUtils.systemFont(color: Colors.white),
+              color: Colors.white,
             ),
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
@@ -1308,9 +1280,9 @@ class _SearchScreenState extends State<SearchScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
+              content: AppText.body(
                 result.errorMessage ?? '取消收藏失败',
-                style: FontUtils.systemFont(color: Colors.white),
+                color: Colors.white,
               ),
               backgroundColor: AppTheme.error,
               behavior: SnackBarBehavior.floating,
@@ -1329,9 +1301,9 @@ class _SearchScreenState extends State<SearchScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
+            content: AppText.body(
               '取消收藏失败: ${e.toString()}',
-              style: FontUtils.systemFont(color: Colors.white),
+              color: Colors.white,
             ),
             backgroundColor: AppTheme.error,
             behavior: SnackBarBehavior.floating,
@@ -1448,17 +1420,15 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           child: Row(
             children: [
-              Text(
-                title, // 始终显示原始标题，不显示选中内容
-                style: FontUtils.systemFont(
-                  fontSize: 13,
-                  color: (DeviceUtils.isPC() && isHovered) || !isDefault
-                      ? AppTheme.success
-                      : Theme.of(context).textTheme.bodySmall?.color,
-                  fontWeight: (DeviceUtils.isPC() && isHovered) || !isDefault
-                      ? FontWeight.w500
-                      : FontWeight.normal,
-                ),
+              AppText.body(
+                title,
+                fontSize: 13,
+                color: (DeviceUtils.isPC() && isHovered) || !isDefault
+                    ? AppTheme.success
+                    : Theme.of(context).textTheme.bodySmall?.color,
+                fontWeight: (DeviceUtils.isPC() && isHovered) || !isDefault
+                    ? FontWeight.w500
+                    : FontWeight.normal,
               ),
               const SizedBox(width: 4),
               Icon(
@@ -1631,19 +1601,17 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           child: Row(
             children: [
-              Text(
+              AppText.body(
                 text,
-                style: FontUtils.systemFont(
-                  fontSize: 13,
-                  color:
-                      (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
-                          ? AppTheme.success
-                          : Theme.of(context).textTheme.bodySmall?.color,
-                  fontWeight:
-                      (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
-                          ? FontWeight.w500
-                          : FontWeight.normal,
-                ),
+                fontSize: 13,
+                color:
+                    (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
+                        ? AppTheme.success
+                        : Theme.of(context).textTheme.bodySmall?.color,
+                fontWeight:
+                    (DeviceUtils.isPC() && _isYearSortHovered) || !isDefault
+                        ? FontWeight.w500
+                        : FontWeight.normal,
               ),
               const SizedBox(width: 4),
               Icon(

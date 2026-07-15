@@ -458,7 +458,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
     // 如果正在加载视频，只显示加载界面
     if (widget.isLoadingVideo) {
       return Container(
-        color: Colors.black.withOpacity(0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         child: const Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -556,7 +556,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.6),
                           Colors.transparent,
                         ],
                       ),
@@ -581,7 +581,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                         begin: Alignment.bottomCenter,
                         end: Alignment.topCenter,
                         colors: [
-                          Colors.black.withOpacity(0.6),
+                          Colors.black.withValues(alpha: 0.6),
                           Colors.transparent,
                         ],
                       ),
@@ -815,7 +815,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                                       ? BoxDecoration(
                                           shape: BoxShape.circle,
                                           color: Colors.grey
-                                              .withOpacity(0.5),
+                                              .withValues(alpha: 0.5),
                                         )
                                       : null,
                                   child: Icon(
@@ -865,7 +865,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                                 decoration: _isHoveringSpeedButton
                                     ? BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Colors.grey.withOpacity(0.5),
+                                        color: Colors.grey.withValues(alpha: 0.5),
                                       )
                                     : null,
                                 child: Icon(
@@ -996,10 +996,10 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
           child: Container(
             width: menuWidth,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -1083,10 +1083,10 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
             width: menuWidth,
             height: menuHeight,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(effectiveFullscreen ? AppTheme.radiusLg : AppTheme.radiusMd),
               border: Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
                 width: 1,
               ),
             ),
@@ -1149,7 +1149,7 @@ class _PCPlayerControlsState extends State<PCPlayerControls> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(
                                         effectiveFullscreen ? 2.5 : 2),
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.white.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 // 音量指示器
@@ -1252,7 +1252,7 @@ class _SpeedMenuItemState extends State<_SpeedMenuItem> {
         child: Container(
           height: widget.isFullscreen ? 48.0 : 36.0,
           color: _isHovering
-              ? Colors.white.withOpacity(0.1)
+              ? Colors.white.withValues(alpha: 0.1)
               : Colors.transparent,
           alignment: Alignment.center,
           child: Text(
@@ -1410,7 +1410,7 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
                         height: 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                         ),
                       ),
                     ),
@@ -1449,7 +1449,7 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
                               color: Colors.red,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withValues(alpha: 0.3),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -1531,7 +1531,7 @@ class _CenterPlayButtonState extends State<_CenterPlayButton> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey.withOpacity(0.7),
+                  color: Colors.grey.withValues(alpha: 0.7),
                 ),
                 child: SizedBox(
                   width: widget.isFullscreen ? 64 : 48,

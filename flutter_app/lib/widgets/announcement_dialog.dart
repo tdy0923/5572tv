@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/announcement_service.dart';
 import '../services/theme_service.dart';
-import '../utils/font_utils.dart';
 import '../components/app_button.dart';
+import '../components/app_text.dart';
 
 class AnnouncementDialog extends StatelessWidget {
   final AnnouncementInfo info;
@@ -37,12 +37,12 @@ class AnnouncementDialog extends StatelessWidget {
                   child: Column(children: [
                     const Icon(Icons.campaign_rounded, size: 36, color: AppTheme.warning),
                     const SizedBox(height: 8),
-                    Text(info.title, style: FontUtils.systemFont(fontSize: 18, fontWeight: FontWeight.bold)),
+                    AppText.body(info.title, fontSize: 18, fontWeight: FontWeight.bold),
                   ]),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text(info.content, style: FontUtils.systemFont(fontSize: 14, height: 1.6, color: isDark ? AppTheme.gray300 : AppTheme.gray500)),
+                  child: AppText.body(info.content, fontSize: 14, height: 1.6, color: isDark ? AppTheme.gray300 : AppTheme.gray500),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),

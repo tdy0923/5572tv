@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import '../services/device_service.dart';
 import '../services/version_service.dart';
 import '../services/theme_service.dart';
-import '../utils/font_utils.dart';
 import '../components/app_button.dart';
+import '../components/app_text.dart';
 
 class UpdateDialog extends StatefulWidget {
   final VersionInfo versionInfo;
@@ -188,15 +188,13 @@ class _UpdateDialogState extends State<UpdateDialog> {
                               ),
                       ),
                       const SizedBox(height: 12),
-                      Text(
+                      AppText.body(
                         _downloading ? '正在更新' : '发现新版本',
-                        style: FontUtils.systemFont(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeService.isDarkMode
-                              ? AppTheme.background
-                              : AppTheme.darkBackground,
-                        ),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: themeService.isDarkMode
+                            ? AppTheme.background
+                            : AppTheme.darkBackground,
                       ),
                     ],
                   ),
@@ -264,22 +262,18 @@ class _UpdateDialogState extends State<UpdateDialog> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
+                            AppText.body(
                               _status,
-                              style: FontUtils.systemFont(
-                                fontSize: 13,
-                                color: themeService.isDarkMode
-                                    ? AppTheme.gray400
-                                    : AppTheme.foregroundSubtle,
-                              ),
+                              fontSize: 13,
+                              color: themeService.isDarkMode
+                                  ? AppTheme.gray400
+                                  : AppTheme.foregroundSubtle,
                             ),
-                            Text(
+                            AppText.body(
                               _formatProgress(),
-                              style: FontUtils.systemFont(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primary,
-                              ),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primary,
                             ),
                           ],
                         ),
@@ -296,15 +290,13 @@ class _UpdateDialogState extends State<UpdateDialog> {
                               color: AppTheme.success,
                             ),
                             const SizedBox(width: 6),
-                            Text(
+                            AppText.body(
                               '更新内容',
-                              style: FontUtils.systemFont(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: themeService.isDarkMode
-                                    ? AppTheme.background
-                                    : AppTheme.darkBackground,
-                              ),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: themeService.isDarkMode
+                                  ? AppTheme.background
+                                  : AppTheme.darkBackground,
                             ),
                           ],
                         ),
@@ -321,15 +313,13 @@ class _UpdateDialogState extends State<UpdateDialog> {
                           child: SingleChildScrollView(
                             child: Padding(
                               padding: const EdgeInsets.all(12),
-                              child: Text(
+                              child: AppText.body(
                                 widget.versionInfo.releaseNotes,
-                                style: FontUtils.systemFont(
-                                  fontSize: 14,
-                                  height: 1.6,
-                                  color: themeService.isDarkMode
-                                      ? AppTheme.gray300
-                                      : AppTheme.foregroundSubtle,
-                                ),
+                                fontSize: 14,
+                                height: 1.6,
+                                color: themeService.isDarkMode
+                                    ? AppTheme.gray300
+                                    : AppTheme.foregroundSubtle,
                               ),
                             ),
                           ),
@@ -414,23 +404,19 @@ class _UpdateDialogState extends State<UpdateDialog> {
       children: [
         Icon(icon, size: 18, color: color),
         const SizedBox(height: 4),
-        Text(
+        AppText.body(
           label,
-          style: FontUtils.systemFont(
-            fontSize: 12,
-            color: themeService.isDarkMode
-                ? AppTheme.foregroundMuted
-                : AppTheme.foregroundSubtle,
-          ),
+          fontSize: 12,
+          color: themeService.isDarkMode
+              ? AppTheme.foregroundMuted
+              : AppTheme.foregroundSubtle,
         ),
         const SizedBox(height: 2),
-        Text(
+        AppText.body(
           version,
-          style: FontUtils.systemFont(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: color,
         ),
       ],
     );

@@ -66,7 +66,7 @@ class AppButton extends StatelessWidget {
     final textStyle = TextStyle(
       fontSize: _fontSize,
       fontWeight: FontWeight.w600,
-      color: loading ? foreground.withOpacity(0.5) : foreground,
+      color: loading ? foreground.withValues(alpha: 0.5) : foreground,
     );
 
     final widgets = <Widget>[];
@@ -78,7 +78,7 @@ class AppButton extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              foreground.withOpacity(0.5),
+              foreground.withValues(alpha: 0.5),
             ),
           ),
         ),

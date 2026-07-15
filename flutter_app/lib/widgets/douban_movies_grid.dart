@@ -5,8 +5,8 @@ import '../utils/device_utils.dart';
 import 'video_card.dart';
 import 'video_menu_bottom_sheet.dart';
 import '../models/video_info.dart';
-import '../utils/font_utils.dart';
 import 'shimmer_effect.dart';
+import '../theme/app_theme.dart';
 import '../components/grid_helpers.dart';
 
 class DoubanMoviesGrid extends StatelessWidget {

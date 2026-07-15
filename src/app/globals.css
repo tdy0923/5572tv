@@ -415,24 +415,6 @@ html:not(.dark) body {
   background: rgba(107, 114, 128, 0.5);
 }
 
-/* 视频卡片悬停效果 */
-.video-card-hover {
-  transition: transform 0.3s ease;
-}
-
-.video-card-hover:hover {
-  transform: scale(1.05);
-}
-
-/* 渐变遮罩 */
-.gradient-overlay {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
-}
-
 /* 平板断点 (768-1080px) */
 @media (min-width: 768px) and (max-width: 1080px) {
   /* 平板布局优化 */
@@ -513,18 +495,6 @@ html:not(.dark)::view-transition-new(root) {
 div[data-media-provider] video {
   height: 100%;
   object-fit: contain;
-}
-
-/* VideoCard 光泽扫过动画 - 使用 @property 优化 */
-@keyframes card-shimmer {
-  to {
-    --shimmer-position: 200%;
-  }
-}
-
-/* 状态过渡动画 */
-.smooth-transition {
-  transition: all 0.3s ease-in-out;
 }
 
 /* 移动端隐藏弹幕配置按钮 - 使用设置面板简化配置 */
@@ -961,19 +931,10 @@ select:focus-visible,
 }
 
 /* --- 11. Fluent 2 Card Hover Effect --- */
-.card-hover,
 [class*='rounded-xl'][class*='shadow-'] {
   transition:
     box-shadow 150ms cubic-bezier(0.33, 0, 0.67, 1),
     transform 150ms cubic-bezier(0.33, 0, 0.67, 1) !important;
-}
-.card-hover:hover {
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.14),
-    0 0 2px rgba(0, 0, 0, 0.06) !important;
-}
-.dark .card-hover:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.32) !important;
 }
 
 /* --- 12. Fluent 2 Link/Menu Hover --- */

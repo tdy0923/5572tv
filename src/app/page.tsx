@@ -4,6 +4,7 @@ import type { SearchResult, ShortDramaItem } from '@/lib/types';
 import type { HomePageData } from '@/hooks/useHomePageQueries';
 
 import { HomeClient } from '@/components/HomeClient';
+import MountAnimation from '@/components/MountAnimation';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -66,20 +67,22 @@ async function getInitialData(): Promise<HomePageData> {
 export default async function Page() {
   const initialTrendingData = await getInitialData();
   return (
-    <Suspense
-      fallback={
-        <div className='flex min-h-[400px] flex-col items-center justify-center gap-4'>
-          <div className='w-9 h-9 rounded-full border-2 border-gray-200 border-t-primary-500 animate-spin' />
-          <p
-            className='text-sm font-medium'
-            style={{ color: 'var(--color-foreground-muted)' }}
-          >
-            加载中...
-          </p>
-        </div>
-      }
-    >
-      <HomeClient initialTrendingData={initialTrendingData} />
-    </Suspense>
+    <MountAnimation>
+      <Suspense
+        fallback={
+          <div className='flex min-h-[400px] flex-col items-center justify-center gap-4'>
+            <div className='w-9 h-9 rounded-full border-2 border-gray-200 border-t-primary-500 animate-spin' />
+            <p
+              className='text-sm font-medium'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              加载中...
+            </p>
+          </div>
+        }
+      >
+        <HomeClient initialTrendingData={initialTrendingData} />
+      </Suspense>
+    </MountAnimation>
   );
 }

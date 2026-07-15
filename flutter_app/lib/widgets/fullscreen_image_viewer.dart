@@ -68,8 +68,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         final isDark = themeService.isDarkMode;
         final textColor = isDark ? Colors.white : AppTheme.foreground;
         final secondaryTextColor = isDark 
-            ? Colors.white.withOpacity(0.7)
-            : AppTheme.foreground.withOpacity(0.7);
+            ? Colors.white.withValues(alpha: 0.7)
+            : AppTheme.foreground.withValues(alpha: 0.7);
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -198,8 +198,8 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               ),
             ),
             backgroundColor: isDark 
-                ? AppTheme.darkBackground.withOpacity(0.9)
-                : AppTheme.foreground.withOpacity(0.9),
+                ? AppTheme.darkBackground.withValues(alpha: 0.9)
+                : AppTheme.foreground.withValues(alpha: 0.9),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -225,7 +225,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               '图片已保存到相册',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: Colors.green.withOpacity(0.8),
+            backgroundColor: Colors.green.withValues(alpha: 0.8),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -238,7 +238,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               '保存失败: ${e.toString()}',
               style: FontUtils.systemFont(color: Colors.white),
             ),
-            backgroundColor: Colors.red.withOpacity(0.8),
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
             duration: const Duration(seconds: 3),
           ),
         );

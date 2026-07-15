@@ -7,6 +7,7 @@ import '../services/page_cache_service.dart';
 import '../utils/device_utils.dart';
 import '../components/grid_helpers.dart';
 import 'custom_refresh_indicator.dart';
+import 'video_card.dart';
 import 'video_menu_bottom_sheet.dart';
 
 class FavoritesGrid extends StatefulWidget {
