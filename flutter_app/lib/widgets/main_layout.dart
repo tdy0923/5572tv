@@ -491,11 +491,26 @@ class _MainLayoutState extends State<MainLayout> {
       BuildContext context, ThemeService themeService, bool isTablet) {
     final searchBoxWidget = CompositedTransformTarget(
       link: _layerLink,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color:
-              themeService.isDarkMode ? AppTheme.darkBackground : Colors.white,
+          color: themeService.isDarkMode
+              ? AppTheme.darkBackgroundMuted
+              : AppTheme.gray50,
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          border: Border.all(
+            color: themeService.isDarkMode
+                ? AppTheme.foreground.withValues(alpha: 0.1)
+                : AppTheme.gray200,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Focus(
           onFocusChange: (hasFocus) {
@@ -893,120 +908,111 @@ class _MainLayoutState extends State<MainLayout> {
     ];
 
     final isTablet = DeviceUtils.isTablet(context);
+    final isActive = (int index) =>
+        !widget.isSearchMode && widget.currentBottomNavIndex == index;
 
     return Container(
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? AppTheme.darkBackground.withValues(alpha: 0.9)
-            : Colors.white.withValues(alpha: 0.9),
+            ? AppTheme.darkBackground.withValues(alpha: 0.95)
+            : Colors.white.withValues(alpha: 0.95),
         border: Border(
           top: BorderSide(
             color: themeService.isDarkMode
-                ? AppTheme.foreground.withValues(alpha: 0.3)
-                : Colors.white.withValues(alpha: 0.2),
-            width: 1,
+                ? AppTheme.foreground.withValues(alpha: 0.1)
+                : AppTheme.gray200.withValues(alpha: 0.5),
+            width: 0.5,
           ),
         ),
       ),
       padding: EdgeInsets.only(
-        left: 0,
-        right: 0,
-        top: 8,
-        bottom: MediaQuery.of(context).padding.bottom + 8, // 手动处理底部安全区域
+        left: 4,
+        right: 4,
+        top: 4,
+        bottom: MediaQuery.of(context).padding.bottom + 4,
       ),
       child: Row(
         mainAxisAlignment:
             isTablet ? MainAxisAlignment.center : MainAxisAlignment.spaceEvenly,
         children: [
-          // 平板模式下添加左侧空白
           if (isTablet) const Spacer(flex: 3),
 
-          // 导航按钮
           ...navItems.asMap().entries.expand((entry) {
             int index = entry.key;
             Map<String, dynamic> item = entry.value;
-            bool isSelected =
-                !widget.isSearchMode && widget.currentBottomNavIndex == index;
+            final selected = isActive(index);
 
             return [
-              MouseRegion(
-                cursor: DeviceUtils.isPC()
-                    ? SystemMouseCursors.click
-                    : MouseCursor.defer,
-                onEnter: DeviceUtils.isPC()
-                    ? (_) {
-                        setState(() {
-                          _hoveredNavIndex = index;
-                        });
-                      }
-                    : null,
-                onExit: DeviceUtils.isPC()
-                    ? (_) {
-                        setState(() {
-                          _hoveredNavIndex = null;
-                        });
-                      }
-                    : null,
-                child: Focus(
-                  onFocusChange: (focused) {
-                    if (focused) {
-                      setState(() => _hoveredNavIndex = index);
-                    }
-                  },
-                  onKeyEvent: (node, event) {
-                    if (event is KeyDownEvent) {
-                      if (event.logicalKey == LogicalKeyboardKey.select ||
-                          event.logicalKey == LogicalKeyboardKey.enter) {
-                        widget.onBottomNavChanged(index);
-                        return KeyEventResult.handled;
-                      }
-                    }
-                    return KeyEventResult.ignored;
-                  },
+              Expanded(
+                child: MouseRegion(
+                  cursor: DeviceUtils.isPC()
+                      ? SystemMouseCursors.click
+                      : MouseCursor.defer,
+                  onEnter: DeviceUtils.isPC()
+                      ? (_) => setState(() => _hoveredNavIndex = index)
+                      : null,
+                  onExit: DeviceUtils.isPC()
+                      ? (_) => setState(() => _hoveredNavIndex = null)
+                      : null,
                   child: GestureDetector(
-                    onTap: () {
-                      widget.onBottomNavChanged(index);
-                    },
+                    onTap: () => widget.onBottomNavChanged(index),
                     behavior: HitTestBehavior.opaque,
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 16 : 12,
-                        vertical: 8,
-                      ),
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutBack,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
-                        color: _hoveredNavIndex == index
-                            ? AppTheme.success.withValues(alpha: 0.15)
-                            : null,
+                        color: selected
+                            ? AppTheme.primary.withValues(
+                                alpha: themeService.isDarkMode ? 0.15 : 0.1)
+                            : _hoveredNavIndex == index
+                                ? (themeService.isDarkMode
+                                    ? AppTheme.foreground.withValues(alpha: 0.05)
+                                    : AppTheme.gray100.withValues(alpha: 0.5))
+                                : null,
                         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            item['icon'],
-                            color: isSelected
-                                ? AppTheme.success
-                                : _hoveredNavIndex == index
-                                    ? AppTheme.success
-                                    : themeService.isDarkMode
-                                        ? AppTheme.foregroundMuted
-                                        : AppTheme.foregroundMuted,
-                            size: 24,
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? AppTheme.primary.withValues(alpha: 0.2)
+                                  : Colors.transparent,
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusMd),
+                            ),
+                            child: Icon(
+                              item['icon'],
+                              color: selected
+                                  ? AppTheme.primary
+                                  : _hoveredNavIndex == index
+                                      ? (themeService.isDarkMode
+                                          ? AppTheme.foreground
+                                          : AppTheme.gray700)
+                                      : AppTheme.foregroundMuted,
+                              size: 22,
+                            ),
                           ),
-                          const SizedBox(height: 4),
-                          AppText.body(
-                            item['label'],
-                            fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w400,
-                            color: isSelected
-                                ? AppTheme.success
-                                : _hoveredNavIndex == index
-                                    ? AppTheme.success
-                                    : themeService.isDarkMode
-                                        ? AppTheme.foregroundMuted
-                                        : AppTheme.foregroundMuted,
+                          const SizedBox(height: 2),
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight:
+                                  selected ? FontWeight.w600 : FontWeight.w400,
+                              color: selected
+                                  ? AppTheme.primary
+                                  : _hoveredNavIndex == index
+                                      ? (themeService.isDarkMode
+                                          ? AppTheme.foreground
+                                          : AppTheme.gray700)
+                                      : AppTheme.foregroundMuted,
+                            ),
+                            child: Text(item['label']),
                           ),
                         ],
                       ),
@@ -1014,13 +1020,9 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
               ),
-              // 平板模式下在按钮之间添加间距
-              if (isTablet && index < navItems.length - 1)
-                const SizedBox(width: 36),
             ];
           }),
 
-          // 平板模式下添加右侧空白
           if (isTablet) const Spacer(flex: 3),
         ],
       ),
