@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:gal/gal.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:media_5572/theme/app_theme.dart';
@@ -84,6 +86,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   int? _sleepTimerMinutes;
   Timer? _sleepTimer;
   int _remainingSeconds = 0;
+  final ScreenshotController _screenshotController = ScreenshotController();
+  bool _isCapturing = false;
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<Duration> _durationNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<bool> _isPlayingNotifier = ValueNotifier(false);
@@ -511,6 +515,61 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
     });
   }
 
+  Future<void> _takeScreenshot() async {
+    if (_isCapturing) return;
+    setState(() => _isCapturing = true);
+
+    try {
+      // 暂停隐藏计时器
+      _hideTimer?.cancel();
+
+      // 隐藏控制栏
+      setState(() => _controlsVisible = false);
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      // 截取当前 widget
+      final image = await _screenshotController.capture();
+      if (image == null) {
+        _showSnackBar('截图失败', Colors.red);
+        return;
+      }
+
+      // 保存到相册
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '5572_$timestamp.png';
+      final tempDir = Directory.systemTemp;
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsBytes(image);
+
+      await Gal.putImage(file.path, album: '5572 影视');
+
+      // 删除临时文件
+      await file.delete();
+
+      _showSnackBar('截图已保存到相册', AppTheme.success);
+    } catch (e) {
+      _showSnackBar('截图失败: $e', Colors.red);
+    } finally {
+      setState(() {
+        _isCapturing = false;
+        _controlsVisible = true;
+      });
+      _startHideTimer();
+    }
+  }
+
+  void _showSnackBar(String message, Color backgroundColor) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+        backgroundColor: backgroundColor,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Future<void> _showDLNADialog() async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -602,24 +661,27 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
       );
     }
 
-    Widget content = Stack(
-      children: [
-        Positioned.fill(child: _buildGestureLayer()),
-        _buildTopGradient(),
-        _buildBottomGradient(),
-        if (_isFullscreen) _buildCurrentTime(),
-        _buildBackButton(),
-        _buildCastButton(),
-        _buildCenterPlayPause(),
-        _buildProgressBar(),
-        _buildBottomControls(),
-        _buildLockButton(),
-        _buildSleepTimerButton(),
-        if (_isLongPressing && !_isLocked) _buildLongPressIndicator(),
-        if (_isFullscreen && _showBrightnessIndicator && !_isLocked)
-          _buildBrightnessIndicator(),
-        if (_isFullscreen) _buildRightOverlay(),
-      ],
+    Widget content = Screenshot(
+      controller: _screenshotController,
+      child: Stack(
+        children: [
+          Positioned.fill(child: _buildGestureLayer()),
+          _buildTopGradient(),
+          _buildBottomGradient(),
+          if (_isFullscreen) _buildCurrentTime(),
+          _buildBackButton(),
+          _buildCastButton(),
+          _buildCenterPlayPause(),
+          _buildProgressBar(),
+          _buildBottomControls(),
+          _buildLockButton(),
+          _buildSleepTimerButton(),
+          if (_isLongPressing && !_isLocked) _buildLongPressIndicator(),
+          if (_isFullscreen && _showBrightnessIndicator && !_isLocked)
+            _buildBrightnessIndicator(),
+          if (_isFullscreen) _buildRightOverlay(),
+        ],
+      ),
     );
 
     if (_isFullscreen) {
@@ -1022,6 +1084,28 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                         color: Colors.white,
                         size: _isFullscreen ? 28 : 24,
                       ),
+                    ),
+                  ),
+                if (_isFullscreen)
+                  GestureDetector(
+                    onTap: _isCapturing ? null : _takeScreenshot,
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: _isCapturing
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.screenshot,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                     ),
                   ),
                 GestureDetector(
