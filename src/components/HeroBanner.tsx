@@ -82,10 +82,15 @@ function HeroBanner({
   // 确保 backdrop 是中等尺寸（平衡质量和速度）
   const getHDBackdrop = (url?: string) => {
     if (!url) return url;
-    return url
-      .replace('/view/photo/s/', '/view/photo/l/')
-      .replace('/view/photo/sqxs/', '/view/photo/l/')
-      .replace('/s_ratio_poster/', '/l_ratio_poster/');
+    // 豆瓣图片：竖图转横图（去掉 ratio_poster 后缀）
+    if (url.includes('doubanio.com')) {
+      return url
+        .replace('/s_ratio_poster/', '/l/')
+        .replace('/m_ratio_poster/', '/l/')
+        .replace('/view/photo/s/', '/view/photo/l/')
+        .replace('/view/photo/sqxs/', '/view/photo/l/');
+    }
+    return url;
   };
 
   // 处理视频 URL，使用代理绕过防盗链（避免双重代理）

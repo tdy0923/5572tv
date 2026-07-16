@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Download } from 'lucide-react';
+import { Check, Download, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -27,6 +27,7 @@ const APK_VERSION = 'v1.11.0';
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
   const [showGuide, setShowGuide] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<
     'android' | 'ios' | 'tv'
   >(platform === 'ios' ? 'ios' : platform === 'tv' ? 'tv' : 'android');
@@ -213,14 +214,22 @@ export default function DownloadPage() {
                 )}
 
                 {/* QR Code */}
-                <GlassPanel className='!inline-flex items-center gap-4 !p-4 !rounded-lg !border-white/10 !bg-white/[0.03] !shadow-none group cursor-pointer'>
-                  <Image
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
-                    alt='扫码下载'
-                    className='w-24 h-24 rounded-md transition-transform duration-300 group-hover:scale-110'
-                    width={96}
-                    height={96}
-                  />
+                <GlassPanel
+                  className='!inline-flex items-center gap-4 !p-4 !rounded-xl !border-white/10 !bg-white/[0.03] !shadow-none group cursor-pointer hover:!bg-white/[0.06] transition-all duration-200'
+                  onClick={() => setShowQRModal(true)}
+                >
+                  <div className='relative'>
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
+                      alt='扫码下载'
+                      className='w-28 h-28 rounded-lg transition-transform duration-300 group-hover:scale-105'
+                    />
+                    <div className='absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                      <span className='text-xs text-white font-medium'>
+                        点击放大
+                      </span>
+                    </div>
+                  </div>
                   <div>
                     <p className='text-sm font-medium text-white'>扫码下载</p>
                     <p className='text-xs mt-1' style={{ color: '#767676' }}>
@@ -230,6 +239,44 @@ export default function DownloadPage() {
                     </p>
                   </div>
                 </GlassPanel>
+
+                {/* QR Modal */}
+                {showQRModal && (
+                  <div
+                    className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm'
+                    onClick={() => setShowQRModal(false)}
+                  >
+                    <div
+                      className='relative bg-[#1a1a1a] rounded-2xl p-6 shadow-2xl border border-white/10 max-w-sm w-full mx-4'
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => setShowQRModal(false)}
+                        className='absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors'
+                      >
+                        <X className='w-4 h-4 text-white' />
+                      </button>
+                      <div className='text-center'>
+                        <p className='text-sm font-medium text-white mb-4'>
+                          扫码下载 5572 影视
+                        </p>
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
+                          alt='扫码下载'
+                          className='w-64 h-64 mx-auto rounded-xl'
+                        />
+                        <p
+                          className='text-xs mt-4'
+                          style={{ color: '#767676' }}
+                        >
+                          {selectedPlatform === 'ios'
+                            ? '使用 Safari 扫码访问网站'
+                            : `${APK_VERSION} · ${APK_SIZE}MB · arm64-v8a`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right - Phone preview */}
