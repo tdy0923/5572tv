@@ -88,6 +88,11 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   int _remainingSeconds = 0;
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _isCapturing = false;
+  DateTime? _lastTapTime;
+  Offset? _lastTapPosition;
+  bool _showSeekForward = false;
+  bool _showSeekBackward = false;
+  Timer? _seekIndicatorTimer;
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<Duration> _durationNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<bool> _isPlayingNotifier = ValueNotifier(false);
@@ -172,11 +177,69 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
     _volumeHideTimer?.cancel();
     _brightnessHideTimer?.cancel();
     _timeUpdateTimer?.cancel();
+    _seekIndicatorTimer?.cancel();
+    _sleepTimer?.cancel();
     _positionNotifier.dispose();
     _durationNotifier.dispose();
     _isPlayingNotifier.dispose();
     VolumeController.instance.showSystemUI = true;
     super.dispose();
+  }
+
+  void _handleDoubleTap(DragEndDetails details, {required bool isLeft}) {
+    if (_isLocked) return;
+
+    final now = DateTime.now();
+    final position = details.localPosition;
+
+    // 检查是否是双击
+    if (_lastTapTime != null &&
+        _lastTapPosition != null &&
+        now.difference(_lastTapTime!).inMilliseconds < 300) {
+      // 双击检测
+      if ((position - _lastTapPosition!).distance < 100) {
+        // 执行快进或快退
+        final seekSeconds = 10;
+        final currentPosition = _position;
+        final newPosition = isLeft
+            ? currentPosition - Duration(seconds: seekSeconds)
+            : currentPosition + Duration(seconds: seekSeconds);
+        final clampedPosition = Duration(
+          milliseconds: newPosition.inMilliseconds.clamp(
+            0,
+            _duration.inMilliseconds,
+          ),
+        );
+        widget.player.seek(clampedPosition);
+
+        // 显示快进/快退指示器
+        setState(() {
+          if (isLeft) {
+            _showSeekBackward = true;
+            _showSeekForward = false;
+          } else {
+            _showSeekForward = true;
+            _showSeekBackward = false;
+          }
+        });
+        _seekIndicatorTimer?.cancel();
+        _seekIndicatorTimer = Timer(const Duration(milliseconds: 800), () {
+          if (mounted) {
+            setState(() {
+              _showSeekForward = false;
+              _showSeekBackward = false;
+            });
+          }
+        });
+
+        _lastTapTime = null;
+        _lastTapPosition = null;
+        return;
+      }
+    }
+
+    _lastTapTime = now;
+    _lastTapPosition = position;
   }
 
   bool get _isFullscreen => widget.state.isFullscreen();
@@ -677,6 +740,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
           _buildLockButton(),
           _buildSleepTimerButton(),
           if (_isLongPressing && !_isLocked) _buildLongPressIndicator(),
+          if (_showSeekForward && !_isLocked) _buildSeekIndicator(isForward: true),
+          if (_showSeekBackward && !_isLocked) _buildSeekIndicator(isForward: false),
           if (_isFullscreen && _showBrightnessIndicator && !_isLocked)
             _buildBrightnessIndicator(),
           if (_isFullscreen) _buildRightOverlay(),
@@ -772,7 +837,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
         duration: const Duration(milliseconds: 200),
         child: IgnorePointer(
           child: Container(
-            height: _isFullscreen ? 120 : 80,
+            height: 100,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -823,7 +888,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
         duration: const Duration(milliseconds: 200),
         child: IgnorePointer(
           child: Container(
-            height: _isFullscreen ? 140 : 100,
+            height: 120,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
@@ -842,8 +907,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
 
   Widget _buildBackButton() {
     return Positioned(
-      top: _isFullscreen ? 8 : 4,
-      left: _isFullscreen ? 16.0 : 8.0,
+      top: 8,
+      left: 12.0,
       child: AnimatedOpacity(
         opacity: (_controlsVisible && !_isLocked) ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -864,7 +929,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
               child: Icon(
                 Icons.arrow_back,
                 color: Colors.white,
-                size: _isFullscreen ? 24 : 20,
+                size: 24,
               ),
             ),
           ),
@@ -875,8 +940,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
 
   Widget _buildCastButton() {
     return Positioned(
-      top: _isFullscreen ? 8 : 4,
-      right: _isFullscreen ? 16.0 : 8.0,
+      top: 8,
+      right: 12.0,
       child: AnimatedOpacity(
         opacity: (_controlsVisible && !_isLocked) ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -896,7 +961,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
               child: Icon(
                 Icons.cast,
                 color: Colors.white,
-                size: _isFullscreen ? 24 : 20,
+                size: 24,
               ),
             ),
           ),
@@ -984,8 +1049,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
           ignoring: !_controlsVisible || _isLocked,
           child: Padding(
             padding: EdgeInsets.only(
-              left: _isFullscreen ? 16.0 : 8.0,
-              right: _isFullscreen ? 16.0 : 8.0,
+              left: 12.0,
+              right: 12.0,
               bottom: _isFullscreen ? 8.0 : 8.0,
             ),
             child: Row(
@@ -998,7 +1063,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                     child: Icon(
                       _isPlaying ? Icons.pause : Icons.play_arrow,
                       color: Colors.white,
-                      size: _isFullscreen ? 28 : 24,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -1065,7 +1130,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                     child: Icon(
                       Icons.screen_rotation,
                       color: Colors.white,
-                      size: _isFullscreen ? 22 : 20,
+                      size: 22,
                     ),
                   ),
                 ),
@@ -1082,7 +1147,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                       child: Icon(
                         Icons.skip_next,
                         color: Colors.white,
-                        size: _isFullscreen ? 28 : 24,
+                        size: 28,
                       ),
                     ),
                   ),
@@ -1119,11 +1184,11 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                   },
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    padding: EdgeInsets.only(left: _isFullscreen ? 12 : 5, right: _isFullscreen ? 12 : 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Icon(
                       _isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
                       color: Colors.white,
-                      size: _isFullscreen ? 28 : 24,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -1232,6 +1297,48 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                     ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSeekIndicator({required bool isForward}) {
+    return Positioned(
+      left: isForward ? null : 24,
+      right: isForward ? 24 : null,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: AnimatedOpacity(
+          opacity: 1.0,
+          duration: const Duration(milliseconds: 150),
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              shape: BoxShape.circle,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isForward ? Icons.fast_forward : Icons.fast_rewind,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '10s',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
