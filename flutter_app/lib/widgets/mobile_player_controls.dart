@@ -81,6 +81,9 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   Timer? _brightnessHideTimer;
   Timer? _timeUpdateTimer;
   String _currentTime = '';
+  int? _sleepTimerMinutes;
+  Timer? _sleepTimer;
+  int _remainingSeconds = 0;
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<Duration> _durationNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<bool> _isPlayingNotifier = ValueNotifier(false);
@@ -401,6 +404,113 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
     _startHideTimer();
   }
 
+  void _toggleLock() {
+    setState(() {
+      _isLocked = !_isLocked;
+    });
+    if (_isLocked) {
+      _hideTimer?.cancel();
+      setState(() => _controlsVisible = false);
+    } else {
+      setState(() => _controlsVisible = true);
+      _startHideTimer();
+    }
+  }
+
+  void _showSleepTimerDialog() {
+    final options = [
+      {'label': '关闭', 'minutes': 0},
+      {'label': '15 分钟', 'minutes': 15},
+      {'label': '30 分钟', 'minutes': 30},
+      {'label': '45 分钟', 'minutes': 45},
+      {'label': '60 分钟', 'minutes': 60},
+      {'label': '90 分钟', 'minutes': 90},
+    ];
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.timer_outlined, size: 20, color: AppTheme.foregroundMuted),
+                      const SizedBox(width: 8),
+                      Text(
+                        _sleepTimerMinutes != null
+                            ? '定时关闭（${_remainingSeconds ~/ 60}分${_remainingSeconds % 60}秒后）'
+                            : '定时关闭',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.foreground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                ...options.map((option) {
+                  final isSelected = _sleepTimerMinutes == option['minutes'];
+                  return ListTile(
+                    leading: Icon(
+                      isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                      color: isSelected ? AppTheme.primary : AppTheme.foregroundMuted,
+                      size: 20,
+                    ),
+                    title: Text(
+                      option['label'] as String,
+                      style: TextStyle(
+                        color: isSelected ? AppTheme.primary : AppTheme.foreground,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _setSleepTimer(option['minutes'] as int);
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _setSleepTimer(int minutes) {
+    _sleepTimer?.cancel();
+    if (minutes == 0) {
+      setState(() {
+        _sleepTimerMinutes = null;
+        _remainingSeconds = 0;
+      });
+      return;
+    }
+    setState(() {
+      _sleepTimerMinutes = minutes;
+      _remainingSeconds = minutes * 60;
+    });
+    _sleepTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds <= 0) {
+        timer.cancel();
+        widget.player.pause();
+        setState(() {
+          _sleepTimerMinutes = null;
+          _remainingSeconds = 0;
+        });
+        return;
+      }
+      setState(() => _remainingSeconds--);
+    });
+  }
+
   Future<void> _showDLNADialog() async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -503,6 +613,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
         _buildCenterPlayPause(),
         _buildProgressBar(),
         _buildBottomControls(),
+        _buildLockButton(),
+        _buildSleepTimerButton(),
         if (_isLongPressing && !_isLocked) _buildLongPressIndicator(),
         if (_isFullscreen && _showBrightnessIndicator && !_isLocked)
           _buildBrightnessIndicator(),
@@ -955,6 +1067,90 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
           SizedBox(width: 6),
           Icon(Icons.fast_forward, color: Colors.white, size: 32),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLockButton() {
+    // 锁屏状态下始终显示，非锁屏状态下跟随控制栏显示
+    if (!_isLocked && !_controlsVisible) return const SizedBox.shrink();
+
+    return Positioned(
+      right: 16,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: GestureDetector(
+          onTap: _toggleLock,
+          child: AnimatedOpacity(
+            opacity: _isLocked ? 1.0 : (_controlsVisible ? 1.0 : 0.0),
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _isLocked ? Icons.lock : Icons.lock_open,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSleepTimerButton() {
+    if (_isLocked) return const SizedBox.shrink();
+
+    return Positioned(
+      left: 16,
+      top: 0,
+      bottom: 0,
+      child: Center(
+        child: AnimatedOpacity(
+          opacity: _controlsVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: GestureDetector(
+            onTap: _showSleepTimerDialog,
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: _sleepTimerMinutes != null
+                    ? AppTheme.primary.withValues(alpha: 0.8)
+                    : Colors.black.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Icon(
+                    Icons.timer_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                  if (_sleepTimerMinutes != null)
+                    Positioned(
+                      bottom: 2,
+                      child: Text(
+                        '${_remainingSeconds ~/ 60}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

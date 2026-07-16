@@ -488,6 +488,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/ai/', // AI 功能端点（公共数据，无需认证）
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/api/version-check', // 版本检查（公共数据，无需认证）
+    '/api/danmu-external', // 弹幕 API（公共数据，无需认证）
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
     '/favorites', // 收藏页面（客户端重定向）
