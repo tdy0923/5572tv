@@ -19,6 +19,8 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
+  late Animation<double> _scaleUp;
+  late Animation<Offset> _slideUp;
   bool _ready = false;
 
   @override
@@ -26,12 +28,23 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 600),
     );
     _fadeIn = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOut,
+      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
     );
+    _scaleUp = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+    );
+    _slideUp = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
+    ));
     _controller.forward();
     _runInit();
   }
@@ -57,13 +70,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
               AppTheme.primary,
-              Color(0xFFE8B030),
+              AppTheme.primary.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -73,23 +86,59 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  '5',
-                  style: TextStyle(
-                    fontSize: 72,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF1A1A1A),
-                    height: 1,
+                ScaleTransition(
+                  scale: _scaleUp,
+                  child: Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: AppTheme.darkBackground,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.darkBackground.withValues(alpha: 0.3),
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        '5',
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.primary,
+                          height: 1,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 32),
-                Text(
-                  '5572 影视',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: 1,
+                const SizedBox(height: AppTheme.space8),
+                SlideTransition(
+                  position: _slideUp,
+                  child: Column(
+                    children: [
+                      Text(
+                        '5572 影视',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.darkBackground,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.space2),
+                      Text(
+                        '海量影视资源',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppTheme.darkBackground.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

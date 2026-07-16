@@ -170,9 +170,32 @@ class _LoadingPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
+    return Scaffold(
+      body: Container(
+        color: AppTheme.darkBackground,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                ),
+              ),
+              const SizedBox(height: AppTheme.space4),
+              Text(
+                '加载中...',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.gray400,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
