@@ -155,18 +155,18 @@ export default function DownloadPage() {
                           '5572tv-android.apk',
                         );
                       }}
-                      className='inline-flex items-center justify-center gap-2 px-7 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-150'
+                      className='inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] overflow-hidden'
                       style={{
                         background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
                         color: '#1a1a1a',
                         boxShadow: '0 4px 16px rgba(244,194,77,0.3)',
                       }}
                     >
-                      <Download className='w-4 h-4' />
-                      下载{' '}
-                      {selectedPlatform === 'android'
-                        ? 'Android 版（arm64-v8a）'
-                        : 'TV 版（arm64-v8a）'}
+                      <Download className='w-4 h-4 shrink-0' />
+                      <span>
+                        下载 {selectedPlatform === 'android' ? 'Android' : 'TV'}{' '}
+                        版
+                      </span>
                     </a>
                   )}
                   <Link
@@ -197,14 +197,14 @@ export default function DownloadPage() {
                     <a
                       href='/download/5572tv-android-armv7a.apk'
                       download
-                      className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 hover:bg-white/10'
+                      className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] overflow-hidden'
                       style={{
                         background: 'rgba(255,255,255,0.06)',
                         color: '#a3a3a3',
                         border: '1px solid rgba(255,255,255,0.1)',
                       }}
                     >
-                      armeabi-v7a 兼容版（老旧/低配设备）
+                      armeabi-v7a 兼容版
                     </a>
                   </div>
                 )}

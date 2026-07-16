@@ -8,7 +8,6 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -254,21 +253,14 @@ function HeroBanner({
               }`}
             >
               {/* 背景图片（始终显示，作为视频的占位符） */}
-              <Image
+              <img
                 src={getProxiedImageUrl(
                   getHDBackdrop(item.backdrop) || item.poster,
                 )}
                 alt={item.title}
-                fill
-                className='object-cover object-center'
-                priority={index === 0}
-                quality={80}
-                sizes='100vw'
-                unoptimized={
-                  item.backdrop?.includes('/l/') ||
-                  item.backdrop?.includes('/l_ratio_poster/') ||
-                  false
-                }
+                className='absolute inset-0 w-full h-full object-cover object-center'
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding='async'
               />
 
               {/* 视频背景（如果启用且有预告片URL，加载完成后淡入） */}
