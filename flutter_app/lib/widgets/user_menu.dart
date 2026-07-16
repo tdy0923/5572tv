@@ -621,14 +621,16 @@ class _UserMenuState extends State<UserMenu> {
                 width: 280,
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 decoration: BoxDecoration(
-                  color: widget.isDarkMode
-                      ? AppTheme.darkBackground
-                      : Colors.white,
+                  color: AppTheme.darkBackground,
                   borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+                  border: Border.all(
+                    color: AppTheme.foreground.withValues(alpha: 0.08),
+                    width: 0.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),
                   ],
