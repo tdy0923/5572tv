@@ -30,6 +30,15 @@ android {
         versionName = flutter.versionName
     }
 
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = false
+        }
+    }
+
     val keystorePropertiesFile = rootProject.file("key.properties")
     val hasSigningConfig = keystorePropertiesFile.exists()
 
@@ -56,9 +65,9 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
             
-            // R8 暂时禁用 — 启用会导致三星设备黑屏
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // R8 压缩启用，大幅减小 APK 体积
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

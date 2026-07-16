@@ -21,7 +21,7 @@ import PhonePreview from './components/PhonePreview';
 import PlatformTabs from './components/PlatformTabs';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '53';
+const APK_SIZE = '18';
 const APK_VERSION = 'v1.11.0';
 
 export default function DownloadPage() {
