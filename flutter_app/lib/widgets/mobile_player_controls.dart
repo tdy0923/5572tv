@@ -286,14 +286,14 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   }
 
   void _onVolumeSwipeStart(DragStartDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     _volumeHideTimer?.cancel();
     _hideTimer?.cancel();
     setState(() => _controlsVisible = true);
   }
 
   void _onVolumeSwipeUpdate(DragUpdateDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     final screenHeight = MediaQuery.of(context).size.height;
     final volumeChange = -(details.delta.dy / screenHeight) * 2;
     setState(() {
@@ -305,7 +305,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   }
 
   void _onVolumeSwipeEnd(DragEndDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     _startVolumeHideTimer();
     _startHideTimer();
   }
@@ -320,14 +320,14 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   }
 
   void _onBrightnessSwipeStart(DragStartDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     _brightnessHideTimer?.cancel();
     _hideTimer?.cancel();
     setState(() => _controlsVisible = true);
   }
 
   void _onBrightnessSwipeUpdate(DragUpdateDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     final screenHeight = MediaQuery.of(context).size.height;
     final brightnessChange = -(details.delta.dy / screenHeight) * 2;
     setState(() {
@@ -340,7 +340,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   }
 
   void _onBrightnessSwipeEnd(DragEndDetails details) {
-    if (!_isFullscreen || _isLocked) return;
+    if (_isLocked) return;
     _startBrightnessHideTimer();
     _startHideTimer();
   }
@@ -533,33 +533,29 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
     return Positioned.fill(
       child: Row(
         children: [
-          if (_isFullscreen)
-            Expanded(
-              flex: 1,
-              child: GestureDetector(
-                onTap: _toggleControlsVisibility,
-                onLongPressStart: _onLongPressStart,
-                onLongPressEnd: _onLongPressEnd,
-                onLongPressCancel: () {
-                  if (_isLongPressing) {
-                    _onLongPressEnd(const LongPressEndDetails());
-                  }
-                },
-                onHorizontalDragStart: _onSwipeStart,
-                onHorizontalDragUpdate: _onSwipeUpdate,
-                onHorizontalDragEnd: _onSwipeEnd,
-                onVerticalDragStart: _onBrightnessSwipeStart,
-                onVerticalDragUpdate: _onBrightnessSwipeUpdate,
-                onVerticalDragEnd: _onBrightnessSwipeEnd,
-                behavior: HitTestBehavior.opaque,
-              ),
-            ),
+          // 左侧区域 - 亮度控制（全屏和竖屏都生效）
           Expanded(
-            flex: _isFullscreen ? 2 : 1,
+            flex: 1,
             child: GestureDetector(
               onTap: _toggleControlsVisibility,
-              onLongPressStart: _onLongPressStart,
-              onLongPressEnd: _onLongPressEnd,
+              onLongPressStart: _isFullscreen ? _onLongPressStart : null,
+              onLongPressEnd: _isFullscreen ? _onLongPressEnd : null,
+              onHorizontalDragStart: _onSwipeStart,
+              onHorizontalDragUpdate: _onSwipeUpdate,
+              onHorizontalDragEnd: _onSwipeEnd,
+              onVerticalDragStart: _onBrightnessSwipeStart,
+              onVerticalDragUpdate: _onBrightnessSwipeUpdate,
+              onVerticalDragEnd: _onBrightnessSwipeEnd,
+              behavior: HitTestBehavior.opaque,
+            ),
+          ),
+          // 中间区域 - 播放/暂停 + 快进快退
+          Expanded(
+            flex: 2,
+            child: GestureDetector(
+              onTap: _toggleControlsVisibility,
+              onLongPressStart: _isFullscreen ? _onLongPressStart : null,
+              onLongPressEnd: _isFullscreen ? _onLongPressEnd : null,
               onLongPressCancel: () {
                 if (_isLongPressing) {
                   _onLongPressEnd(const LongPressEndDetails());
@@ -571,27 +567,22 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
               behavior: HitTestBehavior.opaque,
             ),
           ),
-          if (_isFullscreen)
-            Expanded(
-              flex: 1,
-              child: GestureDetector(
-                onTap: _toggleControlsVisibility,
-                onLongPressStart: _onLongPressStart,
-                onLongPressEnd: _onLongPressEnd,
-                onLongPressCancel: () {
-                  if (_isLongPressing) {
-                    _onLongPressEnd(const LongPressEndDetails());
-                  }
-                },
-                onHorizontalDragStart: _onSwipeStart,
-                onHorizontalDragUpdate: _onSwipeUpdate,
-                onHorizontalDragEnd: _onSwipeEnd,
-                onVerticalDragStart: _onVolumeSwipeStart,
-                onVerticalDragUpdate: _onVolumeSwipeUpdate,
-                onVerticalDragEnd: _onVolumeSwipeEnd,
-                behavior: HitTestBehavior.opaque,
-              ),
+          // 右侧区域 - 音量控制（全屏和竖屏都生效）
+          Expanded(
+            flex: 1,
+            child: GestureDetector(
+              onTap: _toggleControlsVisibility,
+              onLongPressStart: _isFullscreen ? _onLongPressStart : null,
+              onLongPressEnd: _isFullscreen ? _onLongPressEnd : null,
+              onHorizontalDragStart: _onSwipeStart,
+              onHorizontalDragUpdate: _onSwipeUpdate,
+              onHorizontalDragEnd: _onSwipeEnd,
+              onVerticalDragStart: _onVolumeSwipeStart,
+              onVerticalDragUpdate: _onVolumeSwipeUpdate,
+              onVerticalDragEnd: _onVolumeSwipeEnd,
+              behavior: HitTestBehavior.opaque,
             ),
+          ),
         ],
       ),
     );
