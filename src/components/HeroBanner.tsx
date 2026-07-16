@@ -84,11 +84,9 @@ function HeroBanner({
   const getHDBackdrop = (url?: string) => {
     if (!url) return url;
     return url
-      .replace('/view/photo/s/', '/view/photo/m/')
-      .replace('/view/photo/l/', '/view/photo/m/')
-      .replace('/view/photo/sqxs/', '/view/photo/m/')
-      .replace('/s_ratio_poster/', '/m_ratio_poster/')
-      .replace('/l_ratio_poster/', '/m_ratio_poster/');
+      .replace('/view/photo/s/', '/view/photo/l/')
+      .replace('/view/photo/sqxs/', '/view/photo/l/')
+      .replace('/s_ratio_poster/', '/l_ratio_poster/');
   };
 
   // 处理视频 URL，使用代理绕过防盗链（避免双重代理）
@@ -177,10 +175,10 @@ function HeroBanner({
     const item = items[currentIndex];
     if (item) {
       const img = new window.Image();
-      // 使用中等尺寸而非大尺寸，平衡质量和速度
       const imageUrl = (item.backdrop || item.poster || '')
-        .replace('/view/photo/l/', '/view/photo/m/')
-        .replace('/l_ratio_poster/', '/m_ratio_poster/');
+        .replace('/view/photo/s/', '/view/photo/l/')
+        .replace('/view/photo/sqxs/', '/view/photo/l/')
+        .replace('/s_ratio_poster/', '/l_ratio_poster/');
       img.src = getProxiedImageUrl(imageUrl);
     }
   }, [items, currentIndex]);
