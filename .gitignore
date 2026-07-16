@@ -60,7 +60,6 @@ flutter_app/macos/
 flutter_app/windows/
 flutter_app/web/
 flutter_app/test/
-public/manifest.json
 
 # local dev files
 AGENT.md

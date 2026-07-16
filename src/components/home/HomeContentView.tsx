@@ -113,8 +113,8 @@ export default function HomeContentView({
         className='mb-6 flex items-center justify-between rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white shadow-lg transition-transform hover:scale-[1.02] sm:mb-8 sm:rounded-2xl sm:p-5'
       >
         <div className='flex items-center gap-3'>
-          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white dark:bg-gray-800'>
-            <Film className='h-5 w-5' />
+          <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm'>
+            <img src='/icons/icon.svg' alt='5572' className='h-7 w-7 rounded' />
           </div>
           <div>
             <h3 className='text-sm font-bold sm:text-base'>
