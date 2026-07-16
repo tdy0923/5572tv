@@ -628,8 +628,8 @@ class _AnimeScreenState extends State<AnimeScreen> {
             '动漫',
             style: FontUtils.systemFont(
               fontSize: 28,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.foreground,
             ),
           ),
           const SizedBox(height: 4),
@@ -641,7 +641,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
                   : '来自豆瓣的精选内容',
               style: FontUtils.systemFont(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodySmall?.color,
+                color: AppTheme.foregroundMuted,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -718,7 +718,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            color: AppTheme.foregroundMuted,
           ),
         ),
         const SizedBox(height: 6),
@@ -748,7 +748,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            color: AppTheme.foregroundMuted,
           ),
         ),
         const SizedBox(height: 6),
@@ -794,7 +794,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            color: AppTheme.foregroundMuted,
           ),
         ),
         const SizedBox(height: 6),
@@ -874,7 +874,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
           style: FontUtils.systemFont(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            color: AppTheme.foregroundMuted,
           ),
         ),
         const SizedBox(height: 8),

@@ -519,21 +519,16 @@ class _MovieScreenState extends State<MovieScreen> {
             '电影',
             style: FontUtils.systemFont(
               fontSize: 28,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.titleLarge?.color,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.foreground,
             ),
           ),
           const SizedBox(height: 4),
-          SizedBox(
-            height: 20, // 固定高度确保一致性
-            child: Text(
-              '来自豆瓣的精选内容',
-              style: FontUtils.systemFont(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          Text(
+            '来自豆瓣的精选内容',
+            style: FontUtils.systemFont(
+              fontSize: 14,
+              color: AppTheme.foregroundMuted,
             ),
           ),
         ],
@@ -544,14 +539,20 @@ class _MovieScreenState extends State<MovieScreen> {
   Widget _buildFilterSection() {
     final themeService = Provider.of<ThemeService>(context);
     return Container(
-      width: double.infinity, // 设置为100%宽度
-      margin: const EdgeInsets.all(16),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: themeService.isDarkMode
-            ? Colors.white.withValues(alpha: 0.1)
-            : Colors.white.withValues(alpha: 0.8),
+            ? AppTheme.darkBackgroundMuted
+            : Colors.white,
         borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(
+          color: themeService.isDarkMode
+              ? AppTheme.foreground.withValues(alpha: 0.08)
+              : AppTheme.gray200,
+          width: 0.5,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -563,9 +564,8 @@ class _MovieScreenState extends State<MovieScreen> {
             (newValue) {
               setState(() {
                 _selectedCategoryValue = newValue;
-                // 重置二级筛选为默认值
-                _selectedRegionValue = '全部'; // 胶囊筛选默认值
-                _selectedMovieType = 'all'; // 多级筛选默认值
+                _selectedRegionValue = '全部';
+                _selectedMovieType = 'all';
                 _selectedMovieRegion = 'all';
                 _selectedMovieYear = 'all';
                 _selectedMovieSort = 'T';
@@ -573,10 +573,9 @@ class _MovieScreenState extends State<MovieScreen> {
               _fetchMovies(isRefresh: true);
             },
           ),
-          const SizedBox(height: 16),
-          // 使用固定高度的容器来避免高度跳跃
+          const SizedBox(height: 12),
           SizedBox(
-            height: 66, // 增加高度以避免Column底部溢出
+            height: 66,
             child: _selectedCategoryValue == '全部'
                 ? _buildAdvancedFilterSection()
                 : _buildSimpleFilterSection(),
@@ -712,9 +711,9 @@ class _MovieScreenState extends State<MovieScreen> {
         Text(
           title,
           style: FontUtils.systemFont(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyMedium?.color,
+            color: AppTheme.foregroundMuted,
           ),
         ),
         const SizedBox(height: 8),
@@ -736,20 +735,16 @@ class _MovieScreenState extends State<MovieScreen> {
   }
 
   Widget _buildEndOfListIndicator() {
-    final themeService = Provider.of<ThemeService>(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-          16, 8, 16, 16), // 减少顶部padding，保持底部padding与加载指示器一致
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
         children: [
           Container(
-            width: 60,
+            width: 40,
             height: 2,
             decoration: BoxDecoration(
-              color: themeService.isDarkMode
-                  ? Colors.white.withValues(alpha: 0.3)
-                  : Colors.grey.withValues(alpha: 0.4),
+              color: AppTheme.foregroundMuted.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
           ),
@@ -757,10 +752,8 @@ class _MovieScreenState extends State<MovieScreen> {
           Text(
             '已经到底啦~',
             style: FontUtils.systemFont(
-              fontSize: 14,
-              color: themeService.isDarkMode
-                  ? Colors.white.withValues(alpha: 0.6)
-                  : Colors.grey[600],
+              fontSize: 13,
+              color: AppTheme.foregroundMuted,
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -769,10 +762,8 @@ class _MovieScreenState extends State<MovieScreen> {
             '共 ${_movies.length} 部电影',
             style: FontUtils.systemFont(
               fontSize: 12,
-              color: themeService.isDarkMode
-                  ? Colors.white.withValues(alpha: 0.4)
-                  : Colors.grey[500],
-              fontWeight: FontWeight.w300,
+              color: AppTheme.foregroundMuted.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],

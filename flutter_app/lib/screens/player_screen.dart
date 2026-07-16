@@ -1498,9 +1498,9 @@ class _PlayerScreenState extends State<PlayerScreen>
                 Text(
                   '哎呀, 出现了一些问题',
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.foreground,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -1511,18 +1511,18 @@ class _PlayerScreenState extends State<PlayerScreen>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
-                    color: AppTheme.gray600.withValues(alpha: 0.1),
+                    color: AppTheme.darkBackgroundMuted,
                     borderRadius: BorderRadius.circular(AppTheme.radiusXl),
                     border: Border.all(
-                      color: AppTheme.gray600.withValues(alpha: 0.3),
-                      width: 1,
+                      color: AppTheme.foreground.withValues(alpha: 0.1),
+                      width: 0.5,
                     ),
                   ),
                   child: Text(
                     _state.errorMessage!,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: AppTheme.error,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.foregroundMuted,
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
