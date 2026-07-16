@@ -70,13 +70,16 @@ export default function DownloadPage() {
               <div className='flex-1 text-center lg:text-left'>
                 {/* Logo + rating */}
                 <div className='flex items-center gap-3 mb-5 justify-center lg:justify-start'>
-                  <Image
-                    src='/icons/icon-192x192.png'
-                    alt='5572'
-                    width={40}
-                    height={40}
-                    className='rounded-lg'
-                  />
+                  <div className='relative'>
+                    <img
+                      src='/icons/icon.svg'
+                      alt='5572'
+                      width={48}
+                      height={48}
+                      className='rounded-xl'
+                      style={{ boxShadow: '0 4px 16px rgba(244,194,77,0.3)' }}
+                    />
+                  </div>
                   <div>
                     <span className='text-lg font-bold text-white'>
                       5572 影视
@@ -320,8 +323,8 @@ export default function DownloadPage() {
       >
         <div className='max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3'>
           <div className='flex items-center gap-2'>
-            <Image
-              src='/icons/icon-192x192.png'
+            <img
+              src='/icons/icon.svg'
               alt='5572'
               width={20}
               height={20}
