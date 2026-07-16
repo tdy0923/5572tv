@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  CalendarIcon,
-  FireIcon,
-  FunnelIcon,
-  LanguageIcon,
-  StarIcon,
-  TagIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { Calendar, Filter, Flame, Globe, Star, Tag, X } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import {
@@ -108,12 +100,12 @@ const LANGUAGES = [
 ];
 
 const SORT_OPTIONS = [
-  { value: 'rating', label: '评分', icon: StarIcon },
-  { value: 'date', label: '时间', icon: CalendarIcon },
-  { value: 'popularity', label: '人气', icon: FireIcon },
-  { value: 'vote_count', label: '投票数', icon: TagIcon },
-  { value: 'title', label: '标题', icon: LanguageIcon },
-  { value: 'episode_count', label: '集数', icon: TagIcon, tvOnly: true },
+  { value: 'rating', label: '评分', icon: Star },
+  { value: 'date', label: '时间', icon: Calendar },
+  { value: 'popularity', label: '人气', icon: Flame },
+  { value: 'vote_count', label: '投票数', icon: Tag },
+  { value: 'title', label: '标题', icon: Globe },
+  { value: 'episode_count', label: '集数', icon: Tag, tvOnly: true },
 ];
 
 export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
@@ -166,7 +158,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
         active={hasActiveFilters}
         className='inline-flex items-center gap-2 px-3 py-2'
       >
-        <FunnelIcon className='h-4 w-4' />
+        <Filter className='h-4 w-4' />
         筛选
         {hasActiveFilters && (
           <span className='rounded-full bg-black/10 px-1.5 py-0.5 text-xs text-current dark:bg-gray-800'>
@@ -193,7 +185,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
                 onClick={onToggleVisible}
                 className='text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
               >
-                <XMarkIcon className='h-5 w-5' />
+                <X className='h-5 w-5' />
               </button>
             </div>
           </div>

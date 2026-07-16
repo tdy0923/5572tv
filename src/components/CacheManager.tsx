@@ -1,16 +1,16 @@
 'use client';
 
 import {
-  ArrowPathIcon,
-  ChartBarIcon,
-  ClockIcon,
-  DocumentTextIcon,
-  ExclamationTriangleIcon,
-  FilmIcon,
-  FolderIcon,
-  PlayIcon,
-  TrashIcon,
-} from '@heroicons/react/24/outline';
+  AlertTriangle,
+  BarChart3,
+  Clock,
+  FileText,
+  Film,
+  Folder,
+  Play,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface CacheStats {
@@ -48,35 +48,35 @@ const CACHE_TYPES: CacheType[] = [
     key: 'douban',
     name: '豆瓣数据',
     description: '电影/电视剧详情、分类、推荐等数据缓存',
-    icon: FilmIcon,
+    icon: Film,
     color: 'text-green-600 bg-green-100',
   },
   {
     key: 'shortdrama',
     name: '短剧数据',
     description: '短剧分类、推荐、列表、集数等数据缓存',
-    icon: PlayIcon,
+    icon: Play,
     color: 'text-orange-600 bg-orange-100',
   },
   {
     key: 'tmdb',
     name: 'TMDB数据',
     description: 'TMDB演员搜索、作品信息等数据缓存',
-    icon: FilmIcon,
+    icon: Film,
     color: 'text-purple-600 bg-purple-100',
   },
   {
     key: 'danmu',
     name: '弹幕数据',
     description: '外部弹幕API获取的弹幕内容缓存',
-    icon: DocumentTextIcon,
+    icon: FileText,
     color: 'text-blue-600 bg-blue-100',
   },
   {
     key: 'netdisk',
     name: '网盘搜索',
     description: '网盘搜索结果缓存（百度、阿里、夸克等）',
-    icon: FolderIcon,
+    icon: Folder,
     color: 'text-purple-600 bg-purple-100',
   },
 ];
@@ -182,7 +182,7 @@ export default function CacheManager() {
       {/* 标题和刷新按钮 */}
       <div className='flex items-center justify-between'>
         <div className='flex items-center space-x-3'>
-          <ChartBarIcon className='h-6 w-6 text-blue-600' />
+          <BarChart3 className='w-6 h-6 text-blue-600' />
           <h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
             缓存管理
           </h2>
@@ -191,7 +191,7 @@ export default function CacheManager() {
         <div className='flex items-center space-x-2'>
           {lastRefresh && (
             <span className='text-sm text-gray-500 dark:text-gray-400'>
-              <ClockIcon className='inline h-4 w-4 mr-1' />
+              <Clock className='inline w-4 h-4 mr-1' />
               {lastRefresh.toLocaleTimeString()}
             </span>
           )}
@@ -200,7 +200,7 @@ export default function CacheManager() {
             disabled={loading}
             className='inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50'
           >
-            <ArrowPathIcon
+            <RefreshCw
               className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`}
             />
             刷新
@@ -212,7 +212,7 @@ export default function CacheManager() {
       {error && (
         <div className='bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4'>
           <div className='flex items-center'>
-            <ExclamationTriangleIcon className='h-5 w-5 text-red-400 mr-3' />
+            <AlertTriangle className='h-5 w-5 text-red-400 mr-3' />
             <span className='text-red-800 dark:text-red-200'>{error}</span>
           </div>
         </div>
@@ -359,12 +359,12 @@ export default function CacheManager() {
                 >
                   {clearing === cacheType.key ? (
                     <>
-                      <ArrowPathIcon className='h-4 w-4 mr-2 animate-spin' />
+                      <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
                       清理中...
                     </>
                   ) : (
                     <>
-                      <TrashIcon className='h-4 w-4 mr-2' />
+                      <Trash2 className='h-4 w-4 mr-2' />
                       清理缓存
                     </>
                   )}
@@ -390,12 +390,12 @@ export default function CacheManager() {
             >
               {clearing === 'expired' ? (
                 <>
-                  <ArrowPathIcon className='h-4 w-4 mr-2 animate-spin' />
+                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
                   清理中...
                 </>
               ) : (
                 <>
-                  <ClockIcon className='h-4 w-4 mr-2' />
+                  <Clock className='h-4 w-4 mr-2' />
                   清理过期缓存
                 </>
               )}
@@ -408,12 +408,12 @@ export default function CacheManager() {
             >
               {clearing === 'all' ? (
                 <>
-                  <ArrowPathIcon className='h-4 w-4 mr-2 animate-spin' />
+                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
                   清理中...
                 </>
               ) : (
                 <>
-                  <TrashIcon className='h-4 w-4 mr-2' />
+                  <Trash2 className='h-4 w-4 mr-2' />
                   清理所有缓存
                 </>
               )}
@@ -422,7 +422,7 @@ export default function CacheManager() {
 
           <div className='mt-4 text-sm text-gray-500 dark:text-gray-400'>
             <p className='flex items-start'>
-              <ExclamationTriangleIcon className='h-4 w-4 mr-2 mt-0.5 shrink-0 text-orange-500' />
+              <AlertTriangle className='h-4 w-4 mr-2 mt-0.5 shrink-0 text-orange-500' />
               注意：清理缓存后，相应的数据将需要重新从源服务器获取，可能会影响加载速度。
             </p>
           </div>
@@ -432,7 +432,7 @@ export default function CacheManager() {
       {/* 加载状态 */}
       {loading && !stats && (
         <div className='flex items-center justify-center py-12'>
-          <ArrowPathIcon className='h-8 w-8 animate-spin text-blue-500 mr-3' />
+          <RefreshCw className='h-8 w-8 animate-spin text-blue-500 mr-3' />
           <span className='text-gray-600 dark:text-gray-300'>
             正在获取缓存统计...
           </span>

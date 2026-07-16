@@ -70,15 +70,15 @@ function AdminMetricCard({
   helper?: string;
 }) {
   return (
-    <div className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-800'>
-      <div className='text-[11px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
+    <div className='ui-surface rounded-[var(--radius-2xl)] px-5 py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-8)]'>
+      <div className='text-[11px] uppercase tracking-[0.18em] text-[var(--color-foreground-muted)]'>
         {label}
       </div>
-      <div className='mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100'>
+      <div className='mt-2 text-2xl font-semibold text-[var(--color-foreground)]'>
         {value}
       </div>
       {helper && (
-        <div className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+        <div className='mt-1 text-xs text-[var(--color-foreground-subtle)]'>
           {helper}
         </div>
       )}
@@ -96,25 +96,27 @@ function AdminModulePanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'>
-      <div className='flex items-center gap-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4 dark:border-gray-700 dark:bg-gray-800'>
-        {icon}
+    <div className='ui-surface rounded-[var(--radius-2xl)] shadow-[var(--shadow-4)] overflow-hidden'>
+      <div className='flex items-center gap-3 border-b border-[var(--color-stroke-subtle)] bg-[var(--color-background-subtle)] px-6 py-4'>
+        <div className='flex items-center justify-center w-10 h-10 rounded-[var(--radius-xl)] bg-[var(--color-primary-50)] dark:bg-[var(--color-primary-900)]/30 text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)]'>
+          {icon}
+        </div>
         <div>
-          <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+          <h3 className='text-lg font-semibold text-[var(--color-foreground)]'>
             {title}
           </h3>
-          <p className='mt-1 text-xs uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400'>
+          <p className='mt-0.5 text-xs uppercase tracking-[0.18em] text-[var(--color-foreground-muted)]'>
             Module Workspace
           </p>
         </div>
       </div>
 
-      <div className='border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3 dark:border-gray-700 dark:bg-gray-800'>
-        <div className='flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
+      <div className='border-b border-[var(--color-stroke-subtle)] bg-[var(--color-background)] px-6 py-3'>
+        <div className='flex flex-wrap items-center gap-2 text-xs text-[var(--color-foreground-muted)]'>
+          <span className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-2.5 py-1'>
             Single Module
           </span>
-          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white px-2.5 py-1 dark:border-gray-700 dark:bg-gray-800'>
+          <span className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-2.5 py-1'>
             Admin Workspace
           </span>
         </div>
@@ -361,9 +363,9 @@ function AdminPageClient() {
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={`skeleton-${index}`}
-                  className='relative h-24 bg-linear-to-r from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 rounded-xl overflow-hidden'
+                  className='relative h-24 bg-linear-to-r from-[var(--color-background-subtle)] via-[var(--color-background-muted)] to-[var(--color-background-subtle)] rounded-[var(--radius-2xl)] overflow-hidden'
                 >
-                  <div className='absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
+                  <div className='absolute inset-0 -translate-x-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] bg-linear-to-r from-transparent via-white/20 to-transparent'></div>
                 </div>
               ))}
             </div>
@@ -387,7 +389,7 @@ function AdminPageClient() {
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className='mt-6 inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10'
+                className='mt-6 ui-secondary-button'
               >
                 重新加载
               </button>
@@ -422,17 +424,17 @@ function AdminPageClient() {
           <div className='grid gap-6 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]'>
             <aside className='ui-screen lg:sticky lg:top-24 h-fit overflow-y-auto max-h-[calc(100vh-6rem)] p-4'>
               <div className='mb-4'>
-                <div className='text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
+                <div className='text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-foreground-muted)]'>
                   Admin Console
                 </div>
-                <div className='mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100'>
+                <div className='mt-2 text-lg font-semibold text-[var(--color-foreground)]'>
                   后台
                 </div>
               </div>
 
-              <div className='space-y-3'>
+              <div className='space-y-1'>
                 {adminSections.map((group) => (
-                  <div key={group.group} className='space-y-2'>
+                  <div key={group.group}>
                     <button
                       onClick={() => {
                         setActiveAdminGroup(group.group);
@@ -441,16 +443,16 @@ function AdminPageClient() {
                           setActiveAdminSection(firstSection);
                         }
                       }}
-                      className={`flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition-colors ${
+                      className={`flex w-full items-center justify-between rounded-[var(--radius-xl)] px-3 py-2.5 text-left transition-all duration-200 ${
                         activeAdminGroup === group.group
-                          ? 'bg-primary-100 text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
-                          : 'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/6'
+                          ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-500)]/15 dark:text-[var(--color-primary-300)] shadow-[var(--shadow-2)]'
+                          : 'text-[var(--color-foreground-subtle)] hover:bg-[var(--color-background-subtle)] hover:text-[var(--color-foreground)] dark:hover:bg-white/5'
                       }`}
                     >
                       <span className='text-sm font-semibold'>
                         {group.group}
                       </span>
-                      <span className='text-xs opacity-70'>
+                      <span className='text-xs opacity-60'>
                         {group.items.length}
                       </span>
                     </button>
@@ -468,7 +470,7 @@ function AdminPageClient() {
                   {activeAdminSectionMeta?.label || '后台工作区'}
                 </div>
                 {activeAdminGroupMeta && (
-                  <div className='mt-5 border-t border-gray-200 dark:border-gray-700 pt-4 dark:border-gray-700'>
+                  <div className='mt-5 border-t border-[var(--color-stroke-subtle)] pt-4'>
                     <div className='flex flex-wrap gap-2'>
                       {activeAdminGroupMeta.items.map((section) => {
                         const Icon = section.icon;
@@ -476,13 +478,13 @@ function AdminPageClient() {
                           <button
                             key={section.id}
                             onClick={() => setActiveAdminSection(section.id)}
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-200 ${
                               activeAdminSection === section.id
-                                ? 'bg-primary-100 text-primary-900 dark:bg-primary-500/15 dark:text-primary-100'
-                                : 'border border-gray-200 dark:border-gray-700 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10'
+                                ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-500)]/15 dark:text-[var(--color-primary-300)] shadow-[var(--shadow-2)]'
+                                : 'border border-[var(--color-stroke)] bg-[var(--color-background)] text-[var(--color-foreground-subtle)] hover:bg-[var(--color-background-subtle)] hover:text-[var(--color-foreground)] dark:hover:bg-white/5'
                             }`}
                           >
-                            <Icon size={15} />
+                            <Icon size={16} />
                             <span>{section.label}</span>
                           </button>
                         );

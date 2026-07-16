@@ -4,12 +4,15 @@
 'use client';
 
 import {
-  ClipboardIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  LinkIcon,
-} from '@heroicons/react/24/outline';
-import { CheckCircle, Cloud, Folder, Lightbulb } from 'lucide-react';
+  CheckCircle,
+  Clipboard,
+  Cloud,
+  Eye,
+  EyeOff,
+  Folder,
+  Lightbulb,
+  Link,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface NetDiskLink {
@@ -607,7 +610,7 @@ export default function NetDiskSearchResults({
                                           {isTitleExpanded ? '收起' : '展开'}
                                         </span>
                                         <svg
-                                          className={`h-3 w-3 transition-transform duration-200 ${isTitleExpanded ? 'rotate-180' : ''}`}
+                                          className={`w-4 h-4 transition-transform duration-200 ${isTitleExpanded ? 'rotate-180' : ''}`}
                                           fill='currentColor'
                                           viewBox='0 0 20 20'
                                         >
@@ -643,7 +646,7 @@ export default function NetDiskSearchResults({
                                         {isTitleExpanded ? '收起' : '展开'}
                                       </span>
                                       <svg
-                                        className={`h-3 w-3 transition-transform duration-200 ${isTitleExpanded ? 'rotate-180' : ''}`}
+                                        className={`w-4 h-4 transition-transform duration-200 ${isTitleExpanded ? 'rotate-180' : ''}`}
                                         fill='currentColor'
                                         viewBox='0 0 20 20'
                                       >
@@ -665,7 +668,7 @@ export default function NetDiskSearchResults({
                           {/* 链接和密码 */}
                           <div className='space-y-2'>
                             <div className='flex items-start space-x-2'>
-                              <LinkIcon className='h-4 w-4 text-gray-400 shrink-0 mt-0.5' />
+                              <Link className='h-4 w-4 text-gray-400 shrink-0 mt-0.5' />
                               <div className='flex-1 min-w-0'>
                                 <code className='text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-mono break-all block w-full'>
                                   <span className='block sm:hidden'>
@@ -706,7 +709,7 @@ export default function NetDiskSearchResults({
                                     />
                                   </svg>
                                 ) : (
-                                  <ClipboardIcon className='h-4 w-4' />
+                                  <Clipboard className='h-4 w-4' />
                                 )}
                               </button>
                             </div>
@@ -742,9 +745,9 @@ export default function NetDiskSearchResults({
                                     }
                                   >
                                     {isPasswordVisible ? (
-                                      <EyeSlashIcon className='h-4 w-4' />
+                                      <EyeOff className='h-4 w-4' />
                                     ) : (
-                                      <EyeIcon className='h-4 w-4' />
+                                      <Eye className='h-4 w-4' />
                                     )}
                                   </button>
                                   <button
@@ -778,7 +781,7 @@ export default function NetDiskSearchResults({
                                         />
                                       </svg>
                                     ) : (
-                                      <ClipboardIcon className='h-4 w-4' />
+                                      <Clipboard className='h-4 w-4' />
                                     )}
                                   </button>
                                 </div>

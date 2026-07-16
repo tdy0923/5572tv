@@ -2,15 +2,15 @@
 'use client';
 
 import {
-  ArrowPathIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-  PlayIcon,
-  XCircleIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Play,
+  RefreshCw,
+  Search,
+  X,
+  XCircle,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -429,13 +429,13 @@ export default function SourceTestModule() {
 
     switch (status) {
       case 'testing':
-        return <ArrowPathIcon className='w-4 h-4 animate-spin text-blue-500' />;
+        return <RefreshCw className='w-4 h-4 animate-spin text-blue-500' />;
       case 'success':
-        return <CheckCircleIcon className='w-4 h-4 text-green-500' />;
+        return <CheckCircle className='w-4 h-4 text-green-500' />;
       case 'error':
-        return <XCircleIcon className='w-4 h-4 text-red-500' />;
+        return <XCircle className='w-4 h-4 text-red-500' />;
       case 'timeout':
-        return <ClockIcon className='w-4 h-4 text-yellow-500' />;
+        return <Clock className='w-4 h-4 text-yellow-500' />;
       default:
         return <div className='w-4 h-4 rounded-full bg-gray-300' />;
     }
@@ -529,7 +529,7 @@ export default function SourceTestModule() {
               搜索关键词
             </label>
             <div className='relative'>
-              <MagnifyingGlassIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
               <input
                 type='text'
                 value={searchKeyword}
@@ -563,9 +563,9 @@ export default function SourceTestModule() {
                        flex items-center justify-center gap-2 whitespace-nowrap transition-colors'
             >
               {isTestingAll ? (
-                <ArrowPathIcon className='w-4 h-4 animate-spin' />
+                <RefreshCw className='w-4 h-4 animate-spin' />
               ) : (
-                <PlayIcon className='w-4 h-4' />
+                <Play className='w-4 h-4' />
               )}
               测试所有源
             </button>
@@ -938,7 +938,7 @@ export default function SourceTestModule() {
                   className='shrink-0 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'
                   title='关闭 (ESC)'
                 >
-                  <XMarkIcon className='w-6 h-6' />
+                  <X className='w-6 h-6' />
                 </button>
               </div>
 
@@ -964,7 +964,7 @@ export default function SourceTestModule() {
                   </div>
                 ) : (
                   <div className='flex flex-col items-center justify-center h-full text-center py-12'>
-                    <MagnifyingGlassIcon className='w-16 h-16 text-gray-300 dark:text-gray-600 mb-4' />
+                    <Search className='w-16 h-16 text-gray-300 dark:text-gray-600 mb-4' />
                     <p className='text-gray-500 dark:text-gray-400 text-lg'>
                       暂无搜索结果
                     </p>
@@ -979,7 +979,7 @@ export default function SourceTestModule() {
       {/* 空状态 */}
       {sources.length === 0 && (
         <div className='text-center py-12'>
-          <ExclamationTriangleIcon className='w-12 h-12 text-gray-400 mx-auto mb-4' />
+          <AlertTriangle className='w-12 h-12 text-gray-400 mx-auto mb-4' />
           <p className='text-gray-600 dark:text-gray-400'>正在加载源列表...</p>
         </div>
       )}

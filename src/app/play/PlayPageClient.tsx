@@ -4916,38 +4916,40 @@ function PlayPageClient() {
             </div>
 
             {/* 详情展示 */}
-            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+            <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
               {/* 文字区 - 使用独立组件优化性能 */}
-              <VideoInfoSection
-                videoTitle={videoTitle}
-                videoYear={videoYear}
-                videoCover={videoCover}
-                videoDoubanId={videoDoubanId}
-                currentSource={currentSource}
-                favorited={favorited}
-                onToggleFavorite={handleToggleFavorite}
-                detail={detail}
-                movieDetails={movieDetails}
-                bangumiDetails={bangumiDetails}
-                shortdramaDetails={shortdramaDetails}
-                movieComments={movieComments}
-                commentsError={commentsError?.message || null}
-                loadingMovieDetails={loadingMovieDetails}
-                loadingBangumiDetails={loadingBangumiDetails}
-                loadingComments={loadingComments}
-                loadingCelebrityWorks={loadingCelebrityWorks}
-                selectedCelebrityName={selectedCelebrityName}
-                celebrityWorks={celebrityWorks}
-                onCelebrityClick={handleCelebrityClick}
-                onClearCelebrity={() => {
-                  setSelectedCelebrityName(null);
-                  setCelebrityWorks([]);
-                }}
-                processImageUrl={processImageUrl}
-              />
+              <div className='lg:col-span-4 xl:col-span-3'>
+                <VideoInfoSection
+                  videoTitle={videoTitle}
+                  videoYear={videoYear}
+                  videoCover={videoCover}
+                  videoDoubanId={videoDoubanId}
+                  currentSource={currentSource}
+                  favorited={favorited}
+                  onToggleFavorite={handleToggleFavorite}
+                  detail={detail}
+                  movieDetails={movieDetails}
+                  bangumiDetails={bangumiDetails}
+                  shortdramaDetails={shortdramaDetails}
+                  movieComments={movieComments}
+                  commentsError={commentsError?.message || null}
+                  loadingMovieDetails={loadingMovieDetails}
+                  loadingBangumiDetails={loadingBangumiDetails}
+                  loadingComments={loadingComments}
+                  loadingCelebrityWorks={loadingCelebrityWorks}
+                  selectedCelebrityName={selectedCelebrityName}
+                  celebrityWorks={celebrityWorks}
+                  onCelebrityClick={handleCelebrityClick}
+                  onClearCelebrity={() => {
+                    setSelectedCelebrityName(null);
+                    setCelebrityWorks([]);
+                  }}
+                  processImageUrl={processImageUrl}
+                />
+              </div>
 
               {/* 兴趣关联推荐 */}
-              <div className='md:col-span-3'>
+              <div className='lg:col-span-8 xl:col-span-9'>
                 <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
                   <div className='flex items-center gap-2 mb-3'>
                     <Film className='w-4 h-4' />
@@ -4959,7 +4961,7 @@ function PlayPageClient() {
                     )}
                   </div>
                   {relatedLoading && (
-                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3'>
+                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3'>
                       {Array.from({ length: 7 }).map((_, i) => (
                         <div
                           key={i}
@@ -4991,7 +4993,7 @@ function PlayPageClient() {
                     </p>
                   )}
                   {!relatedLoading && relatedMovies.length > 0 && (
-                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3'>
+                    <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3'>
                       {relatedMovies.map((m) => (
                         <a
                           key={m.id}
