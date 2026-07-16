@@ -150,12 +150,12 @@ export default function DownloadPage() {
                     </button>
                   ) : (
                     <a
-                      href='/download/5572tv-android.apk'
+                      href='/static/download/5572tv-android.apk'
                       download='5572tv-android.apk'
                       onClick={(e) => {
                         e.preventDefault();
                         browserDownload(
-                          '/download/5572tv-android.apk',
+                          '/static/download/5572tv-android.apk',
                           '5572tv-android.apk',
                         );
                       }}
@@ -199,7 +199,7 @@ export default function DownloadPage() {
                       arm64-v8a 64位（推荐）
                     </span>
                     <a
-                      href='/download/5572tv-android-armv7a.apk'
+                      href='/static/download/5572tv-android-armv7a.apk'
                       download
                       className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] overflow-hidden'
                       style={{
