@@ -1,14 +1,21 @@
 /* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
+import { getAdminRoleFromRequest } from '@/lib/admin-auth';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// 设置 Telegram Webhook
+// 设置 Telegram Webhook (需要管理员权限)
 export async function POST(request: Request) {
   try {
+    // 验证管理员权限
+    const adminRole = await getAdminRoleFromRequest(request as any);
+    if (!adminRole) {
+      return NextResponse.json({ error: '需要管理员权限' }, { status: 401 });
+    }
+
     // 获取管理员配置
     const config = await db.getAdminConfig();
     const telegramConfig = config?.TelegramAuthConfig;
@@ -65,9 +72,15 @@ export async function POST(request: Request) {
   }
 }
 
-// 获取 Webhook 信息
-export async function GET() {
+// 获取 Webhook 信息 (需要管理员权限)
+export async function GET(request: Request) {
   try {
+    // 验证管理员权限
+    const adminRole = await getAdminRoleFromRequest(request as any);
+    if (!adminRole) {
+      return NextResponse.json({ error: '需要管理员权限' }, { status: 401 });
+    }
+
     const config = await db.getAdminConfig();
     const telegramConfig = config?.TelegramAuthConfig;
 

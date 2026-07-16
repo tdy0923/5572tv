@@ -176,11 +176,12 @@ async function withRetry<T>(
 // ========== 工具函数结束 ==========
 
 export async function GET(request: NextRequest) {
-  // Simple cron token authentication
-  const { searchParams } = new URL(request.url);
-  const cronToken = searchParams.get('token');
-  const expectedToken = process.env.CRON_TOKEN || process.env.PASSWORD;
-  if (cronToken !== expectedToken) {
+  // Cron token authentication via Authorization header
+  const authHeader = request.headers.get('authorization');
+  const cronToken = authHeader?.replace('Bearer ', '');
+  const expectedToken =
+    process.env.CRON_TOKEN || process.env.CRON_SECRET || process.env.PASSWORD;
+  if (!cronToken || cronToken !== expectedToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

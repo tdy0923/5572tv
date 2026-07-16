@@ -80,3 +80,4 @@ jest.config.js
 jest.setup.js
 *.keystore
 mcp.json
+_audit_parens.py

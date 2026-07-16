@@ -222,7 +222,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: '密码不能为空' }, { status: 400 });
       }
 
-      if (password !== envPassword) {
+      const pwBuf = Buffer.from(password);
+      const expectedBuf = Buffer.from(envPassword);
+      if (
+        pwBuf.length !== expectedBuf.length ||
+        !crypto.timingSafeEqual(pwBuf, expectedBuf)
+      ) {
         recordFailedAttempt(ip);
         return NextResponse.json(
           { ok: false, error: '密码错误' },
