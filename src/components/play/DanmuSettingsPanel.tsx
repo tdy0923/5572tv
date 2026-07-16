@@ -26,6 +26,7 @@ interface DanmuSettings {
   fontSize: number;
   speed: number;
   opacity: number;
+  color?: string;
   margin: [number | string, number | string];
   modes: Array<0 | 1 | 2>;
   antiOverlap: boolean;
@@ -784,6 +785,46 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
                 <span className='text-xs text-green-400 w-12 text-right font-mono font-semibold tabular-nums'>
                   {(sliderOpacity * 100).toFixed(0)}%
                 </span>
+              </div>
+
+              {/* 弹幕颜色 */}
+              <div className='flex items-center gap-3'>
+                <div className='flex items-center gap-1.5 text-xs text-gray-300 w-16 shrink-0'>
+                  <div
+                    className='w-3.5 h-3.5 rounded-full border-2 border-gray-400'
+                    style={{ background: settings.color || '#ffffff' }}
+                  />
+                  <span className='font-medium'>颜色</span>
+                </div>
+                <div className='flex-1 flex items-center gap-2'>
+                  {[
+                    '#ffffff',
+                    '#ff6b6b',
+                    '#ffd93d',
+                    '#6bcb77',
+                    '#4d96ff',
+                    '#ff6bb5',
+                    '#a855f7',
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleUpdate('color', color)}
+                      className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 ${
+                        (settings.color || '#ffffff') === color
+                          ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110'
+                          : 'opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ background: color }}
+                    />
+                  ))}
+                  <input
+                    type='color'
+                    value={settings.color || '#ffffff'}
+                    onChange={(e) => handleUpdate('color', e.target.value)}
+                    className='w-6 h-6 rounded-full cursor-pointer border-0 p-0'
+                    title='自定义颜色'
+                  />
+                </div>
               </div>
 
               {/* 上边距 - LunaTV独有功能！ */}

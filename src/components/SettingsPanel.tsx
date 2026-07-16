@@ -126,6 +126,22 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   const [fgColor, setFgColor] = useState('#171717');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // Night mode schedule state
+  const [nightModeSchedule, setNightModeSchedule] = useState({
+    enabled: false,
+    startHour: 22,
+    startMinute: 0,
+    endHour: 7,
+    endMinute: 0,
+  });
+
+  const saveNightModeScheduleToLS = (schedule: typeof nightModeSchedule) => {
+    localStorage.setItem(
+      '5572tv_night_mode_schedule',
+      JSON.stringify(schedule),
+    );
+  };
+
   // ── Emby config via TanStack Query ────────────────────────────────────────
   const { data: embyConfig = { sources: [] } } = useEmbyConfigQuery(isOpen);
 
@@ -175,6 +191,16 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
       setBgColor(readLS('themeBgColor', '#ffffff'));
       setFgColor(readLS('themeFgColor', '#171717'));
       setIsDarkMode(readLS('themeIsDarkMode', false));
+
+      // Load night mode schedule
+      try {
+        const savedSchedule = localStorage.getItem(
+          '5572tv_night_mode_schedule',
+        );
+        if (savedSchedule) {
+          setNightModeSchedule(JSON.parse(savedSchedule));
+        }
+      } catch {}
     });
 
     return () => {
@@ -1236,6 +1262,75 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </div>
                 <Toggle checked={isDarkMode} onChange={handleDarkModeToggle} />
               </div>
+
+              {/* 夜间模式定时 */}
+              <div className='flex items-center justify-between'>
+                <div>
+                  <h5 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                    自动切换主题
+                  </h5>
+                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                    根据时间自动切换深色/浅色主题
+                  </p>
+                </div>
+                <Toggle
+                  checked={nightModeSchedule.enabled}
+                  onChange={(enabled) => {
+                    const newSchedule = { ...nightModeSchedule, enabled };
+                    setNightModeSchedule(newSchedule);
+                    saveNightModeScheduleToLS(newSchedule);
+                  }}
+                />
+              </div>
+              {nightModeSchedule.enabled && (
+                <div className='mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50'>
+                  <div className='grid grid-cols-2 gap-3'>
+                    <div>
+                      <label className='text-xs text-gray-500 dark:text-gray-400 block mb-1'>
+                        开始时间（深色）
+                      </label>
+                      <input
+                        type='time'
+                        value={`${String(nightModeSchedule.startHour).padStart(2, '0')}:${String(nightModeSchedule.startMinute).padStart(2, '0')}`}
+                        onChange={(e) => {
+                          const [h, m] = e.target.value.split(':').map(Number);
+                          const newSchedule = {
+                            ...nightModeSchedule,
+                            startHour: h,
+                            startMinute: m,
+                          };
+                          setNightModeSchedule(newSchedule);
+                          saveNightModeScheduleToLS(newSchedule);
+                        }}
+                        className='w-full px-2 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                      />
+                    </div>
+                    <div>
+                      <label className='text-xs text-gray-500 dark:text-gray-400 block mb-1'>
+                        结束时间（浅色）
+                      </label>
+                      <input
+                        type='time'
+                        value={`${String(nightModeSchedule.endHour).padStart(2, '0')}:${String(nightModeSchedule.endMinute).padStart(2, '0')}`}
+                        onChange={(e) => {
+                          const [h, m] = e.target.value.split(':').map(Number);
+                          const newSchedule = {
+                            ...nightModeSchedule,
+                            endHour: h,
+                            endMinute: m,
+                          };
+                          setNightModeSchedule(newSchedule);
+                          saveNightModeScheduleToLS(newSchedule);
+                        }}
+                        className='w-full px-2 py-1.5 text-sm rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                      />
+                    </div>
+                  </div>
+                  <p className='text-xs text-gray-400 dark:text-gray-500 mt-2'>
+                    当前：{isDarkMode ? '深色' : '浅色'}模式
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
