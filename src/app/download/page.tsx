@@ -21,8 +21,8 @@ import PhonePreview from './components/PhonePreview';
 import PlatformTabs from './components/PlatformTabs';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '19';
-const APK_VERSION = 'v1.9.5';
+const APK_SIZE = '53';
+const APK_VERSION = 'v1.11.0';
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);

@@ -1,3 +1,44 @@
+## [1.11.0] - 2026-07-16
+
+### Changed — Fluent 2 全站升级
+
+- 🎨 **Flutter APP Fluent 2 全面升级**
+  - 开屏页：金色圆角卡片 Logo + scale-up/slide-up 双重动画
+  - 底部导航栏：金色选中状态 + 图标容器高亮 + easeOutBack 动画
+  - 搜索栏：AnimatedContainer 边框阴影 + 金色 focus ring + 金色提交按钮
+  - 列表页×4：Fluent 2 typography + 筛选区域边框样式
+  - 播放页：Fluent 2 错误信息容器
+  - 登录页：深色主题 + 金色 Logo 阴影 + 金色登录按钮
+  - 用户菜单：Fluent 2 容器边框阴影 + 细线分割
+  - 加载占位符：深色背景 + 金色旋转指示器
+  - 所有颜色统一使用 AppTheme token，0 硬编码颜色
+- 🎨 **Web Fluent 2 升级**
+  - 新 SVG 图标：金色渐变 + 播放三角 + drop shadow
+  - 下载页：使用新 SVG 图标 + glow shadow
+  - Admin 页面：Fluent 2 卡片/面板/侧边栏/骨架屏
+  - 图标库统一：heroicons → lucide-react（5个文件）
+  - 图标尺寸统一为 Fluent 2 规范（16px/20px/24px）
+
+### Fixed
+
+- 🐛 首页大图不清晰：HeroBanner 改用原生 img 绕过 next/image 优化
+- 🐛 下载按钮溢出：移除 whitespace-nowrap + 缩短文字 + overflow-hidden
+- 🐛 播放页布局：高分辨率屏幕相关推荐空白修复（12列网格）
+
+### Security
+
+- 🔒 deploy.yml 硬编码凭据改为 GitHub Secrets
+- 🔒 Telegram Webhook 添加 ensureAdmin 认证
+- 🔒 Cron Token 从 URL 参数改为 Authorization header
+- 🔒 登录密码改为 crypto.timingSafeEqual 时序安全比较
+
+### Performance
+
+- ⚡ Flutter VideoCard hover setState 优化（15→2）
+- ⚡ Flutter 移除未使用 state 变量（_isSeeking/_isClearHistoryButtonHovered/_isMoreButtonHovered）
+
+---
+
 ## [1.9.1] - 2026-07-11
 
 ### Fixed
