@@ -109,9 +109,15 @@ export async function GET(request: NextRequest) {
   // 先查共享缓存
   const sharedResults = getSharedCache(query);
   if (Array.isArray(sharedResults) && sharedResults.length > 0) {
-    return NextResponse.json({ results: sharedResults }, {
-      headers: { 'Cache-Control': `public, max-age=${searchCacheTtl}`, 'X-Cache': 'SHARED' },
-    });
+    return NextResponse.json(
+      { results: sharedResults },
+      {
+        headers: {
+          'Cache-Control': `public, max-age=${searchCacheTtl}`,
+          'X-Cache': 'SHARED',
+        },
+      },
+    );
   }
 
   try {
@@ -195,7 +201,15 @@ export async function GET(request: NextRequest) {
       if (!config.SiteConfig.DisableYellowFilter) {
         earlyResults = aggregated.filter((r: any) => {
           const typeName = r.type_name || '';
-          return !yellowWords.some((word: string) => typeName.includes(word));
+          const sourceName = r.source_name || '';
+          // 过滤成人内容：检查 type_name 和 source_name
+          const isAdult = yellowWords.some(
+            (word: string) =>
+              typeName.includes(word) || sourceName.includes(word),
+          );
+          // 额外过滤：source_name 包含🔞标记的源
+          const hasAdultEmoji = sourceName.includes('🔞');
+          return !isAdult && !hasAdultEmoji;
         });
       }
       // 后台继续收集其余源并写入缓存
@@ -230,7 +244,15 @@ export async function GET(request: NextRequest) {
     if (!config.SiteConfig.DisableYellowFilter) {
       flattenedResults = flattenedResults.filter((result) => {
         const typeName = result.type_name || '';
-        return !yellowWords.some((word: string) => typeName.includes(word));
+        const sourceName = result.source_name || '';
+        // 过滤成人内容：检查 type_name 和 source_name
+        const isAdult = yellowWords.some(
+          (word: string) =>
+            typeName.includes(word) || sourceName.includes(word),
+        );
+        // 额外过滤：source_name 包含🔞标记的源
+        const hasAdultEmoji = sourceName.includes('🔞');
+        return !isAdult && !hasAdultEmoji;
       });
     }
     // Limit search results to prevent memory exhaustion
