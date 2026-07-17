@@ -69,7 +69,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
     'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"%3E%3Crect width="96" height="96" rx="48" fill="%23e5e7eb"/%3E%3Ccircle cx="48" cy="36" r="16" fill="%239ca3af"/%3E%3Cpath d="M22 78c4-13 14-20 26-20s22 7 26 20" fill="%239ca3af"/%3E%3C/svg%3E';
 
   return (
-    <div className='md:col-span-3'>
+    <div>
       <div className='px-4 py-5 sm:p-6 flex flex-col min-h-0'>
         {/* 标题 */}
         <div className='mb-4 shrink-0'>
