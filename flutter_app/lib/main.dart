@@ -137,9 +137,12 @@ class _LoadingPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: Container(
-        color: AppTheme.darkBackground,
+        color: isDark ? AppTheme.darkBackground : AppTheme.background,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +160,7 @@ class _LoadingPlaceholder extends StatelessWidget {
                 '加载中...',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppTheme.gray400,
+                  color: isDark ? AppTheme.gray400 : AppTheme.gray600,
                 ),
               ),
             ],
