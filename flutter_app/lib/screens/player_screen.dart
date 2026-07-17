@@ -617,7 +617,14 @@ class _PlayerScreenState extends State<PlayerScreen>
       _state.isTablet = DeviceUtils.isTablet(context);
       _state.isPortraitTablet = DeviceUtils.isPortraitTablet(context);
 
-      if (!_state.isTablet) {
+      // 短剧锁定竖屏全屏，其他视频允许旋转
+      if (_isShortDramaSource()) {
+        // 短剧：锁定竖屏全屏
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+        ]);
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      } else if (!_state.isTablet) {
         _setPortraitOrientation();
       }
       final theme = Theme.of(context);
@@ -643,11 +650,19 @@ class _PlayerScreenState extends State<PlayerScreen>
     _removeVideoProgressListener();
     WidgetsBinding.instance.removeObserver(this);
     _restoreOrientation();
+    // 恢复系统 UI 模式
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(_state.originalStyle);
     _state.videoPlayerController?.dispose();
     _state.markUnmounted();
     _state.dispose();
     super.dispose();
+  }
+
+  /// 检测当前是否为短剧源
+  bool _isShortDramaSource() {
+    return _state.currentSource == 'shortdrama' ||
+        _state.currentSource.contains('shortdrama');
   }
 
   @override

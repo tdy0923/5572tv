@@ -51,39 +51,8 @@ void main() async {
 
   ErrorWidget.builder = (errorDetails) {
     debugPrint('Flutter error: ${errorDetails.exception}');
-    return Material(
-      child: Container(
-        color: AppTheme.gray900,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  '页面加载异常',
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  errorDetails.exceptionAsString(),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // 返回一个空白容器，不阻断用户操作
+    return const SizedBox.shrink();
   };
 
   runApp(const Media5572App());
