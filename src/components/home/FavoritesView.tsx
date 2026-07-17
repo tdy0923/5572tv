@@ -3,6 +3,7 @@
 import { UseMutateFunction } from '@tanstack/react-query';
 import { Heart, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import React from 'react';
 
 const VideoCard = dynamic(() => import('@/components/VideoCard'), {
   ssr: false,
@@ -94,6 +95,41 @@ export default function FavoritesView({
   requireClearConfirmation,
   favoritesLoading,
 }: FavoritesViewProps) {
+  const [showNewGroupInput, setShowNewGroupInput] = React.useState(false);
+  const [newGroupName, setNewGroupName] = React.useState('');
+
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim()) return;
+    try {
+      await fetch('/api/favorites/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group: newGroupName.trim(), action: 'add' }),
+      });
+      setNewGroupName('');
+      setShowNewGroupInput(false);
+      window.location.reload();
+    } catch (e) {
+      console.error('创建分组失败:', e);
+    }
+  };
+
+  const handleDeleteGroup = async (group: string) => {
+    if (!confirm(`确定删除分组"${group}"吗？`)) return;
+    try {
+      await fetch('/api/favorites/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group, action: 'delete' }),
+      });
+      if (favoriteGroupFilter === group) {
+        setFavoriteGroupFilter('全部');
+      }
+      window.location.reload();
+    } catch (e) {
+      console.error('删除分组失败:', e);
+    }
+  };
   return (
     <section className='mb-8 rounded-xl sm:rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
       <div className='mb-6 flex items-center justify-between'>
@@ -160,30 +196,78 @@ export default function FavoritesView({
       )}
 
       {favoriteItems.length > 0 && (
-        <div className='mb-4 flex flex-wrap gap-2'>
-          <button
-            onClick={() => setFavoriteGroupFilter('全部')}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-              favoriteGroupFilter === '全部'
-                ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
-                : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-            }`}
-          >
-            全部
-          </button>
-          {favoriteGroups.map((g) => (
+        <div className='mb-4'>
+          <div className='flex flex-wrap gap-2'>
             <button
-              key={g}
-              onClick={() => setFavoriteGroupFilter(g)}
+              onClick={() => setFavoriteGroupFilter('全部')}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                favoriteGroupFilter === g
+                favoriteGroupFilter === '全部'
                   ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
                   : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
               }`}
             >
-              {g}
+              全部
             </button>
-          ))}
+            {favoriteGroups
+              .filter((g) => g !== '默认')
+              .map((g) => (
+                <div key={g} className='group relative'>
+                  <button
+                    onClick={() => setFavoriteGroupFilter(g)}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+                      favoriteGroupFilter === g
+                        ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
+                        : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteGroup(g);
+                    }}
+                    className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            <button
+              onClick={() => setShowNewGroupInput(true)}
+              className='rounded-full px-3 py-1.5 text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-all duration-200'
+            >
+              + 新建
+            </button>
+          </div>
+          {showNewGroupInput && (
+            <div className='mt-2 flex items-center gap-2'>
+              <input
+                type='text'
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                placeholder='输入分组名称'
+                className='flex-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateGroup()}
+                autoFocus
+              />
+              <button
+                onClick={handleCreateGroup}
+                className='px-3 py-1.5 text-sm font-medium rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors'
+              >
+                创建
+              </button>
+              <button
+                onClick={() => {
+                  setShowNewGroupInput(false);
+                  setNewGroupName('');
+                }}
+                className='px-3 py-1.5 text-sm font-medium rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
+              >
+                取消
+              </button>
+            </div>
+          )}
         </div>
       )}
 
