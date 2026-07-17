@@ -609,11 +609,11 @@ class ApiService {
       if (response.success && response.data != null) {
         return [response.data!];
       } else {
-        print('获取视频详情失败: ${response.message}');
+        debugPrint('获取视频详情失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('获取视频详情失败: $e');
+      debugPrint('获取视频详情失败: $e');
       return [];
     }
   }
@@ -638,11 +638,11 @@ class ApiService {
             .map((item) => SearchResult.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        print('搜索失败: ${response.message}');
+        debugPrint('搜索失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('搜索失败: $e');
+      debugPrint('搜索失败: $e');
       return [];
     }
   }
@@ -664,11 +664,11 @@ class ApiService {
       if (response.success && response.data != null) {
         return response.data!;
       } else {
-        print('获取搜索源失败: ${response.message}');
+        debugPrint('获取搜索源失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('获取搜索源失败: $e');
+      debugPrint('获取搜索源失败: $e');
       return [];
     }
   }
@@ -690,11 +690,11 @@ class ApiService {
       if (response.success && response.data != null) {
         return response.data!;
       } else {
-        print('获取直播源列表失败: ${response.message}');
+        debugPrint('获取直播源列表失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('获取直播源列表失败: $e');
+      debugPrint('获取直播源列表失败: $e');
       return [];
     }
   }
@@ -717,11 +717,11 @@ class ApiService {
       if (response.success && response.data != null) {
         return response.data!;
       } else {
-        print('获取直播频道列表失败: ${response.message}');
+        debugPrint('获取直播频道列表失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('获取直播频道列表失败: $e');
+      debugPrint('获取直播频道列表失败: $e');
       return [];
     }
   }
@@ -745,11 +745,11 @@ class ApiService {
       if (response.success && response.data != null) {
         return response.data!;
       } else {
-        print('获取 EPG 节目单失败: ${response.message}');
+        debugPrint('获取 EPG 节目单失败: ${response.message}');
         return null;
       }
     } catch (e) {
-      print('获取 EPG 节目单失败: $e');
+      debugPrint('获取 EPG 节目单失败: $e');
       return null;
     }
   }
@@ -774,11 +774,11 @@ class ApiService {
         // 提取建议文本列表
         return response.data!.map((suggestion) => suggestion.text).toList();
       } else {
-        print('获取搜索建议失败: ${response.message}');
+        debugPrint('获取搜索建议失败: ${response.message}');
         return [];
       }
     } catch (e) {
-      print('获取搜索建议失败: $e');
+      debugPrint('获取搜索建议失败: $e');
       return [];
     }
   }
@@ -814,7 +814,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      print('获取短剧分类失败: $e');
+      debugPrint('获取短剧分类失败: $e');
       return [];
     }
   }
@@ -854,7 +854,7 @@ class ApiService {
       }
       return [];
     } catch (e) {
-      print('获取短剧列表失败: $e');
+      debugPrint('获取短剧列表失败: $e');
       return [];
     }
   }
@@ -874,7 +874,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('获取短剧详情失败: $e');
+      debugPrint('获取短剧详情失败: $e');
       return null;
     }
   }
@@ -899,7 +899,7 @@ class ApiService {
       }
       return null;
     } catch (e) {
-      print('解析短剧播放地址失败: $e');
+      debugPrint('解析短剧播放地址失败: $e');
       return null;
     }
   }

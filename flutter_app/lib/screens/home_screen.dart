@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (e) {
-      print('检查公告失败: $e');
+      debugPrint('检查公告失败: $e');
     }
   }
 

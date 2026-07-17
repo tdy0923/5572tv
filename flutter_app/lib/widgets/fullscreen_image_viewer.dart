@@ -162,7 +162,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       
       return granted;
     } catch (e) {
-      print('权限检查失败: $e');
+      debugPrint('权限检查失败: $e');
       return false;
     }
   }
@@ -286,7 +286,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
       imageStream.addListener(listener);
       return await completer.future;
     } catch (e) {
-      print('获取缓存图片数据失败: $e');
+      debugPrint('获取缓存图片数据失败: $e');
       return null;
     }
   }

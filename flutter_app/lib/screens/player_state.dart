@@ -642,10 +642,10 @@ class PlayerState extends ChangeNotifier {
         }
         notifyListeners();
       } else {
-        print('获取豆瓣详情失败: ${response.message}');
+        debugPrint('获取豆瓣详情失败: ${response.message}');
       }
     } catch (e) {
-      print('获取豆瓣详情异常: $e');
+      debugPrint('获取豆瓣详情异常: $e');
     }
   }
 
@@ -767,7 +767,7 @@ class PlayerState extends ChangeNotifier {
   }
 
   Future<void> updateVideoUrl(String newUrl, {Duration? startAt}) async {
-    print("newUrl: $newUrl, startAt: $startAt");
+    debugPrint("newUrl: $newUrl, startAt: $startAt");
     try {
       String finalUrl = newUrl;
 
@@ -795,9 +795,9 @@ class PlayerState extends ChangeNotifier {
       if (m3u8ProxyUrl.isNotEmpty && !finalUrl.startsWith('http')) {
         final encodedUrl = Uri.encodeComponent(finalUrl);
         finalUrl = '$m3u8ProxyUrl$encodedUrl';
-        print("使用 M3U8 代理: $finalUrl");
+        debugPrint("使用 M3U8 代理: $finalUrl");
       } else if (finalUrl.startsWith('http')) {
-        print("直接使用URL: $finalUrl");
+        debugPrint("直接使用URL: $finalUrl");
       }
 
       if (_isCasting) {
@@ -807,7 +807,7 @@ class PlayerState extends ChangeNotifier {
             startAt: startAt);
       }
     } catch (e) {
-      print("播放错误: $e");
+      debugPrint("播放错误: $e");
       if (mounted) {
         _errorMessage = '播放失败: $e';
         _showError = true;

@@ -1,3 +1,4 @@
+import "dart:async" show unawaited;
 import 'dart:convert';
 
 import '../models/live_channel.dart';
@@ -9,8 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:xml/xml_events.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 
-// ignore: unused_import
-import 'dart:async' show unawaited;
 
 /// 缓存项
 class _CacheItem<T> {

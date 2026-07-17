@@ -130,7 +130,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         });
       }
     } catch (e) {
-      print('加载直播源列表失败: $e');
+      debugPrint('加载直播源列表失败: $e');
       if (mounted) {
         setState(() {
           _allSources = [];
@@ -151,7 +151,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         _scrollToCurrentChannel();
       }
     } catch (e) {
-      print('加载频道列表失败: $e');
+      debugPrint('加载频道列表失败: $e');
       if (mounted) {
         setState(() {
           _allChannels = [];
@@ -220,7 +220,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
         _scrollToCurrentProgram();
       }
     } catch (e) {
-      print('加载 EPG 失败: $e');
+      debugPrint('加载 EPG 失败: $e');
       if (mounted) {
         setState(() {
           _programs = null;

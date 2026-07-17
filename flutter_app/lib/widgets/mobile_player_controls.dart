@@ -186,62 +186,6 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
     super.dispose();
   }
 
-  void _handleDoubleTap(DragEndDetails details, {required bool isLeft}) {
-    if (_isLocked) return;
-
-    final now = DateTime.now();
-    final position = details.localPosition;
-
-    // 检查是否是双击
-    if (_lastTapTime != null &&
-        _lastTapPosition != null &&
-        now.difference(_lastTapTime!).inMilliseconds < 300) {
-      // 双击检测
-      if ((position - _lastTapPosition!).distance < 100) {
-        // 执行快进或快退
-        final seekSeconds = 10;
-        final currentPosition = _position;
-        final newPosition = isLeft
-            ? currentPosition - Duration(seconds: seekSeconds)
-            : currentPosition + Duration(seconds: seekSeconds);
-        final clampedPosition = Duration(
-          milliseconds: newPosition.inMilliseconds.clamp(
-            0,
-            _duration.inMilliseconds,
-          ),
-        );
-        widget.player.seek(clampedPosition);
-
-        // 显示快进/快退指示器
-        setState(() {
-          if (isLeft) {
-            _showSeekBackward = true;
-            _showSeekForward = false;
-          } else {
-            _showSeekForward = true;
-            _showSeekBackward = false;
-          }
-        });
-        _seekIndicatorTimer?.cancel();
-        _seekIndicatorTimer = Timer(const Duration(milliseconds: 800), () {
-          if (mounted) {
-            setState(() {
-              _showSeekForward = false;
-              _showSeekBackward = false;
-            });
-          }
-        });
-
-        _lastTapTime = null;
-        _lastTapPosition = null;
-        return;
-      }
-    }
-
-    _lastTapTime = now;
-    _lastTapPosition = position;
-  }
-
   bool get _isFullscreen => widget.state.isFullscreen();
   bool get _isPlaying => widget.player.state.playing;
   Duration get _position => widget.player.state.position;
@@ -1137,7 +1081,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                 if (Platform.isAndroid)
                   GestureDetector(
                     onTap: () async {
-                      print('PIP button clicked!');
+                      debugPrint('PIP button clicked!');
                       _onUserInteraction();
                       await _enterPipMode();
                     },
