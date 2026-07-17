@@ -177,6 +177,9 @@ export async function GET(request: NextRequest) {
   // 添加超时控制和错误处理，避免慢接口拖累整体响应
   const SEARCH_TIMEOUT = 20_000;
 
+  // 跟踪已完成的源数量
+  let completedSourceCount = 0;
+
   const searchPromises = apiSites.map((site) =>
     Promise.race([
       searchFromApi(site, query, searchVariants),
@@ -186,7 +189,12 @@ export async function GET(request: NextRequest) {
           SEARCH_TIMEOUT,
         ),
       ),
-    ]).catch(() => []),
+    ])
+      .catch(() => [])
+      .then((r) => {
+        completedSourceCount++;
+        return r;
+      }),
   );
 
   // 🎯 兜底方案：3秒内收集已有结果提前返回，不等待全部
@@ -249,7 +257,14 @@ export async function GET(request: NextRequest) {
         }
       });
       return NextResponse.json(
-        { results: earlyResults },
+        {
+          results: earlyResults,
+          _meta: {
+            totalSources: apiSites.length,
+            completedSources: completedSourceCount,
+            earlyReturn: true,
+          },
+        },
         {
           headers: {
             'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
@@ -286,6 +301,23 @@ export async function GET(request: NextRequest) {
       if (seenFull.has(key)) return false;
       seenFull.add(key);
       return true;
+    });
+
+    // 排序：有海报 > 无海报，年份新的在前，来源权重高的在前
+    flattenedResults.sort((a, b) => {
+      const aHasPoster = a.pic ? 1 : 0;
+      const bHasPoster = b.pic ? 1 : 0;
+      if (aHasPoster !== bHasPoster) return bHasPoster - aHasPoster;
+
+      const aYear = parseInt(String(a.year || '0'), 10) || 0;
+      const bYear = parseInt(String(b.year || '0'), 10) || 0;
+      if (aYear !== bYear) return bYear - aYear;
+
+      const aWeight = a.source_weight ?? 0;
+      const bWeight = b.source_weight ?? 0;
+      if (aWeight !== bWeight) return bWeight - aWeight;
+
+      return 0;
     });
 
     // Limit search results to prevent memory exhaustion

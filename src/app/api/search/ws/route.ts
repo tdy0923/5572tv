@@ -161,6 +161,9 @@ export async function GET(request: NextRequest) {
 
       // 为每个源创建搜索 Promise
       const searchPromises = apiSites.map(async (site) => {
+        const siteStartTime = Date.now();
+        let status: 'ok' | 'timeout' | 'error' = 'ok';
+
         try {
           // 添加超时控制
           const searchPromise = Promise.race([
@@ -214,6 +217,23 @@ export async function GET(request: NextRequest) {
               streamClosed = true;
               return; // 连接已关闭，停止处理
             }
+
+            // 发送源状态事件（含耗时）
+            const siteDuration = Date.now() - siteStartTime;
+            const statusEvent = `data: ${JSON.stringify({
+              type: 'source_status',
+              source: site.key,
+              sourceName: site.name,
+              status,
+              resultCount: filteredResults.length,
+              duration: siteDuration,
+              timestamp: Date.now(),
+            })}\n\n`;
+
+            if (!safeEnqueue(encoder.encode(statusEvent))) {
+              streamClosed = true;
+              return;
+            }
           }
 
           if (filteredResults.length > 0) {
@@ -227,6 +247,10 @@ export async function GET(request: NextRequest) {
           }
         } catch (error) {
           console.warn(`搜索失败 ${site.name}:`, error);
+          status =
+            error instanceof Error && error.message.includes('timeout')
+              ? 'timeout'
+              : 'error';
 
           // 发送源错误事件
           completedSources++;
@@ -243,6 +267,23 @@ export async function GET(request: NextRequest) {
             if (!safeEnqueue(encoder.encode(errorEvent))) {
               streamClosed = true;
               return; // 连接已关闭，停止处理
+            }
+
+            // 发送源状态事件（含耗时）
+            const siteDuration = Date.now() - siteStartTime;
+            const statusEvent = `data: ${JSON.stringify({
+              type: 'source_status',
+              source: site.key,
+              sourceName: site.name,
+              status,
+              resultCount: 0,
+              duration: siteDuration,
+              timestamp: Date.now(),
+            })}\n\n`;
+
+            if (!safeEnqueue(encoder.encode(statusEvent))) {
+              streamClosed = true;
+              return;
             }
           }
         }
