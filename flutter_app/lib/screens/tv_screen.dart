@@ -165,13 +165,12 @@ class _TvScreenState extends State<TvScreen> {
   void initState() {
     super.initState();
     _fetchTvShows(isRefresh: true);
-    _scrollController.addListener(() {
-      _handleScroll();
-    });
+    _scrollController.addListener(_handleScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_handleScroll);
     _scrollController.dispose();
     super.dispose();
   }

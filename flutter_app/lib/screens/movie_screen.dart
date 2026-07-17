@@ -150,13 +150,12 @@ class _MovieScreenState extends State<MovieScreen> {
   void initState() {
     super.initState();
     _fetchMovies(isRefresh: true);
-    _scrollController.addListener(() {
-      _handleScroll();
-    });
+    _scrollController.addListener(_handleScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_handleScroll);
     _scrollController.dispose();
     super.dispose();
   }

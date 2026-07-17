@@ -149,13 +149,12 @@ class _ShowScreenState extends State<ShowScreen> {
   void initState() {
     super.initState();
     _fetchShows(isRefresh: true);
-    _scrollController.addListener(() {
-      _handleScroll();
-    });
+    _scrollController.addListener(_handleScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_handleScroll);
     _scrollController.dispose();
     super.dispose();
   }

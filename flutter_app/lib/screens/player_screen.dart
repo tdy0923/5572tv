@@ -50,6 +50,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   late final PlayerState _state;
 
   void Function()? _progressListener;
+  late VoidCallback _stateListener;
 
   @override
   void initState() {
@@ -66,9 +67,10 @@ class _PlayerScreenState extends State<PlayerScreen>
     );
     _state.setup(this);
     _state.markMounted();
-    _state.addListener(() {
+    _stateListener = () {
       if (mounted) setState(() {});
-    });
+    };
+    _state.addListener(_stateListener);
     _progressListener = () {
       _state.saveProgress(scene: '定时保存', context: context);
     };
@@ -647,6 +649,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   void dispose() {
     _state.saveProgress(force: true, scene: '页面销毁', context: context);
+    _state.removeListener(_stateListener);
     _removeVideoProgressListener();
     WidgetsBinding.instance.removeObserver(this);
     _restoreOrientation();
