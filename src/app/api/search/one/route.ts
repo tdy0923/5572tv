@@ -55,7 +55,13 @@ export async function GET(request: NextRequest) {
     if (!config.SiteConfig.DisableYellowFilter) {
       result = result.filter((result) => {
         const typeName = result.type_name || '';
-        return !yellowWords.some((word: string) => typeName.includes(word));
+        const sourceName = result.source_name || '';
+        const isAdult = yellowWords.some(
+          (word: string) =>
+            typeName.includes(word) || sourceName.includes(word),
+        );
+        const hasAdultEmoji = sourceName.includes('🔞');
+        return !isAdult && !hasAdultEmoji;
       });
     }
     const cacheTime = await getCacheTime();

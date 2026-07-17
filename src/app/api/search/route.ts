@@ -66,6 +66,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(errorResponse, { status: 401 });
   }
 
+  // 搜索限流：每IP每分钟最多10次
+  const ip =
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+  const rateLimitKey = `search_ratelimit:${ip}`;
+  const rateLimitCount = await db.getCache(rateLimitKey);
+  if (rateLimitCount && (rateLimitCount as number) >= 10) {
+    return NextResponse.json(
+      { error: '搜索过于频繁，请稍后再试' },
+      { status: 429 },
+    );
+  }
+  await db.setCache(rateLimitKey, ((rateLimitCount as number) || 0) + 1, 60);
+
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');
 
