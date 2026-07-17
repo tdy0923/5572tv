@@ -32,11 +32,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GlobalErrorHandler.init();
 
+  // 初始化 MediaKit
   try {
-    await Future.wait([
-      Future.sync(() => MediaKit.ensureInitialized()),
-      Future.delayed(const Duration(seconds: 5), () => throw TimeoutException('MediaKit initialization timed out')),
-    ]);
+    MediaKit.ensureInitialized();
   } catch (e) {
     debugPrint('MediaKit initialization failed: $e');
   }
