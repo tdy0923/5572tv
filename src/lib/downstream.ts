@@ -96,20 +96,25 @@ async function enrichSearchResultsWithMissingPosters(
 
   const posterMap = new Map<string, string>();
 
-  await Promise.all(
-    missingPosterItems.map(async (item) => {
-      try {
-        const detail = await getDetailFromApi(apiSite, item.id);
-        const poster = resolvePosterUrl(detail.poster);
+  const POSTER_TIMEOUT = 5_000;
 
-        if (poster) {
-          posterMap.set(item.id, poster);
+  await Promise.race([
+    Promise.all(
+      missingPosterItems.map(async (item) => {
+        try {
+          const detail = await getDetailFromApi(apiSite, item.id);
+          const poster = resolvePosterUrl(detail.poster);
+
+          if (poster) {
+            posterMap.set(item.id, poster);
+          }
+        } catch {
+          // 单个结果补图失败时保留原搜索结果，不影响整体搜索。
         }
-      } catch {
-        // 单个结果补图失败时保留原搜索结果，不影响整体搜索。
-      }
-    }),
-  );
+      }),
+    ),
+    new Promise<void>((resolve) => setTimeout(resolve, POSTER_TIMEOUT)),
+  ]);
 
   if (posterMap.size === 0) {
     return results;

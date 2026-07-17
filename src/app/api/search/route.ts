@@ -227,6 +227,15 @@ export async function GET(request: NextRequest) {
           return !isAdult && !hasAdultEmoji;
         });
       }
+      // 去重：同一 source+id 只保留第一个
+      const seenEarly = new Set<string>();
+      earlyResults = earlyResults.filter((result: any) => {
+        const key = `${result.source}:${result.id}`;
+        if (seenEarly.has(key)) return false;
+        seenEarly.add(key);
+        return true;
+      });
+
       // 后台继续收集其余源并写入缓存
       Promise.allSettled(searchPromises).then((all) => {
         const allSuccess = all
@@ -270,6 +279,15 @@ export async function GET(request: NextRequest) {
         return !isAdult && !hasAdultEmoji;
       });
     }
+    // 去重：同一 source+id 只保留第一个
+    const seenFull = new Set<string>();
+    flattenedResults = flattenedResults.filter((result) => {
+      const key = `${result.source}:${result.id}`;
+      if (seenFull.has(key)) return false;
+      seenFull.add(key);
+      return true;
+    });
+
     // Limit search results to prevent memory exhaustion
     const MAX_SEARCH_RESULTS = 200;
     if (flattenedResults.length > MAX_SEARCH_RESULTS) {
@@ -311,6 +329,28 @@ export async function GET(request: NextRequest) {
       setSharedCache(query, flattenedResults);
     } catch (error) {
       console.warn('写入搜索缓存失败:', error);
+    }
+
+    // 记录搜索词频率（用于动态热门搜索）
+    try {
+      const normalizedQuery = query.toLowerCase().trim();
+      const trendingKey = 'trending:queries';
+      const existing = await db.getCache(trendingKey);
+      const queries: Array<{ query: string; count: number }> = Array.isArray(
+        existing,
+      )
+        ? existing
+        : [];
+      const idx = queries.findIndex((q) => q.query === normalizedQuery);
+      if (idx >= 0) {
+        queries[idx].count++;
+      } else {
+        queries.push({ query: normalizedQuery, count: 1 });
+      }
+      queries.sort((a, b) => b.count - a.count);
+      await db.setCache(trendingKey, queries.slice(0, 50), 7 * 86400);
+    } catch {
+      // 热门搜索记录失败不影响主流程
     }
 
     recordRequest({

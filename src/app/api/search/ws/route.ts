@@ -157,6 +157,7 @@ export async function GET(request: NextRequest) {
       // 记录已完成的源数量
       let completedSources = 0;
       const allResults: any[] = [];
+      const seenSSE = new Set<string>();
 
       // 为每个源创建搜索 Promise
       const searchPromises = apiSites.map(async (site) => {
@@ -189,6 +190,14 @@ export async function GET(request: NextRequest) {
             });
           }
 
+          // 去重：同一 source+id 只保留第一个
+          filteredResults = filteredResults.filter((result) => {
+            const key = `${result.source}:${result.id}`;
+            if (seenSSE.has(key)) return false;
+            seenSSE.add(key);
+            return true;
+          });
+
           // 发送该源的搜索结果
           completedSources++;
 
@@ -208,7 +217,13 @@ export async function GET(request: NextRequest) {
           }
 
           if (filteredResults.length > 0) {
-            allResults.push(...filteredResults);
+            for (const r of filteredResults) {
+              const key = `${r.source}:${r.id}`;
+              if (!seenSSE.has(key)) {
+                seenSSE.add(key);
+                allResults.push(r);
+              }
+            }
           }
         } catch (error) {
           console.warn(`搜索失败 ${site.name}:`, error);
