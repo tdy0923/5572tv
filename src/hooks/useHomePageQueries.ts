@@ -77,6 +77,72 @@ async function fetchTrending(): Promise<{
   }
 }
 
+/**
+ * 获取 HeroBanner items 的豆瓣详情（backdrop 横图 + trailerUrl + 剧情简介）
+ * 独立缓存 30 分钟，不会被 trending refetch 覆盖
+ */
+async function fetchHeroDetails(
+  topItems: { id: string }[],
+): Promise<
+  Record<string, { backdrop: string; trailerUrl: string; plot_summary: string }>
+> {
+  const result: Record<
+    string,
+    { backdrop: string; trailerUrl: string; plot_summary: string }
+  > = {};
+
+  const details = await Promise.allSettled(
+    topItems.map(async (item) => {
+      try {
+        const res = await fetch(`/api/douban/details?id=${item.id}`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+          return {
+            id: item.id,
+            backdrop: data.data.backdrop || '',
+            trailerUrl: data.data.trailerUrl || '',
+            plot_summary: data.data.plot_summary || '',
+          };
+        }
+      } catch {
+        // ignore
+      }
+      return null;
+    }),
+  );
+
+  for (const r of details) {
+    if (r.status === 'fulfilled' && r.value) {
+      result[r.value.id] = r.value;
+    }
+  }
+  return result;
+}
+
+/**
+ * 将 heroDetails 合并到 trending items 中
+ */
+function mergeHeroDetails(
+  items: SearchResult[],
+  heroDetails: Record<
+    string,
+    { backdrop: string; trailerUrl: string; plot_summary: string }
+  >,
+): SearchResult[] {
+  if (!heroDetails || Object.keys(heroDetails).length === 0) return items;
+  return items.map((item) => {
+    const detail = heroDetails[item.id];
+    if (!detail) return item;
+    return {
+      ...item,
+      backdrop: detail.backdrop || item.backdrop,
+      trailerUrl: detail.trailerUrl || item.trailerUrl,
+      plot_summary: detail.plot_summary || item.plot_summary,
+    };
+  });
+}
+
 export function useHomePageQueries(
   initialData?: HomePageData,
 ): HomePageQueriesResult {
@@ -101,6 +167,8 @@ export function useHomePageQueries(
     initialData: initialData?.hotShortDramas,
   });
 
+  // 🎬 HeroBanner 详情独立缓存：30 分钟 staleTime
+  // 客户端懒加载：页面先渲染海报，后台获取横图后自动更新
   const trending = trendingQuery.data || {
     movies: [],
     tvShows: [],
@@ -108,10 +176,33 @@ export function useHomePageQueries(
     anime: [],
   };
 
+  const heroTopItems = [
+    ...trending.movies.slice(0, 2),
+    ...trending.tvShows.slice(0, 2),
+    ...trending.variety.slice(0, 1),
+  ];
+
+  const heroDetailsQuery = useQuery({
+    queryKey: ['hero-details', heroTopItems.map((i) => i.id).join(',')],
+    queryFn: () => fetchHeroDetails(heroTopItems),
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+
+  const mergedMovies = mergeHeroDetails(trending.movies, heroDetailsQuery.data);
+  const mergedTvShows = mergeHeroDetails(
+    trending.tvShows,
+    heroDetailsQuery.data,
+  );
+  const mergedVariety = mergeHeroDetails(
+    trending.variety,
+    heroDetailsQuery.data,
+  );
+
   const data: HomePageData = {
-    hotMovies: trending.movies,
-    hotTvShows: trending.tvShows,
-    hotVarietyShows: trending.variety,
+    hotMovies: mergedMovies,
+    hotTvShows: mergedTvShows,
+    hotVarietyShows: mergedVariety,
     hotAnime: trending.anime,
     hotShortDramas: shortDramaQuery.data || [],
   };

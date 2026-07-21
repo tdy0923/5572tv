@@ -61,72 +61,8 @@ async function getInitialData(): Promise<HomePageData> {
     hotShortDramas = Array.isArray(shortData) ? shortData : [];
   }
 
-  // 🎬 为 HeroBanner 的 top items 获取豆瓣详情（backdrop 横图 + trailerUrl）
-  const heroItems = [
-    ...hotMovies.slice(0, 2),
-    ...hotTvShows.slice(0, 2),
-    ...hotVarietyShows.slice(0, 1),
-  ];
-
-  const heroDetails = await Promise.allSettled(
-    heroItems.map(async (item) => {
-      try {
-        const res = await fetch(
-          `${BASE_URL}/api/douban/details?id=${item.id}`,
-          { cache: 'no-store' },
-        );
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (data.code === 200 && data.data) {
-          return {
-            id: item.id,
-            backdrop: data.data.backdrop || '',
-            trailerUrl: data.data.trailerUrl || '',
-            plot_summary: data.data.plot_summary || '',
-          };
-        }
-      } catch {
-        // ignore
-      }
-      return null;
-    }),
-  );
-
-  // 合并 backdrop 和 trailerUrl 到对应 items
-  const heroDetailMap = new Map<
-    string,
-    { backdrop: string; trailerUrl: string; plot_summary: string }
-  >();
-  for (const result of heroDetails) {
-    if (result.status === 'fulfilled' && result.value) {
-      heroDetailMap.set(String(result.value.id), result.value);
-    }
-  }
-
-  for (const item of hotMovies.slice(0, 2)) {
-    const detail = heroDetailMap.get(String(item.id));
-    if (detail) {
-      item.backdrop = detail.backdrop;
-      item.trailerUrl = detail.trailerUrl;
-      item.plot_summary = detail.plot_summary;
-    }
-  }
-  for (const item of hotTvShows.slice(0, 2)) {
-    const detail = heroDetailMap.get(String(item.id));
-    if (detail) {
-      item.backdrop = detail.backdrop;
-      item.trailerUrl = detail.trailerUrl;
-      item.plot_summary = detail.plot_summary;
-    }
-  }
-  for (const item of hotVarietyShows.slice(0, 1)) {
-    const detail = heroDetailMap.get(String(item.id));
-    if (detail) {
-      item.backdrop = detail.backdrop;
-      item.trailerUrl = detail.trailerUrl;
-      item.plot_summary = detail.plot_summary;
-    }
-  }
+  // 🎬 HeroBanner 的 backdrop/trailerUrl 由客户端 heroDetailsQuery 懒加载
+  // 服务端不等待豆瓣详情，确保首页快速渲染
 
   return { hotMovies, hotTvShows, hotVarietyShows, hotAnime, hotShortDramas };
 }
