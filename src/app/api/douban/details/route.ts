@@ -688,24 +688,30 @@ export async function GET(request: Request) {
 
     const cacheTime = await getCacheTime();
 
+    // Don't cache responses where title is empty
+    const hasTitle = details.code === 200 && details.data?.title;
+
     // 🔍 调试模式：绕过缓存
     // 🎬 Trailer安全缓存：30分钟（与移动端API的unstable_cache保持一致）
     // 因为trailer URL有效期约2-3小时，30分钟缓存确保用户拿到的链接仍然有效
     const trailerSafeCacheTime = 1800; // 30分钟
-    const cacheHeaders = noCache
-      ? {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-          Pragma: 'no-cache',
-          Expires: '0',
-          'X-Data-Source': 'no-cache-debug',
-        }
-      : {
-          'Cache-Control': `public, max-age=${trailerSafeCacheTime}, s-maxage=${trailerSafeCacheTime}, stale-while-revalidate=${trailerSafeCacheTime}`,
-          'CDN-Cache-Control': `public, s-maxage=${trailerSafeCacheTime}`,
-          'Vercel-CDN-Cache-Control': `public, s-maxage=${trailerSafeCacheTime}`,
-          'Netlify-Vary': 'query',
-          'X-Data-Source': 'scraper-cached',
-        };
+    const cacheHeaders =
+      noCache || !hasTitle
+        ? {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            Pragma: 'no-cache',
+            Expires: '0',
+            'X-Data-Source': noCache
+              ? 'no-cache-debug'
+              : 'empty-title-no-cache',
+          }
+        : {
+            'Cache-Control': `public, max-age=${trailerSafeCacheTime}, s-maxage=${trailerSafeCacheTime}, stale-while-revalidate=${trailerSafeCacheTime}`,
+            'CDN-Cache-Control': `public, s-maxage=${trailerSafeCacheTime}`,
+            'Vercel-CDN-Cache-Control': `public, s-maxage=${trailerSafeCacheTime}`,
+            'Netlify-Vary': 'query',
+            'X-Data-Source': 'scraper-cached',
+          };
 
     // 计算响应大小
     const responseData = JSON.stringify(details);

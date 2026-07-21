@@ -4739,7 +4739,7 @@ function PlayPageClient() {
                 {/* 播放器 */}
                 <div
                   className={`h-full transition-all duration-300 ease-in-out rounded-xl border border-white/0 dark:border-white/30 ${
-                    isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
+                    isEpisodeSelectorCollapsed ? 'col-span-1' : 'lg:col-span-3'
                   }`}
                 >
                   <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-full min-h-[200px] sm:min-h-[240px]'>
@@ -4838,8 +4838,8 @@ function PlayPageClient() {
                 <div
                   className={`md:overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
-                      ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 md:col-span-1'
-                      : 'max-h-[50vh] md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
+                      ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 lg:col-span-1'
+                      : 'max-h-[50vh] md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 lg:col-span-1'
                   }`}
                 >
                   <EpisodeSelector
@@ -4946,6 +4946,14 @@ function PlayPageClient() {
                   }}
                   processImageUrl={processImageUrl}
                 />
+
+                {/* 封面展示 */}
+                <VideoCoverDisplay
+                  videoCover={videoCover}
+                  bangumiDetails={bangumiDetails}
+                  videoTitle={videoTitle}
+                  videoDoubanId={videoDoubanId}
+                />
               </div>
 
               {/* 兴趣关联推荐 */}
@@ -5029,14 +5037,6 @@ function PlayPageClient() {
                   )}
                 </div>
               </div>
-
-              {/* 封面展示 */}
-              <VideoCoverDisplay
-                videoCover={videoCover}
-                bangumiDetails={bangumiDetails}
-                videoTitle={videoTitle}
-                videoDoubanId={videoDoubanId}
-              />
             </div>
 
             {/* 用户评价 */}

@@ -30,7 +30,7 @@ export default function VideoCoverDisplay({
   const resolvedCover = coverSrc;
 
   return (
-    <div className='hidden md:block md:col-span-1 md:order-first'>
+    <div className='hidden lg:block'>
       <div className='py-4 pr-6'>
         <div className='group relative flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 to-gray-200 shadow-md dark:border-gray-700 dark:from-gray-800 dark:to-gray-700'>
           {coverSrc ? (
