@@ -240,6 +240,10 @@ export interface SearchResult {
   douban_id?: number;
   remarks?: string; // 备注信息（如"已完结"、"更新至20集"等）
   drama_name?: string; // 短剧名称（用于备用API fallback）
+  // 🎬 Netflix风格字段（用于HeroBanner）
+  backdrop?: string; // 高清横图背景
+  trailerUrl?: string; // 预告片视频URL
+  plot_summary?: string; // 剧情简介
   metadata?: {
     // 备用API提供的额外元数据
     author?: string;
