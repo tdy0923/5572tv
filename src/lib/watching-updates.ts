@@ -442,7 +442,11 @@ async function checkSingleRecordUpdate(
     }
 
     // 使用映射后的key调用API（API已默认不缓存，确保集数信息实时更新）
-    const apiUrl = `/api/detail?source=${sourceKey}&id=${videoId}`;
+    // 短剧源使用专用接口
+    const isShortDrama = sourceKey === 'shortdrama' || sourceKey === '短剧';
+    const apiUrl = isShortDrama
+      ? `/api/shortdrama/detail?id=${videoId}`
+      : `/api/detail?source=${sourceKey}&id=${videoId}`;
     const response = await fetch(apiUrl);
     if (!response.ok) {
       return {
