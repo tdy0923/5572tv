@@ -4733,13 +4733,13 @@ function PlayPageClient() {
                 className={`grid gap-4 lg:h-[500px] xl:h-[650px] 2xl:h-[750px] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
-                    : 'grid-cols-1 lg:grid-cols-4'
+                    : 'grid-cols-1 md:grid-cols-4'
                 }`}
               >
                 {/* 播放器 */}
                 <div
                   className={`h-full transition-all duration-300 ease-in-out rounded-xl border border-white/0 dark:border-white/30 ${
-                    isEpisodeSelectorCollapsed ? 'col-span-1' : 'lg:col-span-3'
+                    isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
                   <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-full min-h-[200px] sm:min-h-[240px]'>
@@ -4838,8 +4838,8 @@ function PlayPageClient() {
                 <div
                   className={`md:overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
-                      ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 lg:col-span-1'
-                      : 'max-h-[50vh] md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 lg:col-span-1'
+                      ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 md:col-span-1'
+                      : 'max-h-[50vh] md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
                   }`}
                 >
                   <EpisodeSelector
@@ -4916,48 +4916,45 @@ function PlayPageClient() {
             </div>
 
             {/* 详情展示 */}
-            <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
-              {/* 文字区 - 使用独立组件优化性能 */}
-              <div className='lg:col-span-5 xl:col-span-5'>
-                <VideoInfoSection
-                  videoTitle={videoTitle}
-                  videoYear={videoYear}
-                  videoCover={videoCover}
-                  videoDoubanId={videoDoubanId}
-                  currentSource={currentSource}
-                  favorited={favorited}
-                  onToggleFavorite={handleToggleFavorite}
-                  detail={detail}
-                  movieDetails={movieDetails}
-                  bangumiDetails={bangumiDetails}
-                  shortdramaDetails={shortdramaDetails}
-                  movieComments={movieComments}
-                  commentsError={commentsError?.message || null}
-                  loadingMovieDetails={loadingMovieDetails}
-                  loadingBangumiDetails={loadingBangumiDetails}
-                  loadingComments={loadingComments}
-                  loadingCelebrityWorks={loadingCelebrityWorks}
-                  selectedCelebrityName={selectedCelebrityName}
-                  celebrityWorks={celebrityWorks}
-                  onCelebrityClick={handleCelebrityClick}
-                  onClearCelebrity={() => {
-                    setSelectedCelebrityName(null);
-                    setCelebrityWorks([]);
-                  }}
-                  processImageUrl={processImageUrl}
-                />
-
-                {/* 封面展示 */}
-                <VideoCoverDisplay
-                  videoCover={videoCover}
-                  bangumiDetails={bangumiDetails}
-                  videoTitle={videoTitle}
-                  videoDoubanId={videoDoubanId}
-                />
-              </div>
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+              {/* 海报 - 左侧 */}
+              <VideoCoverDisplay
+                videoCover={videoCover}
+                bangumiDetails={bangumiDetails}
+                videoTitle={videoTitle}
+                videoDoubanId={videoDoubanId}
+              />
+              {/* 文字区 - 右侧 */}
+              <VideoInfoSection
+                videoTitle={videoTitle}
+                videoYear={videoYear}
+                videoCover={videoCover}
+                videoDoubanId={videoDoubanId}
+                currentSource={currentSource}
+                favorited={favorited}
+                onToggleFavorite={handleToggleFavorite}
+                detail={detail}
+                movieDetails={movieDetails}
+                bangumiDetails={bangumiDetails}
+                shortdramaDetails={shortdramaDetails}
+                movieComments={movieComments}
+                commentsError={commentsError?.message || null}
+                loadingMovieDetails={loadingMovieDetails}
+                loadingBangumiDetails={loadingBangumiDetails}
+                loadingComments={loadingComments}
+                loadingCelebrityWorks={loadingCelebrityWorks}
+                selectedCelebrityName={selectedCelebrityName}
+                celebrityWorks={celebrityWorks}
+                onCelebrityClick={handleCelebrityClick}
+                onClearCelebrity={() => {
+                  setSelectedCelebrityName(null);
+                  setCelebrityWorks([]);
+                }}
+                processImageUrl={processImageUrl}
+              />
 
               {/* 兴趣关联推荐 */}
-              <div className='lg:col-span-7 xl:col-span-7'>
+              <div className='md:col-span-4'>
                 <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
                   <div className='flex items-center gap-2 mb-3'>
                     <Film className='w-4 h-4' />
