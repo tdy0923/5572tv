@@ -4918,7 +4918,7 @@ function PlayPageClient() {
             {/* 详情展示 */}
             <div className='grid grid-cols-1 lg:grid-cols-12 gap-4'>
               {/* 文字区 - 使用独立组件优化性能 */}
-              <div className='lg:col-span-4 xl:col-span-3'>
+              <div className='lg:col-span-5 xl:col-span-5'>
                 <VideoInfoSection
                   videoTitle={videoTitle}
                   videoYear={videoYear}
@@ -4957,7 +4957,7 @@ function PlayPageClient() {
               </div>
 
               {/* 兴趣关联推荐 */}
-              <div className='lg:col-span-8 xl:col-span-9'>
+              <div className='lg:col-span-7 xl:col-span-7'>
                 <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
                   <div className='flex items-center gap-2 mb-3'>
                     <Film className='w-4 h-4' />
