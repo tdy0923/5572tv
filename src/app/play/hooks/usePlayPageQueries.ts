@@ -49,7 +49,7 @@ const doubanDetailsOptions = (doubanId?: number | string) =>
     },
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
-    retry: false,
+    retry: 1,
   });
 
 export function useDoubanDetailsQuery(

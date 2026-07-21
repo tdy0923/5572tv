@@ -573,7 +573,14 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
     console.log(`[Douban] 开始解析页面内容...`);
 
     // 解析详细信息
-    return parseDoubanDetails(html, id);
+    const parsed = await parseDoubanDetails(html, id);
+    if (!parsed.data?.title) {
+      const mobileResult = await fetchFromMobileAPI(id);
+      if (mobileResult.data?.title) {
+        return mobileResult;
+      }
+    }
+    return parsed;
   } catch (error) {
     // 超时错误
     if (error instanceof Error && error.name === 'AbortError') {
