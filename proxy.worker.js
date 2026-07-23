@@ -14,8 +14,6 @@ addEventListener('fetch', (event) => {
     event.respondWith(handleSegmentProxy(event.request, url));
   } else if (path === '/api/proxy/key') {
     event.respondWith(handleKeyProxy(event.request, url));
-  } else if (path === '/api/douban/refresh-trailer') {
-    event.respondWith(handleTrailerCache(event.request, url));
   } else if (path === '/') {
     event.respondWith(
       new Response(getRootHtml(), {

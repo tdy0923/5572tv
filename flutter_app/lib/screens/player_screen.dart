@@ -619,14 +619,8 @@ class _PlayerScreenState extends State<PlayerScreen>
       _state.isTablet = DeviceUtils.isTablet(context);
       _state.isPortraitTablet = DeviceUtils.isPortraitTablet(context);
 
-      // 短剧锁定竖屏全屏，其他视频允许旋转
-      if (_isShortDramaSource()) {
-        // 短剧：锁定竖屏全屏
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-        ]);
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      } else if (!_state.isTablet) {
+      // 所有视频统一处理方向
+      if (!_state.isTablet) {
         _setPortraitOrientation();
       }
       final theme = Theme.of(context);

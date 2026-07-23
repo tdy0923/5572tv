@@ -88,6 +88,7 @@ class AppWrapper extends StatefulWidget {
 
 class _AppWrapperState extends State<AppWrapper> {
   bool _isLoading = true;
+  bool _isLoggedIn = false;
 
   @override
   void initState() {
@@ -109,13 +110,10 @@ class _AppWrapperState extends State<AppWrapper> {
       final loginResult = await ApiService.autoLogin();
 
       if (mounted) {
-        if (loginResult.success) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        } else {
-          setState(() => _isLoading = false);
-        }
+        setState(() {
+          _isLoading = false;
+          _isLoggedIn = loginResult.success;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -127,7 +125,11 @@ class _AppWrapperState extends State<AppWrapper> {
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
-      child: _isLoading ? const _LoadingPlaceholder() : const LoginScreen(),
+      child: _isLoading
+          ? const _LoadingPlaceholder()
+          : _isLoggedIn
+              ? const HomeScreen()
+              : const LoginScreen(),
     );
   }
 }

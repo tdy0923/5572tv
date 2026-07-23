@@ -5,7 +5,6 @@ compatibility_date = "2026-01-01"
 # 利用 CF 边缘节点 IP 绕过 CDN 对服务器 IP 的封锁
 # 只拦截视频代理路由（m3u8/segment/key），其他代理路径仍由 Next.js 处理
 routes = [
-  { pattern = "www.5572.net/api/douban/refresh-trailer*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/m3u8*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/segment*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/key*", zone_name = "5572.net" },
