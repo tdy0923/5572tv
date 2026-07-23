@@ -1,3 +1,24 @@
+## [1.12.0] - 2026-07-23
+
+### Fixed — 首页焦点大图 + APP 修复
+
+- 🖼️ **首页焦点大图恢复横图背景+预告片**
+  - 服务端获取豆瓣详情（backdrop 横图 + trailerUrl）
+  - 客户端懒加载 backdrop，30分钟缓存
+  - 首屏快速渲染，横图平滑更新
+- 🐛 **APP 首次进入黑框闪烁修复**
+  - Navigator.pushReplacement 改为 setState 直接切换
+  - 消除路由过渡时的短暂黑帧
+- 🎬 **短剧播放器统一**
+  - 移除短剧特殊方向锁定（portrait + immersive sticky）
+  - 统一使用标准播放器行为
+- 🔧 **继续观看短剧源修复**
+  - watching-updates.ts 短剧源改用 /api/shortdrama/detail
+  - 修复 400 错误
+- 🔧 **CF Worker refresh-trailer 修复**
+  - 移除 CF Worker 对 refresh-trailer 路由的错误拦截
+  - 预告片 API 恢复正常
+
 ## [1.11.0] - 2026-07-16
 
 ### Changed — Fluent 2 全站升级
