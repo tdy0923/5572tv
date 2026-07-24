@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type MouseEvent, type ReactNode, startTransition } from 'react';
+import { type MouseEvent, type ReactNode } from 'react';
 
 interface FastLinkProps {
   href: string;
@@ -15,7 +15,7 @@ interface FastLinkProps {
   forceRefresh?: boolean;
   /**
    * Use React 18's startTransition to mark navigation as non-blocking.
-   * Keeps the UI responsive during navigation.
+   * Kept for API compatibility but navigation is now direct.
    */
   useTransitionNav?: boolean;
   /**
@@ -87,9 +87,9 @@ export function FastLink({
 
     // Mode 2: Transition navigation - non-blocking
     if (useTransitionNav) {
-      startTransition(() => {
-        router.push(href);
-      });
+      // 直接调用 router.push，不使用 startTransition
+      // startTransition 会静默吞掉 router.push 的错误，导致导航无响应
+      router.push(href);
       return;
     }
 
