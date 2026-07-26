@@ -171,6 +171,14 @@ export async function POST(req: NextRequest) {
     if (!(globalThis as any).__rateLimit)
       (globalThis as any).__rateLimit = new Map();
     const rl = (globalThis as any).__rateLimit;
+
+    // 每 100 次请求清理过期条目，防止内存泄漏
+    if (rl.size > 100 && Math.random() < 0.01) {
+      for (const [key, val] of rl.entries()) {
+        if (now > (val as any).resetTime) rl.delete(key);
+      }
+    }
+
     const attempts = rl.get(rateLimitKey) || {
       count: 0,
       resetTime: now + WINDOW,

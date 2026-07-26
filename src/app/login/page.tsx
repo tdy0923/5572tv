@@ -158,7 +158,11 @@ function LoginPageClient() {
           // 登入时间记录失败不影响正常登录流程
         }
 
-        const redirect = searchParams.get('redirect') || '/';
+        let redirect = searchParams.get('redirect') || '/';
+        // 防止 Open Redirect 漏洞：只允许相对路径
+        if (!redirect.startsWith('/') || redirect.startsWith('//')) {
+          redirect = '/';
+        }
         router.replace(redirect);
       } else if (res.status === 401) {
         setError('密码错误');

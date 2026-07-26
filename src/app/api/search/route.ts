@@ -72,14 +72,15 @@ export async function GET(request: NextRequest) {
     request.headers.get('x-real-ip') ||
     'unknown';
   const rateLimitKey = `search_ratelimit:${ip}`;
-  const rateLimitCount = await db.getCache(rateLimitKey);
-  if (rateLimitCount && (rateLimitCount as number) >= 10) {
+  // 先递增再检查，避免 TOCTOU 竞态条件
+  const currentCount = ((await db.getCache(rateLimitKey)) as number) || 0;
+  await db.setCache(rateLimitKey, currentCount + 1, 60);
+  if (currentCount >= 10) {
     return NextResponse.json(
       { error: '搜索过于频繁，请稍后再试' },
       { status: 429 },
     );
   }
-  await db.setCache(rateLimitKey, ((rateLimitCount as number) || 0) + 1, 60);
 
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('q');

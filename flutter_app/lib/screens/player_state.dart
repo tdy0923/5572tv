@@ -579,7 +579,7 @@ class PlayerState extends ChangeNotifier {
     _lastSavePosition = null;
     final startAt = playTime > 0 ? Duration(seconds: playTime) : null;
     _resumeStartAt = startAt;
-    updateVideoUrl(_currentDetail!.episodes[targetIndex], startAt: null);
+    updateVideoUrl(_currentDetail!.episodes[targetIndex], startAt: startAt);
     scrollToCurrentEpisode(context);
   }
 
