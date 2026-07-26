@@ -153,21 +153,25 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
                 'rounded-2xl py-2 px-1',
                 'transition-all duration-200',
                 'active:scale-95',
-                active && 'bg-white dark:bg-gray-800',
+                active && 'bg-gray-100 dark:bg-gray-800',
               )}
             >
               <Icon
                 className={cn(
                   'mb-1 h-6 w-6',
                   'transition-colors duration-200',
-                  active ? 'text-[#fff6de]' : 'text-white/60',
+                  active
+                    ? 'text-[#171717] dark:text-[#fff6de]'
+                    : 'text-gray-500 dark:text-white/60',
                 )}
               />
               <span
                 className={cn(
                   'text-xs font-medium',
                   'transition-colors duration-200',
-                  active ? 'text-[#fff6de]' : 'text-white/60',
+                  active
+                    ? 'text-[#171717] dark:text-[#fff6de]'
+                    : 'text-gray-500 dark:text-white/60',
                 )}
               >
                 {item.label}

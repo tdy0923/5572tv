@@ -285,46 +285,50 @@ function HeroBanner({
                     onError={async (e) => {
                       const video = e.currentTarget;
 
-                      // 检测是否是403错误（trailer URL过期）
-                      if (item.douban_id) {
-                        const doubanIdKey = String(item.douban_id);
+                      try {
+                        // 检测是否是403错误（trailer URL过期）
+                        if (item.douban_id) {
+                          const doubanIdKey = String(item.douban_id);
 
-                        setDisabledTrailerIds((prev) => {
-                          const next = new Set(prev);
-                          next.add(doubanIdKey);
-                          return next;
-                        });
+                          setDisabledTrailerIds((prev) => {
+                            const next = new Set(prev);
+                            next.add(doubanIdKey);
+                            return next;
+                          });
 
-                        if (
-                          !refreshTrailerMutation.isPending &&
-                          !attemptedRefreshIdsRef.current.has(doubanIdKey) &&
-                          !shouldSkipTrailerRefresh(item.douban_id)
-                        ) {
-                          attemptedRefreshIdsRef.current.add(doubanIdKey);
+                          if (
+                            !refreshTrailerMutation.isPending &&
+                            !attemptedRefreshIdsRef.current.has(doubanIdKey) &&
+                            !shouldSkipTrailerRefresh(item.douban_id)
+                          ) {
+                            attemptedRefreshIdsRef.current.add(doubanIdKey);
 
-                          // 如果缓存中有URL，说明之前刷新过，但现在又失败了
-                          // 需要清除缓存中的旧URL，重新刷新
-                          if (refreshedTrailerUrls[item.douban_id]) {
-                            clearTrailerMutation.mutate({
-                              doubanId: item.douban_id,
-                            });
-                          }
+                            // 如果缓存中有URL，说明之前刷新过，但现在又失败了
+                            // 需要清除缓存中的旧URL，重新刷新
+                            if (refreshedTrailerUrls[item.douban_id]) {
+                              clearTrailerMutation.mutate({
+                                doubanId: item.douban_id,
+                              });
+                            }
 
-                          // 重新刷新URL
-                          const newUrl = await refreshTrailerUrl(
-                            item.douban_id,
-                          );
-                          if (newUrl) {
-                            setDisabledTrailerIds((prev) => {
-                              const next = new Set(prev);
-                              next.delete(doubanIdKey);
-                              return next;
-                            });
+                            // 重新刷新URL
+                            const newUrl = await refreshTrailerUrl(
+                              item.douban_id,
+                            );
+                            if (newUrl) {
+                              setDisabledTrailerIds((prev) => {
+                                const next = new Set(prev);
+                                next.delete(doubanIdKey);
+                                return next;
+                              });
 
-                            // 重新加载视频
-                            video.load();
+                              // 重新加载视频
+                              video.load();
+                            }
                           }
                         }
+                      } catch {
+                        // trailer refresh 失败时静默处理，不影响用户体验
                       }
                     }}
                     onLoadedData={(e) => {
