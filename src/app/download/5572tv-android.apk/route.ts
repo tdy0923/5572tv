@@ -17,7 +17,7 @@ export async function GET() {
         'Content-Type': 'application/vnd.android.package-archive',
         'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
         'Content-Length': String(buffer.length),
-        'Cache-Control': 'public, max-age=300',
+        'Cache-Control': 'public, max-age=999',
         'X-Debug-Version': 'v2',
       },
     });
