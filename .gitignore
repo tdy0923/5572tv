@@ -91,3 +91,4 @@ jest.setup.js
 *.keystore
 mcp.json
 _audit_parens.py
+static/download/5572tv-test.apk
