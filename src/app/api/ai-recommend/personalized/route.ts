@@ -195,7 +195,6 @@ export async function GET(request: NextRequest) {
     const allRecords = await db.getAllPlayRecords(authInfo.username);
     const userRecords = Object.values(allRecords);
 
-    // 没有播放记录时，从热门数据中随机推荐
     if (userRecords.length === 0) {
       return await getTrendingFallback(request, cacheKey);
     }
@@ -217,15 +216,14 @@ export async function GET(request: NextRequest) {
       .map(([type]) => type);
 
     let titles: string[];
-    // 没有配置 AI Key 时直接回退到热门推荐，而不是返回空
     if (!UNLIMITED_API_KEY) {
-      titles = [];
+      // 没 AI Key 但用户有播放记录 → 用最近追的作为推荐标题搜索
+      titles = viewingHistory.slice(0, 6);
     } else {
       titles = await askAIForRecommendations(viewingHistory, favoriteGenres);
     }
     const recommendations = await enrichRecommendations(titles);
 
-    // AI 推荐无结果时，回退到热门推荐兜底
     if (recommendations.length === 0) {
       return await getTrendingFallback(request, cacheKey);
     }
