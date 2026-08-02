@@ -18,6 +18,7 @@ export async function GET() {
         'Content-Disposition': 'attachment; filename="5572tv-android.apk"',
         'Content-Length': String(buffer.length),
         'Cache-Control': 'public, max-age=300',
+        'X-Debug-Version': 'v2',
       },
     });
   } catch {
