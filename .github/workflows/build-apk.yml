@@ -54,6 +54,16 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Accept Android SDK licenses
+        if: steps.gate.outputs.continue == 'true'
+        run: |
+          SDK="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          [ -x "$SDK" ] || SDK="$(find "${ANDROID_HOME}" -name sdkmanager -path '*cmdline-tools*' | head -1)"
+          echo "Using sdkmanager: $SDK"
+          yes | "$SDK" --licenses >/dev/null 2>&1 || true
+          yes | "$SDK" "ndk;29.0.14033849" >/dev/null 2>&1 || true
+          ls "${ANDROID_HOME}/ndk" 2>/dev/null || true
+
       - name: Set up signing keystore
         if: steps.gate.outputs.continue == 'true'
         run: |

@@ -3,7 +3,7 @@
 import { Check, Download, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { browserDownload } from '@/lib/browser-download';
 
@@ -21,16 +21,30 @@ import PhonePreview from './components/PhonePreview';
 import PlatformTabs from './components/PlatformTabs';
 import { detectPlatform } from './utils';
 
-const APK_SIZE = '18';
-const APK_VERSION = 'v1.12.0';
+const DEFAULT_APK = { version: 'v1.12.0', sizeMb: '18' };
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
   const [showGuide, setShowGuide] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [apkInfo, setApkInfo] = useState(DEFAULT_APK);
   const [selectedPlatform, setSelectedPlatform] = useState<
     'android' | 'ios' | 'tv'
   >(platform === 'ios' ? 'ios' : platform === 'tv' ? 'tv' : 'android');
+
+  useEffect(() => {
+    fetch('/api/version-check')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.version) {
+          setApkInfo({
+            version: `v${d.version}`,
+            sizeMb: String(d.sizeMb ?? DEFAULT_APK.sizeMb),
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const steps =
     selectedPlatform === 'ios'
@@ -235,7 +249,7 @@ export default function DownloadPage() {
                     <p className='text-xs mt-1' style={{ color: '#767676' }}>
                       {selectedPlatform === 'ios'
                         ? '访问网站安装 PWA'
-                        : `${APK_VERSION} · ${APK_SIZE}MB · arm64-v8a`}
+                        : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
                     </p>
                   </div>
                 </GlassPanel>
@@ -271,7 +285,7 @@ export default function DownloadPage() {
                         >
                           {selectedPlatform === 'ios'
                             ? '使用 Safari 扫码访问网站'
-                            : `${APK_VERSION} · ${APK_SIZE}MB · arm64-v8a`}
+                            : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
                         </p>
                       </div>
                     </div>

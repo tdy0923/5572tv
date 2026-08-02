@@ -1,4 +1,6 @@
+import { stat } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
+import path from 'path';
 
 export const runtime = 'nodejs';
 
@@ -18,11 +20,31 @@ const VERSION_INFO = {
   releaseDate: '2026-07-23',
 };
 
+async function getApkSizeMb(): Promise<number> {
+  try {
+    const p = path.join(
+      process.cwd(),
+      'static',
+      'download',
+      '5572tv-android.apk',
+    );
+    const s = await stat(p);
+    if (s.size > 0) return Math.round(s.size / (1024 * 1024));
+  } catch {
+    // fall back to default below
+  }
+  return 18;
+}
+
 export async function GET(_request: NextRequest) {
-  return NextResponse.json(VERSION_INFO, {
-    headers: {
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-      'Access-Control-Allow-Origin': '*',
+  const sizeMb = await getApkSizeMb();
+  return NextResponse.json(
+    { ...VERSION_INFO, sizeMb },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        'Access-Control-Allow-Origin': '*',
+      },
     },
-  });
+  );
 }
