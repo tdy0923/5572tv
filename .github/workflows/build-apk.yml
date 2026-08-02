@@ -1,0 +1,92 @@
+name: Build & Push Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'flutter_app/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: true
+
+      - name: Gate - skip APK auto-commit
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            MSG="$(git log -1 --pretty=%B)"
+            if echo "$MSG" | grep -q "\[skip apk\]"; then
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping: triggered by APK auto-commit"
+            else
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "continue=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 17
+        if: steps.gate.outputs.continue == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        if: steps.gate.outputs.continue == 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: stable
+          cache: true
+
+      - name: Set up signing keystore
+        if: steps.gate.outputs.continue == 'true'
+        run: |
+          mkdir -p flutter_app/android
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > flutter_app/android/release.keystore
+          test -s flutter_app/android/release.keystore
+
+      - name: Build release APKs
+        if: steps.gate.outputs.continue == 'true'
+        working-directory: flutter_app
+        run: bash build.sh --android-only
+        env:
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+
+      - name: Copy APKs to download dir
+        if: steps.gate.outputs.continue == 'true'
+        run: |
+          mkdir -p static/download
+          cp flutter_app/dist/selene-*-armv8.apk static/download/5572tv-android.apk
+          cp flutter_app/dist/selene-*-armv7a.apk static/download/5572tv-android-armv7a.apk
+          ls -la static/download/5572tv-android.apk static/download/5572tv-android-armv7a.apk
+
+      - name: Commit and push APKs
+        if: steps.gate.outputs.continue == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/download/5572tv-android.apk static/download/5572tv-android-armv7a.apk
+          if git diff --cached --quiet; then
+            echo "APK unchanged, nothing to commit"
+          else
+            git commit -m "chore(apk): rebuild Android APKs [skip apk]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
