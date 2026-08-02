@@ -24,7 +24,7 @@ jobs:
         with:
           persist-credentials: true
 
-      - name: Gate - skip APK auto-commit
+      - name: Gate - skip auto-commit / no-flutter-change
         id: gate
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
@@ -32,8 +32,12 @@ jobs:
             if echo "$MSG" | grep -q "\[skip apk\]"; then
               echo "continue=false" >> "$GITHUB_OUTPUT"
               echo "Skipping: triggered by APK auto-commit"
-            else
+            elif ! git diff --quiet HEAD~1 HEAD -- flutter_app/; then
               echo "continue=true" >> "$GITHUB_OUTPUT"
+              echo "Flutter sources changed"
+            else
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+              echo "Skipping: no Flutter changes in this push"
             fi
           else
             echo "continue=true" >> "$GITHUB_OUTPUT"
@@ -89,6 +93,7 @@ jobs:
           ls -la static/download/5572tv-android.apk static/download/5572tv-android-armv7a.apk
 
       - name: Commit and push APKs
+        id: commit
         if: steps.gate.outputs.continue == 'true'
         run: |
           git config user.name "github-actions[bot]"
@@ -96,7 +101,15 @@ jobs:
           git add static/download/5572tv-android.apk static/download/5572tv-android-armv7a.apk
           if git diff --cached --quiet; then
             echo "APK unchanged, nothing to commit"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
           else
             git commit -m "chore(apk): rebuild Android APKs [skip apk]"
             git push origin HEAD:${{ github.ref_name }}
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Trigger Docker build & deploy
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run "Build & Push Docker image" --ref "${{ github.ref_name }}"
