@@ -106,7 +106,7 @@ const ImageViewer: React.FC<ImageViewerProps> = ({
       />
       <button
         onClick={onClose}
-        className='absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors duration-150'
+        className='absolute top-4 right-4 z-10 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors duration-150'
         aria-label='关闭'
       >
         <X size={24} className='text-white' />

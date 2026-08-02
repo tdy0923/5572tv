@@ -100,6 +100,12 @@
   --spacing-10: 40px;
   --spacing-12: 48px;
 
+  /* 安全区（刘海/灵动岛/手势条）间距 token，启用 pt-safe-top / pb-safe-bottom 等工具类 */
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+  --spacing-safe-left: env(safe-area-inset-left);
+  --spacing-safe-right: env(safe-area-inset-right);
+
   /* ============================================
      Fluent 2 Motion
      ============================================ */
@@ -188,7 +194,7 @@
   }
 
   .ui-page-frame {
-    @apply relative z-[1] mx-auto w-full max-w-[2560px];
+    @apply relative z-[1] mx-auto w-full max-w-[1600px];
   }
 
   .ui-page-container {
@@ -744,6 +750,16 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 @media (max-width: 639px) {
   .home-section {
     contain-intrinsic-size: auto 600px;
+  }
+}
+
+/*
+  iOS Safari：content-visibility:auto 包裹横向滚动容器时存在尺寸计算 bug，
+  会错误放大页面可滚动宽度导致整页横向拖动。移动端禁用以根治该问题。
+*/
+@media (max-width: 767px) {
+  .home-section {
+    content-visibility: visible;
   }
 }
 

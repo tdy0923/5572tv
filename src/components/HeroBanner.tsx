@@ -454,14 +454,14 @@ function HeroBanner({
         <>
           <button
             onClick={handlePrev}
-            className='absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:left-8 lg:h-14 lg:w-14'
+            className='absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:left-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
             aria-label='上一张'
           >
             <ChevronLeft className='w-7 h-7 lg:w-8 lg:h-8' />
           </button>
           <button
             onClick={handleNext}
-            className='absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:right-8 lg:h-14 lg:w-14'
+            className='absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all hover:scale-105 hover:bg-black/55 group-hover:opacity-100 md:flex lg:right-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
             aria-label='下一张'
           >
             <ChevronRight className='w-7 h-7 lg:w-8 lg:h-8' />
@@ -476,7 +476,7 @@ function HeroBanner({
             <button
               key={`indicator-${index}`}
               onClick={() => handleIndicatorClick(index)}
-              className='group relative flex-1 max-w-[80px]'
+              className='group relative flex-1 max-w-[80px] py-2'
               aria-label={`跳转到第 ${index + 1} 张`}
             >
               <div className='h-[3px] w-full overflow-hidden rounded-full bg-white/20'>

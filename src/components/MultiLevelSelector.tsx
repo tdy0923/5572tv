@@ -584,7 +584,17 @@ const MultiLevelSelector: React.FC<MultiLevelSelectorProps> = ({
             ref={dropdownRef}
             className='fixed z-60 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm'
             style={{
-              left: `${dropdownPosition.x}px`,
+              left: `${Math.max(
+                8,
+                Math.min(
+                  dropdownPosition.x,
+                  window.innerWidth -
+                    (window.innerWidth < 768
+                      ? dropdownPosition.width
+                      : Math.max(dropdownPosition.width, 300)) -
+                    8,
+                ),
+              )}px`,
               top: `${dropdownPosition.y}px`,
               ...(window.innerWidth < 768
                 ? { width: `${dropdownPosition.width}px` } // 移动端使用固定宽度

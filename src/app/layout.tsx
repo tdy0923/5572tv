@@ -17,7 +17,6 @@ import ChatFloatingWindow from '../components/watch-room/ChatFloatingWindow';
 import { WatchRoomProvider } from '../components/WatchRoomProvider';
 import { DownloadProvider } from '../contexts/DownloadContext';
 import { GlobalCacheProvider } from '../contexts/GlobalCacheContext';
-import { DeviceProvider } from '../lib/device-context';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
@@ -214,46 +213,44 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <DeviceProvider>
-            <QueryProvider>
-              <GlobalCacheProvider>
-                <DownloadProvider>
-                  <WatchRoomProvider>
-                    <SiteProvider
-                      siteName={siteName}
-                      announcementTitle={announcementTitle}
-                      announcement={announcement}
-                      adSettings={adSettings}
+          <QueryProvider>
+            <GlobalCacheProvider>
+              <DownloadProvider>
+                <WatchRoomProvider>
+                  <SiteProvider
+                    siteName={siteName}
+                    announcementTitle={announcementTitle}
+                    announcement={announcement}
+                    adSettings={adSettings}
+                  >
+                    <Suspense
+                      fallback={
+                        <div className='min-h-screen flex items-center justify-center'>
+                          Loading...
+                        </div>
+                      }
                     >
-                      <Suspense
-                        fallback={
-                          <div className='min-h-screen flex items-center justify-center'>
-                            Loading...
-                          </div>
-                        }
-                      >
-                        <SessionTracker />
-                        {children}
-                        <GlobalErrorIndicator />
-                      </Suspense>
-                    </SiteProvider>
-                    <Suspense fallback={null}>
-                      <DownloadPanel />
-                      <ChatFloatingWindow />
+                      <SessionTracker />
+                      {children}
+                      <GlobalErrorIndicator />
                     </Suspense>
-                  </WatchRoomProvider>
-                </DownloadProvider>
-              </GlobalCacheProvider>
-            </QueryProvider>
-            <Toaster
-              position='top-center'
-              richColors
-              closeButton
-              toastOptions={{
-                style: { marginTop: 'env(safe-area-inset-top)' },
-              }}
-            />
-          </DeviceProvider>
+                  </SiteProvider>
+                  <Suspense fallback={null}>
+                    <DownloadPanel />
+                    <ChatFloatingWindow />
+                  </Suspense>
+                </WatchRoomProvider>
+              </DownloadProvider>
+            </GlobalCacheProvider>
+          </QueryProvider>
+          <Toaster
+            position='top-center'
+            richColors
+            closeButton
+            toastOptions={{
+              style: { marginTop: 'env(safe-area-inset-top)' },
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>

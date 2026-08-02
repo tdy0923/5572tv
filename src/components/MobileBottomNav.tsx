@@ -65,7 +65,7 @@ const MobileBottomNav = ({ activePath }: MobileBottomNavProps) => {
 
   const navItems = useMemo(() => {
     const baseItems = BASE_NAV_ITEMS.filter(
-      (item) => !['/search', '/download'].includes(item.href),
+      (item) => item.href !== '/download',
     ).map((item) => ({
       ...item,
       label: item.label === '源浏览器' ? '源浏览' : item.label,

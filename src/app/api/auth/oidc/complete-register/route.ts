@@ -52,11 +52,23 @@ async function generateAuthCookie(
 
 export async function POST(request: NextRequest) {
   try {
-    const { username } = await request.json();
+    const body = await request.json();
+    const { username, redirect } = body;
 
     // 验证用户名
     if (!username || typeof username !== 'string') {
       return NextResponse.json({ error: '用户名不能为空' }, { status: 400 });
+    }
+
+    // 校验跳转目标（防止 Open Redirect）
+    let redirectTarget = '/';
+    if (
+      redirect &&
+      typeof redirect === 'string' &&
+      redirect.startsWith('/') &&
+      !redirect.startsWith('//')
+    ) {
+      redirectTarget = redirect;
     }
 
     // 验证用户名格式
@@ -206,6 +218,7 @@ export async function POST(request: NextRequest) {
         ok: true,
         message: '注册成功',
         needDelay: storageType === 'upstash', // Upstash 需要延迟等待数据同步
+        redirect: redirectTarget, // 注册完成后跳转目标
       });
       const cookieValue = await generateAuthCookie(username, 'user');
       const expires = new Date();

@@ -559,7 +559,7 @@ const AIRecommendConfig = ({
                                 `已设置为 ${provider.name} API地址`,
                               );
                             }}
-                            className='opacity-0 group-hover:opacity-100 ml-2 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded transition-all'
+                            className='opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 ml-2 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded transition-all'
                           >
                             使用
                           </button>

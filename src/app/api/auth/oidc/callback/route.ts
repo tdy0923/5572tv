@@ -254,14 +254,13 @@ export async function GET(request: NextRequest) {
 
     const f2b = checkFail2Ban(ip);
     if (f2b.blocked) {
-      const res = NextResponse.json(
-        { error: '访问已被暂时封禁，请稍后再试' },
-        { status: 429 },
+      console.warn('[OIDC Callback] IP blocked by fail2ban:', ip);
+      return NextResponse.redirect(
+        new URL(
+          '/login?error=' + encodeURIComponent('访问已被暂时封禁，请稍后再试'),
+          request.nextUrl.origin,
+        ),
       );
-      if (f2b.retryAfter) {
-        res.headers.set('Retry-After', String(f2b.retryAfter));
-      }
-      return res;
     }
 
     console.log('[OIDC Callback] Request URL:', request.url);
@@ -294,12 +293,16 @@ export async function GET(request: NextRequest) {
       console.log('[OIDC Callback] Using request origin:', origin);
     }
 
-    // 检查是否有错误
+    // 检查是否有错误（用户取消授权/提供商拒绝等，不计入失败次数）
     if (error) {
-      recordFailedAttempt(ip);
       console.error('OIDC认证错误:', error);
+      const errorDescription =
+        searchParams.get('error_description') ||
+        searchParams.get('error_reason') ||
+        '';
+      const message = `OIDC认证失败${errorDescription ? `：${errorDescription}` : ''}`;
       return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent('OIDC认证失败')}`, origin),
+        new URL(`/login?error=${encodeURIComponent(message)}`, origin),
       );
     }
 
@@ -322,12 +325,21 @@ export async function GET(request: NextRequest) {
 
     let storedState: string;
     let providerId = 'default';
+    let redirectTarget = '/';
 
     try {
       // 尝试解析为 JSON（新格式）
       const parsed = JSON.parse(storedStateData);
       storedState = parsed.state;
       providerId = parsed.providerId || 'default';
+      if (
+        parsed.redirect &&
+        typeof parsed.redirect === 'string' &&
+        parsed.redirect.startsWith('/') &&
+        !parsed.redirect.startsWith('//')
+      ) {
+        redirectTarget = parsed.redirect;
+      }
     } catch {
       // 向后兼容：旧格式直接是 state 字符串
       storedState = storedStateData;
@@ -669,7 +681,7 @@ export async function GET(request: NextRequest) {
       const userAgent = request.headers.get('user-agent') || '';
       await trackDevice(username, userAgent, ip);
 
-      const response = NextResponse.redirect(new URL('/', origin));
+      const response = NextResponse.redirect(new URL(redirectTarget, origin));
       const cookieValue = await generateAuthCookie(username, userRole);
       const expires = new Date();
       expires.setDate(expires.getDate() + 7);
@@ -713,6 +725,7 @@ export async function GET(request: NextRequest) {
       name: userInfo.name,
       trust_level: userInfo.trust_level, // 提取trust_level字段
       providerId: providerId, // 存储 provider ID 用于注册时验证
+      redirect: redirectTarget, // 注册完成后跳转目标
       timestamp: Date.now(),
     };
     console.log('[OIDC Callback] Creating oidc_session:', {
@@ -722,7 +735,11 @@ export async function GET(request: NextRequest) {
       providerId,
     });
 
-    const response = NextResponse.redirect(new URL('/oidc-register', origin));
+    const registerUrl = new URL('/oidc-register', origin);
+    if (redirectTarget && redirectTarget !== '/') {
+      registerUrl.searchParams.set('redirect', redirectTarget);
+    }
+    const response = NextResponse.redirect(registerUrl);
     response.cookies.set('oidc_session', JSON.stringify(oidcSession), {
       path: '/',
       httpOnly: true,

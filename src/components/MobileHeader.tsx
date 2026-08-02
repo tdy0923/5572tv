@@ -23,7 +23,10 @@ const MobileHeader = ({
 }: MobileHeaderProps) => {
   const { siteName } = useSite();
   return (
-    <header className='md:hidden fixed top-0 left-0 right-0 z-20 w-full border-b border-gray-200 dark:border-gray-700 bg-white/80 shadow-md  dark:border-gray-700 dark:bg-gray-900 dark:shadow-lg'>
+    <header
+      className='md:hidden fixed top-0 left-0 right-0 z-20 w-full border-b border-gray-200 dark:border-gray-700 bg-white/80 shadow-md  dark:border-gray-700 dark:bg-gray-900 dark:shadow-lg'
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <div className='h-14 flex items-center justify-between px-4'>
         {/* 左侧：搜索按钮、返回按钮和设置按钮 */}
         <div className='flex items-center gap-2'>

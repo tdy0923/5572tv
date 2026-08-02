@@ -11,6 +11,220 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.13.0',
+    date: '2026-08-02',
+    added: [
+      '🔍 **搜索入口全平台覆盖**',
+      '移动端顶栏新增搜索按钮，首页问候区新增搜索条',
+      '旧版底部导航不再过滤搜索入口',
+      '📱 **iOS PWA 安全区（safe-area）适配**',
+      '顶栏、主内容、全屏播放器、底部面板全面适配灵动岛/状态栏与底部手势条',
+      '修复 iOS 首页横向拖动（`.home-section` content-visibility bug）',
+      '👆 **触屏触摸目标优化**',
+      '卡片收藏/提醒/播放按钮、轮播指示条扩大至 44px 命中区',
+      'hover 才显示的按钮在触屏设备（触屏笔记本/平板）强制常显',
+    ],
+    changed: [
+      '📐 **全站内容容器 max-width 2560px → 1600px**，提升大屏/TV 可读性',
+      '🗑️ **删除 TV/Phone 死代码**（layout 目录、useTVNavigation、device-context）',
+      '🔄 **PWA 缓存版本升级**，强制已安装用户刷新到新版',
+      '🎨 **manifest 主题适配深色**（background #000 + 状态栏 black）',
+    ],
+    fixed: [
+      '🐛 **Google/OIDC 登录体验全面修复**',
+      '登录页不再静默失败：完整展示 OIDC 错误原因',
+      '用户取消 Google 授权不再误触发 IP 封禁',
+      '登录/注册成功后回到原访问页面（不再丢失 redirect 目标）',
+      'IP 被封时返回可读提示而非裸 JSON',
+    ],
+  },
+  {
+    version: '1.12.0',
+    date: '2026-07-23',
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+      // 无变更内容
+    ],
+    fixed: [
+      '🖼️ **首页焦点大图恢复横图背景+预告片**',
+      '服务端获取豆瓣详情（backdrop 横图 + trailerUrl）',
+      '客户端懒加载 backdrop，30分钟缓存',
+      '首屏快速渲染，横图平滑更新',
+      '🐛 **APP 首次进入黑框闪烁修复**',
+      'Navigator.pushReplacement 改为 setState 直接切换',
+      '消除路由过渡时的短暂黑帧',
+      '🎬 **短剧播放器统一**',
+      '移除短剧特殊方向锁定（portrait + immersive sticky）',
+      '统一使用标准播放器行为',
+      '🔧 **继续观看短剧源修复**',
+      'watching-updates.ts 短剧源改用 /api/shortdrama/detail',
+      '修复 400 错误',
+      '🔧 **CF Worker refresh-trailer 修复**',
+      '移除 CF Worker 对 refresh-trailer 路由的错误拦截',
+      '预告片 API 恢复正常',
+    ],
+  },
+  {
+    version: '1.11.0',
+    date: '2026-07-16',
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+      '🎨 **Flutter APP Fluent 2 全面升级**',
+      '开屏页：金色圆角卡片 Logo + scale-up/slide-up 双重动画',
+      '底部导航栏：金色选中状态 + 图标容器高亮 + easeOutBack 动画',
+      '搜索栏：AnimatedContainer 边框阴影 + 金色 focus ring + 金色提交按钮',
+      '列表页×4：Fluent 2 typography + 筛选区域边框样式',
+      '播放页：Fluent 2 错误信息容器',
+      '登录页：深色主题 + 金色 Logo 阴影 + 金色登录按钮',
+      '用户菜单：Fluent 2 容器边框阴影 + 细线分割',
+      '加载占位符：深色背景 + 金色旋转指示器',
+      '所有颜色统一使用 AppTheme token，0 硬编码颜色',
+      '🎨 **Web Fluent 2 升级**',
+      '新 SVG 图标：金色渐变 + 播放三角 + drop shadow',
+      '下载页：使用新 SVG 图标 + glow shadow',
+      'Admin 页面：Fluent 2 卡片/面板/侧边栏/骨架屏',
+      '图标库统一：heroicons → lucide-react（5个文件）',
+      '图标尺寸统一为 Fluent 2 规范（16px/20px/24px）',
+    ],
+    fixed: [
+      '🐛 首页大图不清晰：HeroBanner 改用原生 img 绕过 next/image 优化',
+      '🐛 下载按钮溢出：移除 whitespace-nowrap + 缩短文字 + overflow-hidden',
+      '🐛 播放页布局：高分辨率屏幕相关推荐空白修复（12列网格）',
+      '🔒 deploy.yml 硬编码凭据改为 GitHub Secrets',
+      '🔒 Telegram Webhook 添加 ensureAdmin 认证',
+      '🔒 Cron Token 从 URL 参数改为 Authorization header',
+      '🔒 登录密码改为 crypto.timingSafeEqual 时序安全比较',
+      '⚡ Flutter VideoCard hover setState 优化（15→2）',
+      '⚡ Flutter 移除未使用 state 变量（_isSeeking/_isClearHistoryButtonHovered/_isMoreButtonHovered）',
+    ],
+  },
+  {
+    version: '1.9.1',
+    date: '2026-07-11',
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+      '🔧 APP 默认代理 URL 保持 `/api/video-proxy?url=`，APP 不走代理（原生播放器无 CORS 问题）',
+    ],
+    fixed: [
+      '🐛 修复 V2 用户无法登录：`verifyUserV2` 每次生成新 salt 导致比对永远失败',
+      '🐛 Upstash Redis 类型错误导致 Docker 构建失败，修复未部署到生产',
+      '🐛 CDN geo-block 导致视频无法播放：代理降级为 302 重定向，浏览器直连',
+      '🐛 登录路由 V2 验证失败后未回退到 V1',
+      '🐛 移除注册密码大小写/数字强制要求（之前无此限制的用户无法注册）',
+    ],
+  },
+  {
+    version: '1.9.0',
+    date: '2026-07-03',
+    added: [
+      '✨ FluentIcon 组件（sm/md/lg/xl 四级尺寸规范）',
+      '✨ FluentSkeleton/FluentSpinner/FluentLoading 组件',
+      '✨ FluentFadeIn/FluentSlideUp/FluentScaleIn/FluentStagger 动画组件',
+      '✨ app/loading.tsx 全局 FluentSpinner 加载状态',
+      '✨ Fluent 2 animation keyframes（shimmer/spinner/fade-in/scale-in）',
+    ],
+    changed: [
+      '🎨 **Web**: 全面迁移至 Microsoft Fluent 2 设计语言',
+      '重写 Tailwind 4 @theme 为 Fluent 2 token 体系（颜色/阴影/圆角/间距/动效）',
+      '全局 normalize 层覆盖 500+ 旧样式（rounded-28px/shadow-rgba/backdrop-blur 等）',
+      '交互系统：hover 上浮 + focus 金色 ring + active 缩放 + 150ms motion',
+      'FluentSkeleton/FluentSpinner/FluentTransition 加载组件',
+      '17 个 Suspense 添加 FluentSpinner fallback',
+      '全站 TSX 文件硬编码颜色归零',
+      '📱 **Flutter**: AppTheme 完全重写为 Fluent 2 语义 token',
+      '148 处硬编码颜色全部替换为 AppTheme 常量',
+      'Elevation/Radius/Spacing/Motion 与 Web 端统一',
+      'ThemeService 简化',
+    ],
+    fixed: [
+      '🔧 CSP nonce：middleware.ts 合并到 proxy.ts（解决 Next.js 16 冲突）',
+      '🔧 数据库连接：KVROCKS_URL + STORAGE_TYPE 环境变量修复',
+      '🔧 登录 500：缺失 return response + Danny/Danny0923 凭据',
+      '🔧 Cookie httpOnly 改为 false（客户端可读）',
+      '🔧 服务器恢复：SSH 密钥恢复 + 容器重启',
+    ],
+  },
+  {
+    version: '1.8.2',
+    date: '2026-07-01',
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+      '📦 APK 体积优化：63.1MB → 61.3MB（删除 notification_service.dart 死代码）',
+      '🎨 移除 google_fonts 依赖，使用系统 Roboto 字体（消除网络依赖）',
+    ],
+    fixed: [
+      '🐛 修复三星手机 APK 黑屏问题（PlatformDispatcher 导入缺失 dart:ui 前缀）',
+      '🐛 修复 Flutter 编译错误：main.dart 和 fullscreen_image_viewer.dart 使用 ui.PlatformDispatcher',
+      '🐛 修复 APK 未签名问题（jarsigner SHA256withRSA 2048-bit 签名）',
+      '🐛 PWA manifest.json 主题色修复（#hexcode → #1a1a2e）',
+      '🐛 PWA manifest.json 描述文案更新',
+      '🐛 PWA index.html 描述文案更新',
+    ],
+  },
+  {
+    version: '1.8.1',
+    date: '2026-07-01',
+    added: [
+      // 无新增内容
+    ],
+    changed: [
+      // 无变更内容
+    ],
+    fixed: [
+      '🐛 Flutter APK 构建修复：PlatformDispatcher 导入缺失',
+      '🐛 全面安全审计 123 个问题全部修复（15 CRITICAL + 38 HIGH + 42 MEDIUM + 28 LOW）',
+    ],
+  },
+  {
+    version: '1.6.0',
+    date: '2026-06-29',
+    added: [
+      '✨ Android TV Leanback 支持（manifest 配置 + LEANBACK_LAUNCHER）',
+      '✨ D-pad 导航支持（TVFocusable 组件 + 底部导航焦点 + 视频卡片焦点高亮）',
+      '✨ 视频网格 FocusTraversalGroup（8处 GridView 焦点遍历优化）',
+      '✨ 播放页 loading state useReducer（4个 useState 合并为 1 个 reducer）',
+      '✨ Token 播销机制（Redis-backed，登出时自动撤销）',
+      '✨ SSRF DNS 二次校验（isUrlSafeDeep 防 DNS rebinding）',
+      '✨ AI 推荐 prompt 注入防护（sanitizeForPrompt 过滤危险指令）',
+      '✨ CSS 注入防护增强（ThemeEditor 新增 behavior:/-moz-blocking/data: URI 屏蔽）',
+      '✨ 共享 CDN 镜像常量 DOUBAN_CDN_MIRRORS（统一客户端/服务端 CDN 映射）',
+    ],
+    changed: [
+      '🔧 首页 4 个 raw fetch useEffect 迁移到 TanStack Query（AI推荐/历史时间线/收藏分组/收藏更新数）',
+      '🔧 play-stats/search/tvbox 三大页面拆分为独立 hooks（+1756/-1429 行）',
+      '🔧 播放页 3 个重型组件改为 dynamic import（SkipController 1682行/VideoInfoSection 812行/SiteAdSlot 202行）',
+      '🔧 Emby 季数发现添加并发控制（每批3个请求，避免无限并发）',
+      '🔧 36 文件 Toggle 组件统一替换 + index key 唯一化',
+      '🔧 Favorite/Reminder 类型去重（db.client.ts 统一使用 types.ts 定义）',
+      "🔧 origin 字段扩展 'shortdrama' 到 VideoCardProps/ReminderItem/MobileActionSheet",
+      '🔧 版本号 Web 1.6.0 / Flutter 1.8.0',
+    ],
+    fixed: [
+      '🐛 httpOnly: true 回退为 false（客户端 document.cookie 读取被阻断，15+ 调用点失效）',
+      '🐛 login 路由移除「未配置 PASSWORD 直接放行」导致本地开发登录失败',
+      '🐛 Worker catch 块 error.message 泄露（2处）',
+      '🐛 5 个 API 路由 error.message 泄露替换为通用错误消息',
+      '🐛 image-proxy 无 body size 限制（添加 10MB 上限防止内存耗尽）',
+      '🐛 视频代理路由无速率限制（启用 checkRateLimit，30 req/min/IP）',
+      '🐛 getClientIP x-forwarded-for 死代码移除',
+      '🐛 首页 3 个 useEffect 缺少 AbortController（组件卸载后 setState）',
+      '🐛 useTvboxValidation catch 块 error 变量未定义',
+      '🐛 ThemeEditor CSS sanitizer 不完整（补全 behavior/-moz-binding/data: URI）',
+      '🔒 Proxy 路由启用速率限制（video-proxy/image-proxy/video-cache）',
+      '🔒 登出时自动撤销 token（Redis-backed revocation）',
+      '🔒 AI 推荐输入清洗（长度限制 + 关键词过滤）',
+      '🔒 SSRF 防护增强（DNS 解析二次校验）',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-05-27',
     added: [
@@ -121,15 +335,6 @@ export const changelog: ChangelogEntry[] = [
       // 无新增内容
     ],
     changed: [
-      // 无变更内容
-    ],
-    fixed: [
-      '🐛 修复 `getAllUsers()` V1/V2 用户合并 bug',
-      '🐛 修复豆瓣视频代理 403 Forbidden：修正 Referer 头为 movie.douban.com',
-      '🐛 修复弹幕竞态条件：并发加载时返回 0 条弹幕的问题',
-      '🐛 修复聊天同步阻塞保存：移除 StorageEvent 同派发反馈循环',
-      '🐛 修复 viewport meta 标签重复',
-      '🐛 修复 z-index 冲突（MobileActionSheet 与 MoreMenu）',
       '📱 底部导航触摸目标：最小宽度 48px（符合 Apple HIG 标准）',
       '📱 底部导航文字大小：10px → 12px',
       '📱 主内容区域添加 safe-area-inset-bottom（iPhone 刘海屏适配）',
@@ -157,6 +362,14 @@ export const changelog: ChangelogEntry[] = [
       '🎬 弹幕输入框替换为移动端友好的浮动输入组件',
       '🎬 自动播放下一集：视频结束后 3 秒倒计时通知',
       '🎬 长按 2 倍速：按住 500ms 激松开恢复',
+    ],
+    fixed: [
+      '🐛 修复 `getAllUsers()` V1/V2 用户合并 bug',
+      '🐛 修复豆瓣视频代理 403 Forbidden：修正 Referer 头为 movie.douban.com',
+      '🐛 修复弹幕竞态条件：并发加载时返回 0 条弹幕的问题',
+      '🐛 修复聊天同步阻塞保存：移除 StorageEvent 同派发反馈循环',
+      '🐛 修复 viewport meta 标签重复',
+      '🐛 修复 z-index 冲突（MobileActionSheet 与 MoreMenu）',
     ],
   },
   {

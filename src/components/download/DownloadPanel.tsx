@@ -158,7 +158,7 @@ export function DownloadPanel() {
           </div>
 
           {/* 任务列表 */}
-          <div className='flex-1 overflow-y-auto p-4 sm:p-6 space-y-3'>
+          <div className='flex-1 overflow-y-auto px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] space-y-3 sm:px-6 sm:pt-6'>
             {tasks.length === 0 ? (
               <div className='flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400'>
                 <svg

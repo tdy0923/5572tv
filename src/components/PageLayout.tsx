@@ -1,5 +1,7 @@
 'use client';
 
+import { Search } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
@@ -53,14 +55,30 @@ const PageLayout = ({
             hasUnreadAnnouncement={hasUnreadAnnouncement}
           />
 
-          {/* 移动端头部 - Logo和用户菜单 */}
-          <div className='ui-nav-surface md:hidden fixed top-0 left-0 right-0 z-40'>
+          {/* 移动端头部 - 搜索、Logo和用户菜单 */}
+          <div
+            className='ui-nav-surface md:hidden fixed top-0 left-0 right-0 z-40'
+            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+          >
             <div className='flex items-center justify-between h-11 px-4'>
-              {/* 返回按钮 或 Logo */}
+              {/* 左侧：搜索 + 返回按钮 */}
+              <div className='flex shrink-0 items-center gap-1'>
+                <Link
+                  href='/search'
+                  className='flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition-all duration-150 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]'
+                  aria-label='搜索'
+                  title='搜索'
+                >
+                  <Search className='h-5 w-5' />
+                </Link>
+                {['/play', '/live'].includes(activePath) && <BackButton />}
+              </div>
+
+              {/* 中间：Logo（播放/直播页留空） */}
               {['/play', '/live'].includes(activePath) ? (
-                <BackButton />
+                <div className='flex-1' />
               ) : (
-                <div className='flex-1 text-center max-w-[50%] text-sm sm:text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent truncate'>
+                <div className='flex-1 text-center text-sm sm:text-base font-bold bg-linear-to-r from-[#111111] via-[#2a2a2a] to-[#b78415] dark:from-white dark:via-[#f4f4f4] dark:to-[#f4c24d] bg-clip-text text-transparent truncate'>
                   {siteName}
                 </div>
               )}
@@ -76,9 +94,9 @@ const PageLayout = ({
             </div>
           </div>
 
-          {/* Main Content - 移动端44px顶部 + 底部导航栏空间，桌面端64px */}
+          {/* Main Content - 移动端44px顶部+安全区 + 底部导航栏空间，桌面端64px */}
           <main
-            className='w-full min-h-screen pb-16 pt-[44px] md:pb-8 md:pt-16'
+            className='w-full min-h-screen pb-16 pt-[calc(44px+env(safe-area-inset-top))] md:pb-8 md:pt-16'
             style={{
               paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))',
             }}
@@ -141,7 +159,7 @@ const PageLayout = ({
 
           {/* 主内容 */}
           <main
-            className='flex-1 md:min-h-0 mb-14 pt-[44px] md:pt-16'
+            className='flex-1 md:min-h-0 mb-14 pt-[calc(44px+env(safe-area-inset-top))] md:pt-16'
             style={{
               // 悬浮胶囊导航栏高度约 56px + 底部 1rem 间距 + 安全区
               paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom))',

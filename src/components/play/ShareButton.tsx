@@ -32,7 +32,7 @@ export default function ShareButton({ title, url }: ShareButtonProps) {
     <div className='relative shrink-0'>
       <button
         onClick={handleNativeShare}
-        className='flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
+        className='flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
         title='分享'
       >
         <Share2 className='w-4 h-4' />

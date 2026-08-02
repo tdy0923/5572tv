@@ -1117,7 +1117,7 @@ function VideoCard({
           {config.showPlayButton && (
             <div
               data-button='true'
-              className='absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 transition-all duration-300 ease-in-out delay-75 md:group-hover:opacity-100 md:group-hover:scale-100'
+              className='absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 transition-all duration-300 ease-in-out delay-75 md:group-hover:opacity-100 md:group-hover:scale-100 pointer-coarse:opacity-100 pointer-coarse:scale-100'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1164,7 +1164,7 @@ function VideoCard({
             from !== 'favorite' && (
               <div
                 data-button='true'
-                className='absolute bottom-3 right-3 flex gap-3 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0'
+                className='absolute bottom-3 right-3 flex gap-3 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 pointer-coarse:opacity-100 pointer-coarse:translate-y-0'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1178,10 +1178,11 @@ function VideoCard({
                 }}
               >
                 {config.showCheckCircle && (
-                  <Trash2
+                  <span
                     onClick={handleDeleteRecord}
-                    size={20}
-                    className='text-white transition-all duration-300 ease-out hover:stroke-red-500 hover:scale-[1.1]'
+                    role='button'
+                    aria-label='删除记录'
+                    className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
                     style={
                       {
                         WebkitUserSelect: 'none',
@@ -1193,7 +1194,13 @@ function VideoCard({
                       e.preventDefault();
                       return false;
                     }}
-                  />
+                  >
+                    <Trash2
+                      size={20}
+                      pointerEvents='none'
+                      className='text-white transition-all duration-300 ease-out hover:stroke-red-500 hover:scale-[1.1]'
+                    />
+                  </span>
                 )}
                 {config.showHeart && (
                   <>
@@ -1208,10 +1215,11 @@ function VideoCard({
                       if (shouldShowBell) {
                         // 即将上映或新上映：显示铃铛图标（使用 reminded 状态）
                         return optimisticReminded ? (
-                          <BellRing
+                          <span
                             onClick={handleToggleFavorite}
-                            size={20}
-                            className='fill-orange-600 stroke-orange-600 transition-all duration-300 ease-out hover:scale-[1.1]'
+                            role='button'
+                            aria-label='取消提醒'
+                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1223,12 +1231,19 @@ function VideoCard({
                               e.preventDefault();
                               return false;
                             }}
-                          />
+                          >
+                            <BellRing
+                              size={20}
+                              pointerEvents='none'
+                              className='fill-orange-600 stroke-orange-600 transition-all duration-300 ease-out hover:scale-[1.1]'
+                            />
+                          </span>
                         ) : (
-                          <Bell
+                          <span
                             onClick={handleToggleFavorite}
-                            size={20}
-                            className='fill-transparent stroke-white hover:stroke-orange-400 transition-all duration-300 ease-out hover:scale-[1.1]'
+                            role='button'
+                            aria-label='提醒我'
+                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1240,23 +1255,22 @@ function VideoCard({
                               e.preventDefault();
                               return false;
                             }}
-                          />
+                          >
+                            <Bell
+                              size={20}
+                              pointerEvents='none'
+                              className='fill-transparent stroke-white hover:stroke-orange-400 transition-all duration-300 ease-out hover:scale-[1.1]'
+                            />
+                          </span>
                         );
                       } else {
                         // 已上映：显示爱心图标（使用 favorited 状态）
                         return (
-                          <Heart
+                          <span
                             onClick={handleToggleFavorite}
-                            size={20}
-                            className={`transition-all duration-300 ease-out ${
-                              (
-                                from === 'search'
-                                  ? optimisticSearchFavorited
-                                  : optimisticFavorited
-                              )
-                                ? 'fill-red-600 stroke-red-600'
-                                : 'fill-transparent stroke-white hover:stroke-red-400'
-                            } hover:scale-[1.1]`}
+                            role='button'
+                            aria-label='收藏'
+                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1268,7 +1282,21 @@ function VideoCard({
                               e.preventDefault();
                               return false;
                             }}
-                          />
+                          >
+                            <Heart
+                              size={20}
+                              pointerEvents='none'
+                              className={`transition-all duration-300 ease-out ${
+                                (
+                                  from === 'search'
+                                    ? optimisticSearchFavorited
+                                    : optimisticFavorited
+                                )
+                                  ? 'fill-red-600 stroke-red-600'
+                                  : 'fill-transparent stroke-white hover:stroke-red-400'
+                              } hover:scale-[1.1]`}
+                            />
+                          </span>
                         );
                       }
                     })()}
@@ -1477,7 +1505,7 @@ function VideoCard({
               target='_blank'
               rel='noopener noreferrer'
               onClick={(e) => e.stopPropagation()}
-              className='absolute top-2 left-2 opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0'
+              className='absolute top-2 left-2 opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0 pointer-coarse:opacity-100 pointer-coarse:translate-x-0'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1529,7 +1557,7 @@ function VideoCard({
 
               return (
                 <div
-                  className='absolute bottom-2 right-2 sm:group-hover:opacity-100 opacity-0 transition-all duration-300 ease-in-out delay-75 @[140px]:bottom-1 @[140px]:right-1'
+                  className='absolute bottom-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 ease-in-out delay-75 @[140px]:bottom-1 @[140px]:right-1 pointer-coarse:opacity-100'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1584,6 +1612,7 @@ function VideoCard({
                 ${hasBottomTags ? 'bottom-14' : 'bottom-4'}
                 opacity-0 translate-y-2
                 group-hover:opacity-100 group-hover:translate-y-0
+                pointer-coarse:opacity-100 pointer-coarse:translate-y-0
                 transition-all duration-300 ease-out z-20
               `}
               onClick={(e) => {

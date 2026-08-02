@@ -1221,7 +1221,7 @@ export const UserMenu: React.FC = () => {
                                 series.videoId,
                               );
                             }}
-                            className='absolute -top-2 -left-2 bg-gray-800/80 hover:bg-gray-900 text-white rounded-full p-1 shadow-lg z-10 opacity-0 group-hover/card:opacity-100 transition-opacity'
+                            className='absolute -top-2 -left-2 bg-gray-800/80 hover:bg-gray-900 text-white rounded-full p-1 shadow-lg z-10 opacity-0 group-hover/card:opacity-100 transition-opacity pointer-coarse:opacity-100'
                             title='不再提醒'
                           >
                             <X className='w-3 h-3' />

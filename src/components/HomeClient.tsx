@@ -3,7 +3,9 @@
 'use client';
 
 import { queryOptions, useQuery } from '@tanstack/react-query';
+import { Search } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
   Suspense,
@@ -844,6 +846,18 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 )}
               </h2>
             </div>
+
+            {/* 顶部搜索条 - 点击跳转完整搜索页（全平台统一入口） */}
+            <Link
+              href='/search'
+              className='relative flex h-12 items-center rounded-xl border bg-white px-4 shadow-sm transition-all duration-150 hover:bg-gray-50 active:scale-[0.99] dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/60'
+              aria-label='搜索'
+            >
+              <Search className='mr-2.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
+              <span className='truncate text-sm text-gray-400 dark:text-gray-500'>
+                搜索电影、剧集、动漫、综艺
+              </span>
+            </Link>
 
             {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
             <div className='flex items-center justify-start'>

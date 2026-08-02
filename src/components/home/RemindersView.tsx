@@ -67,7 +67,7 @@ export default function RemindersView({
           </h2>
           {notifPermission !== 'unsupported' && (
             <button
-              className={`rounded-full p-1.5 transition-colors ${
+              className={`rounded-full p-2 transition-colors ${
                 notifPermission === 'granted'
                   ? 'text-green-500'
                   : 'text-gray-400 hover:text-amber-500'
@@ -93,7 +93,7 @@ export default function RemindersView({
         </div>
         {reminderItems.length > 0 && (
           <button
-            className='ui-control flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
+            className='ui-control flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
             onClick={() => {
               if (requireClearConfirmation) {
                 setShowClearRemindersDialog(true);

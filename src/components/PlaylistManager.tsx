@@ -136,7 +136,7 @@ export default function PlaylistManager({
       onClick={onClose}
     >
       <div
-        className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-gray-200 dark:border-gray-700 bg-white/88 shadow-lg  dark:border-gray-700 dark:bg-gray-900 md:max-h-[90vh] md:max-w-md md:rounded-xl'
+        className='flex max-h-[85vh] w-full flex-col rounded-t-[28px] border border-gray-200 dark:border-gray-700 bg-white/88 shadow-lg pb-[env(safe-area-inset-bottom)]  dark:border-gray-700 dark:bg-gray-900 md:max-h-[90vh] md:max-w-md md:rounded-xl md:pb-0'
         onClick={(e) => e.stopPropagation()}
       >
         {/* 头部 */}

@@ -474,7 +474,7 @@ export default function ShortDramaVerticalPlayer({
 
       {/* 顶部信息栏 */}
       {showControls && (
-        <div className='absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent z-20'>
+        <div className='absolute top-0 left-0 right-0 px-4 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] bg-gradient-to-b from-black/60 to-transparent z-20'>
           <div className='flex items-center justify-between'>
             <div className='min-w-0 flex-1'>
               <h1 className='text-white text-lg font-bold truncate'>{title}</h1>
@@ -488,7 +488,7 @@ export default function ShortDramaVerticalPlayer({
 
       {/* 底部信息栏 */}
       {showControls && (
-        <div className='absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent z-20'>
+        <div className='absolute bottom-0 left-0 right-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-black/60 to-transparent z-20'>
           {/* 真实视频进度条 */}
           <div className='mb-3' onClick={(e) => e.stopPropagation()}>
             <div

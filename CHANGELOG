@@ -1,6 +1,35 @@
+## [1.13.0] - 2026-08-02
+
+### Added
+
+- 🔍 **搜索入口全平台覆盖**
+  - 移动端顶栏新增搜索按钮，首页问候区新增搜索条
+  - 旧版底部导航不再过滤搜索入口
+- 📱 **iOS PWA 安全区（safe-area）适配**
+  - 顶栏、主内容、全屏播放器、底部面板全面适配灵动岛/状态栏与底部手势条
+  - 修复 iOS 首页横向拖动（`.home-section` content-visibility bug）
+- 👆 **触屏触摸目标优化**
+  - 卡片收藏/提醒/播放按钮、轮播指示条扩大至 44px 命中区
+  - hover 才显示的按钮在触屏设备（触屏笔记本/平板）强制常显
+
+### Changed
+
+- 📐 **全站内容容器 max-width 2560px → 1600px**，提升大屏/TV 可读性
+- 🗑️ **删除 TV/Phone 死代码**（layout 目录、useTVNavigation、device-context）
+- 🔄 **PWA 缓存版本升级**，强制已安装用户刷新到新版
+- 🎨 **manifest 主题适配深色**（background #000 + 状态栏 black）
+
+### Fixed
+
+- 🐛 **Google/OIDC 登录体验全面修复**
+  - 登录页不再静默失败：完整展示 OIDC 错误原因
+  - 用户取消 Google 授权不再误触发 IP 封禁
+  - 登录/注册成功后回到原访问页面（不再丢失 redirect 目标）
+  - IP 被封时返回可读提示而非裸 JSON
+
 ## [1.12.0] - 2026-07-23
 
-### Fixed — 首页焦点大图 + APP 修复
+### Fixed
 
 - 🖼️ **首页焦点大图恢复横图背景+预告片**
   - 服务端获取豆瓣详情（backdrop 横图 + trailerUrl）
@@ -21,7 +50,7 @@
 
 ## [1.11.0] - 2026-07-16
 
-### Changed — Fluent 2 全站升级
+### Changed
 
 - 🎨 **Flutter APP Fluent 2 全面升级**
   - 开屏页：金色圆角卡片 Logo + scale-up/slide-up 双重动画
@@ -76,7 +105,7 @@
 
 ## [1.9.0] - 2026-07-03
 
-### Changed — Fluent 2 Design System
+### Changed
 
 - 🎨 **Web**: 全面迁移至 Microsoft Fluent 2 设计语言
   - 重写 Tailwind 4 @theme 为 Fluent 2 token 体系（颜色/阴影/圆角/间距/动效）
@@ -171,7 +200,7 @@
 ### Fixed
 
 - 🐛 httpOnly: true 回退为 false（客户端 document.cookie 读取被阻断，15+ 调用点失效）
-- 🐛 login 路由移除"未配置 PASSWORD 直接放行"导致本地开发登录失败
+- 🐛 login 路由移除「未配置 PASSWORD 直接放行」导致本地开发登录失败
 - 🐛 Worker catch 块 error.message 泄露（2处）
 - 🐛 5 个 API 路由 error.message 泄露替换为通用错误消息
 - 🐛 image-proxy 无 body size 限制（添加 10MB 上限防止内存耗尽）
@@ -307,7 +336,7 @@
 - 🐛 修复 viewport meta 标签重复
 - 🐛 修复 z-index 冲突（MobileActionSheet 与 MoreMenu）
 
-### Changed - 移动端 UI/UX 全面改进
+### Changed
 
 - 📱 底部导航触摸目标：最小宽度 48px（符合 Apple HIG 标准）
 - 📱 底部导航文字大小：10px → 12px
@@ -324,7 +353,7 @@
 - 📱 搜索结果列表视图海报移动端缩小
 - 📱 筛选按钮间距优化
 
-### Changed - 播放器移动端/平板升级
+### Changed
 
 - 🎬 视频播放器高度响应式：手机 220px / 平板 280px / 桌面自适应
 - 🎬 剧集选择器高度上限 280px（手机端）

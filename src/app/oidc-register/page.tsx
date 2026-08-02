@@ -4,13 +4,15 @@
 'use client';
 
 import { AlertCircle, Lock, Shield, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 import { AuthShell } from '@/components/AuthShell';
 
-export default function OIDCRegisterPage() {
+function OIDCRegisterContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/';
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,16 +55,20 @@ export default function OIDCRegisterPage() {
       const res = await fetch('/api/auth/oidc/complete-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, redirect }),
       });
 
       if (res.ok) {
         const data = await res.json();
         // Upstash 需要额外延迟等待数据同步
         const delay = data.needDelay ? 1500 : 0;
+        const target =
+          typeof data.redirect === 'string' && data.redirect.startsWith('/')
+            ? data.redirect
+            : '/';
 
         setTimeout(() => {
-          router.replace('/');
+          router.replace(target);
         }, delay);
       } else {
         const data = await res.json().catch(() => ({}));
@@ -185,5 +191,21 @@ export default function OIDCRegisterPage() {
         </div>
       </form>
     </AuthShell>
+  );
+}
+
+export default function OIDCRegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className='relative min-h-screen flex items-center justify-center px-3 sm:px-4'>
+          <div className='text-sm sm:text-base text-gray-500 dark:text-gray-400'>
+            加载中...
+          </div>
+        </div>
+      }
+    >
+      <OIDCRegisterContent />
+    </Suspense>
   );
 }

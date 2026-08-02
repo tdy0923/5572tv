@@ -42,6 +42,15 @@ function LoginPageClient() {
   const [loading, setLoading] = useState(false);
   const shouldAskUsername =
     process.env.NEXT_PUBLIC_STORAGE_TYPE !== 'localstorage';
+
+  // 显示 URL 中的错误参数（OIDC 回调失败/会话过期等重定向过来）
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) {
+      setError(urlError);
+    }
+  }, [searchParams]);
+
   // Telegram Magic Link 状态
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramDeepLink, setTelegramDeepLink] = useState('');
@@ -472,9 +481,14 @@ function LoginPageClient() {
                   <button
                     key={provider.id}
                     type='button'
-                    onClick={() =>
-                      (window.location.href = `/api/auth/oidc/login?provider=${provider.id}`)
-                    }
+                    onClick={() => {
+                      const redirect = searchParams.get('redirect') || '/';
+                      const safeRedirect =
+                        redirect.startsWith('/') && !redirect.startsWith('//')
+                          ? redirect
+                          : '/';
+                      window.location.href = `/api/auth/oidc/login?provider=${provider.id}&redirect=${encodeURIComponent(safeRedirect)}`;
+                    }}
                     className={`w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
                   >
                     <OIDCProviderLogo provider={detectedProvider} />
@@ -497,9 +511,14 @@ function LoginPageClient() {
               return (
                 <button
                   type='button'
-                  onClick={() =>
-                    (window.location.href = '/api/auth/oidc/login')
-                  }
+                  onClick={() => {
+                    const redirect = searchParams.get('redirect') || '/';
+                    const safeRedirect =
+                      redirect.startsWith('/') && !redirect.startsWith('//')
+                        ? redirect
+                        : '/';
+                    window.location.href = `/api/auth/oidc/login?redirect=${encodeURIComponent(safeRedirect)}`;
+                  }}
                   className={`mt-3 sm:mt-4 w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
                 >
                   <OIDCProviderLogo provider={provider} />

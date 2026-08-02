@@ -83,7 +83,7 @@ export function ConfirmDialog({
         {/* 关闭按钮 */}
         <button
           onClick={onCancel}
-          className='absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700'
+          className='absolute top-4 right-4 p-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-700'
           aria-label='关闭'
         >
           <X className='w-5 h-5' />

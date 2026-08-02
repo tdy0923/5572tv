@@ -115,7 +115,7 @@ export default function ModernNav({
     <>
       {/* Desktop Top Navigation */}
       <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-30'>
-        <div className='max-w-[2560px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
+        <div className='max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
@@ -132,8 +132,8 @@ export default function ModernNav({
             </FastLink>
 
             {/* Navigation Items */}
-            <div className='flex flex-1 items-center justify-center overflow-x-auto px-2 scrollbar-hide lg:px-4'>
-              <div className='flex items-center gap-1.5'>
+            <div className='flex flex-1 items-center overflow-x-auto px-2 scrollbar-hide lg:px-4'>
+              <div className='mx-auto flex items-center gap-1.5'>
                 {menuItems.map((item) => {
                   const Icon = iconMap[item.iconName];
                   const active = isActive(item.href, currentActive);
