@@ -8,15 +8,40 @@ import { searchFromApi } from '@/lib/downstream';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const UNLIMITED_API_KEY = process.env.UNLIMITED_AI_KEY || '';
-const UNLIMITED_API_URL = 'https://unlimited.surf/api/chat';
+const AI_API_BASE = process.env.AI_API_BASE || 'https://apihub.agnes-ai.com/v1';
+const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
 
-// 内存缓存，避免频繁调用AI API
+const AI_KEYS = [
+  process.env.AI_API_KEY_1,
+  process.env.AI_API_KEY_2,
+  process.env.AI_API_KEY_3,
+  process.env.AI_API_KEY_4,
+  process.env.AI_API_KEY_5,
+  process.env.AI_API_KEY_6,
+].filter(Boolean) as string[];
+
+// Fallback to single key env vars
+if (AI_KEYS.length === 0) {
+  const single =
+    process.env.AI_API_KEY ||
+    process.env.GROQ_API_KEY ||
+    process.env.NVIDIA_API_KEY ||
+    '';
+  if (single) AI_KEYS.push(single);
+}
+
+let keyIndex = 0;
+function getNextKey(): string {
+  const key = AI_KEYS[keyIndex % AI_KEYS.length];
+  keyIndex++;
+  return key;
+}
+
 const recommendationCache = new Map<
   string,
   { data: any[]; timestamp: number }
 >();
-const CACHE_TTL = 10 * 60 * 1000; // 10分钟缓存
+const CACHE_TTL = 10 * 60 * 1000;
 
 async function askAIForRecommendations(
   viewingHistory: string[],
@@ -40,74 +65,65 @@ async function askAIForRecommendations(
 
 请推荐5部类似的影视内容。`;
 
-  if (!UNLIMITED_API_KEY) return [];
+  if (!AI_KEYS.length) return [];
 
-  try {
-    const response = await fetch(UNLIMITED_API_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${UNLIMITED_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: userPrompt,
-        model: 'gateway-gpt-5-mini',
-        systemPrompt,
-      }),
-      signal: AbortSignal.timeout(8000), // 减少到8秒超时
-    });
+  const errors: string[] = [];
+  // Try each key in round-robin, up to all keys
+  for (let attempt = 0; attempt < AI_KEYS.length; attempt++) {
+    const apiKey = getNextKey();
+    try {
+      const response = await fetch(`${AI_API_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
 
-    if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
-    }
+      if (!response.ok) {
+        errors.push(`Key attempt ${attempt + 1}: ${response.status}`);
+        continue;
+      }
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let fullResponse = '';
-
-    if (reader) {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.delta) {
-                fullResponse += data.delta;
-              }
-            } catch {}
-          }
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.recommendations?.length) {
+          return parsed.recommendations;
         }
       }
+      return [];
+    } catch (error: any) {
+      errors.push(`Key attempt ${attempt + 1}: ${error.message}`);
     }
-
-    const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return parsed.recommendations || [];
-    }
-
-    return [];
-  } catch (error) {
-    console.error('AI recommendation failed:', error);
-    return [];
   }
+
+  console.error('AI recommendation all keys failed:', errors);
+  return [];
 }
 
 async function enrichRecommendations(titles: string[]) {
   const apiSites = await getAvailableApiSites();
   if (!apiSites.length || !titles.length) return [];
 
-  // 并行搜索所有标题，但限制并发数避免过载
   const searchPromises = titles.map(async (title) => {
     try {
       const results = await Promise.race([
         searchFromApi(apiSites[0], title, [title]),
-        new Promise<[]>(
-          (_, rej) => setTimeout(() => rej(new Error('timeout')), 3000), // 减少到3秒超时
+        new Promise<[]>((_, rej) =>
+          setTimeout(() => rej(new Error('timeout')), 3000),
         ),
       ]);
       if (results && results.length > 0) {
@@ -139,7 +155,6 @@ async function enrichRecommendations(titles: string[]) {
   return Promise.all(searchPromises);
 }
 
-// 从热门数据随机推荐（兜底方案）
 async function getTrendingFallback(
   request: NextRequest,
   cacheKey: string,
@@ -169,10 +184,7 @@ async function getTrendingFallback(
         data: shuffled,
         timestamp: Date.now(),
       });
-      return NextResponse.json({
-        success: true,
-        recommendations: shuffled,
-      });
+      return NextResponse.json({ success: true, recommendations: shuffled });
     }
   } catch {}
   return NextResponse.json({ success: true, recommendations: [] });
@@ -185,7 +197,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 检查缓存
     const cacheKey = authInfo.username;
     const cached = recommendationCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -216,11 +227,10 @@ export async function GET(request: NextRequest) {
       .map(([type]) => type);
 
     let titles: string[];
-    if (!UNLIMITED_API_KEY) {
-      // 没 AI Key 但用户有播放记录 → 用最近追的作为推荐标题搜索
-      titles = viewingHistory.slice(0, 6);
-    } else {
+    if (AI_KEYS.length > 0) {
       titles = await askAIForRecommendations(viewingHistory, favoriteGenres);
+    } else {
+      titles = viewingHistory.slice(0, 6);
     }
     const recommendations = await enrichRecommendations(titles);
 
@@ -228,7 +238,6 @@ export async function GET(request: NextRequest) {
       return await getTrendingFallback(request, cacheKey);
     }
 
-    // 缓存结果
     recommendationCache.set(cacheKey, {
       data: recommendations,
       timestamp: Date.now(),
