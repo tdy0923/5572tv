@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           persist-credentials: true
+          fetch-depth: 2
 
       - name: Gate - skip auto-commit / no-flutter-change
         id: gate
@@ -32,12 +33,13 @@ jobs:
             if echo "$MSG" | grep -q "\[skip apk\]"; then
               echo "continue=false" >> "$GITHUB_OUTPUT"
               echo "Skipping: triggered by APK auto-commit"
-            elif ! git diff --quiet HEAD~1 HEAD -- flutter_app/; then
-              echo "continue=true" >> "$GITHUB_OUTPUT"
-              echo "Flutter sources changed"
-            else
+            elif git rev-parse --verify -q HEAD~1 >/dev/null \
+                && git diff --quiet HEAD~1 HEAD -- flutter_app/; then
               echo "continue=false" >> "$GITHUB_OUTPUT"
               echo "Skipping: no Flutter changes in this push"
+            else
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+              echo "Flutter sources changed or no parent commit"
             fi
           else
             echo "continue=true" >> "$GITHUB_OUTPUT"
