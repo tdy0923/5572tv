@@ -112,6 +112,15 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/download/5572tv-android.apk',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=300',
+          },
+        ],
+      },
     ];
   },
 };
