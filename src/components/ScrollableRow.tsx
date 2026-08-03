@@ -217,59 +217,47 @@ function ScrollableRow({
       </div>
       {showLeftScroll && (
         <div
-          className={`hidden sm:flex absolute left-0 top-0 bottom-0 w-16 items-center justify-center z-70 transition-opacity duration-200 ${
+          className={`hidden sm:flex absolute left-0 top-0 bottom-0 w-20 items-center justify-start z-70 transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            background: 'transparent',
-            pointerEvents: 'none', // 允许点击穿透
+            background:
+              'linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 100%)',
+            pointerEvents: isHovered ? 'auto' : 'none',
           }}
         >
-          <div
-            className='absolute inset-0 flex items-center justify-center'
-            style={{
-              top: '40%',
-              bottom: '60%',
-              left: '-4.5rem',
-              pointerEvents: isHovered ? 'auto' : 'none', // 隐藏时禁用pointer事件
-            }}
+          <button
+            onClick={handleScrollLeftClick}
+            className='flex h-full w-full items-center justify-start pl-2 transition-all hover:scale-105'
+            aria-label='向左滚动'
           >
-            <button
-              onClick={handleScrollLeftClick}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/60 active:scale-95'
-            >
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/70 active:scale-95'>
               <ChevronLeft className='w-5 h-5 text-white drop-shadow-sm' />
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       )}
 
       {showRightScroll && (
         <div
-          className={`hidden sm:flex absolute right-0 top-0 bottom-0 w-16 items-center justify-center z-70 transition-opacity duration-200 ${
+          className={`hidden sm:flex absolute right-0 top-0 bottom-0 w-20 items-center justify-end z-70 transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
           style={{
-            background: 'transparent',
-            pointerEvents: 'none', // 允许点击穿透
+            background:
+              'linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 100%)',
+            pointerEvents: isHovered ? 'auto' : 'none',
           }}
         >
-          <div
-            className='absolute inset-0 flex items-center justify-center'
-            style={{
-              top: '40%',
-              bottom: '60%',
-              right: '-4.5rem',
-              pointerEvents: isHovered ? 'auto' : 'none', // 隐藏时禁用pointer事件
-            }}
+          <button
+            onClick={handleScrollRightClick}
+            className='flex h-full w-full items-center justify-end pr-2 transition-all hover:scale-105'
+            aria-label='向右滚动'
           >
-            <button
-              onClick={handleScrollRightClick}
-              className='flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/60 active:scale-95'
-            >
+            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/70 active:scale-95'>
               <ChevronRight className='w-5 h-5 text-white drop-shadow-sm' />
-            </button>
-          </div>
+            </div>
+          </button>
         </div>
       )}
     </div>
