@@ -140,6 +140,16 @@ export default async function RootLayout({
     <html lang='zh-CN' suppressHydrationWarning>
       <head>
         <meta name='color-scheme' content='light dark' />
+        <meta
+          name='theme-color'
+          content='#f9fbfe'
+          media='(prefers-color-scheme: light)'
+        />
+        <meta
+          name='theme-color'
+          content='#0c111c'
+          media='(prefers-color-scheme: dark)'
+        />
         <link rel='apple-touch-icon' href='/icons/icon-192x192.png' />
         <link rel='preconnect' href='https://fonts.googleapis.com' />
         <link

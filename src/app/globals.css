@@ -374,6 +374,11 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
+  /* 让原生控件（输入框/选择器/滚动条等）跟随站点浅色主题，而不是设备预设 */
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 html,
@@ -1123,4 +1128,25 @@ button:disabled,
 ::placeholder {
   color: var(--color-foreground-muted);
   opacity: 1;
+}
+
+/* --- 18. 强制深色模式表单控件适配 --- */
+/* 修复浏览器在黑暗系统下把输入框强制变成白底/蓝底的刺眼效果 */
+html:not(.dark) input:-webkit-autofill,
+html:not(.dark) select:-webkit-autofill,
+html:not(.dark) textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: var(--color-gray-800);
+  caret-color: var(--color-gray-800);
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 9999999s ease-in-out 0s;
+}
+html.dark input:-webkit-autofill,
+html.dark select:-webkit-autofill,
+html.dark textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #1c1c1c inset;
+  -webkit-text-fill-color: var(--color-gray-200);
+  caret-color: var(--color-gray-200);
+  box-shadow: 0 0 0 1000px #1c1c1c inset;
+  transition: background-color 9999999s ease-in-out 0s;
 }
