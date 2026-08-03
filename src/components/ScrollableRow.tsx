@@ -1,4 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Children,
   memo,
@@ -15,7 +14,7 @@ interface ScrollableRowProps {
   children: React.ReactNode;
   scrollDistance?: number;
   enableAnimation?: boolean;
-  enableVirtualization?: boolean; // 启用虚拟化（仅当子元素很多时）
+  enableVirtualization?: boolean;
 }
 
 function ScrollableRow({
@@ -28,12 +27,9 @@ function ScrollableRow({
   const [showLeftScroll, setShowLeftScroll] = useState(false);
   const [showRightScroll, setShowRightScroll] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const checkScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
 
-  // 使用 useMemo 缓存 children 数量，减少不必要的 effect 触发
   const childrenCount = useMemo(() => Children.count(children), [children]);
 
   const rafRef = useRef<number | null>(null);
@@ -44,8 +40,6 @@ function ScrollableRow({
       rafRef.current = null;
       if (containerRef.current) {
         const { scrollWidth, clientWidth, scrollLeft } = containerRef.current;
-
-        // 计算是否需要左右滚动按钮
         const threshold = 1;
         const canScrollRight =
           scrollWidth - (scrollLeft + clientWidth) > threshold;
@@ -58,7 +52,6 @@ function ScrollableRow({
           prev !== canScrollLeft ? canScrollLeft : prev,
         );
 
-        // 虚拟化：精确计算可见范围
         if (enableVirtualization && containerRef.current.children.length > 0) {
           const overscan = 2;
           const viewportStart = scrollLeft;
@@ -67,19 +60,16 @@ function ScrollableRow({
           let startIndexVisible = 0;
           let stopIndexVisible = childrenCount - 1;
 
-          // 查找第一个可见元素
           for (let i = 0; i < containerRef.current.children.length; i++) {
             const child = containerRef.current.children[i] as HTMLElement;
             const offsetLeft = child.offsetLeft;
             const offsetWidth = child.offsetWidth;
-
             if (offsetLeft + offsetWidth > viewportStart) {
               startIndexVisible = i;
               break;
             }
           }
 
-          // 查找最后一个可见元素
           for (
             let i = startIndexVisible;
             i < containerRef.current.children.length;
@@ -87,7 +77,6 @@ function ScrollableRow({
           ) {
             const child = containerRef.current.children[i] as HTMLElement;
             const offsetLeft = child.offsetLeft;
-
             if (offsetLeft >= viewportEnd) {
               stopIndexVisible = i - 1;
               break;
@@ -96,11 +85,8 @@ function ScrollableRow({
 
           const start = Math.max(0, startIndexVisible - overscan);
           const end = Math.min(childrenCount, stopIndexVisible + overscan + 1);
-
           setVisibleRange((prev) => {
-            if (prev.start !== start || prev.end !== end) {
-              return { start, end };
-            }
+            if (prev.start !== start || prev.end !== end) return { start, end };
             return prev;
           });
         }
@@ -108,103 +94,140 @@ function ScrollableRow({
     });
   }, [enableVirtualization, childrenCount]);
 
-  // 虚拟化：只渲染可见范围内的子元素
   const visibleChildren = useMemo(() => {
-    if (!enableVirtualization || childrenCount <= 20) {
-      return children; // 少于20个元素，不需要虚拟化
-    }
-
+    if (!enableVirtualization || childrenCount <= 20) return children;
     const childArray = Children.toArray(children);
     return childArray.slice(visibleRange.start, visibleRange.end);
   }, [enableVirtualization, children, childrenCount, visibleRange]);
 
   useEffect(() => {
-    // 延迟检查，确保内容已完全渲染
-    if (checkScrollTimeoutRef.current) {
-      clearTimeout(checkScrollTimeoutRef.current);
-      checkScrollTimeoutRef.current = null;
-    }
-    checkScrollTimeoutRef.current = setTimeout(() => {
-      checkScroll();
-    }, 100);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(checkScroll, 100);
 
-    // 监听窗口大小变化（使用防抖）
     let resizeTimeout: ReturnType<typeof setTimeout> | undefined;
     const handleResize = () => {
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-      resizeTimeout = setTimeout(checkScroll, 200); // 增加防抖时间从150ms到200ms
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(checkScroll, 200);
     };
+    window.addEventListener('resize', handleResize, { passive: true });
 
-    window.addEventListener('resize', handleResize, { passive: true }); // 使用 passive 优化
-
-    // 只在子元素超过20个时才使用 ResizeObserver（减少性能开销）
     let resizeObserver: ResizeObserver | null = null;
     if (childrenCount > 20) {
       resizeObserver = new ResizeObserver(() => {
-        // 使用防抖来减少不必要的检查
-        if (checkScrollTimeoutRef.current) {
-          clearTimeout(checkScrollTimeoutRef.current);
-          checkScrollTimeoutRef.current = null;
-        }
-        checkScrollTimeoutRef.current = setTimeout(checkScroll, 150);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(checkScroll, 150);
       });
-
-      if (containerRef.current) {
-        resizeObserver.observe(containerRef.current);
-      }
+      if (containerRef.current) resizeObserver.observe(containerRef.current);
     }
 
     return () => {
       window.removeEventListener('resize', handleResize);
       resizeObserver?.disconnect();
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-      if (checkScrollTimeoutRef.current) {
-        clearTimeout(checkScrollTimeoutRef.current);
-      }
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [childrenCount, checkScroll]);
 
-  const handleScrollRightClick = useCallback(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollBy({
-        left: scrollDistance,
-        behavior: 'smooth',
-      });
-    }
-  }, [scrollDistance]);
+  const scrollBy = useCallback(
+    (direction: 'left' | 'right') => {
+      if (containerRef.current) {
+        containerRef.current.scrollBy({
+          left: direction === 'right' ? scrollDistance : -scrollDistance,
+          behavior: 'smooth',
+        });
+      }
+    },
+    [scrollDistance],
+  );
 
-  const handleScrollLeftClick = useCallback(() => {
-    if (containerRef.current) {
+  // 点击容器左右半区翻页
+  const handleContainerClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const midX = rect.width * 0.3;
+      if (clickX < midX && showLeftScroll) {
+        scrollBy('left');
+      } else if (clickX > rect.width - midX && showRightScroll) {
+        scrollBy('right');
+      }
+    },
+    [showLeftScroll, showRightScroll, scrollBy],
+  );
+
+  // 滚轮横向滚动
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (containerRef.current && Math.abs(e.deltaY) > 0) {
+      e.preventDefault();
       containerRef.current.scrollBy({
-        left: -scrollDistance,
-        behavior: 'smooth',
+        left: e.deltaY * 1.5,
+        behavior: 'auto',
       });
     }
-  }, [scrollDistance]);
+  }, []);
+
+  // 键盘左右键翻页
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' && showRightScroll) {
+        e.preventDefault();
+        scrollBy('right');
+      } else if (e.key === 'ArrowLeft' && showLeftScroll) {
+        e.preventDefault();
+        scrollBy('left');
+      }
+    },
+    [showLeftScroll, showRightScroll, scrollBy],
+  );
+
+  // 当 hover 或聚焦时绑定键盘/滚轮事件
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    if (isHovered) {
+      el.addEventListener('wheel', handleWheel, { passive: false });
+      el.addEventListener('keydown', handleKeyDown as EventListener);
+      el.tabIndex = 0;
+    }
+
+    return () => {
+      el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener('keydown', handleKeyDown as EventListener);
+    };
+  }, [isHovered, handleWheel, handleKeyDown]);
+
+  // 首次加载时闪现提示可滚动
+  const [firstShow, setFirstShow] = useState(true);
+  useEffect(() => {
+    if (showRightScroll && firstShow) {
+      const timer = setTimeout(() => setFirstShow(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showRightScroll, firstShow]);
+
+  const showLeft = showLeftScroll && isHovered;
+  const showRight = showRightScroll && (isHovered || firstShow);
 
   return (
     <div
       className='ui-rail relative px-1 py-1 sm:px-2 sm:py-2'
       onMouseEnter={() => {
         setIsHovered(true);
-        // 当鼠标进入时重新检查一次
         checkScroll();
       }}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
         ref={containerRef}
-        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
+        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4 cursor-pointer'
         onScroll={checkScroll}
+        onClick={handleContainerClick}
         style={{
           WebkitOverflowScrolling: 'touch',
+          scrollBehavior: 'smooth',
         }}
       >
         {enableAnimation ? (
@@ -215,51 +238,32 @@ function ScrollableRow({
           visibleChildren
         )}
       </div>
-      {showLeftScroll && (
-        <div
-          className={`hidden sm:flex absolute left-0 top-0 bottom-0 w-20 items-center justify-start z-70 transition-opacity duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{
-            background:
-              'linear-gradient(to right, rgba(0,0,0,0.5) 0%, transparent 100%)',
-            pointerEvents: isHovered ? 'auto' : 'none',
-          }}
-        >
-          <button
-            onClick={handleScrollLeftClick}
-            className='flex h-full w-full items-center justify-start pl-2 transition-all hover:scale-105'
-            aria-label='向左滚动'
-          >
-            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/70 active:scale-95'>
-              <ChevronLeft className='w-5 h-5 text-white drop-shadow-sm' />
-            </div>
-          </button>
-        </div>
-      )}
 
-      {showRightScroll && (
-        <div
-          className={`hidden sm:flex absolute right-0 top-0 bottom-0 w-20 items-center justify-end z-70 transition-opacity duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{
-            background:
-              'linear-gradient(to left, rgba(0,0,0,0.5) 0%, transparent 100%)',
-            pointerEvents: isHovered ? 'auto' : 'none',
-          }}
-        >
-          <button
-            onClick={handleScrollRightClick}
-            className='flex h-full w-full items-center justify-end pr-2 transition-all hover:scale-105'
-            aria-label='向右滚动'
-          >
-            <div className='flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 shadow-lg transition-all hover:scale-110 hover:bg-black/70 active:scale-95'>
-              <ChevronRight className='w-5 h-5 text-white drop-shadow-sm' />
-            </div>
-          </button>
-        </div>
-      )}
+      {/* 左边缘渐变指示器 */}
+      <div
+        className={`hidden sm:block absolute left-0 top-0 bottom-0 w-16 z-60 transition-opacity duration-300 ${
+          showLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{
+          background:
+            'linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 100%)',
+        }}
+      />
+
+      {/* 右边缘渐变指示器 */}
+      <div
+        className={`hidden sm:block absolute right-0 top-0 bottom-0 w-16 z-60 transition-opacity duration-300 ${
+          showRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{
+          background:
+            'linear-gradient(to left, rgba(0,0,0,0.4) 0%, transparent 100%)',
+          animation:
+            firstShow && showRightScroll
+              ? 'fadeInOut 2s ease-in-out'
+              : undefined,
+        }}
+      />
     </div>
   );
 }
