@@ -597,6 +597,8 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                               src={processImageUrl(source.poster)}
                               alt={source.title}
                               className='w-full h-full object-cover'
+                              loading='lazy'
+                              decoding='async'
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement;
                                 if (!target.dataset.fallbackApplied) {

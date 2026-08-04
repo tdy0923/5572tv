@@ -3,6 +3,7 @@
 import { Calendar, ChevronRight, Film, Play, Sparkles, Tv } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { DoubanItem } from '@/lib/types';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
@@ -54,6 +55,18 @@ export default function HomeContentView({
   setUpcomingFilter,
   today,
 }: HomeContentViewProps) {
+  // 移动端不自动播放 hero 预告片（省流量），仅桌面启用
+  const [heroVideoEnabled, setHeroVideoEnabled] = useState(false);
+  useEffect(() => {
+    const isMobile =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(max-width: 767px)').matches;
+    const disabledByConfig = (window as any).RUNTIME_CONFIG
+      ?.DISABLE_HERO_TRAILER;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHeroVideoEnabled(!isMobile && !disabledByConfig);
+  }, []);
+
   return (
     <>
       {(hotMovies.length > 0 ||
@@ -115,7 +128,7 @@ export default function HomeContentView({
             autoPlayInterval={8000}
             showControls={true}
             showIndicators={true}
-            enableVideo={!(window as any).RUNTIME_CONFIG?.DISABLE_HERO_TRAILER}
+            enableVideo={heroVideoEnabled}
           />
         </section>
       )}

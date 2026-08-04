@@ -20,6 +20,9 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
               src={comment.avatar}
               alt={comment.username}
               className='h-10 w-10 rounded-full object-cover ring-1 ring-black/6 dark:ring-white/10'
+              loading='lazy'
+              decoding='async'
+              referrerPolicy='no-referrer'
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}

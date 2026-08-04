@@ -1178,3 +1178,15 @@ html.dark textarea:-webkit-autofill {
   box-shadow: 0 0 0 1000px #1c1c1c inset;
   transition: background-color 9999999s ease-in-out 0s;
 }
+
+/* --- 19. Reduced motion: 尊重系统动画减弱偏好 --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

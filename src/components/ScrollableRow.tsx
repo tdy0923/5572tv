@@ -40,9 +40,12 @@ function ScrollableRow({
 
   const scrollBy = useCallback(
     (direction: 'left' | 'right') => {
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       containerRef.current?.scrollBy({
         left: direction === 'right' ? scrollDistance : -scrollDistance,
-        behavior: 'smooth',
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
       });
     },
     [scrollDistance],
@@ -52,7 +55,7 @@ function ScrollableRow({
     <div className='ui-rail relative group px-1 py-1 sm:px-2 sm:py-2'>
       <div
         ref={containerRef}
-        className='flex space-x-4 overflow-x-auto scrollbar-hide px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
+        className='flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory [&>*]:snap-start px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {children}
@@ -61,7 +64,7 @@ function ScrollableRow({
       {/* 左箭头按钮 */}
       <button
         onClick={() => scrollBy('left')}
-        className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
+        className={`absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
           showLeft
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -87,7 +90,7 @@ function ScrollableRow({
       {/* 右箭头按钮 */}
       <button
         onClick={() => scrollBy('right')}
-        className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
+        className={`absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
           showRight
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
