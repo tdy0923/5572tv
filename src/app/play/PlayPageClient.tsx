@@ -4730,7 +4730,7 @@ function PlayPageClient() {
               </div>
 
               <div
-                className={`grid gap-4 lg:h-[500px] xl:h-[650px] 2xl:h-[750px] transition-all duration-300 ease-in-out ${
+                className={`grid gap-4 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
                     : 'grid-cols-1 md:grid-cols-4'
@@ -4742,7 +4742,7 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[40vh] sm:h-[45vh] md:h-[50vh] lg:h-full min-h-[200px] sm:min-h-[240px]'>
+                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px]'>
                     <div
                       ref={artRef}
                       className='bg-black w-full h-full rounded-xl shadow-lg'
