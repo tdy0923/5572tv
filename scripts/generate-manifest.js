@@ -15,6 +15,7 @@ const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
 
 // manifest.json 模板
 const manifestTemplate = {
+  id: '/',
   name: siteName,
   short_name: siteName,
   description: '5572影视 - 影视聚合与在线播放',
@@ -22,6 +23,7 @@ const manifestTemplate = {
   scope: '/',
   display: 'standalone',
   background_color: '#000000',
+  theme_color: '#0c111c',
   'apple-mobile-web-app-capable': 'yes',
   'apple-mobile-web-app-status-bar-style': 'black',
   icons: [
@@ -29,21 +31,25 @@ const manifestTemplate = {
       src: '/icons/icon-192x192.png',
       sizes: '192x192',
       type: 'image/png',
+      purpose: 'any maskable',
     },
     {
       src: '/icons/icon-256x256.png',
       sizes: '256x256',
       type: 'image/png',
+      purpose: 'any maskable',
     },
     {
       src: '/icons/icon-384x384.png',
       sizes: '384x384',
       type: 'image/png',
+      purpose: 'any maskable',
     },
     {
       src: '/icons/icon-512x512.png',
       sizes: '512x512',
       type: 'image/png',
+      purpose: 'any maskable',
     },
   ],
 };

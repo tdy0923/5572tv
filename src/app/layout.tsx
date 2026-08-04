@@ -8,6 +8,7 @@ import './globals.css';
 
 import { DownloadPanel } from '../components/download/DownloadPanel';
 import { GlobalErrorIndicator } from '../components/GlobalErrorIndicator';
+import PwaInstallPrompt from '../components/PwaInstallPrompt';
 import QueryProvider from '../components/QueryProvider';
 import RouteLoadingBar from '../components/RouteLoadingBar';
 import { SessionTracker } from '../components/SessionTracker';
@@ -249,6 +250,7 @@ export default async function RootLayout({
                   <Suspense fallback={null}>
                     <DownloadPanel />
                     <ChatFloatingWindow />
+                    <PwaInstallPrompt />
                   </Suspense>
                 </WatchRoomProvider>
               </DownloadProvider>
