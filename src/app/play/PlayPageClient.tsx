@@ -4742,95 +4742,103 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px]'>
+                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
                     <div
-                      ref={artRef}
-                      className='bg-black w-full h-full rounded-xl shadow-lg'
-                    ></div>
-
-                    {/* WebSR 分屏对比分割线 */}
-                    {websrEnabled && websrCompareEnabled && (
+                      className={`relative ${
+                        currentSourceRef.current === 'shortdrama'
+                          ? 'h-full aspect-[9/16] max-w-full'
+                          : 'w-full h-full'
+                      }`}
+                    >
                       <div
-                        style={{
-                          position: 'absolute',
-                          left: `${websrComparePosition}%`,
-                          top: 0,
-                          bottom: 0,
-                          width: '4px',
-                          backgroundColor: 'white',
-                          cursor: 'col-resize',
-                          zIndex: 10,
-                          transform: 'translateX(-50%)',
-                        }}
-                        onPointerDown={(e) => {
-                          e.currentTarget.setPointerCapture(e.pointerId);
-                        }}
-                        onPointerMove={(e) => {
-                          if (!e.currentTarget.hasPointerCapture(e.pointerId))
-                            return;
-                          const rect =
-                            e.currentTarget.parentElement?.getBoundingClientRect();
-                          if (!rect) return;
-                          const x = e.clientX - rect.left;
-                          const pct = Math.max(
-                            0,
-                            Math.min(100, (x / rect.width) * 100),
-                          );
-                          setWebsrComparePosition(pct);
-                        }}
-                      >
+                        ref={artRef}
+                        className='bg-black w-full h-full rounded-xl shadow-lg'
+                      ></div>
+
+                      {/* WebSR 分屏对比分割线 */}
+                      {websrEnabled && websrCompareEnabled && (
                         <div
                           style={{
                             position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            backgroundColor: 'rgba(255,255,255,0.9)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '16px',
-                            color: '#333',
+                            left: `${websrComparePosition}%`,
+                            top: 0,
+                            bottom: 0,
+                            width: '4px',
+                            backgroundColor: 'white',
+                            cursor: 'col-resize',
+                            zIndex: 10,
+                            transform: 'translateX(-50%)',
+                          }}
+                          onPointerDown={(e) => {
+                            e.currentTarget.setPointerCapture(e.pointerId);
+                          }}
+                          onPointerMove={(e) => {
+                            if (!e.currentTarget.hasPointerCapture(e.pointerId))
+                              return;
+                            const rect =
+                              e.currentTarget.parentElement?.getBoundingClientRect();
+                            if (!rect) return;
+                            const x = e.clientX - rect.left;
+                            const pct = Math.max(
+                              0,
+                              Math.min(100, (x / rect.width) * 100),
+                            );
+                            setWebsrComparePosition(pct);
                           }}
                         >
-                          ↔
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.9)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '16px',
+                              color: '#333',
+                            }}
+                          >
+                            ↔
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* 跳过设置按钮 - 播放器内右上角 */}
-                    {currentSource && currentId && (
-                      <div className='absolute top-4 right-4 z-10'>
-                        <SkipSettingsButton
-                          onClick={() => setIsSkipSettingOpen(true)}
+                      {/* 跳过设置按钮 - 播放器内右上角 */}
+                      {currentSource && currentId && (
+                        <div className='absolute top-4 right-4 z-10'>
+                          <SkipSettingsButton
+                            onClick={() => setIsSkipSettingOpen(true)}
+                          />
+                        </div>
+                      )}
+
+                      {/* SkipController 组件 */}
+                      {currentSource && currentId && detail?.title && (
+                        <SkipController
+                          source={currentSource}
+                          id={currentId}
+                          title={detail.title}
+                          episodeIndex={currentEpisodeIndex}
+                          artPlayerRef={artPlayerRef}
+                          currentTime={currentPlayTime}
+                          duration={videoDuration}
+                          isSettingMode={isSkipSettingOpen}
+                          onSettingModeChange={setIsSkipSettingOpen}
+                          onNextEpisode={handleNextEpisode}
                         />
-                      </div>
-                    )}
+                      )}
 
-                    {/* SkipController 组件 */}
-                    {currentSource && currentId && detail?.title && (
-                      <SkipController
-                        source={currentSource}
-                        id={currentId}
-                        title={detail.title}
-                        episodeIndex={currentEpisodeIndex}
-                        artPlayerRef={artPlayerRef}
-                        currentTime={currentPlayTime}
-                        duration={videoDuration}
-                        isSettingMode={isSkipSettingOpen}
-                        onSettingModeChange={setIsSkipSettingOpen}
-                        onNextEpisode={handleNextEpisode}
+                      {/* 换源加载蒙层 */}
+                      <VideoLoadingOverlay
+                        isVisible={isVideoLoading}
+                        loadingStage={videoLoadingStage}
                       />
-                    )}
-
-                    {/* 换源加载蒙层 */}
-                    <VideoLoadingOverlay
-                      isVisible={isVideoLoading}
-                      loadingStage={videoLoadingStage}
-                    />
+                    </div>
                   </div>
                 </div>
 
