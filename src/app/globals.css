@@ -207,6 +207,34 @@
     border-color: var(--color-stroke);
   }
 
+  /* ===== 移动端 PWA 影视化沉浸壳（仅 <768px 生效，桌面端不变） ===== */
+  /* 去掉白色圆角卡片的"网页感"，内容全出血贴近影视 App */
+  @media (max-width: 767px) {
+    .ui-page-container {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0.75rem 0.75rem 1.5rem;
+      overflow: visible;
+    }
+    .ui-page-container::after {
+      background: none;
+    }
+    .ui-nav-surface {
+      box-shadow: none;
+    }
+    /* 深色移动端 body 背景渐变，让底部与内容自然衔接 */
+    html.dark body {
+      background: linear-gradient(
+        180deg,
+        #0c0c0e 0%,
+        #101013 40%,
+        #0d0d10 100%
+      );
+      background-attachment: fixed;
+    }
+  }
+
   .ui-page-container::after {
     content: '';
     position: absolute;

@@ -231,7 +231,7 @@ function HeroBanner({
 
   return (
     <div
-      className='relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] overflow-hidden group rounded-xl sm:rounded-xl'
+      className='relative w-full h-[52vh] sm:h-[55vh] md:h-[60vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...swipeHandlers}

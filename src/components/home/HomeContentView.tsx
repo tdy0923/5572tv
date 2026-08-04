@@ -60,7 +60,7 @@ export default function HomeContentView({
         hotTvShows.length > 0 ||
         hotVarietyShows.length > 0 ||
         hotShortDramas.length > 0) && (
-        <section className='mb-8 md:mb-10'>
+        <section className='mb-6 -mx-3 sm:mx-0 md:mb-10'>
           <HeroBanner
             items={[
               ...hotMovies.slice(0, 2).map((movie) => ({
@@ -122,7 +122,7 @@ export default function HomeContentView({
 
       <a
         href='/download'
-        className='mb-6 flex items-center justify-between rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white shadow-lg transition-transform hover:scale-[1.02] sm:mb-8 sm:rounded-2xl sm:p-5'
+        className='mb-6 -mx-3 flex items-center justify-between rounded-none bg-gradient-to-r from-primary-500 to-primary-600 p-4 text-white transition-transform hover:scale-[1.02] sm:mx-0 sm:mb-8 sm:rounded-2xl sm:p-5'
       >
         <div className='flex items-center gap-3'>
           <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm'>
