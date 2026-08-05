@@ -4805,7 +4805,7 @@ function PlayPageClient() {
               </div>
 
               <div
-                className={`grid gap-4 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] transition-all duration-300 ease-in-out ${
+                className={`grid gap-4 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] lg:grid-rows-[minmax(0,1fr)] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
                     : 'grid-cols-1 md:grid-cols-4'
