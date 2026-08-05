@@ -8,7 +8,7 @@ import { Film, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
@@ -359,6 +359,76 @@ function PlayPageClient() {
     const parsed = indexParam ? parseInt(indexParam, 10) : 0;
     return Number.isNaN(parsed) ? 0 : parsed;
   });
+
+  // 已观看集数（0 索引），localStorage 持久化，键: watched:episodes:<source>:<id>
+  const watchedKey = currentSource
+    ? `watched:episodes:${generateStorageKey(currentSource, currentId)}`
+    : '';
+  const [watchedEpisodes, setWatchedEpisodes] = useState<Set<number>>(() => {
+    if (!watchedKey) return new Set<number>();
+    try {
+      const raw = localStorage.getItem(watchedKey);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set<number>(arr);
+      }
+    } catch {
+      /* ignore */
+    }
+    return new Set<number>();
+  });
+
+  // 监听源/id 变化时重新加载已看集数
+  useEffect(() => {
+    if (!watchedKey) return;
+    try {
+      const raw = localStorage.getItem(watchedKey);
+      const arr = raw ? JSON.parse(raw) : [];
+      setWatchedEpisodes(new Set<number>(Array.isArray(arr) ? arr : []));
+    } catch {
+      setWatchedEpisodes(new Set<number>());
+    }
+  }, [watchedKey]);
+
+  const markEpisodeWatched = useCallback(
+    (episodeIndex: number) => {
+      if (!watchedKey || episodeIndex < 0) return;
+      setWatchedEpisodes((prev) => {
+        if (prev.has(episodeIndex)) return prev;
+        const next = new Set(prev);
+        next.add(episodeIndex);
+        try {
+          localStorage.setItem(watchedKey, JSON.stringify(Array.from(next)));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    },
+    [watchedKey],
+  );
+
+  const toggleEpisodeWatched = useCallback(
+    (episodeNumber: number) => {
+      const episodeIndex = episodeNumber - 1;
+      if (!watchedKey || episodeIndex < 0) return;
+      setWatchedEpisodes((prev) => {
+        const next = new Set(prev);
+        if (next.has(episodeIndex)) {
+          next.delete(episodeIndex);
+        } else {
+          next.add(episodeIndex);
+        }
+        try {
+          localStorage.setItem(watchedKey, JSON.stringify(Array.from(next)));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    },
+    [watchedKey],
+  );
 
   // 监听 URL index 参数变化（观影室切集同步）
 
@@ -4011,6 +4081,11 @@ function PlayPageClient() {
           requestWakeLock();
         });
 
+        // 播放开始即标记当前集为已看
+        artPlayerRef.current.on('video:play', () => {
+          markEpisodeWatched(currentEpisodeIndexRef.current ?? 0);
+        });
+
         artPlayerRef.current.on('pause', () => {
           releaseWakeLock();
           // 🔥 关键修复：暂停时也检查是否在片尾，避免保存错误的进度
@@ -4753,6 +4828,12 @@ function PlayPageClient() {
                       <div
                         ref={artRef}
                         className='bg-black w-full h-full rounded-xl shadow-lg'
+                        onDoubleClick={() => {
+                          const player = artPlayerRef.current;
+                          if (player) {
+                            player.fullscreen = !player.fullscreen;
+                          }
+                        }}
                       ></div>
 
                       {/* WebSR 分屏对比分割线 */}
@@ -4894,6 +4975,8 @@ function PlayPageClient() {
                     sourceSearchLoading={sourceSearchLoading}
                     sourceSearchError={sourceSearchError}
                     precomputedVideoInfo={precomputedVideoInfo}
+                    watchedEpisodes={watchedEpisodes}
+                    onToggleWatched={toggleEpisodeWatched}
                   />
 
                   {/* 上一集/下一集按钮 - 移动端友好 */}

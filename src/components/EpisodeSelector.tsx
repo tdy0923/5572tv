@@ -45,6 +45,10 @@ interface EpisodeSelectorProps {
   sourceSearchError?: string | null;
   /** 预计算的测速结果，避免重复测速 */
   precomputedVideoInfo?: Map<string, VideoInfo>;
+  /** 已观看的集数（0 索引），用于显示已看标记 */
+  watchedEpisodes?: Set<number>;
+  /** 点击已看集数后回调（用于清除已看标记） */
+  onToggleWatched?: (episodeNumber: number) => void;
 }
 
 /**
@@ -64,6 +68,8 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
   sourceSearchLoading = false,
   sourceSearchError = null,
   precomputedVideoInfo,
+  watchedEpisodes,
+  onToggleWatched,
 }) => {
   const router = useRouter();
   const pageCount = Math.ceil(totalEpisodes / episodesPerPage);
@@ -464,10 +470,22 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
               return episodes;
             })().map((episodeNumber) => {
               const isActive = episodeNumber === value;
+              const isWatched = watchedEpisodes?.has(episodeNumber - 1);
               return (
                 <button
                   key={episodeNumber}
                   onClick={() => handleEpisodeClick(episodeNumber - 1)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    onToggleWatched?.(episodeNumber);
+                  }}
+                  title={
+                    onToggleWatched
+                      ? isWatched
+                        ? `${episodeNumber} 集（已看，右键取消）`
+                        : `${episodeNumber} 集（右键标记已看）`
+                      : undefined
+                  }
                   className={`group min-h-[44px] min-w-[44px] px-2 sm:px-3 py-2 flex items-center justify-center text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 whitespace-nowrap font-mono relative overflow-hidden active:scale-95
                     ${
                       isActive
@@ -497,6 +515,12 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                       return title;
                     })()}
                   </span>
+                  {/* 已看标记 - 右上角小对勾 */}
+                  {isWatched && !isActive && (
+                    <span className='absolute top-0.5 right-1 z-10 text-[10px] font-bold text-green-600 dark:text-green-400'>
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
