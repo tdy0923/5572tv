@@ -2135,11 +2135,11 @@ function PlayPageClient() {
           const allMovies = (data.results || []).flatMap(
             (g: any) => g.items || [],
           );
-          // 去除当前影片，随机取6个
+          // 去除当前影片，随机取16个
           const filtered = allMovies
             .filter((m: any) => (m.vod_name || m.title) !== videoTitle)
             .sort(() => Math.random() - 0.5)
-            .slice(0, 6);
+            .slice(0, 16);
           setRelatedMovies(
             filtered.map((m: any) => ({
               id: String(m.vod_id || m.id),
@@ -5058,7 +5058,7 @@ function PlayPageClient() {
                   </div>
                   {relatedLoading && (
                     <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-3'>
-                      {Array.from({ length: 7 }).map((_, i) => (
+                      {Array.from({ length: 16 }).map((_, i) => (
                         <div
                           key={i}
                           className='space-y-2'
