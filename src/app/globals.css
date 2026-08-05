@@ -194,7 +194,7 @@
   }
 
   .ui-page-frame {
-    @apply relative z-[1] mx-auto w-full max-w-[1600px];
+    @apply relative z-[1] mx-auto w-full max-w-[2560px];
   }
 
   .ui-page-container {
