@@ -71,7 +71,7 @@ const PageLayout = ({
                 >
                   <Search className='h-5 w-5' />
                 </Link>
-                {['/play', '/live'].includes(activePath) && <BackButton />}
+                {activePath !== '/' && <BackButton />}
               </div>
 
               {/* 中间：Logo（播放/直播页留空） */}
@@ -124,7 +124,7 @@ const PageLayout = ({
     <div className='w-full min-h-screen'>
       {/* 移动端头部 */}
       <MobileHeader
-        showBackButton={['/play', '/live'].includes(activePath)}
+        showBackButton={activePath !== '/'}
         showAIButton={aiEnabled ?? false}
         onAIButtonClick={() => setShowAIRecommendModal(true)}
         onAnnouncementClick={onAnnouncementClick}
@@ -141,7 +141,7 @@ const PageLayout = ({
         {/* 主内容区域 */}
         <div className='relative min-w-0 flex-1 transition-all duration-300'>
           {/* 桌面端左上角返回按钮 */}
-          {['/play', '/live'].includes(activePath) && (
+          {activePath !== '/' && (
             <div className='absolute top-3 left-1 z-20 hidden md:flex'>
               <BackButton />
             </div>
