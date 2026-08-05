@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+
 import { resolveCardPosterUrl } from '@/lib/utils';
+
+import ImageViewer from '@/components/ImageViewer';
 
 interface VideoCoverDisplayProps {
   videoCover: string;
@@ -28,6 +32,7 @@ export default function VideoCoverDisplay({
     videoCover,
   );
   const resolvedCover = coverSrc;
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   return (
     <div className='hidden md:block md:col-span-1 md:order-first'>
@@ -35,22 +40,29 @@ export default function VideoCoverDisplay({
         <div className='group relative flex aspect-[2/3] items-center justify-center overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 to-gray-200 shadow-md dark:border-gray-700 dark:from-gray-800 dark:to-gray-700'>
           {coverSrc ? (
             <>
-              <img
-                src={resolvedCover}
-                alt={videoTitle}
-                className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]'
-                referrerPolicy='no-referrer'
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  if (!img.dataset.fallbackApplied) {
-                    img.dataset.fallbackApplied = 'true';
-                    img.src = '/placeholder-cover.jpg';
-                  } else {
-                    img.src =
-                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480"%3E%3Crect width="320" height="480" rx="28" fill="%23111827"/%3E%3Crect x="48" y="72" width="224" height="280" rx="18" fill="none" stroke="%236b7280" stroke-width="8" stroke-dasharray="14 12"/%3E%3Ccircle cx="160" cy="176" r="38" fill="%236b7280"/%3E%3Cpath d="M108 286c14-34 34-52 52-52s38 18 52 52" fill="%236b7280"/%3E%3Ctext x="160" y="410" font-family="Arial" font-size="22" fill="%239ca3af" text-anchor="middle"%3E封面暂不可用%3C/text%3E%3C/svg%3E';
-                  }
-                }}
-              />
+              <button
+                type='button'
+                onClick={() => setViewerOpen(true)}
+                className='block h-full w-full cursor-zoom-in'
+                aria-label={`查看 ${videoTitle} 海报`}
+              >
+                <img
+                  src={resolvedCover}
+                  alt={videoTitle}
+                  className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]'
+                  referrerPolicy='no-referrer'
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!img.dataset.fallbackApplied) {
+                      img.dataset.fallbackApplied = 'true';
+                      img.src = '/placeholder-cover.jpg';
+                    } else {
+                      img.src =
+                        'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="320" height="480" viewBox="0 0 320 480"%3E%3Crect width="320" height="480" rx="28" fill="%23111827"/%3E%3Crect x="48" y="72" width="224" height="280" rx="18" fill="none" stroke="%236b7280" stroke-width="8" stroke-dasharray="14 12"/%3E%3Ccircle cx="160" cy="176" r="38" fill="%236b7280"/%3E%3Cpath d="M108 286c14-34 34-52 52-52s38 18 52 52" fill="%236b7280"/%3E%3Ctext x="160" y="410" font-family="Arial" font-size="22" fill="%239ca3af" text-anchor="middle"%3E封面暂不可用%3C/text%3E%3C/svg%3E';
+                    }
+                  }}
+                />
+              </button>
 
               <div className='absolute inset-0 bg-linear-to-t from-black/40 via-black/0 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100'></div>
 
@@ -90,6 +102,14 @@ export default function VideoCoverDisplay({
           )}
         </div>
       </div>
+      {viewerOpen && resolvedCover && (
+        <ImageViewer
+          isOpen={viewerOpen}
+          onClose={() => setViewerOpen(false)}
+          imageUrl={resolvedCover}
+          alt={`${videoTitle} 海报`}
+        />
+      )}
     </div>
   );
 }
