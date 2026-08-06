@@ -71,6 +71,7 @@ export interface ShortDramaItem {
   vote_average?: number; // 用户评分 (0-10)
   tmdb_id?: number; // TMDB ID
   source?: string; // 数据来源
+  source_api?: string; // 数据来源API地址（用于播放时优先请求该源）
   vod_area?: string; // 地区
   vod_year?: string; // 年份
   vod_time?: number; // 更新时间戳

@@ -10,7 +10,7 @@ import {
   DEFAULT_SHORT_DRAMA_API,
   mapApiItemToShortDramaItem,
 } from '@/lib/shortdrama-constants';
-import { getEnabledSources } from '@/lib/shortdrama-sources';
+import { getAllShortDramaSources } from '@/lib/shortdrama-sources';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 // 强制动态路由，禁用所有缓存
@@ -79,7 +79,9 @@ async function searchFromSource(
   );
   const limitedItems = shortDramaItems.slice(0, size);
 
-  const list = limitedItems.map((item) => mapApiItemToShortDramaItem(item));
+  const list = limitedItems.map((item) =>
+    mapApiItemToShortDramaItem(item, api),
+  );
 
   return {
     list,
@@ -90,8 +92,8 @@ async function searchFromSource(
 // 服务端专用函数，从所有短剧源聚合搜索结果
 async function searchShortDramasInternal(query: string, page = 1, size = 20) {
   try {
-    // 从多源配置获取所有启用的短剧源
-    const enabledSources = getEnabledSources();
+    // 从多源配置获取所有启用的短剧源（含主源自动发现）
+    const enabledSources = await getAllShortDramaSources();
 
     // 构建源列表：先加默认源，再加其他启用的源
     const sourcesToSearch: Array<{ api: string; name: string }> = [];

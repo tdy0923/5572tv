@@ -341,6 +341,14 @@ function PlayPageClient() {
   // 短剧ID（用于获取详情显示，不影响源搜索）
   const [shortdramaId] = useState(searchParams.get('shortdrama_id') || '');
 
+  // 短剧来源API（来自短剧卡片的 sd_source 参数，播放时优先请求该源）
+  const [shortdramaSource] = useState(searchParams.get('sd_source') || '');
+
+  // 短剧请求时携带的来源参数（优先指定源，后端自动回退其他源）
+  const shortdramaSourceParam = shortdramaSource
+    ? `&source=${encodeURIComponent(shortdramaSource)}`
+    : '';
+
   // 搜索所需信息
   const [searchTitle, setSearchTitle] = useState(
     searchParams.get('stitle') || '',
@@ -665,7 +673,9 @@ function PlayPageClient() {
     const titleParam = dramaTitle
       ? `&name=${encodeURIComponent(dramaTitle)}`
       : '';
-    fetch(`/api/shortdrama/detail?id=${shortdramaId}&episode=1${titleParam}`)
+    fetch(
+      `/api/shortdrama/detail?id=${shortdramaId}&episode=1${titleParam}${shortdramaSourceParam}`,
+    )
       .then((response) => {
         if (response.ok) return response.json();
         throw new Error(`HTTP ${response.status}`);
@@ -1120,7 +1130,7 @@ function PlayPageClient() {
           ? `&name=${encodeURIComponent(detailData.drama_name)}`
           : '';
         const response = await fetch(
-          `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}`,
+          `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}${shortdramaSourceParam}`,
         );
 
         if (response.ok) {
@@ -1443,7 +1453,7 @@ function PlayPageClient() {
             ? `&name=${encodeURIComponent(dramaTitle)}`
             : '';
           detailResponse = await fetch(
-            `/api/shortdrama/detail?id=${id}&episode=1${titleParam}`,
+            `/api/shortdrama/detail?id=${id}&episode=1${titleParam}${shortdramaSourceParam}`,
             { signal },
           );
         } else {
@@ -5743,7 +5753,7 @@ function PlayPageClient() {
                     ? `&name=${encodeURIComponent(detail.drama_name)}`
                     : '';
                   const response = await fetch(
-                    `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}`,
+                    `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}${shortdramaSourceParam}`,
                   );
 
                   if (response.ok) {

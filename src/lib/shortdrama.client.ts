@@ -135,8 +135,14 @@ export async function getShortDramaList(
   category: number,
   page = 1,
   size = 20,
+  categoryName?: string,
 ): Promise<{ list: ShortDramaItem[]; hasMore: boolean }> {
-  const cacheKey = getCacheKey('lists', { category, page, size });
+  const cacheKey = getCacheKey('lists', {
+    category,
+    categoryName,
+    page,
+    size,
+  });
 
   try {
     // 检查缓存
@@ -146,7 +152,15 @@ export async function getShortDramaList(
     }
 
     // 使用内部 API 代理
-    const apiUrl = `${getApiBase()}/list?categoryId=${category}&page=${page}&size=${size}`;
+    const params = new URLSearchParams();
+    if (categoryName) {
+      params.append('categoryName', categoryName);
+    } else {
+      params.append('categoryId', category.toString());
+    }
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    const apiUrl = `${getApiBase()}/list?${params.toString()}`;
 
     const response = await fetch(apiUrl);
 

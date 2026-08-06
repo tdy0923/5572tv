@@ -280,26 +280,28 @@ function ShortDramaCard({
     setShowMobileActions(true);
   }, []);
 
+  // 构建播放页 URL（携带来源API，播放时优先该源）
+  const getPlayUrl = useCallback(() => {
+    const sourceParam = drama.source_api
+      ? `&sd_source=${encodeURIComponent(drama.source_api)}`
+      : '';
+    return `/play?title=${encodeURIComponent(drama.name)}&shortdrama_id=${drama.id}${sourceParam}`;
+  }, [drama.name, drama.id, drama.source_api]);
+
   // 处理点击事件（跳转到播放页面）
   const handleClick = useCallback(() => {
-    router.push(
-      `/play?title=${encodeURIComponent(drama.name)}&shortdrama_id=${drama.id}`,
-    );
-  }, [router, drama.name, drama.id]);
+    router.push(getPlayUrl());
+  }, [router, getPlayUrl]);
 
   // 处理播放（在操作面板中使用）
   const handlePlay = useCallback(() => {
-    window.location.href = `/play?title=${encodeURIComponent(drama.name)}&shortdrama_id=${drama.id}`;
-  }, [drama.name, drama.id]);
+    window.location.href = getPlayUrl();
+  }, [getPlayUrl]);
 
   // 处理新标签页播放
   const handlePlayInNewTab = useCallback(() => {
-    window.open(
-      `/play?title=${encodeURIComponent(drama.name)}&shortdrama_id=${drama.id}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
-  }, [drama.name, drama.id]);
+    window.open(getPlayUrl(), '_blank', 'noopener,noreferrer');
+  }, [getPlayUrl]);
 
   // 配置长按功能
   const longPressProps = useLongPress({

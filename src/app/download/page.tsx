@@ -15,10 +15,14 @@ import {
 import { GlassPanel } from '@/components/ui-surface';
 
 import AnimatedGradient from './components/AnimatedGradient';
+import ChangelogSection from './components/ChangelogSection';
 import FeatureShowcase from './components/FeatureShowcase';
 import InstallGuide from './components/InstallGuide';
 import PhonePreview from './components/PhonePreview';
 import PlatformTabs from './components/PlatformTabs';
+import RecommendationsSection from './components/RecommendationsSection';
+import ScreenshotsSection from './components/ScreenshotsSection';
+import ShareSection from './components/ShareSection';
 import { detectPlatform } from './utils';
 
 const DEFAULT_APK = { version: 'v1.12.0', sizeMb: '18' };
@@ -306,6 +310,18 @@ export default function DownloadPage() {
 
       {/* ── Features ── */}
       <FeatureShowcase />
+
+      {/* ── Recommendations ── */}
+      <RecommendationsSection />
+
+      {/* ── Screenshots ── */}
+      <ScreenshotsSection />
+
+      {/* ── Changelog ── */}
+      <ChangelogSection />
+
+      {/* ── Share ── */}
+      <ShareSection />
 
       {/* ── Install Steps + Core Features ── */}
       <section

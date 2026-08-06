@@ -20,7 +20,7 @@ import VirtualGrid from '@/components/VirtualGrid';
 
 export default function ShortDramaPage() {
   const [categories, setCategories] = useState<ShortDramaCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null); // 等分类加载后自动选中第一个
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // 等分类加载后自动选中第一个（按分类名选择，避免不同源同名分类ID冲突）
   const [dramas, setDramas] = useState<ShortDramaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -65,7 +65,7 @@ export default function ShortDramaPage() {
       setCategories(cats);
       // 自动选中第一个分类
       if (cats.length > 0 && !selectedCategory) {
-        setSelectedCategory(cats[0].type_id);
+        setSelectedCategory(cats[0].type_name);
       }
     };
     fetchCategories();
@@ -116,7 +116,7 @@ export default function ShortDramaPage() {
         if (isSearchMode && searchQuery) {
           result = await searchShortDramas(searchQuery, pageNum, 20);
         } else if (selectedCategory) {
-          result = await getShortDramaList(selectedCategory, pageNum, 20);
+          result = await getShortDramaList(0, pageNum, 20, selectedCategory);
         } else {
           setLoading(false);
           return;
@@ -319,11 +319,11 @@ export default function ShortDramaPage() {
                 <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
                   {categories.map((category, index) => (
                     <PillButton
-                      key={category.type_id}
+                      key={category.type_name}
                       onClick={() => {
-                        setSelectedCategory(category.type_id);
+                        setSelectedCategory(category.type_name);
                       }}
-                      active={selectedCategory === category.type_id}
+                      active={selectedCategory === category.type_name}
                       className='px-4 py-2 duration-300'
                       style={{
                         animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
