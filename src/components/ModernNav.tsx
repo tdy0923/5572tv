@@ -115,7 +115,7 @@ export default function ModernNav({
     <>
       {/* Desktop Top Navigation */}
       <nav className='ui-nav-surface hidden md:block fixed top-0 left-0 right-0 z-30'>
-        <div className='max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
+        <div className='mx-auto w-full max-w-[2560px] px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
           <div className='flex items-center justify-between h-16 gap-4'>
             {/* Logo */}
             <FastLink href='/' className='shrink-0'>
