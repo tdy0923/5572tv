@@ -2,141 +2,66 @@
 
 /**
  * TVBox Compatibility Export
- * Based on KatelyaTVLocal/MoonTVPlus implementation
  *
- * Exports site configuration in TVBox standard format
+ * 支持 token / cookie / 开放三种认证方式，支持 format/mode/adult/filter 参数。
+ * 真实 TVBox 可通过 `?token=` 或（未启用安全时）直接访问获取配置。
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
+import { buildTvboxConfig, resolveTvboxAccess } from '@/lib/tvboxConfig';
 
 export const runtime = 'nodejs';
 
-interface TVBoxSite {
-  key: string;
-  name: string;
-  type: number;
-  api: string;
-  searchable: number;
-  quickSearch: number;
-  filterable: number;
-  ext?: string;
-  timeout?: number;
-  categories?: string[];
-}
-
-interface TVBoxConfig {
-  spider: string;
-  wallpaper: string;
-  sites: TVBoxSite[];
-  parses: Array<{
-    name: string;
-    type: number;
-    url: string;
-  }>;
-  flags: string[];
-  lives: Array<{
-    name: string;
-    type: number;
-    url: string;
-  }>;
-  ads: string[];
-}
-
-/**
- * Convert source to TVBox format
- */
-function sourceToTVBoxSite(source: {
-  key: string;
-  name: string;
-  api: string;
-  detail?: string;
-}): TVBoxSite {
-  return {
-    key: source.key,
-    name: source.name,
-    type: 0, // VOD source
-    api: source.api,
-    searchable: 1,
-    quickSearch: 1,
-    filterable: 1,
-    ext: source.detail,
-    timeout: 30,
-    categories: ['电影', '电视剧', '综艺', '动漫', '纪录片', '短剧'],
-  };
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const authInfo = await getAuthInfoFromCookie(request);
-    if (!authInfo || !authInfo.username) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = request.nextUrl;
     const format = searchParams.get('format') || 'json';
 
     const config = await getConfig();
     const baseUrl = request.nextUrl.origin;
 
-    // Build TVBox config
-    const tvboxConfig: TVBoxConfig = {
-      spider: '',
-      wallpaper: `${baseUrl}/screenshot1.png`,
-      sites: config.SourceConfig.filter((s) => !s.disabled).map((s) =>
-        sourceToTVBoxSite(s),
-      ),
-      parses: [
-        { name: 'Json并发', type: 2, url: 'Parallel' },
-        { name: 'Json轮询', type: 2, url: 'Sequence' },
-        { name: '内置解析', type: 1, url: `${baseUrl}/api/parse?url=` },
-      ],
-      flags: [
-        'youku',
-        'qq',
-        'iqiyi',
-        'qiyi',
-        'letv',
-        'sohu',
-        'tudou',
-        'pptv',
-        'mgtv',
-        'wasu',
-        'bilibili',
-        '优酷',
-        '爱奇艺',
-        '腾讯',
-        '搜狐',
-        '乐视',
-        '芒果',
-        '哔哩哔哩',
-      ],
-      lives: [
-        {
-          name: '直播',
-          type: 0,
-          url: `${baseUrl}/api/live/channels`,
-        },
-      ],
-      ads: [
-        'mimg.0c1q0l.cn',
-        'www.googletagmanager.com',
-        'static.criteo.net',
-        'ad.doubleclick.net',
-        'pagead2.googlesyndication.com',
-      ],
-    };
+    const access = await resolveTvboxAccess(request, config);
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.status === 403 ? 'Forbidden' : 'Unauthorized' },
+        { status: access.status || 401 },
+      );
+    }
+
+    const rawMode = searchParams.get('mode') || 'standard';
+    const mode = (
+      rawMode === 'safe' || rawMode === 'fast' || rawMode === 'yingshicang'
+        ? rawMode
+        : 'standard'
+    ) as 'standard' | 'safe' | 'fast' | 'yingshicang';
+
+    // 成人内容过滤：filter=off 或 adult=1/true 时显示
+    const filterParam = searchParams.get('filter');
+    const adultParam = searchParams.get('adult');
+    const includeAdult =
+      filterParam === 'off' ||
+      filterParam === 'disable' ||
+      adultParam === '1' ||
+      adultParam === 'true';
+
+    const tvboxConfig = buildTvboxConfig(config, baseUrl, {
+      mode,
+      includeAdult,
+      user: access.user,
+      isGlobalToken: access.isGlobalToken,
+    });
 
     if (format === 'base64') {
-      const jsonStr = JSON.stringify(tvboxConfig);
-      const base64 = Buffer.from(jsonStr).toString('base64');
+      const base64 = Buffer.from(JSON.stringify(tvboxConfig)).toString(
+        'base64',
+      );
       return new NextResponse(base64, {
         headers: {
           'Content-Type': 'text/plain; charset=utf-8',
           'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'public, max-age=3600',
+          'Cache-Control': 'no-store',
         },
       });
     }
@@ -144,11 +69,22 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(tvboxConfig, {
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {
     console.error('TVBox export error:', error);
     return NextResponse.json({ error: 'Export failed' }, { status: 500 });
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+    },
+  });
 }

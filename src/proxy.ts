@@ -287,6 +287,10 @@ export async function proxy(request: NextRequest) {
     const response = NextResponse.rewrite(url);
     response.headers.set('X-Content-Mode', 'adult');
     if (newPathname.startsWith('/api')) {
+      // 目标路径自身处理认证（如 /api/tvbox）时，跳过 middleware 认证
+      if (shouldSkipAuth(newPathname)) {
+        return isPage ? applyCSPHeaders(response, nonce) : response;
+      }
       const modifiedRequest = new NextRequest(url, request);
       return handleAuthentication(modifiedRequest, newPathname, response);
     }
@@ -489,6 +493,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/api/version-check', // 版本检查（公共数据，无需认证）
     '/api/danmu-external', // 弹幕 API（公共数据，无需认证）
+    '/api/tvbox', // TVBox 配置端点（自身处理 token/cookie/开放认证）
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
     '/favorites', // 收藏页面（客户端重定向）
