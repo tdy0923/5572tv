@@ -5,8 +5,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Suspense,
   useEffect,
@@ -379,6 +378,8 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     return false;
   });
   const [announcementPinned, setAnnouncementPinned] = useState(false);
+  const router = useRouter();
+  const [homeSearchQuery, setHomeSearchQuery] = useState('');
 
   // 合并初始化逻辑 - 优化性能，减少重渲染
 
@@ -880,17 +881,34 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               </div>
             )}
 
-            {/* 顶部搜索条 - 点击跳转完整搜索页（全平台统一入口） */}
-            <Link
-              href='/search'
+            {/* 顶部搜索条 - 输入关键词回车或点搜索图标即可搜索 */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const q = homeSearchQuery.trim();
+                router.push(
+                  q ? `/search?q=${encodeURIComponent(q)}` : '/search',
+                );
+              }}
               className='relative flex h-12 items-center rounded-xl border bg-white px-4 shadow-sm transition-all duration-150 hover:bg-gray-50 active:scale-[0.99] dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700/60'
-              aria-label='搜索'
+              role='search'
             >
-              <Search className='mr-2.5 h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500' />
-              <span className='truncate text-sm text-gray-400 dark:text-gray-500'>
-                搜索电影、剧集、动漫、综艺
-              </span>
-            </Link>
+              <button
+                type='submit'
+                className='shrink-0 cursor-pointer'
+                aria-label='搜索'
+              >
+                <Search className='h-5 w-5 text-gray-400 dark:text-gray-500' />
+              </button>
+              <input
+                value={homeSearchQuery}
+                onChange={(e) => setHomeSearchQuery(e.target.value)}
+                placeholder='搜索电影、剧集、动漫、综艺'
+                className='h-full w-full flex-1 bg-transparent px-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none dark:text-gray-200 dark:placeholder:text-gray-500'
+                aria-label='搜索'
+                autoComplete='off'
+              />
+            </form>
 
             {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
             <div className='flex items-center justify-start'>
