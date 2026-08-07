@@ -40,6 +40,7 @@ import FavoritesView from '@/components/home/FavoritesView';
 import HistoryView from '@/components/home/HistoryView';
 import HomeContentView from '@/components/home/HomeContentView';
 import RemindersView from '@/components/home/RemindersView';
+import HomeInlineSearch from '@/components/HomeInlineSearch';
 import PageLayout from '@/components/PageLayout';
 import PullToRefresh from '@/components/PullToRefresh';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
@@ -380,6 +381,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   const [announcementPinned, setAnnouncementPinned] = useState(false);
   const router = useRouter();
   const [homeSearchQuery, setHomeSearchQuery] = useState('');
+  const searchingQuery = homeSearchQuery.trim();
 
   // 合并初始化逻辑 - 优化性能，减少重渲染
 
@@ -943,7 +945,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
           <div
             className={`w-full mx-auto ${isPending ? 'opacity-70 transition-opacity duration-150' : ''}`}
           >
-            {activeTab === 'reminders' ? (
+            {searchingQuery ? (
+              <HomeInlineSearch
+                query={searchingQuery}
+                onClear={() => setHomeSearchQuery('')}
+              />
+            ) : activeTab === 'reminders' ? (
               <RemindersView
                 reminderItems={reminderItems}
                 reminderFilter={reminderFilter}
