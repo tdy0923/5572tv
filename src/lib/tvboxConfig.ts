@@ -76,6 +76,24 @@ const DOH_CONFIG = [
 ];
 
 /**
+ * 获取公网站点基础地址（优先 SITE_BASE 环境变量，其次由转发头推导）。
+ * 避免使用容器内部 origin（如 0.0.0.0:3000）导致 TVBox 无法访问。
+ */
+export function getSiteBase(request: NextRequest): string {
+  const envBase = (process.env.SITE_BASE || '').trim().replace(/\/$/, '');
+  if (envBase) return envBase;
+
+  const proto =
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+    request.nextUrl.protocol.replace(':', '');
+  const host =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.headers.get('host') ||
+    request.nextUrl.host;
+  return `${proto}://${host}`;
+}
+
+/**
  * 解析 TVBox 访问权限。
  * - enableAuth 关闭：开放访问，可选识别用户名做源权限裁剪。
  * - enableAuth 开启：需合法 token（全局 token 或用户 tvboxToken），否则 401。
@@ -146,9 +164,10 @@ export async function resolveTvboxAccess(
     }
   }
 
-  // Token 认证开关
+  // Token 认证开关：启用时必须持有合法 token 或有效登录态
   if (sec.enableAuth) {
-    if (!user && !isGlobalToken && !token) {
+    const hasValidAccess = !!user || isGlobalToken;
+    if (!hasValidAccess) {
       return { ok: false, status: 401, user: null, isGlobalToken: false };
     }
   }

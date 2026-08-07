@@ -10,7 +10,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
-import { buildTvboxConfig, resolveTvboxAccess } from '@/lib/tvboxConfig';
+import {
+  buildTvboxConfig,
+  getSiteBase,
+  resolveTvboxAccess,
+} from '@/lib/tvboxConfig';
 
 export const runtime = 'nodejs';
 
@@ -20,7 +24,7 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get('format') || 'json';
 
     const config = await getConfig();
-    const baseUrl = request.nextUrl.origin;
+    const baseUrl = getSiteBase(request);
 
     const access = await resolveTvboxAccess(request, config);
     if (!access.ok) {
