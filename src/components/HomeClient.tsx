@@ -3,7 +3,7 @@
 'use client';
 
 import { queryOptions, useQuery } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -815,6 +815,14 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     setAnnouncementPinned(true);
   };
 
+  // 顶部公告横幅：本会话内展示一次，关闭后本会话不再显示
+  const [announcementHiddenThisSession, setAnnouncementHiddenThisSession] =
+    useState(false);
+  const hasSeenAnnouncementThisSession =
+    !!announcement && !announcementHiddenThisSession;
+  const dismissAnnouncementThisSession = () =>
+    setAnnouncementHiddenThisSession(true);
+
   return (
     <PageLayout
       onAnnouncementClick={handleOpenAnnouncement}
@@ -846,6 +854,28 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 )}
               </h2>
             </div>
+
+            {/* 顶部公告横幅 - 非阻塞，关闭后本会话不再显示 */}
+            {typeof document !== 'undefined' &&
+              announcement &&
+              !hasSeenAnnouncementThisSession && (
+                <div className='flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2.5 dark:border-green-800 dark:bg-green-900/20'>
+                  <div className='relative mt-0.5 h-2 w-2 shrink-0 rounded-full bg-green-500 ring-2 ring-green-200 dark:ring-green-700' />
+                  <p className='flex-1 whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-200'>
+                    <span className='mr-1 font-semibold text-green-700 dark:text-green-400'>
+                      {announcementTitle || '站点公告'}：
+                    </span>
+                    {announcement}
+                  </p>
+                  <button
+                    onClick={dismissAnnouncementThisSession}
+                    className='shrink-0 rounded-md p-1 text-gray-400 hover:bg-green-100 hover:text-gray-600 dark:hover:bg-green-800/50'
+                    aria-label='关闭公告'
+                  >
+                    <X className='h-4 w-4' />
+                  </button>
+                </div>
+              )}
 
             {/* 顶部搜索条 - 点击跳转完整搜索页（全平台统一入口） */}
             <Link

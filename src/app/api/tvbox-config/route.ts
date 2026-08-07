@@ -2,7 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
-import { getConfig } from '@/lib/config';
+import { clearConfigCache, getConfig } from '@/lib/config';
+import { db } from '@/lib/db';
+import { ensureUserTvboxToken } from '@/lib/tvboxToken';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic'; // 强制动态渲染
@@ -19,6 +21,17 @@ export async function GET(request: NextRequest) {
 
     // 获取配置
     const config = await getConfig();
+
+    // 🔑 自动发放/获取当前用户的专属 TVBox Token（无需管理员手动操作）
+    const userTvboxToken = await ensureUserTvboxToken(
+      authInfo.username,
+      config,
+      async (c) => {
+        await db.saveAdminConfig(c);
+        clearConfigCache();
+      },
+    );
+
     const securityConfig = config.TVBoxSecurityConfig || {
       enableAuth: false,
       token: '',
@@ -28,11 +41,20 @@ export async function GET(request: NextRequest) {
       rateLimit: 60,
     };
 
-    // 🔑 获取当前用户的专属配置
+    // 🔒 不向普通用户暴露全局 token（仅保留开关状态用于展示）
+    const publicSecurityConfig = {
+      enableAuth: securityConfig.enableAuth,
+      token: '', // 隐藏全局 token
+      enableIpWhitelist: securityConfig.enableIpWhitelist,
+      allowedIPs: securityConfig.allowedIPs,
+      enableRateLimit: securityConfig.enableRateLimit,
+      rateLimit: securityConfig.rateLimit,
+    };
+
+    // 获取当前用户的源权限
     const currentUser = config.UserConfig.Users.find(
       (u) => u.username === authInfo.username,
     );
-    const userTvboxToken = currentUser?.tvboxToken || '';
 
     // TVBox 源权限继承规则：优先 tvboxEnabledSources；否则继承网站端 enabledApis/tags
     let userEnabledSources = currentUser?.tvboxEnabledSources || [];
@@ -70,10 +92,10 @@ export async function GET(request: NextRequest) {
 
     // 只返回 TVBox 安全配置和站点名称（不返回其他敏感信息）
     return NextResponse.json({
-      securityConfig: securityConfig,
+      securityConfig: publicSecurityConfig,
       siteName: config.SiteConfig?.SiteName || '5572影视',
       // 🔑 新增：用户专属信息
-      userToken: userTvboxToken,
+      userToken: userTvboxToken || '',
       userEnabledSources: userEnabledSources,
       allSources: allSources,
     });
