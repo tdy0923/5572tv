@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { FastLink } from './FastLink';
 import { NavActionCluster } from './NavActionCluster';
@@ -72,6 +72,22 @@ export default function ModernNav({
   const searchParams = useSearchParams();
   const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreButtonRef = useRef<HTMLButtonElement | null>(null);
+  const morePanelRef = useRef<HTMLDivElement | null>(null);
+
+  // 移动端"更多"弹层的键盘支持：Esc 关闭并归还焦点，打开时聚焦弹层
+  useEffect(() => {
+    if (!showMoreMenu) return;
+    morePanelRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowMoreMenu(false);
+        moreButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [showMoreMenu]);
   // 检查用户是否配置了 Emby
   const { data: userEmbyConfig } = useQuery(userEmbyConfigOptions());
 
@@ -196,6 +212,11 @@ export default function ModernNav({
           onClick={() => setShowMoreMenu(false)}
         >
           <div
+            ref={morePanelRef}
+            role='dialog'
+            aria-modal='true'
+            aria-label='更多菜单'
+            tabIndex={-1}
             className='absolute bottom-20 left-2 right-2 bg-white dark:bg-gray-800 dark:bg-gray-900/90  rounded-3xl shadow-2xl border border-white/20 dark:border-gray-800/30 overflow-hidden'
             onClick={(e) => e.stopPropagation()}
           >
@@ -244,7 +265,7 @@ export default function ModernNav({
                     <span
                       className={`text-xs font-medium ${
                         active
-                          ? 'text-[#102b47] dark:text-[#fff4d0]'
+                          ? 'text-[#171717] dark:text-[#fff6de]'
                           : 'text-gray-700 dark:text-gray-300'
                       }`}
                     >
@@ -277,19 +298,21 @@ export default function ModernNav({
                 key={item.label}
                 href={item.href}
                 useTransitionNav
-                className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
+                className={`flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 rounded-xl transition-all duration-200 active:scale-95 ${
+                  active ? 'bg-primary-500/15 dark:bg-primary-500/10' : ''
+                }`}
               >
                 <Icon
                   className={`w-6 h-6 mb-1 transition-colors duration-200 ${
                     active
-                      ? 'text-[#fff4d0]'
+                      ? 'text-[#171717] dark:text-[#fff6de]'
                       : 'text-gray-600 dark:text-gray-400'
                   }`}
                 />
                 <span
                   className={`text-xs font-medium transition-colors duration-200 ${
                     active
-                      ? 'text-[#fff4d0]'
+                      ? 'text-[#171717] dark:text-[#fff6de]'
                       : 'text-gray-600 dark:text-gray-400'
                   }`}
                 >
@@ -301,7 +324,10 @@ export default function ModernNav({
 
           {/* More button */}
           <button
+            ref={moreButtonRef}
             onClick={() => setShowMoreMenu(true)}
+            aria-haspopup='dialog'
+            aria-expanded={showMoreMenu}
             className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
           >
             <MoreHorizontal className='w-6 h-6 mb-1 text-gray-600 dark:text-gray-400' />

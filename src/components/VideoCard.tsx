@@ -975,7 +975,18 @@ function VideoCard({
     <>
       <div
         className='@container group relative w-full overflow-hidden rounded-[12px] bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 hover:scale-[1.03]'
+        role='button'
+        tabIndex={0}
         onClick={handleClick}
+        onKeyDown={(e) => {
+          if (
+            e.target === e.currentTarget &&
+            (e.key === 'Enter' || e.key === ' ')
+          ) {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
         onMouseEnter={handlePrefetch}
         onFocus={handlePrefetch}
         {...longPressProps}

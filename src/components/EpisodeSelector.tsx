@@ -347,21 +347,21 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
             className={`group flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center cursor-pointer transition-all duration-300 font-semibold relative overflow-hidden active:scale-[0.98] min-h-[44px]
               ${
                 activeTab === 'episodes'
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400'
+                  ? 'text-primary-600 dark:text-primary-400'
+                  : 'text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'
               }
             `.trim()}
           >
             {/* 激活态背景光晕 */}
             {activeTab === 'episodes' && (
-              <div className='absolute inset-0 bg-linear-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 -z-10'></div>
+              <div className='absolute inset-0 bg-linear-to-r from-primary-100/70 via-primary-100/40 to-primary-100/70 dark:from-primary-900/20 dark:via-primary-900/10 dark:to-primary-900/20 -z-10'></div>
             )}
             {/* 非激活态背景 */}
             {activeTab !== 'episodes' && (
               <div className='absolute inset-0 bg-gray-100/50 dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-800/70 transition-colors duration-300 -z-10'></div>
             )}
             {/* 悬浮光效 */}
-            <div className='absolute inset-0 bg-linear-to-r from-transparent via-green-100/0 to-transparent dark:via-green-500/0 group-hover:via-green-100/50 dark:group-hover:via-green-500/10 transition-all duration-300 -z-10'></div>
+            <div className='absolute inset-0 bg-linear-to-r from-transparent via-primary-100/0 to-transparent dark:via-primary-500/0 group-hover:via-primary-100/50 dark:group-hover:via-primary-500/10 transition-all duration-300 -z-10'></div>
             <span className='relative z-10 font-bold text-sm sm:text-base'>
               选集
             </span>
@@ -372,21 +372,21 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
           className={`group flex-1 py-3.5 sm:py-4 px-4 sm:px-6 text-center cursor-pointer transition-all duration-300 font-semibold relative overflow-hidden active:scale-[0.98] min-h-[44px]
             ${
               activeTab === 'sources'
-                ? 'text-blue-600 dark:text-blue-400'
-                : 'text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400'
+                ? 'text-primary-600 dark:text-primary-400'
+                : 'text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400'
             }
           `.trim()}
         >
           {/* 激活态背景光晕 */}
           {activeTab === 'sources' && (
-            <div className='absolute inset-0 bg-linear-to-r from-blue-50 via-cyan-50 to-sky-50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-sky-900/20 -z-10'></div>
+            <div className='absolute inset-0 bg-linear-to-r from-primary-100/70 via-primary-100/40 to-primary-100/70 dark:from-primary-900/20 dark:via-primary-900/10 dark:to-primary-900/20 -z-10'></div>
           )}
           {/* 非激活态背景 */}
           {activeTab !== 'sources' && (
             <div className='absolute inset-0 bg-gray-100/50 dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-800/70 transition-colors duration-300 -z-10'></div>
           )}
           {/* 悬浮光效 */}
-          <div className='absolute inset-0 bg-linear-to-r from-transparent via-blue-100/0 to-transparent dark:via-blue-500/0 group-hover:via-blue-100/50 dark:group-hover:via-blue-500/10 transition-all duration-300 -z-10'></div>
+          <div className='absolute inset-0 bg-linear-to-r from-transparent via-primary-100/0 to-transparent dark:via-primary-500/0 group-hover:via-primary-100/50 dark:group-hover:via-primary-500/10 transition-all duration-300 -z-10'></div>
           <span className='relative z-10 font-bold text-sm sm:text-base'>
             换源
           </span>
@@ -422,14 +422,14 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                       className={`min-w-[56px] sm:min-w-[72px] relative py-2 sm:py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 text-center rounded-t-lg active:scale-95
                         ${
                           isActive
-                            ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
-                            : 'text-gray-700 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                            ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                            : 'text-gray-700 hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-white/5'
                         }
                       `.trim()}
                     >
                       {label}
                       {isActive && (
-                        <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-green-500 dark:bg-green-400 rounded-full' />
+                        <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 dark:bg-primary-400 rounded-full' />
                       )}
                     </button>
                   );

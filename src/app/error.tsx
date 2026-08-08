@@ -10,6 +10,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const isDev = process.env.NODE_ENV === 'development';
   return (
     <div className='min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black px-4'>
       <div className='text-center max-w-md'>
@@ -17,13 +18,13 @@ export default function Error({
           <AlertTriangle className='w-16 h-16 mx-auto text-yellow-500' />
         </div>
         <h1 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
-          出错了
+          页面加载时出错了
         </h1>
-        <p className='text-gray-600 dark:text-gray-400 mb-2'>
-          页面加载时发生错误
+        <p className='text-gray-600 dark:text-gray-400 mb-6'>
+          抱歉，页面加载时发生了错误。请重试，或返回首页看看其他内容。
         </p>
-        {error.message && (
-          <p className='text-sm text-gray-500 dark:text-gray-500 mb-6 font-mono bg-gray-100 dark:bg-gray-800 p-3 rounded-lg'>
+        {isDev && error.message && (
+          <p className='text-sm text-gray-500 dark:text-gray-500 mb-6 font-mono bg-gray-100 dark:bg-gray-800 p-3 rounded-lg break-all'>
             {error.message}
           </p>
         )}
