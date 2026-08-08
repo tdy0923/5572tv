@@ -18,6 +18,15 @@ function checkDanmuRateLimit(username: string): boolean {
   if (recent.length >= max) return false;
   recent.push(now);
   danmuRateLimit.set(username, recent);
+  // 删除空闲用户的条目，防止内存无限增长
+  if (recent.length === 1) {
+    setTimeout(() => {
+      const ts = danmuRateLimit.get(username);
+      if (ts && ts.length === 1 && now - ts[0] >= window) {
+        danmuRateLimit.delete(username);
+      }
+    }, window);
+  }
   return true;
 }
 

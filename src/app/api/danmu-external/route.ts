@@ -22,6 +22,25 @@ const DEFAULT_DANMU_API_TOKEN = 'smonetv';
 // 弹幕缓存，避免重复请求外部API
 const danmuCache = new Map<string, { data: any; expiresAt: number }>();
 const DANMU_CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存
+const DANMU_CACHE_MAX = 500; // 最大缓存条数
+
+// 淘汰过期/超出上限的缓存条目，防止内存无限增长
+function pruneDanmuCache() {
+  const now = Date.now();
+  for (const [key, entry] of danmuCache.entries()) {
+    if (now >= entry.expiresAt) danmuCache.delete(key);
+  }
+  // 若仍超过上限，按最早过期时间移除
+  if (danmuCache.size > DANMU_CACHE_MAX) {
+    const sorted = Array.from(danmuCache.entries()).sort(
+      (a, b) => a[1].expiresAt - b[1].expiresAt,
+    );
+    const excess = danmuCache.size - DANMU_CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      danmuCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 interface PlatformUrl {
   platform: string;
@@ -1516,6 +1535,10 @@ export async function GET(request: NextRequest) {
       console.log('✅ [弹幕缓存] 命中缓存');
       return NextResponse.json(cached.data);
     }
+    // 缓存未命中时定期清理过期条目
+    if (danmuCache.size > DANMU_CACHE_MAX) {
+      pruneDanmuCache();
+    }
 
     // 🚀 优先使用弹幕API（主用）
     if (title) {
@@ -1727,6 +1750,9 @@ export async function GET(request: NextRequest) {
       data: successResponse,
       expiresAt: Date.now() + DANMU_CACHE_TTL,
     });
+    if (danmuCache.size > DANMU_CACHE_MAX) {
+      pruneDanmuCache();
+    }
 
     return NextResponse.json(successResponse);
   } catch (error) {

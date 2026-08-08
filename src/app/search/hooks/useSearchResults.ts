@@ -272,6 +272,9 @@ export function useSearchResults({
       const res = await fetch(
         `/api/search?q=${encodeURIComponent(trimmedQuery)}`,
       );
+      if (!res.ok) {
+        throw new Error(`搜索请求失败: ${res.status}`);
+      }
       const data = await res.json();
       return Array.isArray(data.results)
         ? (data.results as SearchResult[])

@@ -20,6 +20,24 @@ export const runtime = 'nodejs';
 // Cache for Douban data
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const CACHE_MAX = 300; // 最大缓存条数
+
+// 定期清理过期/超限条目，防止内存无限增长
+function pruneDoubanCache() {
+  const now = Date.now();
+  for (const [url, entry] of cache.entries()) {
+    if (now - entry.timestamp >= CACHE_TTL) cache.delete(url);
+  }
+  if (cache.size > CACHE_MAX) {
+    const sorted = Array.from(cache.entries()).sort(
+      (a, b) => a[1].timestamp - b[1].timestamp,
+    );
+    const excess = cache.size - CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      cache.delete(sorted[i][0]);
+    }
+  }
+}
 
 /**
  * Get Douban data with caching
@@ -30,9 +48,17 @@ async function getCachedDoubanData(url: string): Promise<any> {
     return cached.data;
   }
 
+  // 缓存未命中时定期清理过期条目
+  if (cache.size > CACHE_MAX) {
+    pruneDoubanCache();
+  }
+
   const { data, provider, durationMs } = await fetchDoubanWithProxy<any>(url);
 
   cache.set(url, { data, timestamp: Date.now() });
+  if (cache.size > CACHE_MAX) {
+    pruneDoubanCache();
+  }
 
   console.log(`Douban fetch: ${provider} (${durationMs}ms)`);
 

@@ -124,6 +124,7 @@ export default function SearchSuggestions({
       {suggestions.map((suggestion) => (
         <button
           key={`related-${suggestion.text}`}
+          type='button'
           onClick={() => onSelect(suggestion.text)}
           className='w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-3'
         >

@@ -70,18 +70,13 @@ export async function GET(request: NextRequest) {
     // 生成state参数用于防止CSRF攻击
     const state = crypto.randomUUID();
 
-    // 使用环境变量SITE_BASE，或从请求头获取真实的origin
+    // 使用环境变量SITE_BASE，或从请求本身获取origin（绝不信任可伪造的转发头）
     let origin: string;
     if (process.env.SITE_BASE) {
       // 1. 优先使用环境变量
       origin = process.env.SITE_BASE;
-    } else if (request.headers.get('x-forwarded-host')) {
-      // 2. 使用反向代理的域名（生产环境）
-      const proto = request.headers.get('x-forwarded-proto') || 'https';
-      const host = request.headers.get('x-forwarded-host');
-      origin = `${proto}://${host}`;
     } else {
-      // 3. 使用请求的 origin（本地开发）
+      // 2. 使用请求的 origin（本地开发）
       origin = request.nextUrl.origin;
       // 本地开发：将 0.0.0.0 替换为 localhost（OAuth 提供商不接受 0.0.0.0）
       origin = origin.replace('://0.0.0.0:', '://localhost:');

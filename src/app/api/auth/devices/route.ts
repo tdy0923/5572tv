@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAuthInfoFromCookie } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export const runtime = 'nodejs';
@@ -83,21 +84,26 @@ async function generateDeviceId(ua: string, ip: string): Promise<string> {
     .join('');
 }
 
-function getUsernameFromCookie(request: NextRequest): string | null {
-  const authCookie = request.cookies.get('user_auth')?.value;
-  if (!authCookie) return null;
+// 使用受信任的客户端 IP（Cloudflare/反代传递，客户端不可伪造）
+function getClientIp(request: NextRequest): string {
+  return (
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  );
+}
 
-  try {
-    const authData = JSON.parse(decodeURIComponent(authCookie));
-    return authData.username || null;
-  } catch {
-    return null;
-  }
+// 校验认证 cookie 的 HMAC 签名，防止伪造身份
+async function getVerifiedUsername(
+  request: NextRequest,
+): Promise<string | null> {
+  const authInfo = await getAuthInfoFromCookie(request);
+  return authInfo?.username || null;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const username = getUsernameFromCookie(request);
+    const username = await getVerifiedUsername(request);
     if (!username) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
@@ -127,10 +133,7 @@ export async function GET(request: NextRequest) {
       await db.setCache(devicesKey, cleanedDevices);
     }
 
-    const currentIp =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    const currentIp = getClientIp(request);
     const currentUa = request.headers.get('user-agent') || '';
     const currentDeviceId = await generateDeviceId(currentUa, currentIp);
 
@@ -148,7 +151,7 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const username = getUsernameFromCookie(request);
+    const username = await getVerifiedUsername(request);
     if (!username) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
@@ -160,10 +163,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '缺少设备ID' }, { status: 400 });
     }
 
-    const currentIp =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    const currentIp = getClientIp(request);
     const currentUa = request.headers.get('user-agent') || '';
     const currentDeviceId = await generateDeviceId(currentUa, currentIp);
 
@@ -191,18 +191,15 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const username = getUsernameFromCookie(request);
+    const username = await getVerifiedUsername(request);
     if (!username) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { userAgent, ip } = await request.json();
+    const { userAgent } = await request.json();
     const ua = userAgent || request.headers.get('user-agent') || '';
-    const deviceIp =
-      ip ||
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+    // 不信任客户端传入的 ip，统一使用受信任的来源
+    const deviceIp = getClientIp(request);
 
     const deviceId = await generateDeviceId(ua, deviceIp);
     const { deviceType, deviceName } = parseUserAgent(ua);

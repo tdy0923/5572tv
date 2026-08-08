@@ -29,7 +29,6 @@ interface Playlist {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const username = searchParams.get('username');
     const playlistId = searchParams.get('id');
 
     // 获取特定片单
@@ -39,15 +38,26 @@ export async function GET(request: NextRequest) {
       if (!playlist) {
         return NextResponse.json({ error: '片单不存在' }, { status: 404 });
       }
+      // 非公开片单必须校验登录且归属当前用户
+      if (!playlist.isPublic) {
+        const authInfo = await getAuthInfoFromCookie(request);
+        if (!authInfo?.username || authInfo.username !== playlist.username) {
+          return NextResponse.json(
+            { error: '无权访问该片单' },
+            { status: 403 },
+          );
+        }
+      }
       return NextResponse.json({ success: true, playlist });
     }
 
     // 获取用户的片单列表
     const authInfo = await getAuthInfoFromCookie(request);
-    const targetUsername = username || authInfo?.username;
+    // 只允许获取当前登录用户自己的片单列表，防止越权查看他人数据
+    const targetUsername = authInfo?.username || null;
 
     if (!targetUsername) {
-      return NextResponse.json({ error: '请指定用户名' }, { status: 400 });
+      return NextResponse.json({ error: '请先登录' }, { status: 401 });
     }
 
     const cacheKey = `playlists:${targetUsername}`;

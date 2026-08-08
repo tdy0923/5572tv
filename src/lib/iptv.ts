@@ -38,6 +38,24 @@ export interface EPGData {
 // In-memory EPG cache
 const epgCache = new Map<string, EPGData>();
 const EPG_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const EPG_CACHE_MAX = 50; // 最大缓存 EPG 源数
+
+// 清理过期/超限条目，防止内存无限增长
+function pruneEpgCache() {
+  const now = Date.now();
+  for (const [url, data] of epgCache.entries()) {
+    if (now - data.lastUpdate >= EPG_CACHE_TTL) epgCache.delete(url);
+  }
+  if (epgCache.size > EPG_CACHE_MAX) {
+    const sorted = Array.from(epgCache.entries()).sort(
+      (a, b) => a[1].lastUpdate - b[1].lastUpdate,
+    );
+    const excess = epgCache.size - EPG_CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      epgCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 /**
  * Parse M3U/M3U8 playlist
@@ -136,6 +154,10 @@ export async function parseEPG(url: string): Promise<EPGData> {
   if (cached && Date.now() - cached.lastUpdate < EPG_CACHE_TTL) {
     return cached;
   }
+  // 缓存未命中时定期清理
+  if (epgCache.size > EPG_CACHE_MAX) {
+    pruneEpgCache();
+  }
 
   try {
     const response = await fetch(url, {
@@ -159,6 +181,9 @@ export async function parseEPG(url: string): Promise<EPGData> {
 
     // Cache the result
     epgCache.set(url, epgData);
+    if (epgCache.size > EPG_CACHE_MAX) {
+      pruneEpgCache();
+    }
 
     return epgData;
   } catch (e) {

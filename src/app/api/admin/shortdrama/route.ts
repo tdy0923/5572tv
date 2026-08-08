@@ -22,10 +22,12 @@ export async function POST(request: NextRequest) {
 
   const authInfo = await getAuthInfoFromCookie(request);
 
-  // 检查用户权限
+  // 检查用户权限（站长或非封禁管理员）
   if (!authInfo || !authInfo.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const username = authInfo.username;
 
   try {
     const body = await request.json();
@@ -45,6 +47,14 @@ export async function POST(request: NextRequest) {
 
     // 获取当前配置
     const config = await getConfig();
+
+    // 权限校验（站长或非封禁管理员）
+    if (username !== process.env.USERNAME) {
+      const user = config.UserConfig.Users.find((u) => u.username === username);
+      if (!user || user.role !== 'admin' || user.banned) {
+        return NextResponse.json({ error: '权限不足' }, { status: 401 });
+      }
+    }
 
     // 更新短剧配置
     config.ShortDramaConfig = {
@@ -82,13 +92,23 @@ export async function GET(request: NextRequest) {
 
   const authInfo = await getAuthInfoFromCookie(request);
 
-  // 检查用户权限
+  // 检查用户权限（站长或非封禁管理员）
   if (!authInfo || !authInfo.username) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const config = await getConfig();
+
+    // 权限校验（站长或非封禁管理员）
+    if (authInfo.username !== process.env.USERNAME) {
+      const user = config.UserConfig.Users.find(
+        (u) => u.username === authInfo.username,
+      );
+      if (!user || user.role !== 'admin' || user.banned) {
+        return NextResponse.json({ error: '权限不足' }, { status: 401 });
+      }
+    }
 
     return NextResponse.json({
       success: true,

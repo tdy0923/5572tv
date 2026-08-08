@@ -66,6 +66,9 @@ const embySourcesOptions = (embyEnabled: boolean) =>
     queryKey: ['emby', 'sources'],
     queryFn: async () => {
       const res = await fetch('/api/emby/sources');
+      if (!res.ok) {
+        throw new Error(`获取Emby源失败: ${res.status}`);
+      }
       const data = await res.json();
       return (data.sources ?? []) as EmbySourceOption[];
     },
@@ -81,6 +84,9 @@ const embyViewsOptions = (embyEnabled: boolean, embyKey?: string) =>
       const params = new URLSearchParams();
       if (embyKey) params.append('embyKey', embyKey);
       const res = await fetch(`/api/emby/views?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`获取Emby视图失败: ${res.status}`);
+      }
       const data = await res.json();
       return (data.success ? data.views : []) as EmbyView[];
     },

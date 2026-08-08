@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limit: 10 modifications per minute per IP
     const ip =
-      request.headers.get('x-forwarded-for') ||
+      request.headers.get('cf-connecting-ip') ||
       request.headers.get('x-real-ip') ||
       'unknown';
     const rateLimitKey = `ad-filter:${ip}`;
@@ -91,6 +91,13 @@ export async function POST(request: NextRequest) {
     const rateLimitStore =
       (globalThis as any).__rateLimitStore ||
       ((globalThis as any).__rateLimitStore = new Map());
+
+    // 定期清理过期条目，防止内存无限增长
+    if (rateLimitStore.size > 100 && Math.random() < 0.01) {
+      for (const [key, val] of rateLimitStore.entries()) {
+        if (now > (val as any).resetTime) rateLimitStore.delete(key);
+      }
+    }
     const entry = rateLimitStore.get(rateLimitKey);
     if (entry && now < entry.resetTime && entry.count >= MAX_REQUESTS) {
       return NextResponse.json(

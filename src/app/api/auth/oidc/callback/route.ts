@@ -248,7 +248,7 @@ async function verifyStandardOidcJwt(
 export async function GET(request: NextRequest) {
   try {
     const ip =
-      request.headers.get('x-forwarded-for') ||
+      request.headers.get('cf-connecting-ip') ||
       request.headers.get('x-real-ip') ||
       'unknown';
 
@@ -277,16 +277,11 @@ export async function GET(request: NextRequest) {
       error,
     );
 
-    // 使用环境变量SITE_BASE，或从请求头获取真实的origin
+    // 使用环境变量SITE_BASE，或从请求本身获取真实的origin（绝不信任可伪造的转发头）
     let origin: string;
     if (process.env.SITE_BASE) {
       origin = process.env.SITE_BASE;
       console.log('[OIDC Callback] Using SITE_BASE:', origin);
-    } else if (request.headers.get('x-forwarded-host')) {
-      const proto = request.headers.get('x-forwarded-proto') || 'https';
-      const host = request.headers.get('x-forwarded-host');
-      origin = `${proto}://${host}`;
-      console.log('[OIDC Callback] Using x-forwarded-host:', origin);
     } else {
       origin = request.nextUrl.origin;
       origin = origin.replace('://0.0.0.0:', '://localhost:');

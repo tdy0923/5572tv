@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // 仅站长可访问（该路由会访问任意 URL，权限必须严格）
+    if (authInfo.username !== process.env.USERNAME) {
+      return NextResponse.json({ error: '权限不足' }, { status: 401 });
+    }
+
     const { issuerUrl } = await request.json();
 
     if (!issuerUrl || typeof issuerUrl !== 'string') {
@@ -31,8 +36,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // SSRF 防护：仅允许 http/https 协议
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(issuerUrl);
+    } catch {
+      return NextResponse.json(
+        { error: 'Issuer URL格式不正确' },
+        { status: 400 },
+      );
+    }
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return NextResponse.json(
+        { error: '仅支持 http/https 协议' },
+        { status: 400 },
+      );
+    }
+
     // 构建well-known URL
-    const wellKnownUrl = `${issuerUrl}/.well-known/openid-configuration`;
+    const wellKnownUrl = `${issuerUrl.replace(/\/$/, '')}/.well-known/openid-configuration`;
 
     console.log('正在获取OIDC配置:', wellKnownUrl);
 

@@ -42,6 +42,25 @@ const recommendationCache = new Map<
   { data: any[]; timestamp: number }
 >();
 const CACHE_TTL = 10 * 60 * 1000;
+const CACHE_MAX = 1000; // 最大缓存用户数
+
+// 清理过期/超限条目，防止内存无限增长
+function pruneRecommendationCache() {
+  const now = Date.now();
+  for (const [username, entry] of recommendationCache.entries()) {
+    if (now - entry.timestamp >= CACHE_TTL)
+      recommendationCache.delete(username);
+  }
+  if (recommendationCache.size > CACHE_MAX) {
+    const sorted = Array.from(recommendationCache.entries()).sort(
+      (a, b) => a[1].timestamp - b[1].timestamp,
+    );
+    const excess = recommendationCache.size - CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      recommendationCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 async function askAIForRecommendations(
   viewingHistory: string[],
@@ -184,6 +203,9 @@ async function getTrendingFallback(
         data: shuffled,
         timestamp: Date.now(),
       });
+      if (recommendationCache.size > CACHE_MAX) {
+        pruneRecommendationCache();
+      }
       return NextResponse.json({ success: true, recommendations: shuffled });
     }
   } catch {}
@@ -201,6 +223,10 @@ export async function GET(request: NextRequest) {
     const cached = recommendationCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return NextResponse.json({ success: true, recommendations: cached.data });
+    }
+    // 缓存未命中时定期清理
+    if (recommendationCache.size > CACHE_MAX) {
+      pruneRecommendationCache();
     }
 
     const allRecords = await db.getAllPlayRecords(authInfo.username);
@@ -242,6 +268,9 @@ export async function GET(request: NextRequest) {
       data: recommendations,
       timestamp: Date.now(),
     });
+    if (recommendationCache.size > CACHE_MAX) {
+      pruneRecommendationCache();
+    }
 
     return NextResponse.json({
       success: true,

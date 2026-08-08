@@ -16,8 +16,14 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
       </div>
       <div className='space-y-6'>
         {Object.entries(historyTimeline).length === 0 ? (
-          <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
-            暂无播放记录
+          <div className='flex flex-col items-center justify-center gap-3 py-12 text-center'>
+            <Film className='h-10 w-10 text-gray-300 dark:text-gray-600' />
+            <div className='text-sm text-gray-500 dark:text-gray-400'>
+              暂无播放记录
+            </div>
+            <div className='text-xs text-gray-400 dark:text-gray-500'>
+              观看过的影视会显示在这里
+            </div>
           </div>
         ) : (
           Object.entries(historyTimeline).map(([date, items]) => (

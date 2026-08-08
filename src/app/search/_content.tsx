@@ -449,9 +449,12 @@ function SearchPageClient() {
   // 加载热门搜索词
   useEffect(() => {
     fetch('/api/search/trending')
-      .then((r) => r.json())
-      .then((data) => setTrendingSearches(data.trending || []));
-    //       .catch((e) => // console.log('[Search] Trending fetch error:', e));
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => setTrendingSearches(data.trending || []))
+      .catch(() => setTrendingSearches([]));
   }, []);
 
   // 监听搜索类型变化，如果切换到网盘/TMDB演员搜索且有搜索词，立即搜索

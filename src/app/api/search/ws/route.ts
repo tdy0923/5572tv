@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   // 搜索限流：每IP每分钟最多10次
   const ip =
-    request.headers.get('x-forwarded-for') ||
+    request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-real-ip') ||
     'unknown';
   const rateLimitKey = `search_ratelimit:${ip}`;

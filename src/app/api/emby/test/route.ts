@@ -2,6 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getAuthInfoFromCookie } from '@/lib/auth';
 import { EmbyClient } from '@/lib/emby.client';
 
 export const runtime = 'nodejs';
@@ -11,6 +12,12 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
+    // 仅登录用户可测试自己的 Emby 配置
+    const authInfo = await getAuthInfoFromCookie(request);
+    if (!authInfo?.username) {
+      return NextResponse.json({ error: '请先登录' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { ServerURL, ApiKey, Username, Password, removeEmbyPrefix } = body;
 

@@ -35,6 +35,24 @@ const searchCache = new Map<
   { results: PanSouResult[]; timestamp: number }
 >();
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CACHE_MAX = 500; // 最大缓存关键词数
+
+// 清理过期/超限条目，防止内存无限增长
+function pruneSearchCache() {
+  const now = Date.now();
+  for (const [keyword, entry] of searchCache.entries()) {
+    if (now - entry.timestamp >= CACHE_TTL) searchCache.delete(keyword);
+  }
+  if (searchCache.size > CACHE_MAX) {
+    const sorted = Array.from(searchCache.entries()).sort(
+      (a, b) => a[1].timestamp - b[1].timestamp,
+    );
+    const excess = searchCache.size - CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      searchCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 /**
  * Build auth headers
@@ -125,6 +143,10 @@ export async function searchPanSou(
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.results;
   }
+  // 缓存未命中时定期清理
+  if (searchCache.size > CACHE_MAX) {
+    pruneSearchCache();
+  }
 
   // Search all nodes
   const allResults: PanSouResult[] = [];
@@ -152,6 +174,9 @@ export async function searchPanSou(
     results: uniqueResults,
     timestamp: Date.now(),
   });
+  if (searchCache.size > CACHE_MAX) {
+    pruneSearchCache();
+  }
 
   return uniqueResults;
 }
