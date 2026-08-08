@@ -41,8 +41,8 @@ function RegisterPageClient() {
     pwd: string,
   ): { level: number; label: string; color: string } => {
     let score = 0;
-    if (pwd.length >= 8) score++;
-    if (pwd.length >= 12) score++;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
     if (/[A-Z]/.test(pwd)) score++;
     if (/[0-9]/.test(pwd)) score++;
     if (/[^A-Za-z0-9]/.test(pwd)) score++;
@@ -132,8 +132,8 @@ function RegisterPageClient() {
       return;
     }
 
-    if (password.length < 8) {
-      setError('密码长度至少8位');
+    if (password.length < 6) {
+      setError('密码长度至少6位');
       return;
     }
 

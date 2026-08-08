@@ -176,8 +176,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: '密码长度至少8位' }, { status: 400 });
+    if (password.length < 6) {
+      return NextResponse.json({ error: '密码长度至少6位' }, { status: 400 });
     }
 
     // 检查是否与管理员用户名冲突

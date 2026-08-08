@@ -8,8 +8,8 @@ import { db } from '@/lib/db';
 export const runtime = 'nodejs';
 
 function validatePasswordStrength(password: string): string | null {
-  if (password.length < 8) {
-    return '密码长度至少8位';
+  if (password.length < 6) {
+    return '密码长度至少6位';
   }
   return null;
 }
