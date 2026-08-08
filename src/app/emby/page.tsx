@@ -391,7 +391,7 @@ export default function PrivateLibraryPage() {
                 ${
                   isRefreshing
                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                    : 'bg-linear-to-r from-emerald-500 via-green-500 to-teal-500 text-white shadow-lg shadow-green-500/30 hover:shadow-green-500/50'
+                    : 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50'
                 }`}
             >
               {!isRefreshing && (
@@ -451,7 +451,7 @@ export default function PrivateLibraryPage() {
           {/* 搜索栏 */}
           <div className='mb-6'>
             <div className='relative group'>
-              <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-green-500 dark:group-focus-within:text-green-400 group-focus-within:scale-110' />
+              <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-primary-500 dark:group-focus-within:text-primary-400 group-focus-within:scale-110' />
               <input
                 type='text'
                 placeholder='搜索 Emby 视频...'
@@ -473,8 +473,8 @@ export default function PrivateLibraryPage() {
           {/* 排序选择 */}
           <div className='mb-6'>
             <div className='flex items-center space-x-2.5 mb-4'>
-              <div className='w-9 h-9 rounded-xl bg-linear-to-br from-green-500 via-emerald-600 to-teal-500 flex items-center justify-center shadow-lg shadow-green-500/30'>
-                <ArrowUpNarrowWide className='h-4 w-4 text-white' />
+              <div className='w-9 h-9 rounded-xl bg-linear-to-br from-primary-400 via-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/30'>
+                <ArrowUpNarrowWide className='h-4 w-4 text-[#171717]' />
               </div>
               <span className='text-base font-bold text-gray-900 dark:text-gray-100'>
                 排序方式
@@ -492,8 +492,8 @@ export default function PrivateLibraryPage() {
                     }}
                     className={`group relative overflow-hidden rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                       sortBy === option.value
-                        ? 'bg-linear-to-r from-green-500 via-emerald-600 to-teal-500 text-white shadow-lg shadow-green-500/40'
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md'
+                        ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-lg shadow-primary-500/40'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-md'
                     }`}
                     style={{
                       animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
@@ -503,7 +503,7 @@ export default function PrivateLibraryPage() {
                       <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700'></div>
                     )}
                     {sortBy !== option.value && (
-                      <div className='absolute inset-0 bg-linear-to-r from-green-50 via-emerald-50 to-green-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-green-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
+                      <div className='absolute inset-0 bg-linear-to-r from-primary-50 via-primary-100/60 to-primary-50 dark:from-primary-900/20 dark:via-primary-900/10 dark:to-primary-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300'></div>
                     )}
                     <span className='relative z-10 flex items-center gap-1.5'>
                       <Icon className='h-4 w-4' />
@@ -516,7 +516,7 @@ export default function PrivateLibraryPage() {
               {/* 排序顺序按钮 */}
               <button
                 onClick={toggleSortOrder}
-                className='group relative overflow-hidden rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 transform hover:scale-105 bg-linear-to-r from-blue-500 via-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/40'
+                className='group relative overflow-hidden rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-300 transform hover:scale-105 bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-lg shadow-primary-500/40'
               >
                 <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700'></div>
                 <span className='relative z-10 flex items-center gap-1.5'>
@@ -593,8 +593,8 @@ export default function PrivateLibraryPage() {
         {isSearchMode && !isSearching && searchResults.length === 0 && (
           <div className='flex justify-center py-16'>
             <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-              <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-green-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
-              <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-green-200/20 rounded-full blur-3xl'></div>
+              <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-primary-200/20 to-primary-400/20 rounded-full blur-3xl'></div>
+              <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-primary-300/20 to-primary-200/20 rounded-full blur-3xl'></div>
               <div className='relative flex flex-col items-center gap-4'>
                 <div className='relative'>
                   <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
@@ -612,8 +612,8 @@ export default function PrivateLibraryPage() {
                       ></path>
                     </svg>
                   </div>
-                  <div className='absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping'></div>
-                  <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-teal-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
+                  <div className='absolute -top-1 -right-1 w-3 h-3 bg-primary-400 rounded-full animate-ping'></div>
+                  <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-primary-300 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                 </div>
                 <div className='text-center space-y-2'>
                   <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -625,7 +625,7 @@ export default function PrivateLibraryPage() {
                 </div>
                 <button
                   onClick={() => setSearchKeyword('')}
-                  className='mt-2 px-6 py-2.5 bg-linear-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
+                  className='mt-2 px-6 py-2.5 bg-linear-to-r from-[#f4c24d] to-[#d89c18] hover:from-[#f0b938] hover:to-[#b78415] text-[#171717] rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
                 >
                   清除搜索条件
                 </button>

@@ -229,14 +229,14 @@ export default function ModernNav({
                     <div
                       className={`flex items-center justify-center w-12 h-12 rounded-2xl ${
                         active
-                          ? 'bg-linear-to-br from-[#183a5b] to-[#365f8e]'
+                          ? 'bg-linear-to-br from-primary-400 via-primary-500 to-primary-700'
                           : 'bg-gray-100 dark:bg-gray-800'
                       }`}
                     >
                       <Icon
                         className={`w-6 h-6 ${
                           active
-                            ? 'text-white'
+                            ? 'text-[#171717]'
                             : 'text-gray-600 dark:text-gray-400'
                         }`}
                       />

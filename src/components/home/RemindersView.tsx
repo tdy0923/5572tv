@@ -212,7 +212,7 @@ export default function RemindersView({
         {reminderItems.length === 0 && (
           <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
             <div className='mb-6 relative'>
-              <div className='absolute inset-0 bg-linear-to-r from-orange-300 to-red-300 dark:from-orange-600 dark:to-red-600 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
+              <div className='absolute inset-0 bg-linear-to-r from-primary-300 to-primary-400 dark:from-primary-500/40 dark:to-primary-600/40 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
               <svg
                 className='w-32 h-32 relative z-10'
                 viewBox='0 0 200 200'

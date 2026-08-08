@@ -202,7 +202,7 @@ export default function FavoritesView({
               onClick={() => setFavoriteGroupFilter('全部')}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                 favoriteGroupFilter === '全部'
-                  ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
+                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
                   : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
               }`}
             >
@@ -216,7 +216,7 @@ export default function FavoritesView({
                     onClick={() => setFavoriteGroupFilter(g)}
                     className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
                       favoriteGroupFilter === g
-                        ? 'bg-linear-to-r from-[#a78bfa] via-[#8b5cf6] to-[#7c3aed] text-white shadow-md'
+                        ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
                         : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
                     }`}
                   >
@@ -235,7 +235,7 @@ export default function FavoritesView({
               ))}
             <button
               onClick={() => setShowNewGroupInput(true)}
-              className='rounded-full px-3 py-2 text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-purple-400 hover:text-purple-500 transition-all duration-200'
+              className='rounded-full px-3 py-2 text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-all duration-200'
             >
               + 新建
             </button>
@@ -247,13 +247,13 @@ export default function FavoritesView({
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
                 placeholder='输入分组名称'
-                className='flex-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500'
+                className='flex-1 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500'
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateGroup()}
                 autoFocus
               />
               <button
                 onClick={handleCreateGroup}
-                className='px-3 py-2 text-sm font-medium rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors'
+                className='px-3 py-2 text-sm font-medium rounded-lg bg-[#f4c24d] text-[#171717] hover:bg-[#dba52b] transition-colors'
               >
                 创建
               </button>
@@ -449,7 +449,7 @@ export default function FavoritesView({
             {favoriteItems.length === 0 && (
               <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
                 <div className='mb-6 relative'>
-                  <div className='absolute inset-0 bg-linear-to-r from-pink-300 to-purple-300 dark:from-pink-600 dark:to-purple-600 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
+                  <div className='absolute inset-0 bg-linear-to-r from-primary-300 to-primary-400 dark:from-primary-500/40 dark:to-primary-600/40 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
                   <svg
                     className='w-32 h-32 relative z-10'
                     viewBox='0 0 200 200'
