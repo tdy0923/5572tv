@@ -134,6 +134,24 @@ function LoginPageClient() {
     fetchTelegramConfig();
   }, []);
 
+  // 记住上次登录的用户名
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    if (shouldAskUsername) {
+      try {
+        const saved = localStorage.getItem('lastLoginUsername');
+        if (saved) {
+          setUsername(saved);
+          setRememberMe(true);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [shouldAskUsername]);
+
+  // 处理提交，成功后记住用户名
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -152,6 +170,19 @@ function LoginPageClient() {
       });
 
       if (res.ok) {
+        // 记住用户名
+        try {
+          if (shouldAskUsername) {
+            if (rememberMe) {
+              localStorage.setItem('lastLoginUsername', username);
+            } else {
+              localStorage.removeItem('lastLoginUsername');
+            }
+          }
+        } catch {
+          // ignore
+        }
+
         // 记录登入时间
         const loginTime = Date.now();
         try {
@@ -261,12 +292,24 @@ function LoginPageClient() {
                 id='username'
                 type='text'
                 autoComplete='username'
+                autoFocus={!password}
                 className='ui-input pl-10 sm:pl-12 pr-3 sm:pr-4'
                 placeholder='请输入用户名'
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
+            <label className='mt-2 flex items-center gap-2 cursor-pointer select-none'>
+              <input
+                type='checkbox'
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className='h-3.5 w-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500'
+              />
+              <span className='text-xs text-gray-500 dark:text-gray-400'>
+                记住用户名
+              </span>
+            </label>
           </div>
         )}
 

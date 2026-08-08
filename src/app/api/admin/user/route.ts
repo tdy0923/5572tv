@@ -315,9 +315,9 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: '缺少新密码' }, { status: 400 });
         }
 
-        if (targetPassword.length < 8) {
+        if (targetPassword.length < 6) {
           return NextResponse.json(
-            { error: '密码长度至少8位' },
+            { error: '密码长度至少6位' },
             { status: 400 },
           );
         }

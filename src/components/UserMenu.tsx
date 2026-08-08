@@ -7,6 +7,8 @@ import {
   Bell,
   Calendar,
   Download,
+  Eye,
+  EyeOff,
   Film,
   Heart,
   KeyRound,
@@ -166,6 +168,26 @@ export const UserMenu: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const getPasswordStrength = (
+    pwd: string,
+  ): { level: number; label: string; color: string } => {
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    if (score <= 2) return { level: 1, label: '弱', color: 'bg-red-500' };
+    if (score <= 3) return { level: 2, label: '中', color: 'bg-yellow-500' };
+    return { level: 3, label: '强', color: 'bg-green-500' };
+  };
+
+  const newPasswordStrength = getPasswordStrength(newPassword);
 
   // 🚀 TanStack Query - 版本检查
   const { data: updateStatus = null, isLoading: isChecking } =
@@ -533,6 +555,9 @@ export const UserMenu: React.FC = () => {
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setShowOldPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const handleCloseChangePassword = () => {
@@ -541,6 +566,9 @@ export const UserMenu: React.FC = () => {
     setNewPassword('');
     setConfirmPassword('');
     setPasswordError('');
+    setShowOldPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   useEffect(() => {
@@ -611,12 +639,27 @@ export const UserMenu: React.FC = () => {
       return;
     }
 
+    if (newPassword.length < 6) {
+      setPasswordError('新密码长度至少6位');
+      return;
+    }
+
     changePasswordMutation.mutate(
       { oldPassword, newPassword },
       {
         onSuccess: async () => {
-          setIsChangePasswordOpen(false);
-          await handleLogout();
+          // 先给用户成功反馈，短暂延迟后再登出，避免困惑
+          setPasswordError('');
+          const successToast = document.createElement('div');
+          successToast.className =
+            'fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-lg bg-green-600 text-white text-sm font-medium shadow-lg animate-slide-down';
+          successToast.textContent = '密码修改成功，即将重新登录...';
+          document.body.appendChild(successToast);
+          setTimeout(async () => {
+            successToast.remove();
+            setIsChangePasswordOpen(false);
+            await handleLogout();
+          }, 1500);
         },
         onError: (error) => {
           setPasswordError(error.message || '网络错误，请稍后重试');
@@ -981,14 +1024,28 @@ export const UserMenu: React.FC = () => {
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 旧密码
               </label>
-              <input
-                type='password'
-                className='ui-input w-full text-sm'
-                placeholder='请输入旧密码'
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                disabled={changePasswordMutation.isPending}
-              />
+              <div className='relative'>
+                <input
+                  type={showOldPassword ? 'text' : 'password'}
+                  className='ui-input w-full text-sm pr-10'
+                  placeholder='请输入旧密码'
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  disabled={changePasswordMutation.isPending}
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowOldPassword(!showOldPassword)}
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  aria-label={showOldPassword ? '隐藏旧密码' : '显示旧密码'}
+                >
+                  {showOldPassword ? (
+                    <EyeOff className='h-4 w-4' />
+                  ) : (
+                    <Eye className='h-4 w-4' />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* 新密码输入 */}
@@ -996,14 +1053,43 @@ export const UserMenu: React.FC = () => {
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 新密码
               </label>
-              <input
-                type='password'
-                className='ui-input w-full text-sm'
-                placeholder='请输入新密码'
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                disabled={changePasswordMutation.isPending}
-              />
+              <div className='relative'>
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  className='ui-input w-full text-sm pr-10'
+                  placeholder='请输入新密码'
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={changePasswordMutation.isPending}
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  aria-label={showNewPassword ? '隐藏新密码' : '显示新密码'}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className='h-4 w-4' />
+                  ) : (
+                    <Eye className='h-4 w-4' />
+                  )}
+                </button>
+              </div>
+              {newPassword && (
+                <div className='mt-2'>
+                  <div className='flex gap-1 mb-1'>
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={`cp-strength-${i}`}
+                        className={`h-1 flex-1 rounded-full ${i <= newPasswordStrength.level ? newPasswordStrength.color : 'bg-gray-200 dark:bg-gray-700'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className='text-xs text-gray-500'>
+                    密码强度: {newPasswordStrength.label}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* 确认密码输入 */}
@@ -1011,14 +1097,36 @@ export const UserMenu: React.FC = () => {
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                 确认密码
               </label>
-              <input
-                type='password'
-                className='ui-input w-full text-sm'
-                placeholder='请再次输入新密码'
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={changePasswordMutation.isPending}
-              />
+              <div className='relative'>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className='ui-input w-full text-sm pr-10'
+                  placeholder='请再次输入新密码'
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={changePasswordMutation.isPending}
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  aria-label={
+                    showConfirmPassword ? '隐藏确认密码' : '显示确认密码'
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className='h-4 w-4' />
+                  ) : (
+                    <Eye className='h-4 w-4' />
+                  )}
+                </button>
+              </div>
+              {confirmPassword.length > 0 &&
+                confirmPassword !== newPassword && (
+                  <p className='mt-1.5 text-xs text-red-500'>
+                    两次输入的密码不一致
+                  </p>
+                )}
             </div>
 
             {/* 错误信息 */}

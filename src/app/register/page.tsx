@@ -5,6 +5,8 @@
 import {
   AlertCircle,
   CheckCircle,
+  Eye,
+  EyeOff,
   Lock,
   Shield,
   Sparkles,
@@ -36,6 +38,16 @@ function RegisterPageClient() {
   const [registrationDisabled, setRegistrationDisabled] = useState(false);
   const [disabledReason, setDisabledReason] = useState('');
   const [requireInviteCode, setRequireInviteCode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // 用户名格式即时校验
+  const usernameValid =
+    username.length === 0 || /^[a-zA-Z0-9_]{3,20}$/.test(username);
+
+  // 确认密码实时比对
+  const passwordMatches =
+    confirmPassword.length === 0 || confirmPassword === password;
 
   const getPasswordStrength = (
     pwd: string,
@@ -119,6 +131,11 @@ function RegisterPageClient() {
 
     if (!username || !password || !confirmPassword) {
       setError('请填写完整信息');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+      setError('用户名只能包含字母、数字和下划线，长度3-20位');
       return;
     }
 
@@ -265,6 +282,11 @@ function RegisterPageClient() {
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
+          {username.length > 0 && !usernameValid && (
+            <p className='mt-1.5 text-xs text-red-500'>
+              用户名只能包含字母、数字和下划线，长度3-20位
+            </p>
+          )}
         </div>
 
         <div className='group'>
@@ -280,13 +302,25 @@ function RegisterPageClient() {
             </div>
             <input
               id='password'
-              type='password'
+              type={showPassword ? 'text' : 'password'}
               autoComplete='new-password'
-              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
-              placeholder='至少8位字符'
+              className='ui-input pl-10 sm:pl-12 pr-12 sm:pr-14 sm:text-base'
+              placeholder='至少6位字符'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type='button'
+              onClick={() => setShowPassword(!showPassword)}
+              className='absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              aria-label={showPassword ? '隐藏密码' : '显示密码'}
+            >
+              {showPassword ? (
+                <EyeOff className='h-5 w-5' />
+              ) : (
+                <Eye className='h-5 w-5' />
+              )}
+            </button>
           </div>
           {password && (
             <div className='mt-2'>
@@ -318,14 +352,29 @@ function RegisterPageClient() {
             </div>
             <input
               id='confirmPassword'
-              type='password'
+              type={showConfirmPassword ? 'text' : 'password'}
               autoComplete='new-password'
-              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
+              className='ui-input pl-10 sm:pl-12 pr-12 sm:pr-14 sm:text-base'
               placeholder='再次输入密码'
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
+            <button
+              type='button'
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className='absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              aria-label={showConfirmPassword ? '隐藏密码' : '显示密码'}
+            >
+              {showConfirmPassword ? (
+                <EyeOff className='h-5 w-5' />
+              ) : (
+                <Eye className='h-5 w-5' />
+              )}
+            </button>
           </div>
+          {confirmPassword.length > 0 && !passwordMatches && (
+            <p className='mt-1.5 text-xs text-red-500'>两次输入的密码不一致</p>
+          )}
         </div>
 
         {requireInviteCode && (
