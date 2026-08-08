@@ -21,7 +21,7 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60000; // 1 minute
 const RATE_LIMITS: Record<string, number> = {
   'video-proxy': 30,
-  'image-proxy': 120, // higher limit — pages can load 20+ images
+  'image-proxy': 600, // 图片代理：公共静态资源，已有 30 天 CDN 缓存，正常翻页/详情页会并发加载几十张海报
   'video-cache': 30,
 };
 const DEFAULT_API_LIMIT = 30;
