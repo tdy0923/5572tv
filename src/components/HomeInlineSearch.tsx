@@ -14,7 +14,25 @@ interface HomeInlineSearchProps {
 
 // 客户端搜索缓存：同一关键词短时间内复用结果，避免频繁请求触发服务端限流
 const QUERY_CACHE_TTL = 120_000; // 与服务端共享缓存 TTL 一致
+const QUERY_CACHE_MAX = 50; // 最大缓存关键词数，防止内存无限增长
 const queryCache = new Map<string, { data: SearchResult[]; ts: number }>();
+
+// 清理过期/超限缓存条目
+function pruneQueryCache() {
+  const now = Date.now();
+  for (const [key, entry] of queryCache.entries()) {
+    if (now - entry.ts >= QUERY_CACHE_TTL) queryCache.delete(key);
+  }
+  if (queryCache.size > QUERY_CACHE_MAX) {
+    const sorted = Array.from(queryCache.entries()).sort(
+      (a, b) => a[1].ts - b[1].ts,
+    );
+    const excess = queryCache.size - QUERY_CACHE_MAX;
+    for (let i = 0; i < excess; i++) {
+      queryCache.delete(sorted[i][0]);
+    }
+  }
+}
 
 const DEBOUNCE_MS = 500;
 
@@ -78,6 +96,7 @@ export default function HomeInlineSearch({
           const nextResults = (data?.results || []).slice(0, 24);
           setResults(nextResults);
           queryCache.set(cacheKey, { data: nextResults, ts: Date.now() });
+          if (queryCache.size > QUERY_CACHE_MAX) pruneQueryCache();
         } catch (e: any) {
           if (e?.name !== 'AbortError') setError('搜索出错，请稍后再试');
         } finally {

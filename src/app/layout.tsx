@@ -24,6 +24,11 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 export async function generateMetadata(): Promise<Metadata> {
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || '5572影视';
   return {
+    metadataBase: new URL(
+      process.env.SITE_BASE ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        'https://www.5572.net',
+    ),
     title: {
       default: siteName,
       template: `%s - ${siteName}`,
