@@ -17,6 +17,7 @@ import React, {
 import { isAdSettingRenderable } from '@/lib/ad-settings';
 
 import AcgSearch from '@/components/AcgSearch';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import ImageViewer from '@/components/ImageViewer';
 import MountAnimation from '@/components/MountAnimation';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
@@ -1190,8 +1191,10 @@ function SearchPageClient() {
                         <div className='pt-1'>
                           {isLoading && searchResults.length === 0 ? (
                             <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-10 text-center dark:border-gray-700 dark:bg-gray-800'>
-                              <div className='mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-green-500 dark:border-gray-600 dark:border-t-green-400'></div>
-                              <div className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                              <div className='flex items-center justify-center'>
+                                <FluentSpinner size='large' />
+                              </div>
+                              <div className='mt-4 text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 正在整理搜索结果...
                               </div>
                               <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>

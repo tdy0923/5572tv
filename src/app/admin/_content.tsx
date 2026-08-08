@@ -34,6 +34,7 @@ import CustomAdFilterConfig from '@/components/CustomAdFilterConfig';
 import DanmuApiConfig from '@/components/DanmuApiConfig';
 import DataMigration from '@/components/DataMigration';
 import EmbyConfig from '@/components/EmbyConfig';
+import { FluentLoadingPage } from '@/components/FluentSpinner';
 import InviteCodeManager from '@/components/InviteCodeManager';
 import DownloadConfig from '@/components/OfflineDownloadConfig';
 import { OIDCAuthConfig } from '@/components/OIDCAuthConfig';
@@ -1443,19 +1444,7 @@ function AdminPageClient() {
 
 export default function AdminPage() {
   return (
-    <Suspense
-      fallback={
-        <div className='flex min-h-[200px] flex-col items-center justify-center gap-3'>
-          <div className='w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary-500 animate-spin' />
-          <p
-            className='text-sm'
-            style={{ color: 'var(--color-foreground-muted)' }}
-          >
-            加载中...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<FluentLoadingPage />}>
       <AdminPageClient />
     </Suspense>
   );

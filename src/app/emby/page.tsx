@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 import Toggle from '@/components/Toggle';
 import VideoCard from '@/components/VideoCard';
@@ -553,10 +554,7 @@ export default function PrivateLibraryPage() {
         {/* 加载状态 */}
         {loading && (
           <div className='flex items-center justify-center min-h-[40vh]'>
-            <div className='text-center'>
-              <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4'></div>
-              <p className='text-gray-500'>加载中...</p>
-            </div>
+            <FluentSpinner size='large' label='加载中...' />
           </div>
         )}
 
@@ -703,7 +701,7 @@ export default function PrivateLibraryPage() {
         {/* 加载更多 */}
         {isFetchingNextPage && (
           <div className='flex justify-center py-8'>
-            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500'></div>
+            <FluentSpinner size='small' />
           </div>
         )}
 

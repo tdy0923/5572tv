@@ -1035,15 +1035,15 @@ select:focus-visible,
 }
 @keyframes fluent2-spinner {
   0% {
-    stroke-dashoffset: 90;
+    stroke-dashoffset: var(--fluent2-spinner-offset, 90);
     transform: rotate(0deg);
   }
   50% {
-    stroke-dashoffset: 20;
+    stroke-dashoffset: calc(var(--fluent2-spinner-offset, 90) * 0.22);
     transform: rotate(180deg);
   }
   100% {
-    stroke-dashoffset: 90;
+    stroke-dashoffset: var(--fluent2-spinner-offset, 90);
     transform: rotate(360deg);
   }
 }

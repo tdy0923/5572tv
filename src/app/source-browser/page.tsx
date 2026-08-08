@@ -14,6 +14,7 @@ import type {
   SearchResult as GlobalSearchResult,
 } from '@/lib/types';
 
+import { FluentSpinner } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
 import {
@@ -974,8 +975,7 @@ export default function SourceBrowserPage() {
                 <div className='flex-1 overflow-auto p-5 sm:p-6'>
                   {previewLoading ? (
                     <div className='flex flex-col items-center justify-center py-12'>
-                      <div className='mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent'></div>
-                      <div className='text-sm text-gray-500'>加载详情...</div>
+                      <FluentSpinner size='large' label='加载详情...' />
                     </div>
                   ) : previewError ? (
                     <div className='flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>

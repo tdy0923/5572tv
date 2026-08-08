@@ -36,6 +36,7 @@ import { HomePageData, useHomePageQueries } from '@/hooks/useHomePageQueries';
 import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
+import { FluentLoadingPage } from '@/components/FluentSpinner';
 import FavoritesView from '@/components/home/FavoritesView';
 import HistoryView from '@/components/home/HistoryView';
 import HomeContentView from '@/components/home/HomeContentView';
@@ -1083,19 +1084,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
 export default function Home() {
   return (
-    <Suspense
-      fallback={
-        <div className='flex min-h-[200px] flex-col items-center justify-center gap-3'>
-          <div className='w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary-500 animate-spin' />
-          <p
-            className='text-sm'
-            style={{ color: 'var(--color-foreground-muted)' }}
-          >
-            加载中...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<FluentLoadingPage text='正在加载首页...' />}>
       <HomeClient />
     </Suspense>
   );

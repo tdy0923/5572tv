@@ -21,6 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { ReleaseCalendarItem, ReleaseCalendarResult } from '@/lib/types';
 
+import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 
 export default function ReleaseCalendarPage() {
@@ -506,7 +507,7 @@ export default function ReleaseCalendarPage() {
           {/* 加载状态 */}
           {loading && !data && (
             <div className='flex justify-center items-center py-12'>
-              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
+              <FluentSpinner size='medium' />
             </div>
           )}
 
