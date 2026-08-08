@@ -174,7 +174,9 @@ function LoginPageClient() {
         }
         router.replace(redirect);
       } else if (res.status === 401) {
-        setError('密码错误');
+        // 优先使用服务端返回的真实错误（如“用户被封禁”），默认回退到“密码错误”
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? '密码错误');
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? '服务器错误');

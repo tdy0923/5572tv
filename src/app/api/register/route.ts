@@ -85,6 +85,14 @@ export async function POST(req: NextRequest) {
     if (!(globalThis as any).__registerRateLimit)
       (globalThis as any).__registerRateLimit = new Map();
     const rl = (globalThis as any).__registerRateLimit;
+
+    // 定期清理过期条目，防止内存无限增长
+    if (rl.size > 100 && Math.random() < 0.01) {
+      for (const [key, val] of rl.entries()) {
+        if (now > (val as any).resetTime) rl.delete(key);
+      }
+    }
+
     const attempts = rl.get(rateLimitKey) || {
       count: 0,
       resetTime: now + WINDOW,

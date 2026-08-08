@@ -41,8 +41,8 @@ function RegisterPageClient() {
     pwd: string,
   ): { level: number; label: string; color: string } => {
     let score = 0;
-    if (pwd.length >= 6) score++;
-    if (pwd.length >= 10) score++;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
     if (/[A-Z]/.test(pwd)) score++;
     if (/[0-9]/.test(pwd)) score++;
     if (/[^A-Za-z0-9]/.test(pwd)) score++;
@@ -132,6 +132,11 @@ function RegisterPageClient() {
       return;
     }
 
+    if (password.length < 8) {
+      setError('密码长度至少8位');
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await fetch('/api/register', {
@@ -156,7 +161,12 @@ function RegisterPageClient() {
 
         setTimeout(() => {
           const redirect = searchParams.get('redirect') || '/';
-          router.replace(redirect);
+          // 防止 Open Redirect 漏洞：只允许相对路径
+          const safeRedirect =
+            redirect.startsWith('/') && !redirect.startsWith('//')
+              ? redirect
+              : '/';
+          router.replace(safeRedirect);
         }, delay);
       } else {
         const data = await res.json();
@@ -273,7 +283,7 @@ function RegisterPageClient() {
               type='password'
               autoComplete='new-password'
               className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
-              placeholder='至少6位字符'
+              placeholder='至少8位字符'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

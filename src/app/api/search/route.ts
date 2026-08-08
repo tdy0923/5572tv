@@ -67,8 +67,9 @@ export async function GET(request: NextRequest) {
   }
 
   // 搜索限流：每IP每分钟最多10次
+  // 与 proxy.ts 一致：优先使用 Cloudflare 不可伪造的头，避免客户端伪造 X-Forwarded-For 绕过限流
   const ip =
-    request.headers.get('x-forwarded-for') ||
+    request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-real-ip') ||
     'unknown';
   const rateLimitKey = `search_ratelimit:${ip}`;
@@ -122,11 +123,18 @@ export async function GET(request: NextRequest) {
   const searchCacheTtl = Math.max(15, Math.min(cacheTime, 120));
   const searchCacheKey = getSearchCacheKey(authInfo.username, query);
 
-  // 先查共享缓存
+  // 先查共享缓存（须按当前用户的源权限过滤，防止跨用户越权）
   const sharedResults = getSharedCache(query);
   if (Array.isArray(sharedResults) && sharedResults.length > 0) {
+    const allowedKeys = new Set(apiSites.map((s) => s.key));
+    const filteredShared =
+      allowedKeys.size > 0
+        ? sharedResults.filter(
+            (r: any) => r?.source && allowedKeys.has(r.source),
+          )
+        : [];
     return NextResponse.json(
-      { results: sharedResults },
+      { results: filteredShared },
       {
         headers: {
           'Cache-Control': `public, max-age=${searchCacheTtl}`,

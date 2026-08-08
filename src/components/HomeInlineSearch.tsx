@@ -12,6 +12,12 @@ interface HomeInlineSearchProps {
   onClear: () => void;
 }
 
+// 客户端搜索缓存：同一关键词短时间内复用结果，避免频繁请求触发服务端限流
+const QUERY_CACHE_TTL = 120_000; // 与服务端共享缓存 TTL 一致
+const queryCache = new Map<string, { data: SearchResult[]; ts: number }>();
+
+const DEBOUNCE_MS = 500;
+
 export default function HomeInlineSearch({
   query,
   onClear,
@@ -40,31 +46,46 @@ export default function HomeInlineSearch({
     const controller = new AbortController();
     controllerRef.current = controller;
 
-    timerRef.current = setTimeout(async () => {
+    timerRef.current = setTimeout(() => {
+      const cacheKey = q.toLowerCase();
+      const cached = queryCache.get(cacheKey);
+      if (cached && Date.now() - cached.ts < QUERY_CACHE_TTL) {
+        // 命中缓存，直接使用，不发请求
+        setResults(cached.data.slice(0, 24));
+        setLoading(false);
+        setDone(true);
+        setError('');
+        return;
+      }
+
       setLoading(true);
       setDone(false);
       setError('');
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) {
-          setError(
-            res.status === 429
-              ? '搜索太频繁，请稍后再试'
-              : '搜索失败，请稍后再试',
-          );
-          return;
+      (async () => {
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+            signal: controller.signal,
+          });
+          if (!res.ok) {
+            setError(
+              res.status === 429
+                ? '搜索太频繁，请稍后再试'
+                : '搜索失败，请稍后再试',
+            );
+            return;
+          }
+          const data = await res.json();
+          const nextResults = (data?.results || []).slice(0, 24);
+          setResults(nextResults);
+          queryCache.set(cacheKey, { data: nextResults, ts: Date.now() });
+        } catch (e: any) {
+          if (e?.name !== 'AbortError') setError('搜索出错，请稍后再试');
+        } finally {
+          setLoading(false);
+          setDone(true);
         }
-        const data = await res.json();
-        setResults((data?.results || []).slice(0, 24));
-      } catch (e: any) {
-        if (e?.name !== 'AbortError') setError('搜索出错，请稍后再试');
-      } finally {
-        setLoading(false);
-        setDone(true);
-      }
-    }, 350);
+      })();
+    }, DEBOUNCE_MS);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
