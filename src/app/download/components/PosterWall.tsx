@@ -224,7 +224,7 @@ function PosterBlock({ items }: { items: WallItem[] }) {
 
 /**
  * 影视海报墙背景：双列无缝垂直滚动 + 鼠标视差 + 中心聚光暗角 + 胶片颗粒
- * 真实海报来自 /api/trending（豆瓣热门），经 /api/image-proxy 代理加载
+ * 真实海报来自 /api/trending（豆瓣热门高清原图），经 /api/poster-cache 下载到本地落盘后加载，更稳定
  */
 export default function PosterWall() {
   const wallRef = useRef<HTMLDivElement>(null);
@@ -246,7 +246,7 @@ export default function PosterWall() {
             real.push({
               title: it.title || '电影',
               rate: it.rate ? String(it.rate) : '',
-              src: `/api/image-proxy?url=${encodeURIComponent(it.poster)}`,
+              src: `/api/poster-cache?url=${encodeURIComponent(it.poster)}`,
             });
             if (real.length >= TARGET_COUNT) break;
           }

@@ -77,7 +77,8 @@ export async function GET(_request: NextRequest) {
       items.map((item) => ({
         id: item.id,
         title: item.title,
-        poster: item.cover,
+        // 豆瓣缩略图 s_ratio_poster 仅约 20KB，替换为 l 变体（原图 1080p，100KB~1.4MB）保证高清
+        poster: item.cover.replace('/s_ratio_poster/', '/l/'),
         source,
         source_name: source,
         year: '',

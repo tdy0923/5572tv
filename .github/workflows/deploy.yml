@@ -47,6 +47,10 @@ jobs:
               "https://raw.githubusercontent.com/${{ github.repository }}/main/static/download/5572tv-android.apk" || true
             echo "APK size: $(wc -c < /app/static/download/5572tv-android.apk 2>/dev/null || echo 0) bytes"
 
+            # 海报本地缓存目录（nextjs 用户 uid=1001），挂载到容器 public/poster-cache 实现跨部署持久化
+            mkdir -p /app/poster-cache
+            chown -R 1001:1001 /app/poster-cache
+
             docker run -d \
               --name 5572tv-core \
               --network 5572tv-net \
@@ -69,6 +73,7 @@ jobs:
               -e AI_API_KEY_6='${{ secrets.AI_API_KEY_6 }}' \
               -v /app/video-cache:/app/video-cache \
               -v /app/static/download:/app/static/download \
+              -v /app/poster-cache:/app/public/poster-cache \
               --restart unless-stopped \
               ghcr.io/${{ github.repository_owner }}/5572tv:latest
 
