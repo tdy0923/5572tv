@@ -96,10 +96,10 @@ export function QuickLoginGrid({
             type='button'
             onClick={onTelegramToggle}
             aria-expanded={telegramExpanded}
-            className={`inline-flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95 ${
+            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95 ${
               telegramExpanded
-                ? 'border-[#2AABEE] bg-[#2AABEE]/10 text-[#1684c0] dark:text-[#2AABEE]'
-                : 'border-[#2AABEE]/60 bg-white text-gray-700 hover:bg-[#2AABEE]/5 dark:bg-transparent dark:text-gray-200'
+                ? 'border-[#2AABEE]/70 bg-[#2AABEE]/15 text-[#7ecbff]'
+                : 'border-white/15 bg-white/[0.05] text-gray-200 hover:border-[#2AABEE]/50 hover:bg-[#2AABEE]/10'
             }`}
           >
             <Send className='h-4 w-4 text-[#2AABEE]' />

@@ -1247,12 +1247,230 @@ html.dark textarea:-webkit-autofill {
   animation: slide-down 0.25s ease-out;
 }
 
-/* --- 18.7 认证页焦点可见性（鼠标/遥控器/键盘统一可见） --- */
+/* --- 18.6b 沉浸式科技登录背景 --- */
+.auth-aura {
+  will-change: transform;
+  pointer-events: none;
+}
+.aurora-a {
+  animation: auth-aurora-a 22s ease-in-out infinite;
+}
+.aurora-b {
+  animation: auth-aurora-b 26s ease-in-out infinite;
+}
+@keyframes auth-aurora-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6vmax, 4vmax, 0) scale(1.12);
+  }
+}
+@keyframes auth-aurora-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-7vmax, -4vmax, 0) scale(0.94);
+  }
+}
+
+.auth-grid-whirl {
+  will-change: transform;
+  background-image: repeating-conic-gradient(
+    from 0deg,
+    rgba(244, 194, 77, 0.5) 0deg 0.4deg,
+    transparent 0.4deg 3deg
+  );
+  -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+  mask-image: radial-gradient(closest-side, #000, transparent);
+  animation: auth-grid-whirl 90s linear infinite;
+}
+@keyframes auth-grid-whirl {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.auth-bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 10%, transparent 80%);
+  mask-image: radial-gradient(closest-side, #000 10%, transparent 80%);
+}
+
+.auth-scanline {
+  top: 0;
+  animation: auth-scan 11s linear infinite;
+  mix-blend-mode: screen;
+}
+@keyframes auth-scan {
+  0% {
+    top: -5%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+.auth-dust {
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.55) 0 1px,
+    transparent 1.6px
+  );
+  background-size: 160px 160px;
+  background-position:
+    0 0,
+    40px 60px;
+  -webkit-mask-image: radial-gradient(closest-side, #000, transparent 85%);
+  mask-image: radial-gradient(closest-side, #000, transparent 85%);
+  animation: auth-dust 36s linear infinite alternate;
+  opacity: 0.5;
+}
+@keyframes auth-dust {
+  0% {
+    background-position: 0 0;
+    opacity: 0.35;
+  }
+  100% {
+    background-position: 260px 180px;
+    opacity: 0.7;
+  }
+}
+
+/* --- 玻璃卡片脉冲呼吸光环（居中卡片四周） --- */
+@keyframes auth-card-halo {
+  0%,
+  100% {
+    opacity: 0.55;
+    box-shadow:
+      0 0 0 1px rgba(244, 194, 77, 0.18),
+      0 0 60px rgba(244, 194, 77, 0.08),
+      inset 0 0 30px rgba(244, 194, 77, 0.05);
+  }
+  50% {
+    opacity: 0.95;
+    box-shadow:
+      0 0 0 1px rgba(244, 194, 77, 0.32),
+      0 0 90px rgba(244, 194, 77, 0.16),
+      inset 0 0 46px rgba(244, 194, 77, 0.09);
+  }
+}
+.auth-card-halo {
+  animation: auth-card-halo 5.5s ease-in-out infinite;
+}
+
+.auth-logo-pulse {
+  animation: auth-logo-pulse 3.4s ease-in-out infinite;
+}
+@keyframes auth-logo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.9;
+  }
+}
+
+/* --- 18.7 认证页：玻璃卡片为常暗沉浸样式，强制表单文字/分隔/附文为浅色可读层 --- */
+[data-auth-root] {
+  color-scheme: dark;
+}
 [data-auth-root] :focus-visible {
   outline: 2px solid rgba(244, 194, 77, 0.9);
   outline-offset: 2px;
   border-radius: 8px;
 }
+/* 卡片内文字统一转浅色（仅限排版元素，避免误伤按钮/输入框） */
+[data-auth-root] .auth-card p,
+[data-auth-root] .auth-card h1,
+[data-auth-root] .auth-card h2,
+[data-auth-root] .auth-card h3,
+[data-auth-root] .auth-card label:not(.auth-label),
+[data-auth-root] .auth-card span:not(button, .truncate) {
+  color: #e5e7eb;
+}
+[data-auth-root] .auth-card :not(button).text-gray-600,
+[data-auth-root] .auth-card :not(button).text-gray-700,
+[data-auth-root] .auth-card :not(button).text-gray-800,
+[data-auth-root] .auth-card :not(button).text-gray-900,
+[data-auth-root] .auth-card :not(button).text-gray-950 {
+  color: #e5e7eb;
+}
+[data-auth-root] .auth-card :not(button).text-gray-500,
+[data-auth-root] .auth-card :not(button).text-gray-400 {
+  color: #9ca3af;
+}
+[data-auth-root] .auth-card p.text-red-500,
+[data-auth-root] .auth-card .text-red-500 {
+  color: #f87171;
+}
+[data-auth-root] .auth-card p.text-green-600,
+[data-auth-root] .auth-card .text-green-500 {
+  color: #4ade80;
+}
+[data-auth-root] .auth-card p.text-blue-600,
+[data-auth-root] .auth-card .text-blue-700,
+[data-auth-root] .auth-card p.text-blue-800 {
+  color: #93c5fd;
+}
+/* 分隔线与次级边框统一为细白 */
+[data-auth-root] .auth-card .border-gray-200,
+[data-auth-root] .auth-card .border-gray-300,
+[data-auth-root] .auth-card .border-gray-700 {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+/* 玻璃输入框：焦点/底色兼容常暗 */
+[data-auth-root] .auth-card .ui-input,
+[data-auth-root] .auth-card input[type='text'],
+[data-auth-root] .auth-card input[type='password'] {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3f4f6;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+[data-auth-root] .auth-card .ui-input::placeholder {
+  color: rgba(148, 163, 184, 0.85);
+}
+[data-auth-root] .auth-card .ui-input:focus {
+  border-color: rgba(244, 194, 77, 0.7);
+  box-shadow: 0 0 0 2px rgba(244, 194, 77, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+}
+[data-auth-root] .auth-card .auth-label {
+  color: #d8dbe0;
+}
+/* 次级按钮暗化到玻璃风格 */
+[data-auth-root] .auth-card .ui-secondary-button,
+[data-auth-root] .auth-card a.ui-secondary-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+[data-auth-root] .auth-card .ui-secondary-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- 18.7 电视端（10 尺 UI）放大适配：字号/触达区/间距 --- */
 
 /* --- 18.8 电视端（10 尺 UI）放大适配：字号/触达区/间距 --- */
 [data-tv] .ui-input {
