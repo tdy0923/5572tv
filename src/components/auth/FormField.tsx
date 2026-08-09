@@ -40,7 +40,8 @@ export function FormField({
         </div>
         <input
           id={id}
-          className={`ui-input pl-10 pr-10 sm:pl-12 sm:pr-12 ${className}`}
+          className={`ui-input ${className}`}
+          style={{ paddingLeft: '2.75rem', paddingRight: '2.75rem' }}
           {...inputProps}
         />
         {rightElement && (

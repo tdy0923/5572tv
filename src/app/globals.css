@@ -1392,85 +1392,12 @@ html.dark textarea:-webkit-autofill {
   }
 }
 
-/* --- 18.7 认证页：玻璃卡片为常暗沉浸样式，强制表单文字/分隔/附文为浅色可读层 --- */
-[data-auth-root] {
-  color-scheme: dark;
-}
+/* --- 18.7 认证页：明暗自适应。文字/边框/输入框依赖各页面原生 dark: 变体 --- */
 [data-auth-root] :focus-visible {
   outline: 2px solid rgba(244, 194, 77, 0.9);
   outline-offset: 2px;
   border-radius: 8px;
 }
-/* 卡片内文字统一转浅色（仅限排版元素，避免误伤按钮/输入框） */
-[data-auth-root] .auth-card p,
-[data-auth-root] .auth-card h1,
-[data-auth-root] .auth-card h2,
-[data-auth-root] .auth-card h3,
-[data-auth-root] .auth-card label:not(.auth-label),
-[data-auth-root] .auth-card span:not(button, .truncate) {
-  color: #e5e7eb;
-}
-[data-auth-root] .auth-card :not(button).text-gray-600,
-[data-auth-root] .auth-card :not(button).text-gray-700,
-[data-auth-root] .auth-card :not(button).text-gray-800,
-[data-auth-root] .auth-card :not(button).text-gray-900,
-[data-auth-root] .auth-card :not(button).text-gray-950 {
-  color: #e5e7eb;
-}
-[data-auth-root] .auth-card :not(button).text-gray-500,
-[data-auth-root] .auth-card :not(button).text-gray-400 {
-  color: #9ca3af;
-}
-[data-auth-root] .auth-card p.text-red-500,
-[data-auth-root] .auth-card .text-red-500 {
-  color: #f87171;
-}
-[data-auth-root] .auth-card p.text-green-600,
-[data-auth-root] .auth-card .text-green-500 {
-  color: #4ade80;
-}
-[data-auth-root] .auth-card p.text-blue-600,
-[data-auth-root] .auth-card .text-blue-700,
-[data-auth-root] .auth-card p.text-blue-800 {
-  color: #93c5fd;
-}
-/* 分隔线与次级边框统一为细白 */
-[data-auth-root] .auth-card .border-gray-200,
-[data-auth-root] .auth-card .border-gray-300,
-[data-auth-root] .auth-card .border-gray-700 {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-/* 玻璃输入框：焦点/底色兼容常暗 */
-[data-auth-root] .auth-card .ui-input,
-[data-auth-root] .auth-card input[type='text'],
-[data-auth-root] .auth-card input[type='password'] {
-  background: rgba(255, 255, 255, 0.06);
-  color: #f3f4f6;
-  border-color: rgba(255, 255, 255, 0.14);
-}
-[data-auth-root] .auth-card .ui-input::placeholder {
-  color: rgba(148, 163, 184, 0.85);
-}
-[data-auth-root] .auth-card .ui-input:focus {
-  border-color: rgba(244, 194, 77, 0.7);
-  box-shadow: 0 0 0 2px rgba(244, 194, 77, 0.25);
-  background: rgba(255, 255, 255, 0.08);
-}
-[data-auth-root] .auth-card .auth-label {
-  color: #d8dbe0;
-}
-/* 次级按钮暗化到玻璃风格 */
-[data-auth-root] .auth-card .ui-secondary-button,
-[data-auth-root] .auth-card a.ui-secondary-button {
-  background: rgba(255, 255, 255, 0.05);
-  color: #e5e7eb;
-  border-color: rgba(255, 255, 255, 0.16);
-}
-[data-auth-root] .auth-card .ui-secondary-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* --- 18.7 电视端（10 尺 UI）放大适配：字号/触达区/间距 --- */
 
 /* --- 18.8 电视端（10 尺 UI）放大适配：字号/触达区/间距 --- */
 [data-tv] .ui-input {

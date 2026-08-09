@@ -14,7 +14,7 @@ type AuthShellProps = {
   subtitle?: string;
   icon?: ReactNode;
   children: ReactNode;
-  /** 品牌区扩展内容（卡片下方，如 App 下载入口） */
+  /** 卡片下方扩展内容（如 App 下载入口） */
   brandExtra?: ReactNode;
   /** 卡片下方内容（如 App 下载横条） */
   footer?: ReactNode;
@@ -34,7 +34,7 @@ function LogoMark({
   return (
     <div
       aria-hidden
-      className={`flex items-center justify-center bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] ${sizes[size]}`}
+      className={`flex items-center justify-center bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_30px_rgba(244,194,77,0.35)] ${sizes[size]}`}
     >
       {children}
     </div>
@@ -56,9 +56,9 @@ export function AuthShell({
     <div
       data-auth-root
       data-tv={isTV || undefined}
-      className='relative min-h-dvh w-full overflow-hidden'
+      className='relative min-h-dvh w-full overflow-hidden bg-[#f4f6fa] dark:bg-[#05070d]'
     >
-      {/* 沉浸式科技背景 */}
+      {/* 影视感明暗自适应背景 */}
       <AuthBackground />
 
       {/* 主题切换 */}
@@ -69,36 +69,43 @@ export function AuthShell({
         <ThemeToggle />
       </div>
 
-      {/* 居中玻璃卡片 */}
+      {/* 居中内容区（宽敞） */}
       <div className='relative z-10 flex min-h-dvh items-center justify-center px-4 py-10 sm:px-6'>
-        <div className='flex w-full max-w-sm flex-col items-center'>
+        <div className='flex w-full max-w-lg flex-col items-center'>
           {/* 品牌 */}
           <FluentFadeIn>
-            <div className='mb-8 flex flex-col items-center text-center'>
+            <div className='mb-7 flex flex-col items-center text-center'>
               <div className='relative'>
-                <div className='absolute -inset-3 rounded-3xl bg-[#f4c24d]/20 blur-2xl auth-logo-pulse' />
+                <div className='absolute -inset-3 rounded-3xl bg-[#f4c24d]/20 blur-2xl auth-logo-pulse dark:bg-[#f4c24d]/15' />
                 <LogoMark size={isTV ? 'lg' : 'md'}>{icon}</LogoMark>
               </div>
-              <h2 className='mt-5 text-2xl font-bold tracking-tight text-gray-100'>
+              <h2 className='mt-5 text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl'>
                 {siteName}
               </h2>
+              <p className='mt-1.5 text-sm text-gray-500 dark:text-gray-400 sm:text-base'>
+                随时随地，畅享影音世界
+              </p>
             </div>
           </FluentFadeIn>
 
-          {/* 玻璃卡片 */}
+          {/* 玻璃/白色卡片（明暗自适应，wider） */}
           <FluentFadeIn delay={80} className='w-full'>
-            <div className='auth-card auth-card-halo relative w-full rounded-3xl border border-white/12 bg-white/[0.06] p-6 backdrop-blur-xl sm:p-8'>
-              {/* 顶部渐变高光 */}
+            <div
+              className={`auth-card relative w-full rounded-3xl border p-6 shadow-xl shadow-black/5 backdrop-blur-xl sm:p-9 ${
+                isTV
+                  ? 'border-white/10 bg-[#0d1117]/85'
+                  : 'border-gray-200/80 bg-white/80 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-[0_24px_80px_rgba(0,0,0,0.5)]'
+              }`}
+            >
+              {/* 顶部金色高光 */}
               <div className='pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f4c24d]/70 to-transparent' />
-              {/* 左上角玻璃高光 */}
-              <div className='pointer-events-none absolute -left-px -top-px h-20 w-20 rounded-tl-3xl bg-gradient-to-br from-white/10 to-transparent blur-[1px]' />
 
               <div className='mb-6 text-center sm:mb-7'>
-                <h1 className='text-xl font-semibold tracking-tight text-gray-100 sm:text-2xl'>
+                <h1 className='text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-50 sm:text-2xl'>
                   {title}
                 </h1>
                 {subtitle && (
-                  <p className='mt-1.5 text-xs leading-relaxed text-gray-400 sm:text-sm'>
+                  <p className='mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400 sm:text-sm'>
                     {subtitle}
                   </p>
                 )}
