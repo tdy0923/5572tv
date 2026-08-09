@@ -60,6 +60,76 @@ function getReferer(url: string): string {
 }
 
 /**
+ * 海报下载调度：并发限流 + 同 URL 去重 + 失败重试
+ * 豆瓣图片源对高并发断连敏感，这里控制全局并发不超过 MAX_CONCURRENT_DOWNLOADS，
+ * 相同 URL 的并发请求共享同一次下载，避免海报墙双列重复下载。
+ */
+const MAX_CONCURRENT_DOWNLOADS = 4;
+const DOWNLOAD_TIMEOUT_MS = 20000;
+const RETRY_DELAY_MS = 500;
+
+const inflight = new Map<string, Promise<ArrayBuffer | null>>();
+let activeDownloads = 0;
+const downloadQueue: Array<{
+  url: string;
+  resolve: (data: ArrayBuffer | null) => void;
+}> = [];
+
+async function downloadOnce(url: string): Promise<ArrayBuffer | null> {
+  const referer = getReferer(url);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          Referer: referer,
+          Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        },
+        signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
+      });
+      if (!response.ok) return null;
+      return await response.arrayBuffer();
+    } catch {
+      if (attempt === 0)
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    }
+  }
+  return null;
+}
+
+function pumpQueue() {
+  while (
+    activeDownloads < MAX_CONCURRENT_DOWNLOADS &&
+    downloadQueue.length > 0
+  ) {
+    const next = downloadQueue.shift()!;
+    activeDownloads++;
+    downloadOnce(next.url)
+      .then(next.resolve)
+      .finally(() => {
+        activeDownloads--;
+        pumpQueue();
+      });
+  }
+}
+
+function queueDownload(url: string): Promise<ArrayBuffer | null> {
+  return new Promise((resolve) => {
+    downloadQueue.push({ url, resolve });
+    pumpQueue();
+  });
+}
+
+async function getImageData(url: string): Promise<ArrayBuffer | null> {
+  const existing = inflight.get(url);
+  if (existing) return existing;
+  const p = queueDownload(url).finally(() => inflight.delete(url));
+  inflight.set(url, p);
+  return p;
+}
+
+/**
  * 保存海报并管理旧文件
  * 同一个contentId的新海报会自动替换旧的
  */
@@ -146,30 +216,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 下载图片
-    const referer = getReferer(url);
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Referer: referer,
-        Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-      },
-      signal: AbortSignal.timeout(10000),
-    });
+    // 下载图片（并发限流 + 去重 + 重试）
+    const imageData = await getImageData(url);
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed' }, { status: 502 });
+    if (!imageData) {
+      return NextResponse.json(
+        { error: 'Failed to download poster' },
+        { status: 502 },
+      );
     }
-
-    const imageData = await response.arrayBuffer();
 
     // 保存海报（自动替换同ID旧文件）
     await savePoster(contentId, imageData, url);
 
     return new NextResponse(imageData, {
       headers: {
-        'Content-Type': response.headers.get('content-type') || 'image/jpeg',
+        'Content-Type': 'image/jpeg',
         'Cache-Control': 'public, max-age=604800, s-maxage=604800',
         'Access-Control-Allow-Origin': '*',
         Vary: '',
