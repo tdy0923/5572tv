@@ -16,11 +16,8 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
-import {
-  getCachedWallpaperUrl,
-  setCachedWallpaperUrl,
-} from '@/lib/wallpaper-cache';
-
+import { AppDownloads } from '@/components/auth/AppDownloads';
+import { FormField } from '@/components/auth/FormField';
 import { AuthShell } from '@/components/AuthShell';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -65,28 +62,6 @@ function RegisterPageClient() {
   };
 
   const strength = getPasswordStrength(password);
-
-  // 获取 Bing 每日壁纸（通过代理 API）
-  useEffect(() => {
-    const fetchBingWallpaper = async () => {
-      try {
-        const cachedWallpaper = getCachedWallpaperUrl();
-        if (cachedWallpaper) {
-          return;
-        }
-
-        const response = await fetch('/api/bing-wallpaper');
-        const data = await response.json();
-        if (data.url) {
-          setCachedWallpaperUrl(data.url);
-        }
-      } catch (error) {
-        //         console.log('Failed to fetch Bing wallpaper:', error);
-      }
-    };
-
-    fetchBingWallpaper();
-  }, []);
 
   // 检查注册是否可用
   useEffect(() => {
@@ -196,12 +171,41 @@ function RegisterPageClient() {
     }
   };
 
+  const alertBox = (kind: 'error' | 'success', msg: string) => (
+    <div
+      role={kind === 'error' ? 'alert' : 'status'}
+      aria-live='polite'
+      className={`flex items-center gap-2 rounded-lg border p-3 animate-slide-down ${
+        kind === 'error'
+          ? 'border-red-200 bg-red-50 dark:border-red-800/50 dark:bg-red-900/20'
+          : 'border-green-200 bg-green-50 dark:border-green-800/50 dark:bg-green-900/20'
+      }`}
+    >
+      {kind === 'error' ? (
+        <AlertCircle className='h-4 w-4 shrink-0 text-red-600 dark:text-red-400' />
+      ) : (
+        <CheckCircle className='h-4 w-4 shrink-0 text-green-600 dark:text-green-400' />
+      )}
+      <p
+        className={`text-xs sm:text-sm ${
+          kind === 'error'
+            ? 'text-red-600 dark:text-red-400'
+            : 'text-green-600 dark:text-green-400'
+        }`}
+      >
+        {msg}
+      </p>
+    </div>
+  );
+
   if (!shouldShowRegister) {
     return (
       <AuthShell
         title='注册'
         subtitle='创建您的新账户'
         icon={<UserPlus className='h-6 w-6 text-white' />}
+        brandExtra={<AppDownloads variant='panel' />}
+        footer={<AppDownloads variant='footer' />}
       >
         <div className='py-10 text-center text-sm text-gray-500 dark:text-gray-400'>
           正在加载注册配置...
@@ -214,12 +218,12 @@ function RegisterPageClient() {
   if (registrationDisabled) {
     return (
       <div className='relative min-h-screen overflow-hidden px-4 py-8'>
-        <div className='absolute top-4 right-4 z-20'>
+        <div className='absolute right-4 top-4 z-20'>
           <ThemeToggle />
         </div>
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.16),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12),_transparent_26%),linear-gradient(180deg,_#f6f7fb,_#eef2f7)] dark:bg-[radial-gradient(circle_at_top,_rgba(244,194,77,0.1),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.08),_transparent_24%),linear-gradient(180deg,_#0b0f14,_#111827)]' />
         <div className='relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center sm:min-h-screen'>
-          <div className='w-full max-w-md overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 p-6 shadow-md  dark:border-gray-700 dark:bg-[#0f131a]/82 sm:p-10'>
+          <div className='w-full max-w-md overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 p-6 shadow-md dark:bg-[#0f131a]/82 sm:p-10'>
             <div className='mb-8 text-center'>
               <div className='mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#f59e0b] via-[#ea580c] to-[#dc2626] text-white shadow-[0_12px_28px_rgba(249,115,22,0.22)]'>
                 <AlertCircle className='h-6 w-6' />
@@ -228,20 +232,20 @@ function RegisterPageClient() {
                 注册功能暂不可用
               </div>
             </div>
-            <div className='text-center space-y-6'>
-              <div className='p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50'>
-                <p className='text-gray-700 dark:text-gray-300 text-sm leading-relaxed'>
+            <div className='space-y-6 text-center'>
+              <div className='rounded-xl border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800/50 dark:bg-yellow-900/20'>
+                <p className='text-sm leading-relaxed text-gray-700 dark:text-gray-300'>
                   {disabledReason || '管理员已关闭用户注册功能'}
                 </p>
               </div>
-              <p className='text-gray-500 dark:text-gray-500 text-xs'>
+              <p className='text-xs text-gray-500 dark:text-gray-500'>
                 如需注册账户，请联系网站管理员
               </p>
               <button
                 onClick={() => router.push('/login')}
-                className='group relative inline-flex w-full justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/40 hover:-translate-y-0.5 overflow-hidden'
+                className='group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-500/30 transition-all duration-300 hover:-translate-y-0.5 hover:from-green-700 hover:to-emerald-700 hover:shadow-xl hover:shadow-green-500/40'
               >
-                <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
+                <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
                 返回登录 →
               </button>
             </div>
@@ -256,167 +260,121 @@ function RegisterPageClient() {
       title='注册'
       subtitle='创建您的新账户'
       icon={<UserPlus className='h-6 w-6 text-white' />}
+      brandExtra={<AppDownloads variant='panel' />}
+      footer={<AppDownloads variant='footer' />}
     >
-      <form onSubmit={handleSubmit} className='space-y-4 sm:space-y-5'>
-        <div className='group'>
-          <label
-            htmlFor='username'
-            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-          >
-            用户名
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-              <User className='h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors' />
-            </div>
-            <input
-              id='username'
-              type='text'
-              autoComplete='username'
-              autoCapitalize='none'
-              autoCorrect='off'
-              spellCheck={false}
-              className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base'
-              placeholder='3-20位字母数字下划线'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          {username.length > 0 && !usernameValid && (
-            <p className='mt-1.5 text-xs text-red-500'>
-              用户名只能包含字母、数字和下划线，长度3-20位
-            </p>
-          )}
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className='auth-field-grid space-y-4 sm:space-y-5'
+      >
+        <FormField
+          id='username'
+          label='用户名'
+          icon={<User className='h-4 w-4 sm:h-5 sm:w-5' />}
+          type='text'
+          autoComplete='username'
+          autoCapitalize='none'
+          autoCorrect='off'
+          spellCheck={false}
+          autoFocus
+          placeholder='3-20位字母数字下划线'
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          error={
+            username.length > 0 && !usernameValid
+              ? '用户名只能包含字母、数字和下划线，长度3-20位'
+              : undefined
+          }
+        />
 
-        <div className='group'>
-          <label
-            htmlFor='password'
-            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-          >
-            密码
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-              <Lock className='h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors' />
-            </div>
-            <input
-              id='password'
-              type={showPassword ? 'text' : 'password'}
-              autoComplete='new-password'
-              className='ui-input pl-10 sm:pl-12 pr-12 sm:pr-14 sm:text-base'
-              placeholder='至少6位字符'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <FormField
+          id='password'
+          label='密码'
+          icon={<Lock className='h-4 w-4 sm:h-5 sm:w-5' />}
+          type={showPassword ? 'text' : 'password'}
+          autoComplete='new-password'
+          placeholder='至少6位字符'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          rightElement={
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
               aria-label={showPassword ? '隐藏密码' : '显示密码'}
             >
               {showPassword ? (
-                <EyeOff className='h-5 w-5' />
+                <EyeOff className='h-4 w-4 sm:h-5 sm:w-5' />
               ) : (
-                <Eye className='h-5 w-5' />
+                <Eye className='h-4 w-4 sm:h-5 sm:w-5' />
               )}
             </button>
-          </div>
-          {password && (
-            <div className='mt-2'>
-              <div className='flex gap-1 mb-1'>
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={`strength-${i}`}
-                    className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`}
-                  />
-                ))}
+          }
+          hint={
+            password ? (
+              <div className='mt-2'>
+                <div className='mb-1 flex gap-1'>
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={`strength-${i}`}
+                      className={`h-1 flex-1 rounded-full ${i <= strength.level ? strength.color : 'bg-gray-200 dark:bg-gray-700'}`}
+                    />
+                  ))}
+                </div>
+                <p className='text-xs text-gray-500 dark:text-gray-400'>
+                  密码强度: {strength.label}
+                </p>
               </div>
-              <p className='text-xs text-gray-500'>
-                密码强度: {strength.label}
-              </p>
-            </div>
-          )}
-        </div>
+            ) : undefined
+          }
+        />
 
-        <div className='group'>
-          <label
-            htmlFor='confirmPassword'
-            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-          >
-            确认密码
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-              <Shield className='h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors' />
-            </div>
-            <input
-              id='confirmPassword'
-              type={showConfirmPassword ? 'text' : 'password'}
-              autoComplete='new-password'
-              className='ui-input pl-10 sm:pl-12 pr-12 sm:pr-14 sm:text-base'
-              placeholder='再次输入密码'
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+        <FormField
+          id='confirmPassword'
+          label='确认密码'
+          icon={<Shield className='h-4 w-4 sm:h-5 sm:w-5' />}
+          type={showConfirmPassword ? 'text' : 'password'}
+          autoComplete='new-password'
+          placeholder='再次输入密码'
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          rightElement={
             <button
               type='button'
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className='absolute inset-y-0 right-0 pr-4 sm:pr-5 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
               aria-label={showConfirmPassword ? '隐藏密码' : '显示密码'}
             >
               {showConfirmPassword ? (
-                <EyeOff className='h-5 w-5' />
+                <EyeOff className='h-4 w-4 sm:h-5 sm:w-5' />
               ) : (
-                <Eye className='h-5 w-5' />
+                <Eye className='h-4 w-4 sm:h-5 sm:w-5' />
               )}
             </button>
-          </div>
-          {confirmPassword.length > 0 && !passwordMatches && (
-            <p className='mt-1.5 text-xs text-red-500'>两次输入的密码不一致</p>
-          )}
-        </div>
+          }
+          error={
+            confirmPassword.length > 0 && !passwordMatches
+              ? '两次输入的密码不一致'
+              : undefined
+          }
+        />
 
         {requireInviteCode && (
-          <div className='group'>
-            <label
-              htmlFor='inviteCode'
-              className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-            >
-              邀请码
-            </label>
-            <div className='relative'>
-              <div className='absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none'>
-                <Sparkles className='h-5 w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors' />
-              </div>
-              <input
-                id='inviteCode'
-                type='text'
-                autoComplete='off'
-                className='ui-input pl-10 sm:pl-12 pr-4 sm:text-base uppercase'
-                placeholder='请输入邀请码'
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              />
-            </div>
-          </div>
+          <FormField
+            id='inviteCode'
+            label='邀请码'
+            icon={<Sparkles className='h-4 w-4 sm:h-5 sm:w-5' />}
+            type='text'
+            autoComplete='off'
+            className='uppercase'
+            placeholder='请输入邀请码'
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+          />
         )}
 
-        {error && (
-          <div className='flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'>
-            <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
-            <p className='text-sm text-red-600 dark:text-red-400'>{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className='flex items-center gap-2 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 animate-slide-down'>
-            <CheckCircle className='h-4 w-4 text-green-600 dark:text-green-400 shrink-0' />
-            <p className='text-sm text-green-600 dark:text-green-400'>
-              {success}
-            </p>
-          </div>
-        )}
+        {error && alertBox('error', error)}
+        {success && alertBox('success', success)}
 
         <button
           type='submit'
@@ -428,10 +386,10 @@ function RegisterPageClient() {
             loading ||
             !!success
           }
-          className='ui-primary-button group relative w-full overflow-hidden text-base'
+          className='ui-primary-button group relative w-full overflow-hidden'
         >
-          <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
-          <UserPlus className='h-5 w-5' />
+          <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
+          <UserPlus className='h-4 w-4 sm:h-5 sm:w-5' />
           {loading
             ? '注册中...'
             : success
@@ -439,12 +397,15 @@ function RegisterPageClient() {
               : '立即注册'}
         </button>
 
-        <div className='mt-6 pt-6 border-t border-gray-200 dark:border-gray-700'>
-          <p className='text-center text-gray-600 dark:text-gray-400 text-sm mb-3'>
+        <div className='space-y-3 border-t border-gray-200 pt-6 dark:border-white/10'>
+          <p className='text-center text-xs text-gray-600 dark:text-gray-400 sm:text-sm'>
             已有账户？
           </p>
-          <a href='/login' className='ui-secondary-button group w-full text-sm'>
-            <Lock className='w-4 h-4' />
+          <a
+            href='/login'
+            className='ui-secondary-button group w-full text-xs sm:text-sm'
+          >
+            <Lock className='h-4 w-4' />
             <span>立即登录</span>
             <span className='inline-block transition-transform group-hover:translate-x-1'>
               →

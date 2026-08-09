@@ -7,6 +7,8 @@ import { AlertCircle, Lock, Shield, User } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import { AppDownloads } from '@/components/auth/AppDownloads';
+import { FormField } from '@/components/auth/FormField';
 import { AuthShell } from '@/components/AuthShell';
 
 function OIDCRegisterContent() {
@@ -96,6 +98,8 @@ function OIDCRegisterContent() {
       title='完成 OIDC 注册'
       subtitle='补充用户名后继续访问您的内容与播放记录'
       icon={<Shield className='h-6 w-6 text-white' />}
+      brandExtra={<AppDownloads variant='panel' />}
+      footer={<AppDownloads variant='footer' />}
     >
       {oidcInfo && (
         <div className='mb-5 rounded-2xl border border-blue-200 bg-blue-50/90 p-4 dark:border-blue-800/60 dark:bg-blue-900/20'>
@@ -131,35 +135,32 @@ function OIDCRegisterContent() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className='space-y-5 sm:space-y-6'>
-        <div className='group'>
-          <label
-            htmlFor='username'
-            className='mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300 sm:mb-2 sm:text-sm'
-          >
-            选择用户名
-          </label>
-          <div className='relative'>
-            <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4'>
-              <User className='h-4 w-4 text-gray-400 transition-colors group-focus-within:text-green-500 dark:text-gray-500 sm:h-5 sm:w-5' />
-            </div>
-            <input
-              id='username'
-              type='text'
-              autoComplete='username'
-              className='ui-input pl-10 pr-3 sm:pl-12 sm:pr-4'
-              placeholder='输入用户名（3-20位）'
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <p className='mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs'>
-            用户名只能包含字母、数字、下划线，长度 3-20 位
-          </p>
-        </div>
+      <form
+        onSubmit={handleSubmit}
+        className='auth-field-grid space-y-5 sm:space-y-6'
+      >
+        <FormField
+          id='username'
+          label='选择用户名'
+          icon={<User className='h-4 w-4 sm:h-5 sm:w-5' />}
+          type='text'
+          autoComplete='username'
+          placeholder='输入用户名（3-20位）'
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          hint={
+            <p className='mt-1.5 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs'>
+              用户名只能包含字母、数字、下划线，长度 3-20 位
+            </p>
+          }
+        />
 
         {error && (
-          <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-2.5 animate-slide-down dark:border-red-800/50 dark:bg-red-900/20 sm:p-3'>
+          <div
+            role='alert'
+            aria-live='polite'
+            className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 animate-slide-down dark:border-red-800/50 dark:bg-red-900/20'
+          >
             <AlertCircle className='h-4 w-4 shrink-0 text-red-600 dark:text-red-400' />
             <p className='text-xs text-red-600 dark:text-red-400 sm:text-sm'>
               {error}

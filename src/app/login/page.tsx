@@ -1,36 +1,29 @@
-/* eslint-disable no-console */
-/* eslint-disable unused-imports/no-unused-vars */
-
 'use client';
 
 import {
-  AlertCircle,
   Eye,
   EyeOff,
   Lightbulb,
   Lock,
-  QrCode,
   Send,
   Sparkles,
-  Tv,
   User,
   UserPlus,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
-import {
-  getCachedWallpaperUrl,
-  setCachedWallpaperUrl,
-} from '@/lib/wallpaper-cache';
-
+import { AppDownloads } from '@/components/auth/AppDownloads';
+import { FormField } from '@/components/auth/FormField';
+import { QuickLoginGrid } from '@/components/auth/QuickLoginGrid';
 import { AuthShell } from '@/components/AuthShell';
-import {
-  detectProvider,
-  getProviderButtonStyle,
-  getProviderButtonText,
-  OIDCProviderLogo,
-} from '@/components/OIDCProviderLogos';
+
+interface OIDCProviderItem {
+  id: string;
+  name: string;
+  buttonText: string;
+  issuer: string;
+}
 
 function LoginPageClient() {
   const router = useRouter();
@@ -51,87 +44,41 @@ function LoginPageClient() {
     }
   }, [searchParams]);
 
-  // Telegram Magic Link 状态
+  // Telegram 状态
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramDeepLink, setTelegramDeepLink] = useState('');
   const [telegramEnabled, setTelegramEnabled] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState('');
+  const [telegramOpen, setTelegramOpen] = useState(false);
 
-  // OIDC 登录状态
-  const [oidcProviders, setOidcProviders] = useState<
-    Array<{
-      id: string;
-      name: string;
-      buttonText: string;
-      issuer: string;
-    }>
-  >([]);
+  // OIDC 状态
+  const [oidcProviders, setOidcProviders] = useState<OIDCProviderItem[]>([]);
   const [oidcEnabled, setOidcEnabled] = useState(false);
   const [oidcButtonText, setOidcButtonText] = useState('使用OIDC登录');
   const [oidcIssuer, setOidcIssuer] = useState<string>('');
 
-  // 获取 Bing 每日壁纸（通过代理 API）
+  // 获取 Telegram / OIDC 服务器配置
   useEffect(() => {
-    const fetchBingWallpaper = async () => {
+    const fetchConfig = async () => {
       try {
-        const cachedWallpaper = getCachedWallpaperUrl();
-        if (cachedWallpaper) {
-          return;
-        }
-
-        const response = await fetch('/api/bing-wallpaper');
-        const data = await response.json();
-        if (data.url) {
-          setCachedWallpaperUrl(data.url);
-        }
-      } catch (error) {
-        //         console.log('Failed to fetch Bing wallpaper:', error);
-      }
-    };
-
-    fetchBingWallpaper();
-  }, []);
-
-  // 获取 Telegram Magic Link 配置
-  useEffect(() => {
-    const fetchTelegramConfig = async () => {
-      try {
-        //         console.log('[Login] Fetching server config...');
         const response = await fetch('/api/server-config');
         const data = await response.json();
-        //         console.log('[Login] Server config received:', data);
-        //         console.log('[Login] TelegramAuthConfig:', data.TelegramAuthConfig);
         if (data.TelegramAuthConfig?.enabled) {
-          //           console.log('[Login] Telegram is enabled!');
           setTelegramEnabled(true);
-        } else {
-          //           console.log('[Login] Telegram is NOT enabled');
         }
-
-        // 检查 OIDC 配置
-        //         console.log('[Login] OIDCConfig:', data.OIDCConfig);
-        //         console.log('[Login] OIDCProviders:', data.OIDCProviders);
-
-        // 优先使用新的多 Provider 配置
         if (data.OIDCProviders && data.OIDCProviders.length > 0) {
-          //           console.log('[Login] Multiple OIDC providers enabled!');
           setOidcProviders(data.OIDCProviders);
           setOidcEnabled(true);
         } else if (data.OIDCConfig?.enabled) {
-          // 向后兼容：旧的单 Provider 配置
-          //           console.log('[Login] OIDC is enabled!');
           setOidcEnabled(true);
           setOidcButtonText(data.OIDCConfig.buttonText || '使用OIDC登录');
           setOidcIssuer(data.OIDCConfig.issuer || '');
-        } else {
-          //           console.log('[Login] OIDC is NOT enabled');
         }
-      } catch (error) {
-        //         console.log('Failed to fetch server config:', error);
+      } catch {
+        // 配置拉取失败时静默，密码登录始终可用
       }
     };
-
-    fetchTelegramConfig();
+    fetchConfig();
   }, []);
 
   // 记住上次登录的用户名
@@ -170,7 +117,6 @@ function LoginPageClient() {
       });
 
       if (res.ok) {
-        // 记住用户名
         try {
           if (shouldAskUsername) {
             if (rememberMe) {
@@ -183,7 +129,6 @@ function LoginPageClient() {
           // ignore
         }
 
-        // 记录登入时间
         const loginTime = Date.now();
         try {
           await fetch('/api/user/my-stats', {
@@ -191,28 +136,25 @@ function LoginPageClient() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ loginTime }),
           });
-          // 更新 localStorage 记录
           localStorage.setItem('lastRecordedLogin', loginTime.toString());
-        } catch (error) {
-          //           console.log('记录登入时间失败:', error);
+        } catch {
           // 登入时间记录失败不影响正常登录流程
         }
 
         let redirect = searchParams.get('redirect') || '/';
-        // 防止 Open Redirect 漏洞：只允许相对路径
         if (!redirect.startsWith('/') || redirect.startsWith('//')) {
           redirect = '/';
         }
         router.replace(redirect);
-      } else if (res.status === 401) {
-        // 优先使用服务端返回的真实错误（如“用户被封禁”），默认回退到“密码错误”
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? '密码错误');
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error ?? '服务器错误');
+        setError(
+          res.status === 401
+            ? (data.error ?? '密码错误')
+            : (data.error ?? '服务器错误'),
+        );
       }
-    } catch (error) {
+    } catch {
       setError('网络错误，请稍后重试');
     } finally {
       setLoading(false);
@@ -221,10 +163,7 @@ function LoginPageClient() {
 
   // 生成 Telegram 登录链接
   const handleTelegramLogin = async () => {
-    //     console.log('[Frontend] Telegram login clicked');
     setError(null);
-
-    // 验证 Telegram 用户名
     if (!telegramUsername || telegramUsername.trim() === '') {
       setError('请输入您的 Telegram 用户名');
       return;
@@ -233,10 +172,6 @@ function LoginPageClient() {
     setTelegramLoading(true);
 
     try {
-      //       console.log(
-      //         '[Frontend] Generating deep link for user:',
-      //         telegramUsername,
-      //       );
       const res = await fetch('/api/telegram/send-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -244,99 +179,160 @@ function LoginPageClient() {
       });
 
       const data = await res.json();
-      //       console.log('[Frontend] API response:', {
-      //         ok: res.ok,
-      //         status: res.status,
-      //         data,
-      //       });
 
       if (res.ok && data.deepLink) {
         setTelegramDeepLink(data.deepLink);
-        // 自动打开 Telegram
         window.open(data.deepLink, '_blank');
       } else {
         setError(data.error || '生成链接失败，请重试');
       }
-    } catch (error) {
-      console.error('[Frontend] Error:', error);
+    } catch {
       setError('网络错误，请稍后重试');
     } finally {
       setTelegramLoading(false);
     }
   };
 
+  // 发起 OIDC 登录（多 Provider 带 provider 参数；旧版单 Provider 不带）
+  const startOIDC = (providerId: string) => {
+    const redirect = searchParams.get('redirect') || '/';
+    const safeRedirect =
+      redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/';
+    const params =
+      providerId === 'oidc'
+        ? `redirect=${encodeURIComponent(safeRedirect)}`
+        : `provider=${providerId}&redirect=${encodeURIComponent(safeRedirect)}`;
+    window.location.href = `/api/auth/oidc/login?${params}`;
+  };
+
+  // 旧版单 Provider 配置兜底为一个通用项
+  const effectiveProviders: OIDCProviderItem[] =
+    oidcEnabled && oidcProviders.length === 0
+      ? [
+          {
+            id: 'oidc',
+            name: 'OIDC',
+            buttonText: oidcButtonText,
+            issuer: oidcIssuer,
+          },
+        ]
+      : oidcProviders;
+
   return (
     <AuthShell
       title='登录'
       subtitle='欢迎回来，继续访问您的内容与播放记录'
       icon={<Sparkles className='h-6 w-6 text-white' />}
+      brandExtra={<AppDownloads variant='panel' />}
+      footer={<AppDownloads variant='footer' />}
     >
+      <QuickLoginGrid
+        oidcProviders={effectiveProviders}
+        oidcEnabled={oidcEnabled && shouldAskUsername}
+        telegramEnabled={telegramEnabled}
+        telegramExpanded={telegramOpen}
+        onTelegramToggle={() => setTelegramOpen((o) => !o)}
+        onOIDCStart={startOIDC}
+      >
+        {telegramEnabled && telegramOpen && (
+          <div className='auth-field-grid space-y-3 pt-1'>
+            <FormField
+              id='telegramUsername'
+              label='Telegram 用户名'
+              icon={<Send className='h-4 w-4 sm:h-5 sm:w-5' />}
+              type='text'
+              autoComplete='off'
+              placeholder='输入您的 Telegram 用户名'
+              value={telegramUsername}
+              disabled={telegramLoading}
+              onChange={(e) => setTelegramUsername(e.target.value)}
+              hint={
+                <p className='mt-1.5 flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs'>
+                  <Lightbulb className='inline h-3.5 w-3.5 text-yellow-500' />
+                  输入您的 Telegram 用户名（不含 @）
+                </p>
+              }
+            />
+
+            <button
+              type='button'
+              onClick={handleTelegramLogin}
+              disabled={telegramLoading || !telegramUsername.trim()}
+              className='ui-primary-button group relative w-full overflow-hidden'
+            >
+              <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
+              <Send className='h-4 w-4 sm:h-5 sm:w-5' />
+              {telegramLoading ? '正在打开 Telegram...' : '通过 Telegram 登录'}
+            </button>
+
+            {telegramDeepLink && (
+              <div className='rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/50 dark:bg-blue-900/20 sm:p-4'>
+                <p className='text-xs text-blue-800 dark:text-blue-200 sm:text-sm'>
+                  📱 已在新标签页打开 Telegram
+                </p>
+                <p className='mt-1 text-[11px] text-blue-600 dark:text-blue-300 sm:text-xs'>
+                  如果没有自动打开，请点击{' '}
+                  <a
+                    href={telegramDeepLink}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='font-semibold underline'
+                  >
+                    这里
+                  </a>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </QuickLoginGrid>
+
       <form
         onSubmit={handleSubmit}
-        className='space-y-4 sm:space-y-6'
-        aria-label='登录表单'
+        className='auth-field-grid space-y-4 sm:space-y-5'
       >
         {shouldAskUsername && (
-          <div className='group'>
-            <label
-              htmlFor='username'
-              className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'
-            >
-              用户名
-            </label>
-            <div className='relative'>
-              <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
-                <User className='h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-green-500 transition-colors' />
-              </div>
-              <input
-                id='username'
-                type='text'
-                autoComplete='username'
-                autoFocus={!password}
-                className='ui-input pl-10 sm:pl-12 pr-3 sm:pr-4'
-                placeholder='请输入用户名'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <label className='mt-2 flex items-center gap-2 cursor-pointer select-none'>
+          <>
+            <FormField
+              id='username'
+              label='用户名'
+              icon={<User className='h-4 w-4 sm:h-5 sm:w-5' />}
+              type='text'
+              autoComplete='username'
+              autoFocus={!password}
+              placeholder='请输入用户名'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <label className='-mt-2 flex cursor-pointer select-none items-center gap-2'>
               <input
                 type='checkbox'
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className='h-3.5 w-3.5 rounded border-gray-300 text-green-600 focus:ring-green-500'
+                className='h-3.5 w-3.5 rounded border-gray-300 text-[#d89c18] focus:ring-[#f4c24d]'
               />
               <span className='text-xs text-gray-500 dark:text-gray-400'>
                 记住用户名
               </span>
             </label>
-          </div>
+          </>
         )}
 
-        <div className='group'>
-          <label
-            htmlFor='password'
-            className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'
-          >
-            密码
-          </label>
-          <div className='relative'>
-            <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
-              <Lock className='h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-green-500 transition-colors' />
-            </div>
-            <input
-              id='password'
-              type={showPassword ? 'text' : 'password'}
-              autoComplete='current-password'
-              className='ui-input pl-10 sm:pl-12 pr-10 sm:pr-12'
-              placeholder='请输入访问密码'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+        <FormField
+          id='password'
+          label='密码'
+          icon={<Lock className='h-4 w-4 sm:h-5 sm:w-5' />}
+          type={showPassword ? 'text' : 'password'}
+          autoComplete='current-password'
+          placeholder='请输入访问密码'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          rightElement={
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+              aria-label={showPassword ? '隐藏密码' : '显示密码'}
             >
               {showPassword ? (
                 <EyeOff className='h-4 w-4 sm:h-5 sm:w-5' />
@@ -344,272 +340,60 @@ function LoginPageClient() {
                 <Eye className='h-4 w-4 sm:h-5 sm:w-5' />
               )}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {error && (
           <div
             role='alert'
             aria-live='polite'
-            className='flex items-center gap-2 p-3 sm:p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 animate-slide-down'
+            className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 animate-slide-down dark:border-red-800/50 dark:bg-red-900/20'
           >
-            <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
-            <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>
+            <svg
+              className='h-4 w-4 shrink-0 text-red-600 dark:text-red-400'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+            >
+              <circle cx='12' cy='12' r='10' />
+              <path d='M12 8v4M12 16h.01' strokeLinecap='round' />
+            </svg>
+            <p className='text-xs text-red-600 dark:text-red-400 sm:text-sm'>
               {error}
             </p>
           </div>
         )}
 
-        {/* 登录按钮 */}
         <button
           type='submit'
           disabled={!password || loading || (shouldAskUsername && !username)}
           className='ui-primary-button group relative w-full overflow-hidden'
         >
-          <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
+          <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
           <Lock className='h-4 w-4 sm:h-5 sm:w-5' />
           {loading ? '登录中...' : '立即登录'}
         </button>
-
-        {/* 注册链接 - 仅在非 localStorage 模式下显示 */}
-        {shouldAskUsername && (
-          <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
-            <p className='text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-2.5 sm:mb-3'>
-              还没有账户？
-            </p>
-            <a
-              href='/register'
-              className='ui-secondary-button group w-full text-xs sm:text-sm'
-            >
-              <UserPlus className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
-              <span>立即注册</span>
-              <span className='inline-block transition-transform group-hover:translate-x-1'>
-                →
-              </span>
-            </a>
-          </div>
-        )}
-
-        {/* 扫码登录 */}
-        {shouldAskUsername && (
-          <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
-            <p className='text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4'>
-              或使用手机扫码登录
-            </p>
-            <a
-              href='/qr-login'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='ui-secondary-button group w-full text-xs sm:text-sm'
-            >
-              <QrCode className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
-              <span>扫码登录</span>
-              <span className='inline-block transition-transform group-hover:translate-x-1'>
-                →
-              </span>
-            </a>
-          </div>
-        )}
       </form>
 
-      {/* Telegram Magic Link 登录 */}
-      {telegramEnabled && (
-        <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
-          <p className='text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4'>
-            或使用 Telegram 登录
+      {/* 注册入口 */}
+      {shouldAskUsername && (
+        <div className='auth-field-grid mt-6 space-y-3 border-t border-gray-200 pt-6 dark:border-white/10'>
+          <p className='text-center text-xs text-gray-600 dark:text-gray-400 sm:text-sm'>
+            还没有账户？
           </p>
-
-          {/* Telegram 用户名输入 */}
-          <div className='mb-3 sm:mb-4'>
-            <label className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 sm:mb-2'>
-              Telegram 用户名
-            </label>
-            <div className='relative'>
-              <div className='absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none'>
-                <Send className='h-4 w-4 sm:h-5 sm:w-5 text-gray-400' />
-              </div>
-              <input
-                type='text'
-                value={telegramUsername}
-                onChange={(e) => setTelegramUsername(e.target.value)}
-                placeholder='输入您的 Telegram 用户名'
-                className='ui-input pl-9 sm:pl-10 pr-2.5 sm:pr-3 text-sm sm:text-base'
-                disabled={telegramLoading}
-              />
-            </div>
-            <p className='mt-1.5 sm:mt-2 text-[11px] sm:text-xs text-gray-500 dark:text-gray-400'>
-              <Lightbulb className='inline-block w-3.5 h-3.5 sm:w-4 sm:h-4 mr-0.5 text-yellow-500' />{' '}
-              输入您的 Telegram 用户名（不含 @）
-            </p>
-          </div>
-
-          <button
-            onClick={handleTelegramLogin}
-            disabled={telegramLoading || !telegramUsername.trim()}
-            className='ui-primary-button group relative w-full overflow-hidden'
-          >
-            <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
-            <Send className='h-4 w-4 sm:h-5 sm:w-5' />
-            {telegramLoading ? '正在打开 Telegram...' : '通过 Telegram 登录'}
-          </button>
-
-          {telegramDeepLink && (
-            <div className='mt-3 sm:mt-4 p-3 sm:p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50'>
-              <p className='text-xs sm:text-sm text-blue-800 dark:text-blue-200 mb-1.5 sm:mb-2'>
-                📱 已在新标签页打开 Telegram
-              </p>
-              <p className='text-[11px] sm:text-xs text-blue-600 dark:text-blue-300'>
-                如果没有自动打开，请点击{' '}
-                <a
-                  href={telegramDeepLink}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline font-semibold'
-                >
-                  这里
-                </a>
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* OIDC 登录 */}
-      {oidcEnabled && shouldAskUsername && (
-        <div className='mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-700'>
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <div className='w-full border-t border-gray-300 dark:border-gray-600'></div>
-            </div>
-            <div className='relative flex justify-center text-xs sm:text-sm'>
-              <span className='px-2 bg-white/60 dark:bg-zinc-900/60 text-gray-500 dark:text-gray-400'>
-                或
-              </span>
-            </div>
-          </div>
-
-          {/* 多 Provider 按钮 */}
-          {oidcProviders.length > 0 ? (
-            <div className='mt-3 sm:mt-4 space-y-2.5 sm:space-y-3'>
-              {oidcProviders.map((provider) => {
-                // 优先使用 provider.id，如果是自定义provider则从issuer推断
-                const providerId = provider.id.toLowerCase();
-                const detectedProvider = [
-                  'google',
-                  'github',
-                  'microsoft',
-                  'facebook',
-                  'wechat',
-                  'apple',
-                  'linuxdo',
-                ].includes(providerId)
-                  ? (providerId as
-                      | 'google'
-                      | 'github'
-                      | 'microsoft'
-                      | 'facebook'
-                      | 'wechat'
-                      | 'apple'
-                      | 'linuxdo')
-                  : detectProvider(provider.issuer || provider.buttonText);
-                const buttonStyle = getProviderButtonStyle(detectedProvider);
-                const customText =
-                  provider.buttonText && provider.buttonText !== '使用OIDC登录'
-                    ? provider.buttonText
-                    : undefined;
-                const buttonText = getProviderButtonText(
-                  detectedProvider,
-                  customText,
-                );
-
-                return (
-                  <button
-                    key={provider.id}
-                    type='button'
-                    onClick={() => {
-                      const redirect = searchParams.get('redirect') || '/';
-                      const safeRedirect =
-                        redirect.startsWith('/') && !redirect.startsWith('//')
-                          ? redirect
-                          : '/';
-                      window.location.href = `/api/auth/oidc/login?provider=${provider.id}&redirect=${encodeURIComponent(safeRedirect)}`;
-                    }}
-                    className={`w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
-                  >
-                    <OIDCProviderLogo provider={detectedProvider} />
-                    <span className='ml-2'>{buttonText}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            /* 单 Provider 按钮（向后兼容） */
-            (() => {
-              const provider = detectProvider(oidcIssuer || oidcButtonText);
-              const buttonStyle = getProviderButtonStyle(provider);
-              const customText =
-                oidcButtonText && oidcButtonText !== '使用OIDC登录'
-                  ? oidcButtonText
-                  : undefined;
-              const buttonText = getProviderButtonText(provider, customText);
-
-              return (
-                <button
-                  type='button'
-                  onClick={() => {
-                    const redirect = searchParams.get('redirect') || '/';
-                    const safeRedirect =
-                      redirect.startsWith('/') && !redirect.startsWith('//')
-                        ? redirect
-                        : '/';
-                    window.location.href = `/api/auth/oidc/login?redirect=${encodeURIComponent(safeRedirect)}`;
-                  }}
-                  className={`mt-3 sm:mt-4 w-full inline-flex justify-center items-center rounded-lg py-3 sm:py-3 text-sm sm:text-base font-semibold shadow-sm transition-all duration-200 active:scale-95 ${buttonStyle}`}
-                >
-                  <OIDCProviderLogo provider={provider} />
-                  <span className='ml-2'>{buttonText}</span>
-                </button>
-              );
-            })()
-          )}
-        </div>
-      )}
-      {/* 客户端下载提示 */}
-      <div className='mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-gray-200/60 dark:border-gray-700/40'>
-        <p className='text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 sm:mb-4'>
-          📱 更多客户端
-        </p>
-        <div className='grid grid-cols-2 gap-2 sm:gap-3'>
           <a
-            href='https://github.com/MoonTechLab/Selene/releases'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors group'
+            href='/register'
+            className='ui-secondary-button group w-full text-xs sm:text-sm'
           >
-            <span className='text-xl sm:text-2xl'>📱</span>
-            <span className='text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#f4c24d] transition-colors'>
-              Selene
-            </span>
-            <span className='text-[10px] sm:text-xs text-gray-400 dark:text-gray-500'>
-              Android / iOS
-            </span>
-          </a>
-          <a
-            href='https://github.com/zimplexing/OrionTV'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/50 dark:border-gray-700/30 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors group'
-          >
-            <Tv className='w-6 h-6 sm:w-8 sm:h-8' />
-            <span className='text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#f4c24d] transition-colors'>
-              OrionTV
-            </span>
-            <span className='text-[10px] sm:text-xs text-gray-400 dark:text-gray-500'>
-              Android TV / 平板
+            <UserPlus className='h-4 w-4' />
+            <span>立即注册</span>
+            <span className='inline-block transition-transform group-hover:translate-x-1'>
+              →
             </span>
           </a>
         </div>
-      </div>
+      )}
     </AuthShell>
   );
 }

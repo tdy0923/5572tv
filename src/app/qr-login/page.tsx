@@ -17,6 +17,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import QRCodeLib from 'qrcode';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
+import { AppDownloads } from '@/components/auth/AppDownloads';
+import { FormField } from '@/components/auth/FormField';
 import { AuthShell } from '@/components/AuthShell';
 
 type QRStatus =
@@ -290,56 +292,45 @@ function QRLoginClient() {
         title='扫码登录确认'
         subtitle='请在下方输入密码以确认登录'
         icon={<QrCode className='h-6 w-6 text-white' />}
+        brandExtra={<AppDownloads variant='panel' />}
+        footer={<AppDownloads variant='footer' />}
       >
         {status === 'confirmed' ? (
-          <div className='text-center py-8'>
-            <CheckCircle className='h-16 w-16 text-green-500 mx-auto mb-4' />
+          <div className='py-8 text-center'>
+            <CheckCircle className='mx-auto mb-4 h-16 w-16 text-green-500' />
             <p className='text-lg font-semibold text-green-600 dark:text-green-400'>
               登录成功！
             </p>
-            <p className='text-sm text-gray-500 mt-2'>您现在可以关闭此页面</p>
+            <p className='mt-2 text-sm text-gray-500'>您现在可以关闭此页面</p>
           </div>
         ) : (
-          <div className='space-y-4'>
-            <div className='group'>
-              <label className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
-                用户名
-              </label>
-              <div className='relative'>
-                <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
-                  <User className='h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-green-500 transition-colors' />
-                </div>
-                <input
-                  type='text'
-                  autoComplete='username'
-                  className='ui-input pl-10 sm:pl-12 pr-3 sm:pr-4'
-                  placeholder='请输入用户名'
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-            </div>
+          <div className='space-y-4 sm:space-y-5'>
+            <FormField
+              id='qr-username'
+              label='用户名'
+              icon={<User className='h-4 w-4 sm:h-5 sm:w-5' />}
+              type='text'
+              autoComplete='username'
+              placeholder='请输入用户名'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
 
-            <div className='group'>
-              <label className='block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
-                密码
-              </label>
-              <div className='relative'>
-                <div className='absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none'>
-                  <Lock className='h-4 w-4 sm:h-5 sm:w-5 text-gray-400 dark:text-gray-500 group-focus-within:text-green-500 transition-colors' />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete='current-password'
-                  className='ui-input pl-10 sm:pl-12 pr-10 sm:pr-12'
-                  placeholder='请输入密码'
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+            <FormField
+              id='qr-password'
+              label='密码'
+              icon={<Lock className='h-4 w-4 sm:h-5 sm:w-5' />}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete='current-password'
+              placeholder='请输入密码'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              rightElement={
                 <button
                   type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className='absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                  aria-label={showPassword ? '隐藏密码' : '显示密码'}
                 >
                   {showPassword ? (
                     <EyeOff className='h-4 w-4 sm:h-5 sm:w-5' />
@@ -347,13 +338,17 @@ function QRLoginClient() {
                     <Eye className='h-4 w-4 sm:h-5 sm:w-5' />
                   )}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
             {confirmError && (
-              <div className='flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50'>
-                <AlertCircle className='h-4 w-4 text-red-600 dark:text-red-400 shrink-0' />
-                <p className='text-xs sm:text-sm text-red-600 dark:text-red-400'>
+              <div
+                role='alert'
+                aria-live='polite'
+                className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800/50 dark:bg-red-900/20'
+              >
+                <AlertCircle className='h-4 w-4 shrink-0 text-red-600 dark:text-red-400' />
+                <p className='text-xs text-red-600 dark:text-red-400 sm:text-sm'>
                   {confirmError}
                 </p>
               </div>
@@ -364,7 +359,7 @@ function QRLoginClient() {
               disabled={confirmLoading || !username || !password}
               className='ui-primary-button group relative w-full overflow-hidden'
             >
-              <span className='absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000' />
+              <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
               <CheckCircle className='h-4 w-4 sm:h-5 sm:w-5' />
               {confirmLoading ? '确认中...' : '确认登录'}
             </button>
@@ -380,6 +375,8 @@ function QRLoginClient() {
       title='扫码登录'
       subtitle='使用手机扫描二维码登录'
       icon={<QrCode className='h-6 w-6 text-white' />}
+      brandExtra={<AppDownloads variant='panel' />}
+      footer={<AppDownloads variant='footer' />}
     >
       <div className='flex flex-col items-center'>
         {/* QR Code */}
