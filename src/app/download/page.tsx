@@ -7,25 +7,44 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { browserDownload } from '@/lib/browser-download';
 
-import {
-  FluentFadeIn,
-  FluentScaleIn,
-  FluentStagger,
-} from '@/components/FluentTransition';
+import { FluentFadeIn, FluentStagger } from '@/components/FluentTransition';
 import { GlassPanel } from '@/components/ui-surface';
 
-import AnimatedGradient from './components/AnimatedGradient';
-import ChangelogSection from './components/ChangelogSection';
-import FeatureShowcase from './components/FeatureShowcase';
 import InstallGuide from './components/InstallGuide';
-import PhonePreview from './components/PhonePreview';
 import PlatformTabs from './components/PlatformTabs';
-import RecommendationsSection from './components/RecommendationsSection';
-import ScreenshotsSection from './components/ScreenshotsSection';
-import ShareSection from './components/ShareSection';
+import PosterWall from './components/PosterWall';
 import { detectPlatform } from './utils';
 
 const DEFAULT_APK = { version: 'v1.12.0', sizeMb: '18' };
+
+const FEATURES = [
+  {
+    icon: '⚡',
+    title: '极速播放',
+    desc: '多源聚合，秒开无缓冲',
+  },
+  {
+    icon: '⬇️',
+    title: '离线缓存',
+    desc: 'WiFi 下载，随时畅看',
+  },
+  {
+    icon: '🔁',
+    title: '多端同步',
+    desc: '手机、平板、电视无缝切换',
+  },
+  {
+    icon: '✨',
+    title: 'AI 推荐',
+    desc: '智能分析你的观影喜好',
+  },
+];
+
+const STATS = [
+  { v: '100万+', l: '影视资源' },
+  { v: '50+', l: '播放源' },
+  { v: '24h', l: '实时更新' },
+];
 
 export default function DownloadPage() {
   const platform = useMemo(() => detectPlatform(), []);
@@ -50,372 +69,293 @@ export default function DownloadPage() {
       .catch(() => {});
   }, []);
 
-  const steps =
-    selectedPlatform === 'ios'
-      ? [
-          { title: '打开 Safari', desc: '在 Safari 中访问 www.5572.net' },
-          { title: '添加到主屏幕', desc: '点击底部「分享」→「添加到主屏幕」' },
-          { title: '确认添加', desc: '点击右上角「添加」确认' },
-          { title: '打开使用', desc: '回到主屏幕，点击图标打开 5572 影视' },
-        ]
-      : [
-          { title: '下载安装包', desc: '点击下载按钮，等待 APK 下载完成' },
-          { title: '允许安装', desc: '打开文件，点击「仍然安装」' },
-          { title: '完成安装', desc: '安装完成后在桌面找到应用图标' },
-          { title: '打开使用', desc: '首次打开可能需要几秒加载，耐心等待' },
-        ];
-
   return (
-    <div className='min-h-screen bg-[#0a0a0a]'>
-      {/* ── Hero ── */}
-      <section className='relative min-h-[100dvh] flex items-center overflow-hidden'>
-        <AnimatedGradient />
-        <div className='absolute inset-0'>
-          <Image
-            src='/images/agnes/epic-bg.png'
-            alt=''
-            fill
-            className='object-cover opacity-20'
-            priority
-          />
-          <div className='absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent' />
-          <div className='absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/60' />
-        </div>
+    <div className='min-h-screen bg-gray-950 text-white'>
+      {/* ── 全屏 Hero：海报墙背景 ── */}
+      <section
+        className='relative flex min-h-screen items-center overflow-hidden'
+        style={{ minHeight: '100dvh' }}
+      >
+        <PosterWall />
 
-        <div className='relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-16 py-10'>
-          <FluentFadeIn>
-            <div className='flex flex-col lg:flex-row items-center gap-10 lg:gap-16'>
-              {/* Left */}
-              <div className='flex-1 text-center lg:text-left'>
-                {/* Logo + rating */}
-                <div className='flex items-center gap-3 mb-5 justify-center lg:justify-start'>
-                  <div className='relative'>
-                    <img
-                      src='/icons/icon.svg'
-                      alt='5572'
-                      width={48}
-                      height={48}
-                      className='rounded-xl'
-                      style={{ boxShadow: '0 4px 16px rgba(244,194,77,0.3)' }}
-                    />
-                  </div>
-                  <div>
-                    <span className='text-lg font-bold text-white'>
-                      5572 影视
-                    </span>
-                    <div className='flex items-center gap-1.5 text-xs justify-center lg:justify-start mt-0.5'>
-                      <span style={{ color: '#f4c24d' }}>★</span>
-                      <span style={{ color: '#a3a3a3' }}>4.8</span>
-                      <span style={{ color: '#545454' }}>·</span>
-                      <span style={{ color: '#a3a3a3' }}>10万+用户</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Headline */}
-                <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight'>
-                  想看的，
-                  <span style={{ color: '#f4c24d' }}>这里都有</span>
-                </h1>
-                <p
-                  className='text-base mb-5 max-w-md mx-auto lg:mx-0'
-                  style={{ color: '#a3a3a3' }}
-                >
-                  海量影视资源聚合，AI智能搜索推荐。支持手机、平板、电视全平台。
-                </p>
-
-                {/* Stats */}
-                <div className='flex gap-6 mb-5 justify-center lg:justify-start'>
-                  {[
-                    { v: '100万+', l: '影视资源' },
-                    { v: '50+', l: '播放源' },
-                    { v: '24h', l: '实时更新' },
-                  ].map((s) => (
-                    <div key={s.l}>
-                      <div
-                        className='text-lg font-bold'
-                        style={{ color: '#f4c24d' }}
-                      >
-                        {s.v}
-                      </div>
-                      <div className='text-xs' style={{ color: '#767676' }}>
-                        {s.l}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Platform tabs */}
-                <PlatformTabs
-                  selected={selectedPlatform}
-                  onSelect={setSelectedPlatform}
-                  className='mb-5 lg:justify-start'
+        <div className='relative z-10 mx-auto w-full max-w-4xl px-5 py-16 text-center sm:px-8'>
+          <FluentStagger staggerMs={110}>
+            {/* 品牌 */}
+            <div className='mb-6 flex items-center justify-center gap-3'>
+              <div className='relative'>
+                <img
+                  src='/icons/icon.svg'
+                  alt='5572'
+                  width={52}
+                  height={52}
+                  className='rounded-xl'
+                  style={{ boxShadow: '0 4px 20px rgba(244,194,77,0.35)' }}
                 />
-
-                {/* CTA row */}
-                <div className='flex flex-col sm:flex-row gap-3 mb-6 justify-center lg:justify-start'>
-                  {selectedPlatform === 'ios' ? (
-                    <button
-                      onClick={() => setShowGuide(true)}
-                      className='inline-flex items-center justify-center gap-2 px-7 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-150'
-                      style={{
-                        background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
-                        color: '#1a1a1a',
-                        boxShadow: '0 4px 16px rgba(244,194,77,0.3)',
-                      }}
-                    >
-                      iOS 安装指南
-                    </button>
-                  ) : (
-                    <a
-                      href='/static/download/5572tv-android.apk'
-                      download='5572tv-android.apk'
-                      onClick={(e) => {
-                        e.preventDefault();
-                        browserDownload(
-                          '/static/download/5572tv-android.apk',
-                          '5572tv-android.apk',
-                        );
-                      }}
-                      className='inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] overflow-hidden'
-                      style={{
-                        background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
-                        color: '#1a1a1a',
-                        boxShadow: '0 4px 16px rgba(244,194,77,0.3)',
-                      }}
-                    >
-                      <Download className='w-4 h-4 shrink-0' />
-                      <span>
-                        下载 {selectedPlatform === 'android' ? 'Android' : 'TV'}{' '}
-                        版
-                      </span>
-                    </a>
-                  )}
-                  <Link
-                    href='/'
-                    className='inline-flex items-center justify-center gap-2 px-7 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-150'
-                    style={{
-                      background: 'rgba(255,255,255,0.06)',
-                      color: '#d4d4d4',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                  >
-                    网页版体验
-                  </Link>
-                </div>
-
-                {/* Architecture selector */}
-                {selectedPlatform !== 'ios' && (
-                  <div className='mb-6 flex flex-wrap gap-2 justify-center lg:justify-start'>
-                    <span
-                      className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold'
-                      style={{
-                        background: '#f4c24d',
-                        color: '#1a1a1a',
-                      }}
-                    >
-                      arm64-v8a 64位（推荐）
-                    </span>
-                    <a
-                      href='/static/download/5572tv-android-armv7a.apk'
-                      download
-                      className='inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] overflow-hidden'
-                      style={{
-                        background: 'rgba(255,255,255,0.06)',
-                        color: '#a3a3a3',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      armeabi-v7a 兼容版
-                    </a>
-                  </div>
-                )}
-
-                {/* QR Code */}
-                <GlassPanel
-                  className='!inline-flex items-center gap-4 !p-4 !rounded-xl !border-white/10 !bg-white/[0.03] !shadow-none group cursor-pointer hover:!bg-white/[0.06] transition-all duration-200'
-                  onClick={() => setShowQRModal(true)}
-                >
-                  <div className='relative'>
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
-                      alt='扫码下载'
-                      className='w-28 h-28 rounded-lg transition-transform duration-300 group-hover:scale-105'
-                    />
-                    <div className='absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
-                      <span className='text-xs text-white font-medium'>
-                        点击放大
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className='text-sm font-medium text-white'>扫码下载</p>
-                    <p className='text-xs mt-1' style={{ color: '#767676' }}>
-                      {selectedPlatform === 'ios'
-                        ? '访问网站安装 PWA'
-                        : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
-                    </p>
-                  </div>
-                </GlassPanel>
-
-                {/* QR Modal */}
-                {showQRModal && (
-                  <div
-                    className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm'
-                    onClick={() => setShowQRModal(false)}
-                  >
-                    <div
-                      className='relative bg-[#1a1a1a] rounded-2xl p-6 shadow-2xl border border-white/10 max-w-sm w-full mx-4'
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => setShowQRModal(false)}
-                        className='absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors'
-                      >
-                        <X className='w-4 h-4 text-white' />
-                      </button>
-                      <div className='text-center'>
-                        <p className='text-sm font-medium text-white mb-4'>
-                          扫码下载 5572 影视
-                        </p>
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
-                          alt='扫码下载'
-                          className='w-64 h-64 mx-auto rounded-xl'
-                        />
-                        <p
-                          className='text-xs mt-4'
-                          style={{ color: '#767676' }}
-                        >
-                          {selectedPlatform === 'ios'
-                            ? '使用 Safari 扫码访问网站'
-                            : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
-
-              {/* Right - Phone preview */}
-              <FluentScaleIn delay={200} duration={500}>
-                <div className='flex-1 flex justify-center lg:justify-end'>
-                  <PhonePreview />
+              <div className='text-left'>
+                <div className='text-lg font-bold text-white'>5572 影视</div>
+                <div className='mt-0.5 flex items-center gap-1.5 text-xs text-gray-400'>
+                  <span className='text-primary-400'>★</span>
+                  <span>4.8</span>
+                  <span className='text-gray-600'>·</span>
+                  <span>10万+用户</span>
                 </div>
-              </FluentScaleIn>
+              </div>
             </div>
-          </FluentFadeIn>
+
+            {/* 主标题 */}
+            <h1 className='mb-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl'>
+              想看的，
+              <span className='bg-linear-to-b from-primary-200 via-primary-400 to-primary-600 bg-clip-text text-transparent'>
+                这里都有
+              </span>
+            </h1>
+
+            <p className='mx-auto mb-8 max-w-xl text-base text-gray-400'>
+              海量影视资源聚合，AI 智能搜索推荐。
+              <br className='hidden sm:block' />
+              支持手机、平板、电视全平台。
+            </p>
+
+            {/* 数据 */}
+            <div className='mb-8 flex items-center justify-center gap-8'>
+              {STATS.map((s) => (
+                <div key={s.l}>
+                  <div className='text-lg font-bold text-primary-400 sm:text-xl'>
+                    {s.v}
+                  </div>
+                  <div className='text-xs text-gray-500'>{s.l}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* 平台选择 */}
+            <PlatformTabs
+              selected={selectedPlatform}
+              onSelect={setSelectedPlatform}
+              className='mb-8'
+            />
+
+            {/* CTA */}
+            <div className='mb-6 flex flex-col items-center justify-center gap-3 sm:flex-row'>
+              {selectedPlatform === 'ios' ? (
+                <button
+                  type='button'
+                  onClick={() => setShowGuide(true)}
+                  className='group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-xl px-8 py-4 text-sm font-semibold text-gray-950 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_rgba(244,194,77,0.5)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950'
+                  style={{
+                    background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
+                  }}
+                >
+                  <span className='pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full' />
+                  iOS 安装指南
+                </button>
+              ) : (
+                <a
+                  href='/static/download/5572tv-android.apk'
+                  download='5572tv-android.apk'
+                  onClick={(e) => {
+                    e.preventDefault();
+                    browserDownload(
+                      '/static/download/5572tv-android.apk',
+                      '5572tv-android.apk',
+                    );
+                  }}
+                  className='group relative inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-xl px-8 py-4 text-sm font-semibold text-gray-950 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_rgba(244,194,77,0.5)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950'
+                  style={{
+                    background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
+                  }}
+                >
+                  <span className='pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full' />
+                  <Download className='h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-y-0.5' />
+                  <span>
+                    下载 {selectedPlatform === 'android' ? 'Android' : 'TV'} 版
+                  </span>
+                </a>
+              )}
+              <Link
+                href='/'
+                className='inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-8 py-4 text-sm font-semibold text-gray-300 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-400/40 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60'
+              >
+                网页版体验
+              </Link>
+            </div>
+
+            {/* 架构选择 */}
+            {selectedPlatform !== 'ios' && (
+              <div className='mb-6 flex flex-wrap items-center justify-center gap-2'>
+                <span className='inline-flex items-center gap-1.5 rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-gray-950'>
+                  arm64-v8a 64位（推荐）
+                </span>
+                <a
+                  href='/static/download/5572tv-android-armv7a.apk'
+                  download
+                  className='inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-gray-400 transition-all duration-200 hover:border-primary-400/40 hover:text-white'
+                >
+                  armeabi-v7a 兼容版
+                </a>
+              </div>
+            )}
+
+            {/* 扫码 */}
+            <GlassPanel
+              className='group !mx-auto !inline-flex !cursor-pointer !items-center gap-4 !rounded-2xl !border-white/10 !bg-white/[0.03] !p-4 !shadow-none transition-all duration-300 hover:!border-primary-400/30 hover:!bg-white/[0.06]'
+              onClick={() => setShowQRModal(true)}
+            >
+              <div className='relative'>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
+                  alt='扫码下载'
+                  className='w-28 h-28 rounded-xl transition-transform duration-300 group-hover:scale-105'
+                />
+                <div className='absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity duration-200 group-hover:opacity-100'>
+                  <span className='text-xs font-medium text-white'>
+                    点击放大
+                  </span>
+                </div>
+              </div>
+              <div className='text-left'>
+                <p className='text-sm font-medium text-white'>扫码下载</p>
+                <p className='mt-1 text-xs text-gray-500'>
+                  {selectedPlatform === 'ios'
+                    ? '访问网站安装 PWA'
+                    : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
+                </p>
+              </div>
+            </GlassPanel>
+          </FluentStagger>
         </div>
+
+        {/* 滚动提示 */}
+        <FluentFadeIn delay={900}>
+          <div className='absolute bottom-6 left-1/2 z-10 -translate-x-1/2 animate-bounce text-gray-500'>
+            <svg
+              className='h-5 w-5'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <path d='M12 5v14' />
+              <path d='m19 12-7 7-7-7' />
+            </svg>
+          </div>
+        </FluentFadeIn>
       </section>
 
-      {/* ── Features ── */}
-      <FeatureShowcase />
-
-      {/* ── Recommendations ── */}
-      <RecommendationsSection />
-
-      {/* ── Screenshots ── */}
-      <ScreenshotsSection />
-
-      {/* ── Changelog ── */}
-      <ChangelogSection />
-
-      {/* ── Share ── */}
-      <ShareSection />
-
-      {/* ── Install Steps + Core Features ── */}
-      <section
-        className='py-16 px-5 sm:px-8 lg:px-16'
-        style={{ background: '#0a0a0a' }}
-      >
-        <div className='max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10'>
-          <div>
-            <h2 className='text-xl font-bold text-white mb-6'>
-              {selectedPlatform === 'ios' ? 'iOS 安装' : '安装步骤'}
-            </h2>
-            <div className='space-y-5'>
-              <FluentStagger staggerMs={80}>
-                {steps.map((s, i) => (
-                  <div key={i} className='flex gap-4 items-start'>
-                    <div
-                      className='w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0'
-                      style={{
-                        background: 'linear-gradient(135deg, #f4c24d, #dba52b)',
-                        color: '#1a1a1a',
-                        boxShadow: '0 4px 12px rgba(244,194,77,0.3)',
-                      }}
-                    >
-                      {i + 1}
-                    </div>
-                    <div>
-                      <p className='text-sm font-medium text-white mb-0.5'>
-                        {s.title}
-                      </p>
-                      <p className='text-xs' style={{ color: '#767676' }}>
-                        {s.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </FluentStagger>
-            </div>
+      {/* ── 特性条 ── */}
+      <section className='relative bg-gray-950 py-20'>
+        <div className='mx-auto max-w-5xl px-5 sm:px-8'>
+          <div className='mb-12 text-center'>
+            <p className='mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-primary-400'>
+              Why 5572
+            </p>
+            <h2 className='text-2xl font-bold sm:text-3xl'>为什么选择 5572</h2>
+            <p className='mt-2 text-sm text-gray-500'>
+              不只是播放器，更是你的私人影视管家
+            </p>
           </div>
 
-          <FluentFadeIn delay={200}>
-            <div>
-              <h2 className='text-xl font-bold text-white mb-6'>核心功能</h2>
-              <div className='space-y-2'>
-                <FluentStagger staggerMs={60}>
-                  {[
-                    '多源聚合播放',
-                    'AI智能搜索推荐',
-                    '弹幕互动',
-                    '离线缓存',
-                    '多端同步',
-                  ].map((f) => (
-                    <GlassPanel
-                      key={f}
-                      className='!flex items-center gap-3 !px-3 !py-2.5 !rounded-lg !border-white/5 !bg-white/[0.02] !shadow-none hover:!bg-white/[0.04] transition-colors duration-150'
-                    >
-                      <Check
-                        className='w-4 h-4 flex-shrink-0'
-                        style={{ color: '#f4c24d' }}
-                      />
-                      <span className='text-sm' style={{ color: '#d4d4d4' }}>
-                        {f}
-                      </span>
-                    </GlassPanel>
-                  ))}
-                </FluentStagger>
-              </div>
+          <FluentStagger
+            staggerMs={90}
+            className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'
+          >
+            {FEATURES.map((f) => (
+              <GlassPanel
+                key={f.title}
+                className='group !rounded-2xl !border-white/5 !bg-white/[0.03] !p-6 !shadow-none transition-all duration-300 hover:-translate-y-1 hover:!border-primary-400/25 hover:!bg-white/[0.05] hover:!shadow-[0_16px_40px_-16px_rgba(244,194,77,0.25)]'
+              >
+                <div className='mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-500/10 text-lg transition-transform duration-300 group-hover:scale-110'>
+                  {f.icon}
+                </div>
+                <h3 className='mb-1.5 text-sm font-semibold text-white'>
+                  {f.title}
+                </h3>
+                <p className='text-xs leading-relaxed text-gray-500'>
+                  {f.desc}
+                </p>
+              </GlassPanel>
+            ))}
+          </FluentStagger>
+
+          <FluentFadeIn delay={150}>
+            <div className='mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2'>
+              {[
+                '多源聚合播放',
+                'AI 智能搜索',
+                '弹幕互动',
+                '离线缓存',
+                '多端同步',
+              ].map((f) => (
+                <span
+                  key={f}
+                  className='inline-flex items-center gap-1.5 text-xs text-gray-500'
+                >
+                  <Check className='h-3.5 w-3.5 text-primary-400' />
+                  {f}
+                </span>
+              ))}
             </div>
           </FluentFadeIn>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer
-        className='py-6 px-5 sm:px-8 lg:px-16'
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-      >
-        <div className='max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3'>
+      <footer className='border-t border-white/[0.06] bg-gray-950 py-6'>
+        <div className='mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-5 sm:flex-row sm:px-8'>
           <div className='flex items-center gap-2'>
-            <img
+            <Image
               src='/icons/icon.svg'
               alt='5572'
               width={20}
               height={20}
               className='rounded'
             />
-            <span className='text-xs' style={{ color: '#767676' }}>
-              5572 影视 © 2025
+            <span className='text-xs text-gray-500'>
+              5572 影视 © {new Date().getFullYear()}
             </span>
           </div>
-          <p className='text-xs' style={{ color: '#545454' }}>
-            仅提供影视信息搜索服务
-          </p>
+          <p className='text-xs text-gray-600'>仅提供影视信息搜索服务</p>
         </div>
       </footer>
+
+      {/* ── Modals ── */}
+      {showQRModal && (
+        <div
+          className='fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm'
+          onClick={() => setShowQRModal(false)}
+        >
+          <div
+            className='relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#1a1a1a] p-6 shadow-2xl'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type='button'
+              onClick={() => setShowQRModal(false)}
+              className='absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20'
+            >
+              <X className='h-4 w-4 text-white' />
+            </button>
+            <div className='text-center'>
+              <p className='mb-4 text-sm font-medium text-white'>
+                扫码下载 5572 影视
+              </p>
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(selectedPlatform === 'ios' ? 'https://www.5572.net' : 'https://www.5572.net/download/5572tv-android.apk')}`}
+                alt='扫码下载'
+                className='mx-auto w-64 h-64 rounded-xl'
+              />
+              <p className='mt-4 text-xs text-gray-500'>
+                {selectedPlatform === 'ios'
+                  ? '使用 Safari 扫码访问网站'
+                  : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showGuide && (
         <InstallGuide

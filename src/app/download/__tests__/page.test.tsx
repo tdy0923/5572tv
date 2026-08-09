@@ -44,9 +44,7 @@ describe('DownloadPage', () => {
   it('shows description', () => {
     render(<DownloadPage />);
     expect(
-      screen.getByText(
-        '海量影视资源聚合，AI智能搜索推荐。支持手机、平板、电视全平台。',
-      ),
+      screen.getByText(/海量影视资源聚合，AI 智能搜索推荐/),
     ).toBeInTheDocument();
   });
 
@@ -84,7 +82,8 @@ describe('DownloadPage', () => {
 
   it('shows core features', () => {
     render(<DownloadPage />);
-    expect(screen.getByText('核心功能')).toBeInTheDocument();
+    expect(screen.getByText('为什么选择 5572')).toBeInTheDocument();
+    expect(screen.getByText('极速播放')).toBeInTheDocument();
     expect(screen.getByText('多源聚合播放')).toBeInTheDocument();
   });
 });
