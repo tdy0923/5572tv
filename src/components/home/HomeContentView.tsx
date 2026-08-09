@@ -165,6 +165,8 @@ export default function HomeContentView({
               title='猜你想看'
               icon={Sparkles}
               iconColor='text-purple-500'
+              kicker='For You'
+              index='01'
             />
             <span className='text-xs text-gray-400 dark:text-gray-500'>
               AI 推荐
@@ -220,6 +222,8 @@ export default function HomeContentView({
               title='即将上映'
               icon={Calendar}
               iconColor='text-orange-500'
+              kicker='Coming Soon'
+              index='02'
             />
             <Link
               href='/release-calendar'
@@ -356,7 +360,13 @@ export default function HomeContentView({
 
       <section className='mb-8 md:mb-10 home-section'>
         <div className='mb-4 flex items-center justify-between'>
-          <SectionTitle title='热门电影' icon={Film} iconColor='text-red-500' />
+          <SectionTitle
+            title='热门电影'
+            icon={Film}
+            iconColor='text-red-500'
+            kicker='Trending'
+            index='03'
+          />
           <Link
             href='/douban?type=movie'
             className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
@@ -394,7 +404,13 @@ export default function HomeContentView({
 
       <section className='mb-8 md:mb-10 home-section'>
         <div className='mb-4 flex items-center justify-between'>
-          <SectionTitle title='热门剧集' icon={Tv} iconColor='text-blue-500' />
+          <SectionTitle
+            title='热门剧集'
+            icon={Tv}
+            iconColor='text-blue-500'
+            kicker='Series'
+            index='04'
+          />
           <Link
             href='/douban?type=tv'
             className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
@@ -436,6 +452,8 @@ export default function HomeContentView({
             title='新番放送'
             icon={Calendar}
             iconColor='text-purple-500'
+            kicker='Anime'
+            index='05'
           />
           <Link
             href='/douban?type=anime'
@@ -478,6 +496,8 @@ export default function HomeContentView({
             title='热门综艺'
             icon={Sparkles}
             iconColor='text-pink-500'
+            kicker='Variety'
+            index='06'
           />
           <Link
             href='/douban?type=show'
@@ -520,6 +540,8 @@ export default function HomeContentView({
             title='热门短剧'
             icon={Play}
             iconColor='text-orange-500'
+            kicker='Short Drama'
+            index='07'
           />
           <Link
             href='/shortdrama'

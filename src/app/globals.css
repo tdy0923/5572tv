@@ -251,12 +251,28 @@
   }
 
   .ui-nav-surface {
-    @apply border-b bg-white/90;
+    @apply relative border-b bg-white/85 backdrop-blur-xl;
     border-color: var(--color-stroke-subtle);
     box-shadow: var(--shadow-2);
   }
+  .ui-nav-surface::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-primary-400),
+      transparent
+    );
+    opacity: 0.8;
+    pointer-events: none;
+  }
   .dark .ui-nav-surface {
-    background: var(--color-background-subtle);
+    background: rgba(12, 12, 14, 0.68);
     border-color: var(--color-stroke);
   }
 

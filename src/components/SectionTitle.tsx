@@ -4,19 +4,33 @@ interface SectionTitleProps {
   title: string;
   icon?: LucideIcon;
   iconColor?: string;
+  kicker?: string;
+  index?: string;
 }
 
 export default function SectionTitle({
   title,
   icon: Icon,
-  iconColor = 'text-blue-500',
+  iconColor = 'text-primary-500',
+  kicker,
+  index,
 }: SectionTitleProps) {
   return (
     <div className='group inline-flex flex-col gap-2'>
+      {(kicker || index) && (
+        <div className='flex items-center gap-2'>
+          {index && (
+            <span className='font-mono text-[11px] font-bold tracking-[0.2em] text-primary-500/70 dark:text-primary-400/60'>
+              {index}
+            </span>
+          )}
+          {kicker && <span className='ui-section-kicker'>{kicker}</span>}
+        </div>
+      )}
       <div className='ui-section-heading'>
         {Icon && (
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition-transform duration-300 group-hover:scale-105 ${iconColor}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform duration-300 group-hover:scale-105 dark:border-gray-700 dark:bg-gray-800 ${iconColor}`}
           >
             <Icon size={24} strokeWidth={2.5} />
           </div>

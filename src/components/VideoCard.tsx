@@ -1031,7 +1031,7 @@ function VideoCard({
       >
         {/* 海报容器 */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative aspect-[2/3] overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
           style={
             {
               WebkitUserSelect: 'none',
@@ -1052,7 +1052,7 @@ function VideoCard({
             alt={actualTitle}
             fill
             sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-            className={`${origin === 'live' ? 'object-contain' : 'object-cover'} transition-opacity duration-300 ease-out ${
+            className={`${origin === 'live' ? 'object-contain' : 'object-cover'} transition-[opacity,transform] duration-500 ease-out group-hover:scale-[1.06] ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             referrerPolicy='no-referrer'
@@ -1123,6 +1123,9 @@ function VideoCard({
               return false;
             }}
           />
+
+          {/* hover 金色光晕横扫 */}
+          <div className='pointer-events-none absolute top-0 bottom-0 left-[-60%] w-[50%] -skew-x-12 bg-linear-to-r from-transparent via-primary-200/50 dark:via-primary-300/30 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-[330%] transition-all duration-700 ease-out' />
 
           {/* 播放按钮 / 即将上映提示 */}
           {config.showPlayButton && (

@@ -158,6 +158,8 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
           title='继续观看'
           icon={Clock}
           iconColor='text-green-500'
+          kicker='Resume'
+          index='01'
         />
         {!loading && playRecords.length > 0 && (
           <button

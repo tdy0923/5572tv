@@ -263,7 +263,9 @@ function HeroBanner({
                   getHDBackdrop(item.backdrop) || item.poster,
                 )}
                 alt={item.title}
-                className='absolute inset-0 w-full h-full object-cover object-center'
+                className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-[1600ms] ease-in-out ${
+                  index === currentIndex ? 'scale-[1.07]' : 'scale-100'
+                }`}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 decoding='async'
               />
@@ -353,12 +355,18 @@ function HeroBanner({
         })}
 
         <div className='absolute inset-0 bg-gradient-to-t from-black/78 via-black/20 to-black/56' />
+
+        {/* 金色环境光晕 */}
+        <div className='pointer-events-none absolute inset-0'>
+          <div className='absolute -bottom-1/3 left-1/2 h-[75%] w-[95%] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(closest-side,rgba(244,194,77,0.32),transparent)] blur-3xl' />
+          <div className='absolute left-1/2 top-[38%] h-[46%] w-[70%] -translate-x-1/2 rounded-[100%] bg-[radial-gradient(closest-side,rgba(244,194,77,0.12),transparent)] blur-2xl' />
+        </div>
       </div>
 
       {/* 内容叠加层 */}
       <div className='absolute bottom-0 left-0 right-0 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 pb-10 sm:pb-12 md:pb-14 lg:pb-16'>
         <div className='max-w-3xl space-y-3 sm:space-y-4'>
-          <h1 className='break-words text-2xl font-bold leading-tight text-white drop-shadow-2xl sm:text-3xl md:text-4xl lg:text-5xl'>
+          <h1 className='break-words bg-linear-to-b from-[#ffffff] via-[#f7ecd7] to-[#e6c27e] bg-clip-text text-2xl font-bold leading-tight text-transparent drop-shadow-[0_1px_0_rgba(0,0,0,0.5)] drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)] drop-shadow-[0_5px_8px_rgba(0,0,0,0.35)] sm:text-3xl md:text-4xl lg:text-5xl'>
             {currentItem.title}
           </h1>
 
