@@ -16,13 +16,8 @@ export async function POST(request: Request) {
       telegramUsername,
     );
 
-    if (!telegramUsername || typeof telegramUsername !== 'string') {
-      console.log('[Magic Link] Invalid username');
-      return NextResponse.json(
-        { error: '请提供有效的 Telegram 用户名' },
-        { status: 400 },
-      );
-    }
+    // 用户名可留空：新的一键登录方案下，
+    // 真实 Telegram 用户名会在用户按下 /start 后由 webhook 回填。
 
     // 获取管理员配置
     const config = await db.getAdminConfig();
@@ -57,9 +52,13 @@ export async function POST(request: Request) {
 
     // 存储 token 到数据库
     const tokenData = {
-      telegramUsername: telegramUsername.toLowerCase(),
+      telegramUsername:
+        typeof telegramUsername === 'string'
+          ? telegramUsername.toLowerCase()
+          : '',
       expiresAt,
       baseUrl, // 保存请求的域名
+      confirmed: false, // 尚未在 Telegram 中确认
     };
 
     console.log(
@@ -108,11 +107,11 @@ export async function POST(request: Request) {
 
     console.log('[Magic Link] Deep link generated:', deepLink);
 
-    // 返回深度链接给前端
     return NextResponse.json({
       success: true,
       deepLink: deepLink,
       botUsername: botUsername,
+      token: token,
     });
   } catch (error) {
     console.error('Magic link send error:', error);

@@ -5,6 +5,8 @@ export interface TelegramTokenData {
   telegramUsername: string;
   expiresAt: number;
   baseUrl?: string;
+  /** 用户在 Telegram 中按下 /start 后由 webhook 置为 true，表示已确认身份 */
+  confirmed?: boolean;
 }
 
 // 存储 token 到数据库
@@ -102,6 +104,21 @@ export async function getTelegramToken(
     );
     return null;
   }
+}
+
+// 回填/标记 token（用于 webhook：写入真实 Telegram 用户名并标记已确认，保留原 TTL）
+export async function updateTelegramToken(
+  token: string,
+  patch: Partial<TelegramTokenData>,
+): Promise<void> {
+  const key = `telegram_token:${token}`;
+  const data = await db.getCache(key);
+  if (!data) return;
+
+  const merged: TelegramTokenData = { ...data, ...patch };
+  const now = Date.now();
+  const ttl = Math.max(Math.floor((merged.expiresAt - now) / 1000), 1);
+  await db.setCache(key, merged, ttl);
 }
 
 // 验证并消费 token（用于 verify，验证后立即删除）

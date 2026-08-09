@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 import { db } from '@/lib/db';
-import { getTelegramToken } from '@/lib/telegram-tokens';
+import { getTelegramToken, updateTelegramToken } from '@/lib/telegram-tokens';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,11 +56,22 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true });
       }
 
+      // 一键登录：从 Telegram 消息中回填真实用户名并标记已确认
+      const from = (update.message as any)?.from;
+      const tgUsername =
+        typeof from?.username === 'string' && from.username.length
+          ? from.username.toLowerCase()
+          : `user${from?.id ?? chatId}`;
+      await updateTelegramToken(token, {
+        telegramUsername: tgUsername,
+        confirmed: true,
+      });
+
       // 生成登录链接 - 使用保存的域名（token 创建时保存的）
       const loginUrl = `${tokenData.baseUrl}/api/telegram/verify?token=${token}`;
 
       // 发送登录链接
-      const message = `🔐 *登录到 ${config?.SiteConfig?.SiteName || '5572影视'}*\n\n点击下方链接完成登录：\n\n${loginUrl}\n\n⏰ 此链接将在 5 分钟后过期`;
+      const message = `🔐 *登录到 ${config?.SiteConfig?.SiteName || '5572影视'}*\n\n点下方链接即可完成登录：\n\n${loginUrl}\n\n⏰ 此链接将在 5 分钟内过期`;
 
       await sendTelegramMessage(telegramConfig.botToken, chatId, message);
 

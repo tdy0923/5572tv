@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Eye,
-  EyeOff,
-  Lightbulb,
-  Lock,
-  Send,
-  Sparkles,
-  User,
-  UserPlus,
-} from 'lucide-react';
+import { Eye, EyeOff, Lock, Sparkles, User, UserPlus } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
@@ -44,12 +35,13 @@ function LoginPageClient() {
     }
   }, [searchParams]);
 
-  // Telegram 状态
+  // 一键 Telegram 登录状态
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [telegramDeepLink, setTelegramDeepLink] = useState('');
   const [telegramEnabled, setTelegramEnabled] = useState(false);
-  const [telegramUsername, setTelegramUsername] = useState('');
-  const [telegramOpen, setTelegramOpen] = useState(false);
+  const [telegramStatus, setTelegramStatus] = useState<
+    'idle' | 'pending' | 'expired'
+  >('idle');
 
   // OIDC 状态
   const [oidcProviders, setOidcProviders] = useState<OIDCProviderItem[]>([]);
@@ -161,36 +153,67 @@ function LoginPageClient() {
     }
   };
 
-  // 生成 Telegram 登录链接
+  // 一键 Telegram 登录：打开机器人深链 -> 用户按 /start -> 轮询到确认 -> 完成登录
   const handleTelegramLogin = async () => {
     setError(null);
-    if (!telegramUsername || telegramUsername.trim() === '') {
-      setError('请输入您的 Telegram 用户名');
-      return;
-    }
-
     setTelegramLoading(true);
+    setTelegramStatus('idle');
+    setTelegramDeepLink('');
 
+    let token = '';
     try {
       const res = await fetch('/api/telegram/send-magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telegramUsername: telegramUsername.trim() }),
+        body: JSON.stringify({}),
       });
-
       const data = await res.json();
 
       if (res.ok && data.deepLink) {
+        token = data.token;
         setTelegramDeepLink(data.deepLink);
+        setTelegramStatus('pending');
         window.open(data.deepLink, '_blank');
       } else {
         setError(data.error || '生成链接失败，请重试');
+        setTelegramLoading(false);
+        return;
       }
     } catch {
       setError('网络错误，请稍后重试');
-    } finally {
       setTelegramLoading(false);
+      return;
     }
+
+    // 轮询 Telegram 会话，直到用户按下 /start（确认）或超时
+    const timeout = Date.now() + 5 * 60 * 1000;
+    const poll = async () => {
+      if (Date.now() > timeout) {
+        setTelegramStatus('expired');
+        setTelegramLoading(false);
+        return;
+      }
+      try {
+        const r = await fetch(`/api/telegram/session?token=${token}`);
+        const d = await r.json();
+        if (d.ok && d.confirmed) {
+          // 身份已确认，跳转到 verify 完成 cookie 设置 + 自动注册 + 跳首页
+          const p = searchParams.get('redirect') || '/';
+          const safe = p.startsWith('/') && !p.startsWith('//') ? p : '/';
+          window.location.href = `/api/telegram/verify?token=${token}&confirm=1&redirect=${encodeURIComponent(safe)}`;
+          return;
+        }
+        if (d.expired) {
+          setTelegramStatus('expired');
+          setTelegramLoading(false);
+          return;
+        }
+      } catch {
+        // 网络抖动则继续轮询
+      }
+      setTimeout(poll, 1500);
+    };
+    setTimeout(poll, 800);
   };
 
   // 发起 OIDC 登录（多 Provider 带 provider 参数；旧版单 Provider 不带）
@@ -230,48 +253,20 @@ function LoginPageClient() {
         oidcProviders={effectiveProviders}
         oidcEnabled={oidcEnabled && shouldAskUsername}
         telegramEnabled={telegramEnabled}
-        telegramExpanded={telegramOpen}
-        onTelegramToggle={() => setTelegramOpen((o) => !o)}
+        telegramExpanded={telegramLoading || telegramStatus !== 'idle'}
+        onTelegramToggle={handleTelegramLogin}
         onOIDCStart={startOIDC}
       >
-        {telegramEnabled && telegramOpen && (
-          <div className='auth-field-grid space-y-3 pt-1'>
-            <FormField
-              id='telegramUsername'
-              label='Telegram 用户名'
-              icon={<Send className='h-4 w-4 sm:h-5 sm:w-5' />}
-              type='text'
-              autoComplete='off'
-              placeholder='输入您的 Telegram 用户名'
-              value={telegramUsername}
-              disabled={telegramLoading}
-              onChange={(e) => setTelegramUsername(e.target.value)}
-              hint={
-                <p className='mt-1.5 flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs'>
-                  <Lightbulb className='inline h-3.5 w-3.5 text-yellow-500' />
-                  输入您的 Telegram 用户名（不含 @）
-                </p>
-              }
-            />
-
-            <button
-              type='button'
-              onClick={handleTelegramLogin}
-              disabled={telegramLoading || !telegramUsername.trim()}
-              className='ui-primary-button group relative w-full overflow-hidden'
-            >
-              <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
-              <Send className='h-4 w-4 sm:h-5 sm:w-5' />
-              {telegramLoading ? '正在打开 Telegram...' : '通过 Telegram 登录'}
-            </button>
-
-            {telegramDeepLink && (
-              <div className='rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/50 dark:bg-blue-900/20 sm:p-4'>
-                <p className='text-xs text-blue-800 dark:text-blue-200 sm:text-sm'>
-                  📱 已在新标签页打开 Telegram
+        {(telegramStatus === 'pending' || telegramStatus === 'expired') && (
+          <div className='rounded-lg border border-blue-200 bg-blue-50/70 p-3 dark:border-blue-800/50 dark:bg-blue-900/20 sm:p-4'>
+            {telegramStatus === 'pending' ? (
+              <>
+                <p className='flex items-center gap-2 text-xs text-blue-800 dark:text-blue-200 sm:text-sm'>
+                  <span className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-500/40 border-t-blue-600' />
+                  已打开 Telegram，请在对话框中点击「开始」…
                 </p>
                 <p className='mt-1 text-[11px] text-blue-600 dark:text-blue-300 sm:text-xs'>
-                  如果没有自动打开，请点击{' '}
+                  如果未自动打开，请点击{' '}
                   <a
                     href={telegramDeepLink}
                     target='_blank'
@@ -281,7 +276,11 @@ function LoginPageClient() {
                     这里
                   </a>
                 </p>
-              </div>
+              </>
+            ) : (
+              <p className='text-xs text-orange-600 dark:text-orange-400 sm:text-sm'>
+                ⏰ 登录链接已过期，请重新点击「Telegram 登录」。
+              </p>
             )}
           </div>
         )}

@@ -350,6 +350,12 @@ export async function GET(request: Request) {
 
     // Create HTML response that sets cookies and redirects
     // This ensures cookies are set before navigation happens
+    const redirectParam =
+      new URL(request.url).searchParams.get('redirect') || '/';
+    const safeRedirect =
+      redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+        ? redirectParam
+        : '/';
     const newUserData =
       isNewUser && initialPassword
         ? JSON.stringify({ username, password: initialPassword })
@@ -362,8 +368,7 @@ export async function GET(request: Request) {
 </head>
 <body>
   <script>
-    // 立即跳转到首页
-    window.location.replace('/');
+    window.location.replace('${safeRedirect}');
   </script>
 </body>
 </html>`;

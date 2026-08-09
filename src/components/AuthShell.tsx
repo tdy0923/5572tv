@@ -69,8 +69,8 @@ export function AuthShell({
         <ThemeToggle />
       </div>
 
-      {/* 居中内容区（宽敞） */}
-      <div className='relative z-10 flex min-h-dvh items-center justify-center px-4 py-10 sm:px-6'>
+      {/* 内容区：移动端靠上（避免矮内容垂直居中在顶部留大片空白），桌面端居中 */}
+      <div className='relative z-10 flex min-h-dvh items-start justify-center px-4 pb-10 pt-12 sm:items-center sm:py-10 sm:px-6'>
         <div className='flex w-full max-w-lg flex-col items-center'>
           {/* 品牌 */}
           <FluentFadeIn>
