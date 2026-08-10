@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { AppDownloads } from '@/components/auth/AppDownloads';
 import { FormField } from '@/components/auth/FormField';
 import { QuickLoginGrid } from '@/components/auth/QuickLoginGrid';
+import { TelegramLogin } from '@/components/auth/TelegramLogin';
 import { AuthShell } from '@/components/AuthShell';
 
 interface OIDCProviderItem {
@@ -35,13 +36,10 @@ function LoginPageClient() {
     }
   }, [searchParams]);
 
-  // 一键 Telegram 登录状态
-  const [telegramLoading, setTelegramLoading] = useState(false);
-  const [telegramDeepLink, setTelegramDeepLink] = useState('');
+  // Telegram 登录状态
   const [telegramEnabled, setTelegramEnabled] = useState(false);
-  const [telegramStatus, setTelegramStatus] = useState<
-    'idle' | 'pending' | 'expired'
-  >('idle');
+  const [telegramBotUsername, setTelegramBotUsername] = useState('');
+  const [telegramOpen, setTelegramOpen] = useState(false);
 
   // OIDC 状态
   const [oidcProviders, setOidcProviders] = useState<OIDCProviderItem[]>([]);
@@ -57,6 +55,9 @@ function LoginPageClient() {
         const data = await response.json();
         if (data.TelegramAuthConfig?.enabled) {
           setTelegramEnabled(true);
+          if (data.TelegramAuthConfig.botUsername) {
+            setTelegramBotUsername(data.TelegramAuthConfig.botUsername);
+          }
         }
         if (data.OIDCProviders && data.OIDCProviders.length > 0) {
           setOidcProviders(data.OIDCProviders);
@@ -154,68 +155,6 @@ function LoginPageClient() {
   };
 
   // 一键 Telegram 登录：打开机器人深链 -> 用户按 /start -> 轮询到确认 -> 完成登录
-  const handleTelegramLogin = async () => {
-    setError(null);
-    setTelegramLoading(true);
-    setTelegramStatus('idle');
-    setTelegramDeepLink('');
-
-    let token = '';
-    try {
-      const res = await fetch('/api/telegram/send-magic-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.deepLink) {
-        token = data.token;
-        setTelegramDeepLink(data.deepLink);
-        setTelegramStatus('pending');
-        window.open(data.deepLink, '_blank');
-      } else {
-        setError(data.error || '生成链接失败，请重试');
-        setTelegramLoading(false);
-        return;
-      }
-    } catch {
-      setError('网络错误，请稍后重试');
-      setTelegramLoading(false);
-      return;
-    }
-
-    // 轮询 Telegram 会话，直到用户按下 /start（确认）或超时
-    const timeout = Date.now() + 5 * 60 * 1000;
-    const poll = async () => {
-      if (Date.now() > timeout) {
-        setTelegramStatus('expired');
-        setTelegramLoading(false);
-        return;
-      }
-      try {
-        const r = await fetch(`/api/telegram/session?token=${token}`);
-        const d = await r.json();
-        if (d.ok && d.confirmed) {
-          // 身份已确认，跳转到 verify 完成 cookie 设置 + 自动注册 + 跳首页
-          const p = searchParams.get('redirect') || '/';
-          const safe = p.startsWith('/') && !p.startsWith('//') ? p : '/';
-          window.location.href = `/api/telegram/verify?token=${token}&confirm=1&redirect=${encodeURIComponent(safe)}`;
-          return;
-        }
-        if (d.expired) {
-          setTelegramStatus('expired');
-          setTelegramLoading(false);
-          return;
-        }
-      } catch {
-        // 网络抖动则继续轮询
-      }
-      setTimeout(poll, 1500);
-    };
-    setTimeout(poll, 800);
-  };
-
   // 发起 OIDC 登录（多 Provider 带 provider 参数；旧版单 Provider 不带）
   const startOIDC = (providerId: string) => {
     const redirect = searchParams.get('redirect') || '/';
@@ -241,6 +180,11 @@ function LoginPageClient() {
         ]
       : oidcProviders;
 
+  const redirectPath = (() => {
+    const p = searchParams.get('redirect') || '/';
+    return p.startsWith('/') && !p.startsWith('//') ? p : '/';
+  })();
+
   return (
     <AuthShell
       title='登录'
@@ -253,35 +197,19 @@ function LoginPageClient() {
         oidcProviders={effectiveProviders}
         oidcEnabled={oidcEnabled && shouldAskUsername}
         telegramEnabled={telegramEnabled}
-        telegramExpanded={telegramLoading || telegramStatus !== 'idle'}
-        onTelegramToggle={handleTelegramLogin}
+        telegramExpanded={telegramOpen}
+        onTelegramToggle={() => setTelegramOpen((o) => !o)}
         onOIDCStart={startOIDC}
       >
-        {(telegramStatus === 'pending' || telegramStatus === 'expired') && (
-          <div className='rounded-lg border border-blue-200 bg-blue-50/70 p-3 dark:border-blue-800/50 dark:bg-blue-900/20 sm:p-4'>
-            {telegramStatus === 'pending' ? (
-              <>
-                <p className='flex items-center gap-2 text-xs text-blue-800 dark:text-blue-200 sm:text-sm'>
-                  <span className='h-3.5 w-3.5 animate-spin rounded-full border-2 border-blue-500/40 border-t-blue-600' />
-                  已打开 Telegram，请在对话框中点击「开始」…
-                </p>
-                <p className='mt-1 text-[11px] text-blue-600 dark:text-blue-300 sm:text-xs'>
-                  如果未自动打开，请点击{' '}
-                  <a
-                    href={telegramDeepLink}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='font-semibold underline'
-                  >
-                    这里
-                  </a>
-                </p>
-              </>
-            ) : (
-              <p className='text-xs text-orange-600 dark:text-orange-400 sm:text-sm'>
-                ⏰ 登录链接已过期，请重新点击「Telegram 登录」。
-              </p>
-            )}
+        {telegramOpen && telegramBotUsername && (
+          <div className='auth-field-grid space-y-2 pt-1'>
+            <TelegramLogin
+              botUsername={telegramBotUsername}
+              redirect={redirectPath}
+            />
+            <p className='text-center text-[11px] text-gray-500 dark:text-gray-400'>
+              点击上方「用 Telegram 登录」，授权后自动登录
+            </p>
           </div>
         )}
       </QuickLoginGrid>
