@@ -39,7 +39,6 @@ function LoginPageClient() {
   // Telegram 登录状态
   const [telegramEnabled, setTelegramEnabled] = useState(false);
   const [telegramBotUsername, setTelegramBotUsername] = useState('');
-  const [telegramRequestAccess, setTelegramRequestAccess] = useState(false);
 
   // OIDC 状态
   const [oidcProviders, setOidcProviders] = useState<OIDCProviderItem[]>([]);
@@ -57,11 +56,6 @@ function LoginPageClient() {
           setTelegramEnabled(true);
           if (data.TelegramAuthConfig.botUsername) {
             setTelegramBotUsername(data.TelegramAuthConfig.botUsername);
-          }
-          if (typeof data.TelegramAuthConfig.requestWriteAccess === 'boolean') {
-            setTelegramRequestAccess(
-              data.TelegramAuthConfig.requestWriteAccess,
-            );
           }
         }
         if (data.OIDCProviders && data.OIDCProviders.length > 0) {
@@ -204,14 +198,10 @@ function LoginPageClient() {
         onOIDCStart={startOIDC}
       >
         {telegramBotUsername && (
-          <div className='flex flex-col items-center pt-1'>
-            <TelegramLogin
-              botUsername={telegramBotUsername}
-              redirect={redirectPath}
-              requestAccess={telegramRequestAccess}
-            />
+          <div className='flex flex-col'>
+            <TelegramLogin redirect={redirectPath} />
             <p className='mt-1.5 text-center text-[11px] text-gray-500 dark:text-gray-400'>
-              点击上方按钮，授权后自动登录
+              点击按钮授权后自动登录
             </p>
           </div>
         )}

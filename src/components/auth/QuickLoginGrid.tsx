@@ -19,13 +19,13 @@ type QuickLoginGridProps = {
   oidcEnabled: boolean;
   telegramEnabled: boolean;
   onOIDCStart: (providerId: string, redirect: string) => void;
-  /** Telegram 官方授权按钮（常显，无需二次展开） */
+  /** Telegram 登录按钮（与 OIDC 按钮同风格，排在同一网格） */
   children?: React.ReactNode;
 };
 
 /**
- * 快捷登录：OIDC Provider 按钮网格 + Telegram 官方授权按钮（内联常显）。
- * 后台上新 Provider 自动出现。
+ * 快捷登录网格：OIDC Provider + Telegram 按钮统一排布，
+ * 全部同风格品牌按钮，后台上新 Provider 自动出现。
  */
 export function QuickLoginGrid({
   oidcProviders,
@@ -51,9 +51,9 @@ export function QuickLoginGrid({
         </div>
       </div>
 
-      {hasOIDC && (
-        <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2'>
-          {oidcProviders.map((provider) => {
+      <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2'>
+        {hasOIDC &&
+          oidcProviders.map((provider) => {
             const providerId = provider.id.toLowerCase();
             const known = [
               'google',
@@ -85,10 +85,9 @@ export function QuickLoginGrid({
               </button>
             );
           })}
-        </div>
-      )}
 
-      {telegramEnabled && children}
+        {telegramEnabled && children}
+      </div>
     </div>
   );
 }
