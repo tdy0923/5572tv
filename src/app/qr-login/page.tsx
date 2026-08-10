@@ -292,8 +292,7 @@ function QRLoginClient() {
         title='扫码登录确认'
         subtitle='请在下方输入密码以确认登录'
         icon={<QrCode className='h-6 w-6 text-white' />}
-        brandExtra={<AppDownloads variant='panel' />}
-        footer={<AppDownloads variant='footer' />}
+        footer={<AppDownloads />}
       >
         {status === 'confirmed' ? (
           <div className='py-8 text-center'>
@@ -375,8 +374,7 @@ function QRLoginClient() {
       title='扫码登录'
       subtitle='使用手机扫描二维码登录'
       icon={<QrCode className='h-6 w-6 text-white' />}
-      brandExtra={<AppDownloads variant='panel' />}
-      footer={<AppDownloads variant='footer' />}
+      footer={<AppDownloads />}
     >
       <div className='flex flex-col items-center'>
         {/* QR Code */}

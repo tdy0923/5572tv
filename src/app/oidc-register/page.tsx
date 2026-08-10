@@ -98,8 +98,7 @@ function OIDCRegisterContent() {
       title='完成 OIDC 注册'
       subtitle='补充用户名后继续访问您的内容与播放记录'
       icon={<Shield className='h-6 w-6 text-white' />}
-      brandExtra={<AppDownloads variant='panel' />}
-      footer={<AppDownloads variant='footer' />}
+      footer={<AppDownloads />}
     >
       {oidcInfo && (
         <div className='mb-5 rounded-2xl border border-blue-200 bg-blue-50/90 p-4 dark:border-blue-800/60 dark:bg-blue-900/20'>

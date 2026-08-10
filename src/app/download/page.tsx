@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
+import { DEFAULT_APK_INFO } from '@/lib/app-release';
 import { browserDownload } from '@/lib/browser-download';
 
 import { FluentFadeIn, FluentStagger } from '@/components/FluentTransition';
@@ -15,7 +16,7 @@ import PlatformTabs from './components/PlatformTabs';
 import PosterWall from './components/PosterWall';
 import { detectPlatform } from './utils';
 
-const DEFAULT_APK = { version: 'v1.12.0', sizeMb: '18' };
+const DEFAULT_APK = DEFAULT_APK_INFO;
 
 const FEATURES = [
   {

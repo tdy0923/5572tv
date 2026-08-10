@@ -15,9 +15,7 @@ type AuthShellProps = {
   subtitle?: string;
   icon?: ReactNode;
   children: ReactNode;
-  /** 卡片下方扩展内容（如 App 下载入口） */
-  brandExtra?: ReactNode;
-  /** 卡片下方内容（如 App 下载横条） */
+  /** 卡片下方内容（如 App 下载引导） */
   footer?: ReactNode;
 };
 
@@ -58,7 +56,6 @@ export function AuthShell({
   subtitle,
   icon,
   children,
-  brandExtra,
   footer,
 }: AuthShellProps) {
   const { siteName } = useSite();
@@ -92,23 +89,23 @@ export function AuthShell({
                   <div className='absolute -inset-3 rounded-3xl bg-[#f4c24d]/25 blur-2xl auth-logo-pulse dark:bg-[#f4c24d]/15' />
                   <LogoMark size='lg'>{icon}</LogoMark>
                 </div>
-                <h2 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
+                <h2 className='text-4xl font-black tracking-tight text-gray-900 dark:text-white'>
                   {siteName}
                 </h2>
               </div>
 
-              <p className='mt-5 text-base leading-relaxed text-gray-600 dark:text-gray-300'>
+              <p className='mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-300'>
                 随时随地，畅享影音世界。聚合海量影视资源， AI
                 智能推荐，手机、平板、电视全平台同步。
               </p>
 
-              <div className='mt-8 grid grid-cols-2 gap-4'>
+              <div className='mt-9 grid grid-cols-2 gap-4'>
                 {FEATURES.map((f) => (
                   <div
                     key={f.title}
-                    className='flex items-start gap-3 rounded-xl border border-gray-200/70 bg-white/50 p-3.5 transition-colors hover:border-[#f4c24d]/50 dark:border-white/10 dark:bg-white/[0.04]'
+                    className='group flex items-start gap-3 rounded-xl border border-gray-200/70 bg-white/50 p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#f4c24d]/50 hover:shadow-[0_10px_30px_-12px_rgba(244,194,77,0.4)] dark:border-white/10 dark:bg-white/[0.04]'
                   >
-                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f4c24d]/15 text-[#d89c18] dark:text-[#f4c24d]'>
+                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f4c24d]/15 text-[#d89c18] transition-transform duration-300 group-hover:scale-110 dark:text-[#f4c24d]'>
                       <f.icon className='h-5 w-5' />
                     </div>
                     <div>
@@ -171,8 +168,6 @@ export function AuthShell({
                 </div>
 
                 {children}
-
-                {brandExtra && <div className='mt-6'>{brandExtra}</div>}
               </div>
             </FluentFadeIn>
 

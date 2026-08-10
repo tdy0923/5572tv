@@ -196,8 +196,7 @@ function LoginPageClient() {
       title='登录'
       subtitle='欢迎回来，继续访问您的内容与播放记录'
       icon={<Sparkles className='h-6 w-6 text-white' />}
-      brandExtra={<AppDownloads variant='panel' />}
-      footer={<AppDownloads variant='footer' />}
+      footer={<AppDownloads />}
     >
       <QuickLoginGrid
         oidcProviders={effectiveProviders}

@@ -204,8 +204,7 @@ function RegisterPageClient() {
         title='注册'
         subtitle='创建您的新账户'
         icon={<UserPlus className='h-6 w-6 text-white' />}
-        brandExtra={<AppDownloads variant='panel' />}
-        footer={<AppDownloads variant='footer' />}
+        footer={<AppDownloads />}
       >
         <div className='py-10 text-center text-sm text-gray-500 dark:text-gray-400'>
           正在加载注册配置...
@@ -260,8 +259,7 @@ function RegisterPageClient() {
       title='注册'
       subtitle='创建您的新账户'
       icon={<UserPlus className='h-6 w-6 text-white' />}
-      brandExtra={<AppDownloads variant='panel' />}
-      footer={<AppDownloads variant='footer' />}
+      footer={<AppDownloads />}
     >
       <form
         onSubmit={handleSubmit}
