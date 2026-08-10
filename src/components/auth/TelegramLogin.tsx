@@ -13,9 +13,11 @@ import { useEffect, useRef } from 'react';
 export function TelegramLogin({
   botUsername,
   redirect = '/',
+  requestAccess = false,
 }: {
   botUsername: string;
   redirect?: string;
+  requestAccess?: boolean;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -42,16 +44,17 @@ export function TelegramLogin({
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [redirect]);
-
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const cleanBot = botUsername.replace(/^@/, '');
+  const request = requestAccess ? '&request_access=write' : '';
 
   return (
     <iframe
       ref={iframeRef}
       title='Telegram 登录'
-      src={`https://oauth.telegram.org/embed/${botUsername}?origin=${encodeURIComponent(
+      src={`https://oauth.telegram.org/embed/${cleanBot}?origin=${encodeURIComponent(
         origin,
-      )}&request_access=write`}
+      )}${request}`}
       className='mx-auto block h-[64px] w-full max-w-[260px] border-0'
       style={{ background: 'transparent' }}
     />

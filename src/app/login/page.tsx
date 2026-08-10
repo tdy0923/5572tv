@@ -39,6 +39,7 @@ function LoginPageClient() {
   // Telegram 登录状态
   const [telegramEnabled, setTelegramEnabled] = useState(false);
   const [telegramBotUsername, setTelegramBotUsername] = useState('');
+  const [telegramRequestAccess, setTelegramRequestAccess] = useState(false);
   const [telegramOpen, setTelegramOpen] = useState(false);
 
   // OIDC 状态
@@ -57,6 +58,11 @@ function LoginPageClient() {
           setTelegramEnabled(true);
           if (data.TelegramAuthConfig.botUsername) {
             setTelegramBotUsername(data.TelegramAuthConfig.botUsername);
+          }
+          if (typeof data.TelegramAuthConfig.requestWriteAccess === 'boolean') {
+            setTelegramRequestAccess(
+              data.TelegramAuthConfig.requestWriteAccess,
+            );
           }
         }
         if (data.OIDCProviders && data.OIDCProviders.length > 0) {
@@ -206,6 +212,7 @@ function LoginPageClient() {
             <TelegramLogin
               botUsername={telegramBotUsername}
               redirect={redirectPath}
+              requestAccess={telegramRequestAccess}
             />
             <p className='text-center text-[11px] text-gray-500 dark:text-gray-400'>
               点击上方「用 Telegram 登录」，授权后自动登录
