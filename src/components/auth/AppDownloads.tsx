@@ -1,13 +1,13 @@
 'use client';
 
-import { Smartphone, Tv } from 'lucide-react';
+import { Apple, Smartphone, Tv } from 'lucide-react';
 import QRCodeLib from 'qrcode';
 import { useEffect, useState } from 'react';
 
 /**
  * 客户端下载引导。panel：卡片内横排（二维码 + 下载按钮）；
  * footer：卡片下方紧凑横条。二维码在本机用 qrcode 生成，不依赖外网。
- * 配色跟随站点明暗主题。
+ * 全部指向自有客户端：安卓 / 电视（APK）与 iOS（PWA 指南）。
  */
 export function AppDownloads({
   variant = 'panel',
@@ -36,28 +36,34 @@ export function AppDownloads({
     };
   }, []);
 
+  const linkClass =
+    'inline-flex items-center gap-1 font-semibold text-gray-700 transition-colors hover:text-[#d89c18] dark:text-gray-200 dark:hover:text-[#f4c24d]';
+
   if (variant === 'footer') {
     return (
-      <div className='flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500 dark:text-gray-400'>
-        <span>更多客户端：</span>
+      <div className='flex flex-wrap items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+        <span>更多平台：</span>
         <a
-          href='https://github.com/MoonTechLab/Selene/releases'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-flex items-center gap-1 font-semibold text-gray-700 transition-colors hover:text-[#d89c18] dark:text-gray-200 dark:hover:text-[#f4c24d]'
+          href='/static/download/5572tv-android.apk'
+          download
+          className={linkClass}
         >
           <Smartphone className='h-3.5 w-3.5' />
-          Selene（手机）
+          安卓版
         </a>
         <span className='text-gray-300 dark:text-gray-600'>·</span>
         <a
-          href='https://github.com/zimplexing/OrionTV'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-flex items-center gap-1 font-semibold text-gray-700 transition-colors hover:text-[#d89c18] dark:text-gray-200 dark:hover:text-[#f4c24d]'
+          href='/static/download/5572tv-android.apk'
+          download
+          className={linkClass}
         >
           <Tv className='h-3.5 w-3.5' />
-          OrionTV（电视 / 平板）
+          电视版
+        </a>
+        <span className='text-gray-300 dark:text-gray-600'>·</span>
+        <a href='/download' className={linkClass}>
+          <Apple className='h-3.5 w-3.5' />
+          iOS 版
         </a>
       </div>
     );
@@ -83,22 +89,27 @@ export function AppDownloads({
         )}
         <div className='flex flex-col gap-2.5'>
           <a
-            href='https://github.com/MoonTechLab/Selene/releases'
-            target='_blank'
-            rel='noopener noreferrer'
+            href='/static/download/5572tv-android.apk'
+            download
             className='inline-flex items-center gap-2 rounded-lg bg-gray-900 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200'
           >
             <Smartphone className='h-4 w-4' />
-            Selene
+            安卓版
           </a>
           <a
-            href='https://github.com/zimplexing/OrionTV'
-            target='_blank'
-            rel='noopener noreferrer'
+            href='/static/download/5572tv-android.apk'
+            download
             className='inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3.5 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-[#f4c24d] hover:text-[#d89c18] dark:border-white/15 dark:text-gray-200 dark:hover:border-[#f4c24d]/60 dark:hover:text-[#f4c24d]'
           >
             <Tv className='h-4 w-4' />
-            OrionTV
+            电视版
+          </a>
+          <a
+            href='/download'
+            className='inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3.5 py-2 text-xs font-semibold text-gray-700 transition-colors hover:border-[#f4c24d] hover:text-[#d89c18] dark:border-white/15 dark:text-gray-200 dark:hover:border-[#f4c24d]/60 dark:hover:text-[#f4c24d]'
+          >
+            <Apple className='h-4 w-4' />
+            iOS 版
           </a>
         </div>
       </div>
