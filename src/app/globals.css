@@ -1127,6 +1127,20 @@ select:focus-visible,
   animation: ripple-effect 600ms ease-out forwards;
 }
 
+/* 登录按钮底部加载条：单一滑动动画 */
+@keyframes login-loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-login-loading {
+  animation: login-loading 1.2s ease-in-out infinite;
+}
+
 /* --- 14. Disabled State: Fluent 2 muted --- */
 button:disabled,
 [role='button']:disabled {

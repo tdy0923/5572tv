@@ -290,9 +290,11 @@ function LoginPageClient() {
           disabled={!password || loading || (shouldAskUsername && !username)}
           className='ui-primary-button group relative w-full overflow-hidden'
         >
-          <span className='absolute inset-0 h-full w-full -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-1000 group-hover:translate-x-full' />
           <Lock className='h-4 w-4 sm:h-5 sm:w-5' />
           {loading ? '登录中...' : '立即登录'}
+          {loading && (
+            <span className='animate-login-loading absolute bottom-0 left-0 h-0.5 w-1/2 bg-white/70' />
+          )}
         </button>
       </form>
 
