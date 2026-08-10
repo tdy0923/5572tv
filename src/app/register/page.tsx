@@ -417,7 +417,7 @@ function RegisterPageClient() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={null}>
       <RegisterPageClient />
     </Suspense>
   );

@@ -2459,7 +2459,7 @@ const FavoriteIcon = ({ filled }: { filled: boolean }) => {
 
 export default function LivePage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={null}>
       <LivePageGuard />
     </Suspense>
   );

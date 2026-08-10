@@ -240,13 +240,7 @@ export default async function RootLayout({
                     announcement={announcement}
                     adSettings={adSettings}
                   >
-                    <Suspense
-                      fallback={
-                        <div className='min-h-screen flex items-center justify-center'>
-                          Loading...
-                        </div>
-                      }
-                    >
+                    <Suspense fallback={null}>
                       <SessionTracker />
                       {children}
                       <GlobalErrorIndicator />
