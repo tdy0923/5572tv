@@ -34,6 +34,9 @@ export function AuthBackground() {
       {/* 极光 2（冷蓝）——明暗两态 */}
       <div className='absolute -right-[15%] bottom-[-14%] h-[60vmax] w-[60vmax] rounded-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.18),transparent_65%)] blur-[80px] dark:bg-[radial-gradient(circle_at_center,rgba(56,120,255,0.16),transparent_65%)] auth-aura aurora-b' />
 
+      {/* 极光 3（蓝紫）——明暗两态 */}
+      <div className='absolute left-[28%] top-[48%] h-[52vmax] w-[52vmax] rounded-full bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.13),transparent_65%)] blur-[90px] dark:bg-[radial-gradient(circle_at_center,rgba(129,80,246,0.14),transparent_65%)] auth-aura aurora-c' />
+
       {/* 旋转对角光斑（明暗两态透明度） */}
       <div className='absolute left-1/2 top-1/2 h-[130vmax] w-[130vmax] -translate-x-1/2 -translate-y-1/2 auth-grid-whirl opacity-[0.12] dark:opacity-[0.18]' />
 
@@ -60,6 +63,12 @@ export function AuthBackground() {
 
       {/* 星尘 */}
       <div className='auth-dust absolute inset-0' />
+
+      {/* 浮动金色火星：缓慢上升 */}
+      <div className='auth-embers absolute inset-0' />
+
+      {/* 冷色光点漂移 */}
+      <div className='auth-drift absolute inset-0' />
     </div>
   );
 }

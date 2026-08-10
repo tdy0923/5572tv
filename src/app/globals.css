@@ -1277,6 +1277,19 @@ html.dark textarea:-webkit-autofill {
   }
 }
 
+.aurora-c {
+  animation: auth-aurora-c 30s ease-in-out infinite;
+}
+@keyframes auth-aurora-c {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5vmax, -6vmax, 0) scale(1.16);
+  }
+}
+
 .auth-grid-whirl {
   will-change: transform;
   background-image: repeating-conic-gradient(
@@ -1352,6 +1365,75 @@ html.dark textarea:-webkit-autofill {
   100% {
     background-position: 260px 180px;
     opacity: 0.7;
+  }
+}
+
+/* 浮动金色火星：缓慢上升并呼吸 */
+.auth-embers {
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(244, 194, 77, 0.9) 0 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(244, 194, 77, 0.65) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.5) 0 1px, transparent 1.6px);
+  background-size:
+    260px 260px,
+    340px 340px,
+    420px 420px;
+  background-position:
+    0 0,
+    80px 120px,
+    200px 40px;
+  -webkit-mask-image: radial-gradient(closest-side, #000 10%, transparent 92%);
+  mask-image: radial-gradient(closest-side, #000 10%, transparent 92%);
+  animation: auth-embers 30s ease-in-out infinite alternate;
+  opacity: 0.65;
+}
+@keyframes auth-embers {
+  0% {
+    background-position:
+      0 110%,
+      80px 110%,
+      200px 110%;
+    opacity: 0.3;
+  }
+  100% {
+    background-position:
+      0 0,
+      80px 0,
+      200px 0;
+    opacity: 0.8;
+  }
+}
+
+/* 冷色光点：左右缓慢漂移 */
+.auth-drift {
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(96, 165, 250, 0.55) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(148, 163, 184, 0.4) 0 1px, transparent 1.6px);
+  background-size:
+    300px 300px,
+    380px 380px;
+  background-position:
+    0 0,
+    150px 90px;
+  -webkit-mask-image: radial-gradient(closest-side, #000, transparent 90%);
+  mask-image: radial-gradient(closest-side, #000, transparent 90%);
+  animation: auth-drift 36s ease-in-out infinite alternate;
+  opacity: 0.5;
+}
+@keyframes auth-drift {
+  0% {
+    background-position:
+      0 0,
+      150px 90px;
+    opacity: 0.25;
+  }
+  100% {
+    background-position:
+      140px 180px,
+      280px 30px;
+    opacity: 0.6;
   }
 }
 
