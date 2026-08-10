@@ -40,7 +40,6 @@ function LoginPageClient() {
   const [telegramEnabled, setTelegramEnabled] = useState(false);
   const [telegramBotUsername, setTelegramBotUsername] = useState('');
   const [telegramRequestAccess, setTelegramRequestAccess] = useState(false);
-  const [telegramOpen, setTelegramOpen] = useState(false);
 
   // OIDC 状态
   const [oidcProviders, setOidcProviders] = useState<OIDCProviderItem[]>([]);
@@ -202,19 +201,17 @@ function LoginPageClient() {
         oidcProviders={effectiveProviders}
         oidcEnabled={oidcEnabled && shouldAskUsername}
         telegramEnabled={telegramEnabled}
-        telegramExpanded={telegramOpen}
-        onTelegramToggle={() => setTelegramOpen((o) => !o)}
         onOIDCStart={startOIDC}
       >
-        {telegramOpen && telegramBotUsername && (
-          <div className='auth-field-grid space-y-2 pt-1'>
+        {telegramBotUsername && (
+          <div className='flex flex-col items-center pt-1'>
             <TelegramLogin
               botUsername={telegramBotUsername}
               redirect={redirectPath}
               requestAccess={telegramRequestAccess}
             />
-            <p className='text-center text-[11px] text-gray-500 dark:text-gray-400'>
-              点击上方「用 Telegram 登录」，授权后自动登录
+            <p className='mt-1.5 text-center text-[11px] text-gray-500 dark:text-gray-400'>
+              点击上方按钮，授权后自动登录
             </p>
           </div>
         )}

@@ -1,7 +1,5 @@
 'use client';
 
-import { Send } from 'lucide-react';
-
 import {
   detectProvider,
   getProviderButtonStyle,
@@ -20,22 +18,19 @@ type QuickLoginGridProps = {
   oidcProviders: OIDCProviderItem[];
   oidcEnabled: boolean;
   telegramEnabled: boolean;
-  telegramExpanded: boolean;
-  onTelegramToggle: () => void;
   onOIDCStart: (providerId: string, redirect: string) => void;
+  /** Telegram 官方授权按钮（常显，无需二次展开） */
   children?: React.ReactNode;
 };
 
 /**
- * 快捷登录网格：动态 OIDC Provider（Google/GitHub/...）+ Telegram。
- * 按钮全部可见不折叠，后台上新 Provider 自动出现。
+ * 快捷登录：OIDC Provider 按钮网格 + Telegram 官方授权按钮（内联常显）。
+ * 后台上新 Provider 自动出现。
  */
 export function QuickLoginGrid({
   oidcProviders,
   oidcEnabled,
   telegramEnabled,
-  telegramExpanded,
-  onTelegramToggle,
   onOIDCStart,
   children,
 }: QuickLoginGridProps) {
@@ -50,15 +45,15 @@ export function QuickLoginGrid({
           <div className='w-full border-t border-gray-200 dark:border-white/10' />
         </div>
         <div className='relative flex justify-center'>
-          <span className='flex items-center gap-1.5 bg-[#0d1117]/0 px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500'>
+          <span className='flex items-center gap-1.5 bg-transparent px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500'>
             快捷登录
           </span>
         </div>
       </div>
 
-      <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2'>
-        {hasOIDC &&
-          oidcProviders.map((provider) => {
+      {hasOIDC && (
+        <div className='grid grid-cols-1 gap-2.5 sm:grid-cols-2'>
+          {oidcProviders.map((provider) => {
             const providerId = provider.id.toLowerCase();
             const known = [
               'google',
@@ -90,25 +85,10 @@ export function QuickLoginGrid({
               </button>
             );
           })}
+        </div>
+      )}
 
-        {telegramEnabled && (
-          <button
-            type='button'
-            onClick={onTelegramToggle}
-            aria-expanded={telegramExpanded}
-            className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95 ${
-              telegramExpanded
-                ? 'border-[#2AABEE]/70 bg-[#2AABEE]/15 text-[#1d9aea] dark:text-[#7ecbff]'
-                : 'border-[#2AABEE]/50 bg-white text-gray-700 hover:border-[#2AABEE]/70 hover:bg-[#2AABEE]/5 dark:border-white/15 dark:bg-white/[0.05] dark:text-gray-200 dark:hover:border-[#2AABEE]/50 dark:hover:bg-[#2AABEE]/10'
-            }`}
-          >
-            <Send className='h-4 w-4 text-[#2AABEE]' />
-            Telegram 登录
-          </button>
-        )}
-      </div>
-
-      {children}
+      {telegramEnabled && children}
     </div>
   );
 }
