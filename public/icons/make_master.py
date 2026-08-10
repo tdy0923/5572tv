@@ -23,7 +23,7 @@ def glyph_path_for_char(ch):
     code = ord(ch)
     gname = cmap[code]
     pen = SVGPathPen(glyphset)
-    tf = TransformPen(pen, Transform(scale, 0, 0, scale, 0, 0))
+    tf = TransformPen(pen, Transform(scale, 0, 0, -scale, 0, 0))
     glyphset[gname].draw(tf)
     return pen.getCommands()
 
@@ -52,7 +52,7 @@ for i, ch in enumerate(text):
 
 # vertical: we want the FULL composition (digits + play + underline) optically centered ~y=256.
 # Baseline placement: digits occupy baseline - 129..baseline. Place accents below.
-glyphs_y = 170  # baseline y for digits
+glyphs_y = 270  # baseline y for digits
 
 g_content = "\n".join(parts)
 
