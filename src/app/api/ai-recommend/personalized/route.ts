@@ -174,13 +174,12 @@ async function enrichRecommendations(titles: string[]) {
   return Promise.all(searchPromises);
 }
 
-async function getTrendingFallback(
-  request: NextRequest,
-  cacheKey: string,
-): Promise<NextResponse> {
+async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
   try {
+    // 内部直连自身（localhost）拉取热门，避免经公网域名被 CDN/WAF 拦截
     const trendingRes = await fetch(
-      `${new URL(request.url).origin}/api/trending`,
+      `http://127.0.0.1:${process.env.PORT || 3000}/api/trending`,
+      { signal: AbortSignal.timeout(5000) },
     );
     if (trendingRes.ok) {
       const trending = await trendingRes.json();
@@ -233,7 +232,7 @@ export async function GET(request: NextRequest) {
     const userRecords = Object.values(allRecords);
 
     if (userRecords.length === 0) {
-      return await getTrendingFallback(request, cacheKey);
+      return await getTrendingFallback(cacheKey);
     }
 
     const viewingHistory = userRecords
@@ -261,7 +260,7 @@ export async function GET(request: NextRequest) {
     const recommendations = await enrichRecommendations(titles);
 
     if (recommendations.length === 0) {
-      return await getTrendingFallback(request, cacheKey);
+      return await getTrendingFallback(cacheKey);
     }
 
     recommendationCache.set(cacheKey, {
