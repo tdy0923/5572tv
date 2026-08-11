@@ -197,14 +197,7 @@ function LoginPageClient() {
         telegramEnabled={telegramEnabled}
         onOIDCStart={startOIDC}
       >
-        {telegramBotUsername && (
-          <div className='flex flex-col'>
-            <TelegramLogin redirect={redirectPath} />
-            <p className='mt-1.5 text-center text-[11px] text-gray-500 dark:text-gray-400'>
-              点击按钮授权后自动登录
-            </p>
-          </div>
-        )}
+        {telegramBotUsername && <TelegramLogin redirect={redirectPath} />}
       </QuickLoginGrid>
 
       <form

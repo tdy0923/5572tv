@@ -23,7 +23,7 @@ export function TelegramLogin({ redirect = '/' }: { redirect?: string }) {
       onClick={start}
       className='inline-flex items-center justify-center gap-2 rounded-lg border-2 border-[#2AABEE] bg-[#2AABEE] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#229ad9] active:scale-95'
     >
-      <Send className='h-4 w-4' />
+      <Send className='h-5 w-5' />
       <span>使用 Telegram 登录</span>
     </button>
   );
