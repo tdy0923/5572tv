@@ -2,10 +2,11 @@
 
 import {
   detectProvider,
-  getProviderButtonStyle,
   getProviderButtonText,
   OIDCProviderLogo,
 } from '@/components/OIDCProviderLogos';
+
+import { QUICK_LOGIN_BUTTON_CLASS } from './quickLoginButton';
 
 export interface OIDCProviderItem {
   id: string;
@@ -24,8 +25,8 @@ type QuickLoginGridProps = {
 };
 
 /**
- * 快捷登录网格：OIDC Provider + Telegram 按钮统一排布，
- * 全部同风格品牌按钮，后台上新 Provider 自动出现。
+ * 快捷登录网格：OIDC Provider + Telegram 统一中性按钮排布，
+ * 同高同宽、样式完全一致，仅品牌图标不同。
  */
 export function QuickLoginGrid({
   oidcProviders,
@@ -78,7 +79,7 @@ export function QuickLoginGrid({
                 key={provider.id}
                 type='button'
                 onClick={() => onOIDCStart(provider.id, '/')}
-                className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-95 ${getProviderButtonStyle(detected)}`}
+                className={QUICK_LOGIN_BUTTON_CLASS}
               >
                 <OIDCProviderLogo provider={detected} />
                 <span className='truncate'>{text}</span>
