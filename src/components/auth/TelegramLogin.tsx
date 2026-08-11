@@ -20,8 +20,8 @@ export function TelegramLogin({ redirect = '/' }: { redirect?: string }) {
 
   return (
     <button type='button' onClick={start} className={QUICK_LOGIN_BUTTON_CLASS}>
-      <Send className='h-5 w-5 text-[#2AABEE]' />
-      <span>使用 Telegram 登录</span>
+      <Send className='h-5 w-5 shrink-0 text-[#2AABEE]' />
+      <span className='truncate'>Telegram 登录</span>
     </button>
   );
 }

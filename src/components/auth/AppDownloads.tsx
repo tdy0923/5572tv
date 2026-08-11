@@ -1,6 +1,6 @@
 'use client';
 
-import { Apple, Smartphone, Tv } from 'lucide-react';
+import { Apple, Download, Smartphone, Tv } from 'lucide-react';
 import QRCodeLib from 'qrcode';
 import { useEffect, useState } from 'react';
 
@@ -34,57 +34,68 @@ export function AppDownloads() {
     };
   }, []);
 
-  const linkClass =
-    'inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors';
+  const versionClass =
+    'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95';
   const primaryClass =
-    'bg-gray-900 text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200';
+    'bg-gray-900 text-white shadow-md hover:bg-gray-700 hover:shadow-lg dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200';
   const ghostClass =
-    'border border-gray-300 text-gray-700 hover:border-[#f4c24d] hover:text-[#d89c18] dark:border-white/15 dark:text-gray-200 dark:hover:border-[#f4c24d]/60 dark:hover:text-[#f4c24d]';
+    'border border-gray-300 bg-white text-gray-700 hover:border-[#f4c24d] hover:text-[#d89c18] dark:border-white/15 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:border-[#f4c24d]/60 dark:hover:text-[#f4c24d]';
 
   return (
-    <div className='flex flex-wrap items-center justify-center gap-4'>
-      <div className='flex items-center gap-3'>
+    <div className='w-full rounded-2xl border border-gray-200/80 bg-white/70 p-5 shadow-sm backdrop-blur-xl sm:p-6 dark:border-white/10 dark:bg-white/[0.05] dark:shadow-none'>
+      <div className='flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-5'>
         {qrDataUrl && (
           <img
             src={qrDataUrl}
             alt='下载二维码'
-            width={84}
-            height={84}
-            className='h-[5.25rem] w-[5.25rem] shrink-0 rounded-xl border border-gray-200 bg-white p-1 dark:border-white/10'
+            width={112}
+            height={112}
+            className='h-28 w-28 shrink-0 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-white/10'
           />
         )}
-        <div>
-          <p className='text-sm font-semibold text-gray-800 dark:text-gray-100'>
+        <div className='text-center sm:text-left'>
+          <p className='text-base font-bold text-gray-900 dark:text-white'>
             下载客户端
           </p>
-          <p className='mt-0.5 text-xs text-gray-500 dark:text-gray-400'>
-            扫码或点击下载，多端同步播放
+          <p className='mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400'>
+            扫码或点击下载
+            <br className='sm:hidden' />
+            <span className='hidden sm:inline'>，</span>
+            多端同步播放
+          </p>
+          <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+            手机 / 平板 / 电视无缝切换
           </p>
         </div>
       </div>
 
-      <div className='flex flex-col gap-2'>
+      <div className='mt-5 grid grid-cols-3 gap-2.5'>
         <a
           href='/download/5572tv-android.apk'
           download
-          className={`${linkClass} ${primaryClass}`}
+          className={`${versionClass} ${primaryClass}`}
         >
-          <Smartphone className='h-4 w-4' />
-          安卓版
+          <Smartphone className='h-5 w-5 shrink-0' />
+          <span className='truncate'>安卓版</span>
         </a>
         <a
           href='/download/5572tv-android.apk'
           download
-          className={`${linkClass} ${ghostClass}`}
+          className={`${versionClass} ${ghostClass}`}
         >
-          <Tv className='h-4 w-4' />
-          电视版
+          <Tv className='h-5 w-5 shrink-0' />
+          <span className='truncate'>电视版</span>
         </a>
-        <a href='/download' className={`${linkClass} ${ghostClass}`}>
-          <Apple className='h-4 w-4' />
-          iOS 版
+        <a href='/download' className={`${versionClass} ${ghostClass}`}>
+          <Apple className='h-5 w-5 shrink-0' />
+          <span className='truncate'>iOS 版</span>
         </a>
       </div>
+
+      <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-gray-400 dark:text-gray-500'>
+        <Download className='h-3.5 w-3.5' />
+        免费下载，极速安装
+      </p>
     </div>
   );
 }
