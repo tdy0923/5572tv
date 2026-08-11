@@ -26,6 +26,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useOptimistic,
+  useRef,
   useState,
 } from 'react';
 
@@ -1124,8 +1125,8 @@ function VideoCard({
             }}
           />
 
-          {/* hover 金色光晕横扫 */}
-          <div className='pointer-events-none absolute top-0 bottom-0 left-[-60%] w-[50%] -skew-x-12 bg-linear-to-r from-transparent via-primary-200/50 dark:via-primary-300/30 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-[330%] transition-all duration-700 ease-out' />
+          {/* hover 柔和光斑（跟随鼠标，GPU transform，无大面积重绘） */}
+          <PosterSpotlight />
 
           {/* 播放按钮 / 即将上映提示 */}
           {config.showPlayButton && (
@@ -1901,5 +1902,61 @@ function VideoCard({
     </>
   );
 }
+
+/**
+ * 海报 hover 柔和光斑
+ * - 固定小圆斑，仅通过 transform 跟随鼠标（GPU 合成），不触发大面积渐变重绘
+ * - 用 ref 直写 DOM，mousemove 不触发 React 重渲染，极流畅
+ */
+const PosterSpotlight = memo(function PosterSpotlight() {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const blobRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const blob = blobRef.current;
+    if (!root || !blob) return;
+
+    const move = (e: MouseEvent) => {
+      const rect = root.getBoundingClientRect();
+      blob.style.left = `${e.clientX - rect.left}px`;
+      blob.style.top = `${e.clientY - rect.top}px`;
+      blob.style.opacity = '1';
+    };
+    const leave = () => {
+      blob.style.opacity = '0';
+    };
+
+    root.addEventListener('mouseenter', move);
+    root.addEventListener('mousemove', move, { passive: true });
+    root.addEventListener('mouseleave', leave);
+    return () => {
+      root.removeEventListener('mouseenter', move);
+      root.removeEventListener('mousemove', move);
+      root.removeEventListener('mouseleave', leave);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={rootRef}
+      className='pointer-events-none absolute inset-0 overflow-hidden rounded-[12px]'
+    >
+      <div
+        ref={blobRef}
+        className='absolute h-60 w-60 -translate-x-1/2 -translate-y-1/2 will-change-[left,top,opacity]'
+        style={{ left: 0, top: 0, opacity: 0 }}
+      >
+        <div
+          className='absolute inset-0'
+          style={{
+            background:
+              'radial-gradient(circle, rgba(244,194,77,0.28) 0%, rgba(244,194,77,0.12) 45%, transparent 72%)',
+          }}
+        />
+      </div>
+    </div>
+  );
+});
 
 export default memo(VideoCard);

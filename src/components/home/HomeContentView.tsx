@@ -158,7 +158,7 @@ export default function HomeContentView({
         <ContinueWatching className='mb-0' />
       </div>
 
-      {username && (
+      {username && (aiRecommendLoading || aiRecommendations.length > 0) && (
         <section className='mb-8 md:mb-10'>
           <div className='mb-4 flex items-center justify-between'>
             <SectionTitle
@@ -184,7 +184,7 @@ export default function HomeContentView({
                 </div>
               ))}
             </ScrollableRow>
-          ) : aiRecommendations.length > 0 ? (
+          ) : (
             <ScrollableRow>
               {aiRecommendations.map((item: any, index: number) => (
                 <div
@@ -204,13 +204,6 @@ export default function HomeContentView({
                 </div>
               ))}
             </ScrollableRow>
-          ) : (
-            <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-8 text-center'>
-              <Sparkles className='mx-auto mb-3 w-8 h-8 text-purple-400/50' />
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                多看几部影片，AI 就会为你推荐
-              </p>
-            </div>
           )}
         </section>
       )}

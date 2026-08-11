@@ -65,24 +65,35 @@ function pruneRecommendationCache() {
 async function askAIForRecommendations(
   viewingHistory: string[],
   favoriteGenres: string[],
+  popularCandidates: string[] = [],
 ): Promise<string[]> {
-  const systemPrompt = `你是一个影视推荐助手。根据用户的观看历史和偏好，推荐他们可能喜欢的影视内容。
+  const isNewUser = viewingHistory.length === 0;
+  const systemPrompt = `你是一个影视推荐助手。${
+    isNewUser
+      ? '用户是新访客，没有观看记录，请从网站热门内容中挑选值得推荐的影视。'
+      : '根据用户的观看历史和偏好，推荐他们可能喜欢的影视内容。'
+  }
 
 返回 JSON 格式（不要返回 markdown 代码块）：
 {
-  "recommendations": ["推荐内容1", "推荐内容2", "推荐内容3", "推荐内容4", "推荐内容5"],
+  "recommendations": ["推荐内容1", "推荐内容2", "...多个"],
   "reasoning": "推荐理由"
 }
 
 示例：
 观看历史：鱿鱼游戏, 犯罪都市, 汉江怪物
-推荐：["甜蜜家园", "地狱公使", "僵尸校园", "遗赠之城", "狩猎"]
+推荐：["甜蜜家园", "地狱公使", "僵尸校园", "遗赠之城", "狩猎", "王国", "他人即地狱", "窥探"]
 理由：用户喜欢韩国悬疑/惊悚类型`;
 
-  const userPrompt = `观看历史：${viewingHistory.join(', ')}
+  const userPrompt = `观看历史：${viewingHistory.join(', ') || '无'}
 偏好类型：${favoriteGenres.join(', ') || '未指定'}
+${
+  popularCandidates.length > 0
+    ? `网站当前热门内容（可从中挑选合适的推荐）：${popularCandidates.join(', ')}`
+    : ''
+}
 
-请推荐5部类似的影视内容。`;
+请推荐所有相关的影视内容，${isNewUser ? '优先从网站热门内容中挑选，' : ''}数量由你根据相关性自行决定，至少5部，推荐列表要足够丰富。`;
 
   if (!AI_KEYS.length) return [];
 
@@ -104,7 +115,7 @@ async function askAIForRecommendations(
             { role: 'user', content: userPrompt },
           ],
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 1000,
         }),
         signal: AbortSignal.timeout(8000),
       });
@@ -204,7 +215,8 @@ async function fetchDoubanTrending(): Promise<any[]> {
   }
 }
 
-async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
+// 拉取热门候选标题（喂给AI做冷启动，或极少数无AI时的兜底）
+async function getPopularCandidates(): Promise<string[]> {
   let items: any[] = [];
   try {
     // 优先内部直连自身（localhost）拉取热门，避免经公网域名被 CDN/WAF 拦截
@@ -229,19 +241,11 @@ async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
       }
     }
   } catch {}
-  // 内部调用失败时直接拉豆瓣兜底，确保不返回空
+  // 内部调用失败时直接拉豆瓣兜底
   if (items.length === 0) {
     items = await fetchDoubanTrending();
   }
-  const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
-  recommendationCache.set(cacheKey, {
-    data: shuffled,
-    timestamp: Date.now(),
-  });
-  if (recommendationCache.size > CACHE_MAX) {
-    pruneRecommendationCache();
-  }
-  return NextResponse.json({ success: true, recommendations: shuffled });
+  return items.map((i) => i.title).filter(Boolean);
 }
 
 export async function GET(request: NextRequest) {
@@ -264,10 +268,6 @@ export async function GET(request: NextRequest) {
     const allRecords = await db.getAllPlayRecords(authInfo.username);
     const userRecords = Object.values(allRecords);
 
-    if (userRecords.length === 0) {
-      return await getTrendingFallback(cacheKey);
-    }
-
     const viewingHistory = userRecords
       .slice(0, 20)
       .map((record: any) => record.title)
@@ -284,16 +284,33 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([type]) => type);
 
+    // 热门候选：新用户作冷启动，老用户作 AI 参考
+    const popularCandidates = await getPopularCandidates();
+
+    // 全程 AI 接管：无观看历史也喂热门候选让 AI 推荐
     let titles: string[];
     if (AI_KEYS.length > 0) {
-      titles = await askAIForRecommendations(viewingHistory, favoriteGenres);
+      titles = await askAIForRecommendations(
+        viewingHistory,
+        favoriteGenres,
+        popularCandidates,
+      );
+    } else if (popularCandidates.length > 0) {
+      // 无 AI 密钥时的兜底：用全部热门候选，不做数量截断
+      titles = popularCandidates;
     } else {
-      titles = viewingHistory.slice(0, 6);
+      titles = viewingHistory;
     }
+
+    // AI 无结果显示（如密钥失效），让前端隐藏该区块而非展示占位
+    if (titles.length === 0) {
+      return emptyRecommendation();
+    }
+
     const recommendations = await enrichRecommendations(titles);
 
     if (recommendations.length === 0) {
-      return await getTrendingFallback(cacheKey);
+      return emptyRecommendation();
     }
 
     recommendationCache.set(cacheKey, {
@@ -312,6 +329,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('AI personalized recommendation failed:', error);
-    return NextResponse.json({ error: '推荐生成失败' }, { status: 500 });
+    return emptyRecommendation();
   }
+}
+
+// 无推荐结果时返回空数组，前端据此隐藏整个区块
+function emptyRecommendation(): NextResponse {
+  return NextResponse.json({ success: true, recommendations: [] });
 }
