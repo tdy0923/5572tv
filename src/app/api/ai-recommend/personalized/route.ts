@@ -106,7 +106,7 @@ async function askAIForRecommendations(
           temperature: 0.7,
           max_tokens: 500,
         }),
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!response.ok) {
@@ -174,19 +174,49 @@ async function enrichRecommendations(titles: string[]) {
   return Promise.all(searchPromises);
 }
 
-async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
+// 兜底：内部 trending 调用失败时直接拉豆瓣热门，保证永不返回空
+async function fetchDoubanTrending(): Promise<any[]> {
   try {
-    // 内部直连自身（localhost）拉取热门，避免经公网域名被 CDN/WAF 拦截
+    const res = await fetch(
+      'https://movie.douban.com/j/search_subjects?type=tv&tag=热门&sort=recommend&page_limit=20&page_start=0',
+      {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          Referer: 'https://movie.douban.com/',
+        },
+        signal: AbortSignal.timeout(6000),
+      },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.subjects || []).map((item: any) => ({
+      title: item.title,
+      poster: item.cover ? item.cover.replace('/s_ratio_poster/', '/l/') : '',
+      year: '',
+      rate: item.rate || '',
+      source: 'douban',
+      id: item.id || '',
+      type: 'movie',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
+  let items: any[] = [];
+  try {
+    // 优先内部直连自身（localhost）拉取热门，避免经公网域名被 CDN/WAF 拦截
     const trendingRes = await fetch(
       `http://127.0.0.1:${process.env.PORT || 3000}/api/trending`,
       { signal: AbortSignal.timeout(5000) },
     );
     if (trendingRes.ok) {
       const trending = await trendingRes.json();
-      const allItems: any[] = [];
       for (const group of trending.results || []) {
         for (const item of group.items || []) {
-          allItems.push({
+          items.push({
             title: item.title || item.vod_name,
             poster: item.poster || item.vod_pic || '',
             year: item.year || '',
@@ -197,18 +227,21 @@ async function getTrendingFallback(cacheKey: string): Promise<NextResponse> {
           });
         }
       }
-      const shuffled = allItems.sort(() => Math.random() - 0.5).slice(0, 6);
-      recommendationCache.set(cacheKey, {
-        data: shuffled,
-        timestamp: Date.now(),
-      });
-      if (recommendationCache.size > CACHE_MAX) {
-        pruneRecommendationCache();
-      }
-      return NextResponse.json({ success: true, recommendations: shuffled });
     }
   } catch {}
-  return NextResponse.json({ success: true, recommendations: [] });
+  // 内部调用失败时直接拉豆瓣兜底，确保不返回空
+  if (items.length === 0) {
+    items = await fetchDoubanTrending();
+  }
+  const shuffled = items.sort(() => Math.random() - 0.5).slice(0, 6);
+  recommendationCache.set(cacheKey, {
+    data: shuffled,
+    timestamp: Date.now(),
+  });
+  if (recommendationCache.size > CACHE_MAX) {
+    pruneRecommendationCache();
+  }
+  return NextResponse.json({ success: true, recommendations: shuffled });
 }
 
 export async function GET(request: NextRequest) {
