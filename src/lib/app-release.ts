@@ -5,23 +5,24 @@
  * 发布清单见 docs/RELEASE_CHECKLIST.md。
  */
 export const APP_RELEASE = {
-  version: '1.12.0',
-  buildNumber: 7,
+  version: '1.13.0',
+  buildNumber: 2008,
   releaseNotes:
-    '5572 影视 v1.12.0 更新内容：\n\n' +
-    '1. 首页焦点大图恢复横图背景+预告片视频\n' +
-    '2. 修复 APP 首次进入黑框闪烁问题\n' +
-    '3. 短剧播放器统一为标准播放器\n' +
-    '4. 修复继续观看短剧源 400 错误\n' +
-    '5. 修复豆瓣预告片 API 路由问题',
+    '5572 影视 v1.13.0 更新内容：\n\n' +
+    '1. 修复播放失败黑屏/无限加载（增加错误提示与失败回调）\n' +
+    '2. 修复 M3U8 代理失效问题\n' +
+    '3. 修复分页卡死、返回键误退应用、主题不保存等体验问题\n' +
+    '4. 搜索升级：适配 SSE 新事件、修复断线假完成、401 自动跳登录\n' +
+    '5. 密码与登录态加密存储，提升账号安全\n' +
+    '6. 修复 armv7a 设备无法更新问题',
   downloadUrl: 'https://www.5572.net/download/5572tv-android.apk',
   minRequiredVersion: '1.4.0',
   forceUpdate: false,
-  releaseDate: '2026-07-23',
+  releaseDate: '2026-08-11',
 };
 
 /** 下载页未请求到版本信息时的兜底展示（version 与 APP_RELEASE 保持一致） */
 export const DEFAULT_APK_INFO = {
-  version: 'v1.12.0',
+  version: 'v1.13.0',
   sizeMb: '18',
 };

@@ -25,19 +25,19 @@ const FEATURES = [
     desc: '多源聚合，秒开无缓冲',
   },
   {
-    icon: '⬇️',
-    title: '离线缓存',
-    desc: 'WiFi 下载，随时畅看',
-  },
-  {
     icon: '🔁',
     title: '多端同步',
-    desc: '手机、平板、电视无缝切换',
+    desc: '播放记录、收藏跨设备同步',
   },
   {
-    icon: '✨',
-    title: 'AI 推荐',
-    desc: '智能分析你的观影喜好',
+    icon: '📺',
+    title: '直播电视',
+    desc: '内置直播源与 EPG 节目单',
+  },
+  {
+    icon: '🎬',
+    title: '资源丰富',
+    desc: '电影、剧集、短剧、动漫全都有',
   },
 ];
 
@@ -285,9 +285,9 @@ export default function DownloadPage() {
             <div className='mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2'>
               {[
                 '多源聚合播放',
-                'AI 智能搜索',
-                '弹幕互动',
-                '离线缓存',
+                '倍速控制',
+                '直播电视',
+                '播放记录同步',
                 '多端同步',
               ].map((f) => (
                 <span

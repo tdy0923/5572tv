@@ -133,8 +133,11 @@ async function performVersionCheck(): Promise<UpdateStatus> {
       return status;
     }
 
-    // 如果主要URL失败，尝试备用URL
-    const backupVersion = await fetchVersionFromUrl(VERSION_CHECK_URLS[1]);
+    // 如果主要URL失败，尝试备用URL（数组可能只有一项，需先判空）
+    const backupUrl = VERSION_CHECK_URLS[1];
+    const backupVersion = backupUrl
+      ? await fetchVersionFromUrl(backupUrl)
+      : null;
     if (backupVersion) {
       const status = compareVersions(backupVersion);
 
