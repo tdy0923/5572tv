@@ -92,3 +92,5 @@ jest.setup.js
 mcp.json
 _audit_parens.py
 static/download/5572tv-test.apk
+# runtime logs
+.deploy.log
