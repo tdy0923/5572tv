@@ -1,55 +1,33 @@
 ## 📱 移动端 APP 使用
 
-### Selene - 官方移动客户端
+### 5572影视 - 官方移动客户端
 
-[Selene](https://github.com/MoonTechLab/Selene) 是由 MoonTV 原作者开发的官方移动端应用，基于 Flutter 构建，专为手机端优化。
+本仓库内置官方 Android 客户端（`flutter_app/`），基于 Flutter 构建，与本项目同源开发、直接对接本站接口。
 
 #### 支持平台
-- **Android**：5.0+ (API 21)，仅支持 ARM64 架构
-- **iOS**：12.0+
+
+- **Android**：7.0+ (API 24)，支持 ARM64（arm64-v8a）与 32 位（armeabi-v7a）
 
 #### 主要特性
-- 🎨 Modern Material Design 3 界面
-- 🌗 深色/浅色主题支持
+
+- 🌗 深色/浅色主题（跟随系统，可手动切换并保存）
 - 🔍 多源聚合搜索（支持 SSE 实时搜索）
-- ▶️ 高性能 FVP 视频播放器
-- 📊 智能播放记录追踪
-- ❤️ 个人收藏管理
-- 🎬 支持电影、电视剧、动漫、综艺等内容
+- ▶️ 多源高清播放，支持倍速、锁定屏幕、选集切换
+- 📺 直播电视 + EPG 节目单
+- 🎬 电影、电视剧、动漫、综艺、短剧等内容
+- 📊 播放记录同步，❤️ 收藏管理
+- ⬆️ 应用内检查更新
 
 #### 使用方法
 
-1. 从 [Selene Releases](https://github.com/MoonTechLab/Selene/releases) 下载最新版本
-   - Android：下载 `.apk` 文件
-   - iOS：下载 `.ipa` 文件（需自签）
+1. 打开官方下载页 [https://www.5572.net/download](https://www.5572.net/download) 下载最新 `.apk`
+   - `5572tv-android.apk`（arm64 通用）
+   - `5572tv-android-armv7a.apk`（旧 32 位设备）
 2. 安装应用到手机
-3. 打开应用，在设置中填入您的服务器域名：`https://your-domain.com`
-4. 使用站长账号或普通用户账号登录
-5. 所有播放记录和收藏将与网页端自动同步
+3. 使用站长账号或普通用户账号登录
+4. 所有播放记录和收藏将与网页端自动同步
 
 #### 注意事项
-- ⚠️ Selene 专为手机端优化，**不兼容平板、电视、模拟器**等设备
-- ⚠️ 如需在 Android TV 或平板上使用，请使用下方的 OrionTV
 
----
-
-## 📺 AndroidTV / 平板使用
-
-### OrionTV - 大屏客户端
-
-本项目可配合 [OrionTV](https://github.com/zimplexing/OrionTV) 在 Android TV 和平板上使用。
-
-#### 适用场景
-- Android TV / 智能电视
-- Android 平板
-- 大屏设备
-
-#### 配置步骤
-
-1. 在设备上安装 OrionTV
-2. 在 OrionTV 中配置后端地址：`http://your-domain:3000`
-3. 使用站长账号或普通用户账号登录
-4. 播放记录将与网页端、Selene 自动同步
-
----
-
+- ⚠️ 应用内置的"检查更新"请通过官网下载页或应用内提示进行，避免下载非官方来源的安装包
+- ⚠️ Android 13+ 首次使用会在系统弹窗中请求通知/媒体等权限，按需授予即可
