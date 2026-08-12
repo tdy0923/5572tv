@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
 
 class VersionService {
-  static const String apiUrl = 'https://www.5572.net/api/version-check';
+  static String get apiUrl => '${ApiService.baseUrl}/api/version-check';
   static const String _lastCheckKey = 'last_version_check';
   static const String _dismissedVersionKey = 'dismissed_version';
   
@@ -35,25 +37,38 @@ class VersionService {
       
       return null;
     } catch (e) {
-      print('检查版本更新失败: $e');
+      debugPrint('检查版本更新失败: $e');
       return null;
     }
   }
   
   /// 获取 GitHub Release 页面 URL
   /// 比较版本号，判断是否有新版本
+  /// 对非纯数字段做容错（如 1.12.0-beta 视为 1.12.0），避免解析异常导致升级判断失效
   static bool _isNewerVersion(String current, String latest) {
-    final currentParts = current.split('.').map(int.parse).toList();
-    final latestParts = latest.split('.').map(int.parse).toList();
-    
-    for (int i = 0; i < 3; i++) {
+    final currentParts = current
+        .split('.')
+        .map((p) => int.tryParse(p.trim()))
+        .map((n) => n ?? 0)
+        .toList();
+    final latestParts = latest
+        .split('.')
+        .map((p) => int.tryParse(p.trim()))
+        .map((n) => n ?? 0)
+        .toList();
+
+    final maxLen = currentParts.length > latestParts.length
+        ? currentParts.length
+        : latestParts.length;
+
+    for (int i = 0; i < maxLen; i++) {
       final currentPart = i < currentParts.length ? currentParts[i] : 0;
       final latestPart = i < latestParts.length ? latestParts[i] : 0;
-      
+
       if (latestPart > currentPart) return true;
       if (latestPart < currentPart) return false;
     }
-    
+
     return false;
   }
   

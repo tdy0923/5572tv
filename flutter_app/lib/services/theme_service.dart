@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:io' show Platform;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 
 /// Fluent 2 Theme Service
 /// Manages light/dark theme switching with Fluent 2 design tokens
 class ThemeService extends ChangeNotifier {
+  static const String _themeModeKey = 'theme_mode';
   ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
@@ -16,14 +18,37 @@ class ThemeService extends ChangeNotifier {
   }
 
   ThemeService() {
-    _themeMode = ThemeMode.system;
     _updateMacOSWindowAppearance();
+  }
+
+  /// 从本地存储恢复用户选择的主题模式（在 runApp 前调用一次）
+  Future<void> init() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_themeModeKey);
+      _themeMode = switch (saved) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
+    } catch (_) {
+      // 读取失败时保持 system 默认
+    }
   }
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
     notifyListeners();
     _updateMacOSWindowAppearance();
+    // 持久化，下次启动恢复（失败静默，不影响使用）
+    SharedPreferences.getInstance().then((prefs) {
+      final value = switch (mode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+      };
+      prefs.setString(_themeModeKey, value);
+    }).catchError((_) {});
   }
 
   void _updateMacOSWindowAppearance() async {

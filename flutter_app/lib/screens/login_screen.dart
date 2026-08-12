@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/user_data_service.dart';
+import '../services/api_service.dart';
 import '../utils/device_utils.dart';
 import '../utils/font_utils.dart';
 import '../components/app_button.dart';
@@ -95,14 +96,16 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final response = await http.post(
-          Uri.parse('https://www.5572.net/api/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'username': _usernameController.text,
-            'password': _passwordController.text,
-          }),
-        );
+        final response = await http
+            .post(
+              Uri.parse('${ApiService.baseUrl}/api/login'),
+              headers: {'Content-Type': 'application/json'},
+              body: json.encode({
+                'username': _usernameController.text,
+                'password': _passwordController.text,
+              }),
+            )
+            .timeout(const Duration(seconds: 10));
         if (!mounted) return;
 
         setState(() => _isLoading = false);

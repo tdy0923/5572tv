@@ -750,6 +750,16 @@ class PlayerState extends ChangeNotifier {
     }
   }
 
+  /// 播放器上报错误：清除切换遮罩并展示错误，避免黑屏/无限加载
+  void onVideoPlayerError(String message) {
+    if (!mounted) return;
+    _showSwitchLoadingOverlay = false;
+    _errorMessage = message;
+    _showError = true;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   void hideError() {
     if (mounted) {
       _showError = false;
@@ -792,11 +802,15 @@ class PlayerState extends ChangeNotifier {
 
       final m3u8ProxyUrl = await UserDataService.getM3u8ProxyUrl();
 
-      if (m3u8ProxyUrl.isNotEmpty && !finalUrl.startsWith('http')) {
+      // 对 http(s) 播放地址启用代理；已带代理前缀（自身 video-proxy）的地址不再套一层，避免递归
+      final alreadyProxied = finalUrl.contains('video-proxy?url=');
+      if (m3u8ProxyUrl.isNotEmpty &&
+          finalUrl.startsWith('http') &&
+          !alreadyProxied) {
         final encodedUrl = Uri.encodeComponent(finalUrl);
         finalUrl = '$m3u8ProxyUrl$encodedUrl';
         debugPrint("使用 M3U8 代理: $finalUrl");
-      } else if (finalUrl.startsWith('http')) {
+      } else {
         debugPrint("直接使用URL: $finalUrl");
       }
 

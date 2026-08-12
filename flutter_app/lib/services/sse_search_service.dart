@@ -170,8 +170,8 @@ class SSESearchService {
 
     _isConnected = true;
 
-    // 设置15秒超时定时器
-    _timeoutTimer = Timer(const Duration(seconds: 15), () {
+    // 设置超时定时器（服务端每源超时 20s，客户端留出缓冲，避免慢源被提前截断）
+    _timeoutTimer = Timer(const Duration(seconds: 25), () {
       if (_isConnected) {
         _handleTimeout();
       }
@@ -246,7 +246,13 @@ class SSESearchService {
   /// 处理 SSE 响应
   void _handleSSEResponse(http.StreamedResponse response) async {
     if (response.statusCode != 200) {
-      _errorController?.add('SSE 连接失败: ${response.statusCode}');
+      if (response.statusCode == 401) {
+        // 会话过期：清除本地登录态，由 UI 层跳转登录页
+        await UserDataService.clearUserData();
+        _errorController?.add('SESSION_EXPIRED');
+      } else {
+        _errorController?.add('SSE 连接失败: ${response.statusCode}');
+      }
       return;
     }
 
@@ -294,6 +300,11 @@ class SSESearchService {
 
       final event = SearchEvent.fromJson(data as Map<String, dynamic>);
 
+      // source_status 等未知/状态事件可安全忽略
+      if (event == null || event.type == SearchEventType.unknown) {
+        return;
+      }
+
       switch (event.type) {
         case SearchEventType.start:
           _handleStartEvent(event as SearchStartEvent);
@@ -306,6 +317,10 @@ class SSESearchService {
           break;
         case SearchEventType.complete:
           _handleCompleteEvent(event as SearchCompleteEvent);
+          break;
+        case SearchEventType.sourceStatus:
+        case SearchEventType.unknown:
+          // 进度信息，无需处理
           break;
       }
     } catch (e) {
@@ -395,7 +410,7 @@ class SSESearchService {
       isComplete: true,
     ));
 
-    _errorController?.add('搜索超时（15秒）');
+    _errorController?.add('搜索超时（25秒）');
     _closeConnection();
   }
 
@@ -422,13 +437,18 @@ class SSESearchService {
       return;
     }
 
-    // 其他错误才显示给用户
+    // 其他错误才显示给用户，并关闭连接释放资源
     _errorController?.add('SSE 错误: ${error.toString()}');
+    _closeConnection();
   }
 
   /// 处理 SSE 关闭
   void _handleDone() {
+    if (!_isConnected) return; // 已通过 complete 事件正常收尾
     _isConnected = false;
+    // 未收到 complete 事件连接就关闭：给出收尾状态，避免搜索永远停在"搜索中"
+    _closeConnection();
+    _errorController?.add('搜索连接已断开，结果可能不完整');
   }
 
   /// 停止搜索

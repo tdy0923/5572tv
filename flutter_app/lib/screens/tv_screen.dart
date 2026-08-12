@@ -20,7 +20,9 @@ import '../widgets/filter_options_selector.dart';
 import '../widgets/tv_remote_adapter.dart';
 
 class TvScreen extends StatefulWidget {
-  const TvScreen({super.key});
+  /// 返回键回调：父级（HomeScreen）切换到首页 tab，而非 pop 根路由导致退出应用
+  final VoidCallback? onBackToHome;
+  const TvScreen({super.key, this.onBackToHome});
 
   @override
   State<TvScreen> createState() => _TvScreenState();
@@ -279,7 +281,10 @@ class _TvScreenState extends State<TvScreen> {
       if (mounted) {
         // 检查当前筛选状态是否仍然与发起请求时一致
         if (requestFilterState != _getCurrentFilterState()) {
-          // 筛选状态已改变，忽略这个过期的响应
+          // 筛选状态已改变，忽略这个过期的响应；务必复位分页标志，否则分页永久卡死
+          setState(() {
+            _isLoadingMore = false;
+          });
           return;
         }
 
@@ -318,7 +323,10 @@ class _TvScreenState extends State<TvScreen> {
       if (mounted) {
         // 检查当前筛选状态是否仍然与发起请求时一致
         if (requestFilterState != _getCurrentFilterState()) {
-          // 筛选状态已改变，忽略这个过期的响应
+          // 筛选状态已改变，忽略这个过期的响应；务必复位分页标志，否则分页永久卡死
+          setState(() {
+            _isLoadingMore = false;
+          });
           return;
         }
 
@@ -407,7 +415,10 @@ class _TvScreenState extends State<TvScreen> {
       if (mounted) {
         // 检查当前筛选状态是否仍然与发起请求时一致
         if (requestFilterState != _getCurrentFilterState()) {
-          // 筛选状态已改变，忽略这个过期的响应
+          // 筛选状态已改变，忽略这个过期的响应；务必复位分页标志，否则分页永久卡死
+          setState(() {
+            _isLoadingMore = false;
+          });
           return;
         }
 
@@ -438,7 +449,10 @@ class _TvScreenState extends State<TvScreen> {
       if (mounted) {
         // 检查当前筛选状态是否仍然与发起请求时一致
         if (requestFilterState != _getCurrentFilterState()) {
-          // 筛选状态已改变，忽略这个过期的响应
+          // 筛选状态已改变，忽略这个过期的响应；务必复位分页标志，否则分页永久卡死
+          setState(() {
+            _isLoadingMore = false;
+          });
           return;
         }
 
@@ -502,7 +516,9 @@ class _TvScreenState extends State<TvScreen> {
   @override
   Widget build(BuildContext context) {
     return TVRemoteAdapter(
-      onBack: () => Navigator.of(context).maybePop(),
+      onBack: () {
+        widget.onBackToHome?.call();
+      },
       child: AppRefreshIndicator(
       onRefresh: _refreshTvShowsData,
       child: SingleChildScrollView(

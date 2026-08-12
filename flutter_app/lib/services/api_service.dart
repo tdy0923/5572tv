@@ -49,6 +49,9 @@ class ApiService {
 
   static const String _baseUrl = 'https://www.5572.net';
 
+  /// 站点根地址（供登录等场景复用，避免各页面硬编码域名）
+  static String get baseUrl => _baseUrl;
+
   static Future<String?> _getBaseUrl() async {
     return _baseUrl;
   }

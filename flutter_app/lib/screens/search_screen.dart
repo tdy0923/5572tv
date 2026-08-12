@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import '../services/page_cache_service.dart';
 import '../services/theme_service.dart';
 import '../services/sse_search_service.dart';
+import '../services/user_data_service.dart';
+import 'login_screen.dart';
 import '../models/search_result.dart';
 import '../models/video_info.dart';
 import '../widgets/video_menu_bottom_sheet.dart';
@@ -208,6 +210,18 @@ class _SearchScreenState extends State<SearchScreen>
     // 监听搜索错误
     _errorSubscription = _searchService.errorStream.listen((error) {
       if (mounted) {
+        // 会话过期：清除本地登录态并跳转登录页
+        if (error == 'SESSION_EXPIRED') {
+          UserDataService.clearUserData();
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+            );
+          }
+          return;
+        }
+
         // 检查是否是连接关闭错误，如果是则忽略
         final errorString = error.toLowerCase();
         if (errorString.contains('connection closed') ||

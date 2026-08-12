@@ -743,6 +743,7 @@ class _PlayerScreenState extends State<PlayerScreen>
               _state.videoPlayerController = controller;
             },
             onReady: _onVideoPlayerReady,
+            onError: _state.onVideoPlayerError,
             onNextEpisode: _onNextEpisode,
             onVideoCompleted: _onVideoCompleted,
             onPause: () {

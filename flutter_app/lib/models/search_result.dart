@@ -116,6 +116,8 @@ enum SearchEventType {
   sourceResult,
   sourceError,
   complete,
+  sourceStatus,
+  unknown,
 }
 
 /// WebSocket 搜索事件基类
@@ -128,9 +130,11 @@ abstract class SearchEvent {
     required this.timestamp,
   });
 
-  factory SearchEvent.fromJson(Map<String, dynamic> json) {
+  /// 解析事件；未知/仅状态类事件（如 source_status）返回 null，由调用方忽略。
+  /// 服务端会为每个源发送 source_status（状态+耗时），属于进度信息，客户端不应当作错误。
+  static SearchEvent? fromJson(Map<String, dynamic> json) {
     final typeString = json['type'] as String?;
-    
+
     switch (typeString) {
       case 'start':
         return SearchStartEvent.fromJson(json);
@@ -140,8 +144,11 @@ abstract class SearchEvent {
         return SearchSourceErrorEvent.fromJson(json);
       case 'complete':
         return SearchCompleteEvent.fromJson(json);
+      case 'source_status':
+        return SearchSourceStatusEvent.fromJson(json);
       default:
-        throw Exception('未知的搜索事件类型: $typeString');
+        // 向后兼容：忽略未知事件类型，避免旧客户端因新增事件而报错
+        return null;
     }
   }
 }
@@ -244,6 +251,38 @@ class SearchCompleteEvent extends SearchEvent {
     return SearchCompleteEvent(
       totalResults: json['totalResults'] ?? 0,
       completedSources: json['completedSources'] ?? 0,
+      timestamp: json['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+}
+
+/// 搜索源状态事件（进度信息，客户端可忽略）
+class SearchSourceStatusEvent extends SearchEvent {
+  final String source;
+  final String sourceName;
+  final String status;
+  final int resultCount;
+  final int duration;
+
+  SearchSourceStatusEvent({
+    required this.source,
+    required this.sourceName,
+    required this.status,
+    required this.resultCount,
+    required this.duration,
+    required int timestamp,
+  }) : super(
+          type: SearchEventType.sourceStatus,
+          timestamp: timestamp,
+        );
+
+  factory SearchSourceStatusEvent.fromJson(Map<String, dynamic> json) {
+    return SearchSourceStatusEvent(
+      source: json['source'] ?? '',
+      sourceName: json['sourceName'] ?? '',
+      status: json['status'] ?? '',
+      resultCount: json['resultCount'] ?? 0,
+      duration: json['duration'] ?? 0,
       timestamp: json['timestamp'] ?? DateTime.now().millisecondsSinceEpoch,
     );
   }

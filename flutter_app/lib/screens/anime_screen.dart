@@ -24,7 +24,9 @@ import '../utils/font_utils.dart';
 import '../widgets/filter_options_selector.dart';
 
 class AnimeScreen extends StatefulWidget {
-  const AnimeScreen({super.key});
+  /// 返回键回调：父级（HomeScreen）切换到首页 tab，而非 pop 根路由导致退出应用
+  final VoidCallback? onBackToHome;
+  const AnimeScreen({super.key, this.onBackToHome});
 
   @override
   State<AnimeScreen> createState() => _AnimeScreenState();
@@ -374,6 +376,7 @@ class _AnimeScreenState extends State<AnimeScreen> {
 
     setState(() {
       _isLoading = true;
+      _isLoadingMore = false; // 刷新时复位分页标志，避免加载中在途请求残留
       if (isRefresh) {
         _animeList.clear();
         _bangumiList.clear();
@@ -564,7 +567,9 @@ class _AnimeScreenState extends State<AnimeScreen> {
   @override
   Widget build(BuildContext context) {
     return TVRemoteAdapter(
-      onBack: () => Navigator.of(context).maybePop(),
+      onBack: () {
+        widget.onBackToHome?.call();
+      },
       child: AppRefreshIndicator(
         onRefresh: _refreshAnimeData,
         child: SingleChildScrollView(

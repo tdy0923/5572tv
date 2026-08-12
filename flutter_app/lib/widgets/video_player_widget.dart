@@ -13,6 +13,7 @@ class VideoPlayerWidget extends StatefulWidget {
   final VoidCallback? onBackPressed;
   final Function(VideoPlayerWidgetController)? onControllerCreated;
   final VoidCallback? onReady;
+  final ValueChanged<String>? onError;
   final VoidCallback? onNextEpisode;
   final VoidCallback? onVideoCompleted;
   final VoidCallback? onPause;
@@ -36,6 +37,7 @@ class VideoPlayerWidget extends StatefulWidget {
     this.onBackPressed,
     this.onControllerCreated,
     this.onReady,
+    this.onError,
     this.onNextEpisode,
     this.onVideoCompleted,
     this.onPause,
@@ -145,6 +147,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
   bool _isPipMode = false;
   StreamSubscription<int?>? _widthSubscription;
   StreamSubscription<int?>? _heightSubscription;
+  StreamSubscription<String>? _errorSubscription;
 
   @override
   void initState() {
@@ -219,6 +222,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         setState(() {
           _isLoadingVideo = false;
         });
+        widget.onError?.call('无法加载视频，请检查网络或更换播放源');
       }
     }
   }
@@ -231,6 +235,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     _playingSubscription?.cancel();
     _completedSubscription?.cancel();
     _durationSubscription?.cancel();
+    _errorSubscription?.cancel();
 
     _positionSubscription = _player!.stream.position.listen((_) {
       for (final listener in List<VoidCallback>.from(_progressListeners)) {
@@ -288,6 +293,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         aspectRatioNotifier.value = w / h;
       }
     });
+
+    // 播放中途出错（断流/解码失败/404 等）不再静默黑屏，上报给上层处理
+    _errorSubscription = _player!.stream.error.listen((error) {
+      if (!mounted || _player == null) return;
+      debugPrint('VideoPlayerWidget: playback error $error');
+      widget.onError?.call(error.isNotEmpty ? error : '播放出错，请切换线路或重试');
+    });
   }
 
   Future<void> _updateDataSource(
@@ -338,6 +350,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         setState(() {
           _isLoadingVideo = false;
         });
+        widget.onError?.call('切换播放源失败，请重试或选择其他线路');
       }
     }
   }
@@ -385,6 +398,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
     _durationSubscription?.cancel();
     _widthSubscription?.cancel();
     _heightSubscription?.cancel();
+    _errorSubscription?.cancel();
     _progressListeners.clear();
     await _player?.dispose();
     _player = null;

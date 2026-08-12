@@ -47,22 +47,27 @@ void main() async {
     debugPrint('DoubanCacheService init failed: $e');
   }
 
+  // 恢复用户上次选择的主题模式（从 SharedPreferences 读取）
+  final themeService = ThemeService();
+  await themeService.init();
+
   ErrorWidget.builder = (errorDetails) {
     debugPrint('Flutter error: ${errorDetails.exception}');
     // 返回一个空白容器，不阻断用户操作
     return const SizedBox.shrink();
   };
 
-  runApp(const Media5572App());
+  runApp(Media5572App(themeService: themeService));
 }
 
 class Media5572App extends StatelessWidget {
-  const Media5572App({super.key});
+  final ThemeService? themeService;
+  const Media5572App({super.key, this.themeService});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => ThemeService(),
+      create: (context) => themeService ?? ThemeService(),
       child: Consumer<ThemeService>(
         builder: (context, themeService, child) {
           return MaterialApp(

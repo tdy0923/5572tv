@@ -383,20 +383,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TVRemoteAdapter(
-      onBack: () {
-        if (_currentBottomNavIndex != 0) {
+    return PopScope(
+      canPop: _currentBottomNavIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        // Android 系统返回键：非首页 tab 时切回首页，避免直接退出应用
+        if (!didPop && _currentBottomNavIndex != 0) {
           _onBottomNavChanged(0);
         }
       },
-      child: MainLayout(
-      content: _buildBottomNavPageView(),
-      currentBottomNavIndex: _currentBottomNavIndex,
-      onBottomNavChanged: _onBottomNavChanged,
-      selectedTopTab: _selectedTopTab,
-      onTopTabChanged: _onTopTabChanged,
-      onHomeTap: _onHomeTap,
-      onSearchTap: _onSearchTap,
+      child: TVRemoteAdapter(
+        onBack: () {
+          if (_currentBottomNavIndex != 0) {
+            _onBottomNavChanged(0);
+          }
+        },
+        child: MainLayout(
+        content: _buildBottomNavPageView(),
+        currentBottomNavIndex: _currentBottomNavIndex,
+        onBottomNavChanged: _onBottomNavChanged,
+        selectedTopTab: _selectedTopTab,
+        onTopTabChanged: _onTopTabChanged,
+        onHomeTap: _onHomeTap,
+        onSearchTap: _onSearchTap,
+        ),
       ),
     );
   }
@@ -420,10 +429,10 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         switch (index) {
           case 0: return _buildHomeContentWithPageView();
-          case 1: return const MovieScreen();
-          case 2: return const TvScreen();
-          case 3: return const AnimeScreen();
-          case 4: return const ShowScreen();
+          case 1: return MovieScreen(onBackToHome: () => _onBottomNavChanged(0));
+          case 2: return TvScreen(onBackToHome: () => _onBottomNavChanged(0));
+          case 3: return AnimeScreen(onBackToHome: () => _onBottomNavChanged(0));
+          case 4: return ShowScreen(onBackToHome: () => _onBottomNavChanged(0));
           case 5: return const LiveScreen();
           case 6: return const ShortDramaScreen();
           default: return const SizedBox.shrink();
