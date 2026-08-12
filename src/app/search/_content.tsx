@@ -400,8 +400,15 @@ function SearchPageClient() {
   });
 
   useEffect(() => {
-    // 无搜索参数时聚焦搜索框
-    !searchParams.get('q') && document.getElementById('searchInput')?.focus();
+    // 无搜索参数时聚焦搜索框；但移动端不自动聚焦，避免打开页面就弹出软键盘
+    if (!searchParams.get('q')) {
+      const isCoarsePointer =
+        typeof window !== 'undefined' &&
+        window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+      if (!isCoarsePointer) {
+        document.getElementById('searchInput')?.focus();
+      }
+    }
 
     // 检查URL参数并处理初始搜索
     const initialQuery = searchParams.get('q');

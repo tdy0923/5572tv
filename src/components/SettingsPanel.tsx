@@ -7,12 +7,15 @@ import {
   Film,
   Lightbulb,
   RotateCcw,
+  Shuffle,
   X,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { getLocale, setLocale } from '@/lib/i18n';
+import { isNightModeTime } from '@/lib/user-preferences';
 import { useEmbyConfigQuery } from '@/hooks/useUserMenuQueries';
 
 import Toggle from '@/components/Toggle';
@@ -126,6 +129,9 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
   const [fgColor, setFgColor] = useState('#171717');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  // 与 next-themes 共用同一主题状态，避免两套深色模式系统冲突
+  const { setTheme } = useTheme();
+
   // Night mode schedule state
   const [nightModeSchedule, setNightModeSchedule] = useState({
     enabled: false,
@@ -190,7 +196,20 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
       setPrimaryColor(readLS('themePrimaryColor', '#3b82f6'));
       setBgColor(readLS('themeBgColor', '#ffffff'));
       setFgColor(readLS('themeFgColor', '#171717'));
-      setIsDarkMode(readLS('themeIsDarkMode', false));
+
+      // 兼容旧版本：把旧的 themeIsDarkMode 一次性迁移到 next-themes 的 theme，
+      // 之后不再每次打开面板都强制覆盖用户通过导航栏按钮选择的主题
+      const legacyDark = localStorage.getItem('themeIsDarkMode');
+      const migrated = localStorage.getItem('5572tv_theme_migrated');
+      if (legacyDark !== null && !migrated) {
+        setTheme(legacyDark === 'true' ? 'dark' : 'light');
+        localStorage.setItem('5572tv_theme_migrated', '1');
+        // setTheme 是异步生效的，此刻 DOM 里还是旧 class，直接用迁移值设置开关状态
+        setIsDarkMode(legacyDark === 'true');
+      } else {
+        // 面板开关只反映当前实际主题（深色 class 由 next-themes 统一管理）
+        setIsDarkMode(document.documentElement.classList.contains('dark'));
+      }
 
       // Load night mode schedule
       try {
@@ -206,6 +225,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     return () => {
       window.cancelAnimationFrame(frameId);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅在打开面板时加载一次设置
   }, []);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -345,25 +365,39 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.removeItem('fluidSearch');
     localStorage.removeItem('exactSearch');
 
-    // Reset theme localStorage
+    // Reset theme localStorage（移除旧的关键字，避免下次打开面板时被强制切回浅色）
     localStorage.setItem('themePrimaryColor', '#3b82f6');
     localStorage.setItem('themeBgColor', '#ffffff');
     localStorage.setItem('themeFgColor', '#171717');
-    localStorage.setItem('themeIsDarkMode', 'false');
+    localStorage.removeItem('themeIsDarkMode');
+    localStorage.removeItem('5572tv_theme_migrated');
+
+    // 重置夜间模式定时
+    setNightModeSchedule({
+      enabled: false,
+      startHour: 22,
+      startMinute: 0,
+      endHour: 7,
+      endMinute: 0,
+    });
+    localStorage.removeItem('5572tv_night_mode_schedule');
 
     // Clear user theme CSS
     const existingStyle = document.getElementById('user-theme-style');
     if (existingStyle) {
       existingStyle.remove();
     }
+
+    // 恢复系统默认主题，真正关闭深色模式
+    setTheme('system');
   };
 
-  // Apply user theme CSS
+  // Apply user theme CSS (自定义颜色变量；深色 class 交给 next-themes 统一管理)
   const applyUserTheme = (
     primary: string,
     bg: string,
     fg: string,
-    dark: boolean,
+    _dark: boolean,
   ) => {
     let styleEl = document.getElementById('user-theme-style');
     if (!styleEl) {
@@ -382,12 +416,6 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
         color: ${fg} !important;
       }
     `;
-
-    if (dark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   };
 
   const handlePrimaryColorChange = (color: string) => {
@@ -410,8 +438,9 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
 
   const handleDarkModeToggle = (dark: boolean) => {
     setIsDarkMode(dark);
-    localStorage.setItem('themeIsDarkMode', String(dark));
     applyUserTheme(primaryColor, bgColor, fgColor, dark);
+    // 通过 next-themes 切换深色，保证与导航栏主题按钮状态一致（theme 由 next-themes 持久化）
+    setTheme(dark ? 'dark' : 'light');
   };
 
   const handleResetTheme = () => {
@@ -423,13 +452,62 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
     localStorage.setItem('themePrimaryColor', '#3b82f6');
     localStorage.setItem('themeBgColor', '#ffffff');
     localStorage.setItem('themeFgColor', '#171717');
-    localStorage.setItem('themeIsDarkMode', 'false');
+    localStorage.removeItem('themeIsDarkMode');
+    localStorage.removeItem('5572tv_theme_migrated');
 
     const existingStyle = document.getElementById('user-theme-style');
     if (existingStyle) {
       existingStyle.remove();
     }
+    // 恢复到浏览器/系统默认主题
+    setTheme('system');
   };
+
+  // 生成一套协调的随机配色（主色/背景/前景），hex 以兼容 type=color 取色器
+  const handleRandomPalette = () => {
+    const hslToHex = (h: number, s: number, l: number): string => {
+      const f = (n: number) => {
+        const k = (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const rgb = Math.round(
+          255 * (l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)))),
+        );
+        return rgb.toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    };
+
+    const hue = Math.floor(Math.random() * 360);
+    const sat = 45 + Math.floor(Math.random() * 35);
+    const newPrimary = hslToHex(hue, sat / 100, 0.48);
+    // 背景轻微偏白/偏黑，前景与背景保持高对比
+    const newBg = isDarkMode
+      ? hslToHex(hue, Math.floor(sat / 3) / 100, 0.1)
+      : '#ffffff';
+    const newFg = isDarkMode ? '#f4f4f5' : '#171717';
+
+    setPrimaryColor(newPrimary);
+    setBgColor(newBg);
+    setFgColor(newFg);
+
+    localStorage.setItem('themePrimaryColor', newPrimary);
+    localStorage.setItem('themeBgColor', newBg);
+    localStorage.setItem('themeFgColor', newFg);
+
+    applyUserTheme(newPrimary, newBg, newFg, isDarkMode);
+  };
+
+  // 夜间模式定时：启用后每 30 秒检查当前是否处于深色时段，通过 next-themes 自动切换
+  useEffect(() => {
+    if (!nightModeSchedule.enabled || typeof window === 'undefined') return;
+
+    const apply = () => {
+      setTheme(isNightModeTime(nightModeSchedule) ? 'dark' : 'light');
+    };
+    apply();
+    const timer = window.setInterval(apply, 30_000);
+    return () => window.clearInterval(timer);
+  }, [nightModeSchedule, setTheme]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -460,6 +538,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
         savedDark === 'true',
       );
     }
+    // 深色/浅色主题由上面的加载 effect 统一同步到 next-themes
   }, []);
 
   if (!isOpen) return null;
@@ -1181,13 +1260,23 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                   自定义站点颜色和主题
                 </p>
               </div>
-              <button
-                onClick={handleResetTheme}
-                className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-              >
-                <RotateCcw size={12} />
-                重置
-              </button>
+              <div className='flex items-center gap-3'>
+                <button
+                  onClick={handleRandomPalette}
+                  className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                  title='随机生成一套协调的配色'
+                >
+                  <Shuffle size={12} />
+                  随机配色
+                </button>
+                <button
+                  onClick={handleResetTheme}
+                  className='flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                >
+                  <RotateCcw size={12} />
+                  重置
+                </button>
+              </div>
             </div>
 
             <div className='space-y-3'>

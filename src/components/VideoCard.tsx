@@ -1906,7 +1906,7 @@ function VideoCard({
 /**
  * 海报 hover 柔和光斑
  * - 固定小圆斑，仅通过 transform 跟随鼠标（GPU 合成），不触发大面积渐变重绘
- * - 用 ref 直写 DOM，mousemove 不触发 React 重渲染，极流畅
+ * - 用 ref 直写 DOM，mousemove 不触发 React 重渲染，rAF 节流，极流畅
  */
 const PosterSpotlight = memo(function PosterSpotlight() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -1917,23 +1917,35 @@ const PosterSpotlight = memo(function PosterSpotlight() {
     const blob = blobRef.current;
     if (!root || !blob) return;
 
+    // root 自身是 pointer-events-none（避免拦截点击），
+    // 鼠标事件需绑定到海报容器（父元素），事件从子层冒泡上来。
+    const target = root.parentElement;
+    if (!target) return;
+
+    let rafId = 0;
     const move = (e: MouseEvent) => {
-      const rect = root.getBoundingClientRect();
-      blob.style.left = `${e.clientX - rect.left}px`;
-      blob.style.top = `${e.clientY - rect.top}px`;
-      blob.style.opacity = '1';
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const rect = target.getBoundingClientRect();
+        blob.style.transform = `translate3d(${e.clientX - rect.left}px, ${
+          e.clientY - rect.top
+        }px, 0)`;
+        blob.style.opacity = '1';
+      });
     };
     const leave = () => {
+      cancelAnimationFrame(rafId);
       blob.style.opacity = '0';
     };
 
-    root.addEventListener('mouseenter', move);
-    root.addEventListener('mousemove', move, { passive: true });
-    root.addEventListener('mouseleave', leave);
+    target.addEventListener('mouseenter', move);
+    target.addEventListener('mousemove', move, { passive: true });
+    target.addEventListener('mouseleave', leave);
     return () => {
-      root.removeEventListener('mouseenter', move);
-      root.removeEventListener('mousemove', move);
-      root.removeEventListener('mouseleave', leave);
+      cancelAnimationFrame(rafId);
+      target.removeEventListener('mouseenter', move);
+      target.removeEventListener('mousemove', move);
+      target.removeEventListener('mouseleave', leave);
     };
   }, []);
 
@@ -1944,8 +1956,8 @@ const PosterSpotlight = memo(function PosterSpotlight() {
     >
       <div
         ref={blobRef}
-        className='absolute h-60 w-60 -translate-x-1/2 -translate-y-1/2 will-change-[left,top,opacity]'
-        style={{ left: 0, top: 0, opacity: 0 }}
+        className='absolute left-0 top-0 h-60 w-60 -translate-x-1/2 -translate-y-1/2 will-change-transform'
+        style={{ opacity: 0 }}
       >
         <div
           className='absolute inset-0'

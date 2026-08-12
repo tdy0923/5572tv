@@ -180,12 +180,11 @@ export function isNightModeTime(schedule: NightModeSchedule): boolean {
   const endMinutes = schedule.endHour * 60 + schedule.endMinute;
 
   if (startMinutes <= endMinutes) {
-    // 同一天内，如 22:00 - 07:00 不适用
-    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
-  } else {
-    // 跨天，如 22:00 - 07:00
-    return currentMinutes >= startMinutes || currentMinutes < endMinutes;
+    // 同一天内，如 09:00 - 17:00：当前时间在 [开始, 结束) 内为深色
+    return currentMinutes >= startMinutes && currentMinutes < endMinutes;
   }
+  // 跨天，如 22:00 - 07:00：凌晨 0 点后未到结束时间，或已过开始时间均为深色
+  return currentMinutes >= startMinutes || currentMinutes < endMinutes;
 }
 
 // ==================== 弹幕偏好 ====================

@@ -37,6 +37,7 @@ import { useClearRemindersMutation } from '@/hooks/useRemindersMutations';
 
 import CapsuleSwitch from '@/components/CapsuleSwitch';
 import { FluentLoadingPage } from '@/components/FluentSpinner';
+import { triggerGlobalError } from '@/components/GlobalErrorIndicator';
 import FavoritesView from '@/components/home/FavoritesView';
 import HistoryView from '@/components/home/HistoryView';
 import HomeContentView from '@/components/home/HomeContentView';
@@ -47,11 +48,6 @@ import PullToRefresh from '@/components/PullToRefresh';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
 import { useSite } from '@/components/SiteProvider';
 
-const ConfirmDialog = dynamic(() =>
-  import('@/components/ConfirmDialog').then((m) => ({
-    default: m.ConfirmDialog,
-  })),
-);
 const TelegramWelcomeModal = dynamic(() =>
   import('@/components/TelegramWelcomeModal').then((m) => ({
     default: m.TelegramWelcomeModal,
@@ -232,6 +228,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   const {
     data: homeData,
     isLoading: homeLoading,
+    hasError: homeHasError,
     refetch: refetchHomeData,
   } = useHomePageQueries(initialTrendingData);
 
@@ -506,9 +503,9 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     useState(false);
   const [showClearRemindersDialog, setShowClearRemindersDialog] =
     useState(false);
-  const [notifPermission, setNotifPermission] = useState<
-    NotificationPermission | 'unsupported'
-  >(() => getNotificationPermission());
+  const [notifPermission] = useState<NotificationPermission | 'unsupported'>(
+    () => getNotificationPermission(),
+  );
   const [favoriteGroupFilter, setFavoriteGroupFilter] =
     useState<string>('全部');
 
@@ -577,6 +574,19 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     favoriteUpdatesOptions(activeTab === 'favorites'),
   );
 
+  // 首页数据加载失败时弹出非阻塞错误提示（每次失败仅提示一次，成功后重置）
+  const hasShownHomeErrorRef = useRef(false);
+  useEffect(() => {
+    if (homeHasError) {
+      if (!hasShownHomeErrorRef.current) {
+        hasShownHomeErrorRef.current = true;
+        triggerGlobalError('热门内容加载失败，请稍后重试');
+      }
+    } else {
+      hasShownHomeErrorRef.current = false;
+    }
+  }, [homeHasError]);
+
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
   // Only refetch once, not repeatedly - track if we've already tried
   const hasRetriedShortDramaRef = useRef(false);
@@ -639,7 +649,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                   trailerUrl: res.data.trailerUrl,
                 };
               }
-            } catch (error) {
+            } catch {
               // 忽略单个请求失败
             }
             return null;

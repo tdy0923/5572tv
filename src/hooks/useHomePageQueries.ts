@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
@@ -73,7 +75,8 @@ async function fetchTrending(): Promise<{
     return { movies, tvShows, variety, anime };
   } catch (error) {
     console.error('获取热门内容失败:', error);
-    return { movies: [], tvShows: [], variety: [], anime: [] };
+    // 抛出错误，让 TanStack Query 记录 error，首页才能展示错误态
+    throw error instanceof Error ? error : new Error('获取热门内容失败');
   }
 }
 
@@ -209,8 +212,13 @@ export function useHomePageQueries(
 
   const isLoading = trendingQuery.isLoading || shortDramaQuery.isLoading;
   const isFetching = trendingQuery.isFetching || shortDramaQuery.isFetching;
-  const errors = [trendingQuery.error, shortDramaQuery.error].filter(
-    Boolean,
+  // 短路式计算：只取第一个错误（避免重复弹提示）
+  const errors = (
+    trendingQuery.error
+      ? [trendingQuery.error]
+      : shortDramaQuery.error
+        ? [shortDramaQuery.error]
+        : []
   ) as Error[];
 
   return {
