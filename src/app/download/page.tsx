@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Download, X } from 'lucide-react';
+import { ArrowLeft, Check, Download, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -56,6 +56,14 @@ export default function DownloadPage() {
     'android' | 'ios' | 'tv'
   >(platform === 'ios' ? 'ios' : platform === 'tv' ? 'tv' : 'android');
 
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  };
+
   useEffect(() => {
     fetch('/api/version-check')
       .then((r) => r.json())
@@ -72,6 +80,17 @@ export default function DownloadPage() {
 
   return (
     <div className='min-h-screen bg-gray-950 text-white'>
+      {/* 返回按钮：全屏落地页没有导航，提供回退路径 */}
+      <button
+        type='button'
+        onClick={goBack}
+        aria-label='返回'
+        className='fixed left-3 top-3 z-30 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white/20'
+        style={{ top: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      >
+        <ArrowLeft className='h-5 w-5' />
+      </button>
+
       {/* ── 全屏 Hero：海报墙背景 ── */}
       <section
         className='relative flex min-h-screen items-center overflow-hidden'

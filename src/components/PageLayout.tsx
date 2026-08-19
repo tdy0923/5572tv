@@ -65,7 +65,7 @@ const PageLayout = ({
               <div className='flex shrink-0 items-center gap-1'>
                 <Link
                   href='/search'
-                  className='flex h-10 w-10 items-center justify-center rounded-full text-gray-700 transition-all duration-150 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]'
+                  className='flex h-11 w-11 items-center justify-center rounded-full text-gray-700 transition-all duration-150 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]'
                   aria-label='搜索'
                   title='搜索'
                 >

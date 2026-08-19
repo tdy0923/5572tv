@@ -70,6 +70,9 @@ export default function ModernNav({
 }: ModernNavProps = {}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  // 播放/直播页沉浸式浏览：隐藏移动端底部导航，减少观看干扰
+  const isImmersive =
+    pathname?.startsWith('/play') || pathname?.startsWith('/live');
   const { siteName, announcementTitle } = useSite();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -205,7 +208,7 @@ export default function ModernNav({
       </nav>
 
       {/* More Menu Modal - Render outside nav to avoid z-index issues */}
-      {showMoreMenu && (
+      {!isImmersive && showMoreMenu && (
         <div
           className='md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm'
           style={{ zIndex: 9999 }}
@@ -280,63 +283,65 @@ export default function ModernNav({
       )}
 
       {/* Mobile Bottom Navigation - Netflix Full-Width Style with Light Mode Support */}
-      <nav
-        className='md:hidden fixed left-0 right-0 z-30 bg-white dark:bg-black/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
-        style={{
-          bottom: 0,
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
-      >
-        <div className='flex items-center justify-around px-2 py-2'>
-          {/* Show first 4 items + More button */}
-          {menuItems.slice(0, 4).map((item) => {
-            const Icon = iconMap[item.iconName];
-            const active = isActive(item.href, currentActive);
+      {!isImmersive && (
+        <nav
+          className='md:hidden fixed left-0 right-0 z-30 bg-white dark:bg-black/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
+          style={{
+            bottom: 0,
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}
+        >
+          <div className='flex items-center justify-around px-2 py-2'>
+            {/* Show first 4 items + More button */}
+            {menuItems.slice(0, 4).map((item) => {
+              const Icon = iconMap[item.iconName];
+              const active = isActive(item.href, currentActive);
 
-            return (
-              <FastLink
-                key={item.label}
-                href={item.href}
-                useTransitionNav
-                className={`flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 rounded-xl transition-all duration-200 active:scale-95 ${
-                  active ? 'bg-primary-500/15 dark:bg-primary-500/10' : ''
-                }`}
-              >
-                <Icon
-                  className={`w-6 h-6 mb-1 transition-colors duration-200 ${
-                    active
-                      ? 'text-[#171717] dark:text-[#fff6de]'
-                      : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                />
-                <span
-                  className={`text-xs font-medium transition-colors duration-200 ${
-                    active
-                      ? 'text-[#171717] dark:text-[#fff6de]'
-                      : 'text-gray-600 dark:text-gray-400'
+              return (
+                <FastLink
+                  key={item.label}
+                  href={item.href}
+                  useTransitionNav
+                  className={`flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 rounded-xl transition-all duration-200 active:scale-95 ${
+                    active ? 'bg-primary-500/15 dark:bg-primary-500/10' : ''
                   }`}
                 >
-                  {item.label}
-                </span>
-              </FastLink>
-            );
-          })}
+                  <Icon
+                    className={`w-6 h-6 mb-1 transition-colors duration-200 ${
+                      active
+                        ? 'text-[#171717] dark:text-[#fff6de]'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  />
+                  <span
+                    className={`text-xs font-medium transition-colors duration-200 ${
+                      active
+                        ? 'text-[#171717] dark:text-[#fff6de]'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                </FastLink>
+              );
+            })}
 
-          {/* More button */}
-          <button
-            ref={moreButtonRef}
-            onClick={() => setShowMoreMenu(true)}
-            aria-haspopup='dialog'
-            aria-expanded={showMoreMenu}
-            className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
-          >
-            <MoreHorizontal className='w-6 h-6 mb-1 text-gray-600 dark:text-gray-400' />
-            <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>
-              更多
-            </span>
-          </button>
-        </div>
-      </nav>
+            {/* More button */}
+            <button
+              ref={moreButtonRef}
+              onClick={() => setShowMoreMenu(true)}
+              aria-haspopup='dialog'
+              aria-expanded={showMoreMenu}
+              className='flex flex-col items-center justify-center min-w-[60px] flex-1 py-2 px-1 transition-all duration-200 active:scale-95'
+            >
+              <MoreHorizontal className='w-6 h-6 mb-1 text-gray-600 dark:text-gray-400' />
+              <span className='text-[10px] font-medium text-gray-600 dark:text-gray-400'>
+                更多
+              </span>
+            </button>
+          </div>
+        </nav>
+      )}
 
       {/* 固定导航的空间补偿由 PageLayout 的 <main> padding 处理 */}
     </>
