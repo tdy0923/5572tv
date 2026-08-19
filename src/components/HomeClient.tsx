@@ -858,7 +858,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
       >
         <div className='overflow-visible mt-0 pb-20 md:pb-safe-bottom'>
           <div className='mb-8 space-y-4'>
-            <SiteAdSlot position='home_hero' />
             {/* 欢迎横幅 - 现代化精简设计 */}
             <div className='flex flex-wrap items-center gap-3 py-1 sm:gap-4'>
               <h2 className='flex flex-wrap items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl'>
@@ -922,6 +921,9 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 autoComplete='off'
               />
             </form>
+
+            {/* 广告位：置于搜索框之后，避免抢占欢迎语与搜索的首屏位置 */}
+            <SiteAdSlot position='home_hero' />
 
             {/* 顶部 Tab 切换 - AI 按钮已移至右上角导航栏 */}
             <div className='flex items-center justify-start'>

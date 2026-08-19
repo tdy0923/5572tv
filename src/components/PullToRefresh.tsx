@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
@@ -8,58 +8,139 @@ interface PullToRefreshProps {
   threshold?: number;
 }
 
-export default function PullToRefresh({ onRefresh, children, threshold = 80 }: PullToRefreshProps) {
+export default function PullToRefresh({
+  onRefresh,
+  children,
+  threshold = 80,
+}: PullToRefreshProps) {
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
-  const startY = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (containerRef.current && containerRef.current.scrollTop === 0) {
-      startY.current = e.touches[0].clientY;
-    }
+  const startY = useRef(0);
+  const tracking = useRef(false);
+  const pullRef = useRef(0);
+  const refreshingRef = useRef(false);
+  const thresholdRef = useRef(threshold);
+  const onRefreshRef = useRef(onRefresh);
+
+  useEffect(() => {
+    onRefreshRef.current = onRefresh;
+    thresholdRef.current = threshold;
+  }, [onRefresh, threshold]);
+
+  const applyDistance = useCallback((v: number) => {
+    pullRef.current = v;
+    setPullDistance(v);
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (refreshing) return;
-    const diff = e.touches[0].clientY - startY.current;
-    if (diff > 0 && containerRef.current && containerRef.current.scrollTop === 0) {
-      setPullDistance(Math.min(diff * 0.5, threshold * 1.5));
-    }
-  }, [refreshing, threshold]);
+  useEffect(() => {
+    const atTop = () => window.scrollY <= 0;
 
-  const handleTouchEnd = useCallback(async () => {
-    if (pullDistance >= threshold && !refreshing) {
-      setRefreshing(true);
-      try {
-        await onRefresh();
-      } finally {
-        setRefreshing(false);
+    const onTouchStart = (e: TouchEvent) => {
+      if (refreshingRef.current) return;
+      // 仅页面在顶部时开始跟踪下拉手势
+      if (!atTop()) return;
+      startY.current = e.touches[0].clientY;
+      tracking.current = true;
+      setDragging(true);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!tracking.current || refreshingRef.current) return;
+      // 拉到一半页面滚动了，放弃接管，交给原生滚动
+      if (!atTop()) {
+        tracking.current = false;
+        applyDistance(0);
+        setDragging(false);
+        return;
       }
-    }
-    setPullDistance(0);
-  }, [pullDistance, refreshing, onRefresh, threshold]);
+      const diff = e.touches[0].clientY - startY.current;
+      if (diff > 0) {
+        // 主动接管手势，阻止原生滚动/回弹，避免与下拉冲突
+        e.preventDefault();
+        applyDistance(Math.min(diff * 0.5, thresholdRef.current * 1.5));
+      } else {
+        applyDistance(0);
+      }
+    };
+
+    const finishPull = async () => {
+      if (!tracking.current) return;
+      tracking.current = false;
+      setDragging(false);
+      const dist = pullRef.current;
+      if (dist >= thresholdRef.current && !refreshingRef.current) {
+        refreshingRef.current = true;
+        setRefreshing(true);
+        applyDistance(48);
+        try {
+          await onRefreshRef.current();
+        } finally {
+          refreshingRef.current = false;
+          setRefreshing(false);
+          applyDistance(0);
+        }
+      } else {
+        applyDistance(0);
+      }
+    };
+
+    const onTouchEnd = () => {
+      void finishPull();
+    };
+    const onTouchCancel = () => {
+      tracking.current = false;
+      setDragging(false);
+      applyDistance(0);
+    };
+
+    // React 17+ 将 touchmove 以 passive 方式挂载，preventDefault 无效，
+    // 因此这里用原生非 passive 监听器接管手势
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+    document.addEventListener('touchcancel', onTouchCancel);
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+      document.removeEventListener('touchcancel', onTouchCancel);
+    };
+  }, [applyDistance]);
 
   const progress = Math.min(pullDistance / threshold, 1);
 
   return (
-    <div
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      className='relative'
-    >
-      {/* 下拉提示 */}
+    <div className='relative'>
+      {/* 下拉提示：拖动时跟手，释放/刷新时平滑回弹 */}
       <div
-        className='flex items-center justify-center overflow-hidden transition-all duration-300'
-        style={{ height: refreshing ? 48 : pullDistance }}
+        className='flex items-center justify-center overflow-hidden'
+        style={{
+          height: refreshing ? 48 : pullDistance,
+          transition: dragging ? 'none' : 'height 0.3s ease-out',
+        }}
       >
         {refreshing ? (
           <div className='flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400'>
-            <svg className='animate-spin h-4 w-4' viewBox='0 0 24 24' fill='none'>
-              <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4' />
-              <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z' />
+            <svg
+              className='animate-spin h-4 w-4'
+              viewBox='0 0 24 24'
+              fill='none'
+            >
+              <circle
+                className='opacity-25'
+                cx='12'
+                cy='12'
+                r='10'
+                stroke='currentColor'
+                strokeWidth='4'
+              />
+              <path
+                className='opacity-75'
+                fill='currentColor'
+                d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z'
+              />
             </svg>
             正在刷新...
           </div>
@@ -68,7 +149,16 @@ export default function PullToRefresh({ onRefresh, children, threshold = 80 }: P
             className='text-sm text-gray-400 dark:text-gray-500 transition-transform'
             style={{ transform: `rotate(${progress * 180}deg)` }}
           >
-            <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+            <svg
+              width='20'
+              height='20'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
               <polyline points='6 9 12 15 18 9' />
             </svg>
           </div>
