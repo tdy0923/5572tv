@@ -87,9 +87,17 @@ export function FastLink({
 
     // Mode 2: Transition navigation - non-blocking
     if (useTransitionNav) {
-      // 直接调用 router.push，不使用 startTransition
-      // startTransition 会静默吞掉 router.push 的错误，导致导航无响应
-      router.push(href);
+      // 优先使用 View Transitions API 做页面过渡（渐进增强，不支持的浏览器回退为普通跳转）
+      const doc = document as Document & {
+        startViewTransition?: (cb: () => void) => unknown;
+      };
+      if (typeof doc.startViewTransition === 'function') {
+        doc.startViewTransition(() => {
+          router.push(href);
+        });
+      } else {
+        router.push(href);
+      }
       return;
     }
 
