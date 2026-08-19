@@ -17,7 +17,6 @@ import React, {
 import { isAdSettingRenderable } from '@/lib/ad-settings';
 
 import AcgSearch from '@/components/AcgSearch';
-import { FluentSpinner } from '@/components/FluentSpinner';
 import ImageViewer from '@/components/ImageViewer';
 import MountAnimation from '@/components/MountAnimation';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
@@ -294,6 +293,10 @@ function SearchPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentQueryRef = useRef<string>('');
+  // 标记本次 URL 变化是否由"即输即搜"触发，用于区分联想框/历史的行为
+  const liveSearchRef = useRef(false);
+  // 输入框聚焦中（即输即搜期间）时，URL 同步不要覆盖正在输入的文本
+  const searchInputFocused = useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -511,19 +514,39 @@ function SearchPageClient() {
   useEffect(() => {
     // 当搜索参数变化时更新 UI 状态（数据获取由 TanStack Query 驱动）
     const query = searchParams.get('q') || '';
+    const isLive = liveSearchRef.current;
+    liveSearchRef.current = false;
     currentQueryRef.current = query.trim();
 
     if (query) {
-      setSearchQuery(query);
+      if (!searchInputFocused.current) setSearchQuery(query);
       setShowResults(true);
-      setShowSuggestions(false);
-
-      addSearchHistory(query);
+      // 即输即搜产生的 URL 变化不关闭联想框，也不写入历史（避免历史被逐字污染）
+      if (!isLive) {
+        setShowSuggestions(false);
+        addSearchHistory(query);
+      }
     } else {
       setShowResults(false);
       setShowSuggestions(false);
     }
   }, [searchParams]);
+
+  // 即输即搜：影视模式下输入停顿 500ms 自动更新 URL 触发搜索
+  useEffect(() => {
+    if (searchType !== 'video') return;
+    const value = searchQuery.trim();
+    if (!value) return;
+    const timer = setTimeout(() => {
+      if (searchParams.get('q') === value) return;
+      liveSearchRef.current = true;
+      setShowResults(true);
+      router.replace(`/search?q=${encodeURIComponent(value)}`, {
+        scroll: false,
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchType, router, searchParams]);
 
   // 输入框内容变化时触发，显示搜索建议
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -657,6 +680,7 @@ function SearchPageClient() {
     setSearchQuery(trimmed);
     setShowSuggestions(false);
     setShowResults(true);
+    addSearchHistory(trimmed);
 
     if (searchType === 'netdisk') {
       // 网盘搜索 - 也更新URL保持一致性
@@ -681,6 +705,7 @@ function SearchPageClient() {
   const handleSuggestionSelect = (suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestions(false);
+    addSearchHistory(suggestion.trim());
 
     // 自动执行搜索
     setShowResults(true);
@@ -797,7 +822,13 @@ function SearchPageClient() {
                     type='text'
                     value={searchQuery}
                     onChange={handleInputChange}
-                    onFocus={handleInputFocus}
+                    onFocus={() => {
+                      searchInputFocused.current = true;
+                      handleInputFocus();
+                    }}
+                    onBlur={() => {
+                      searchInputFocused.current = false;
+                    }}
                     placeholder={
                       searchType === 'video'
                         ? '搜索电影、电视剧...'
@@ -838,6 +869,7 @@ function SearchPageClient() {
                       setSearchQuery(trimmed);
                       setShowResults(true);
                       setShowSuggestions(false);
+                      addSearchHistory(trimmed);
 
                       router.push(`/search?q=${encodeURIComponent(trimmed)}`);
                     }}
@@ -858,6 +890,7 @@ function SearchPageClient() {
                         key={term}
                         onClick={() => {
                           setSearchQuery(term);
+                          addSearchHistory(term.trim());
                           // Trigger search
                           setShowResults(true);
                           setShowSuggestions(false);
@@ -1197,16 +1230,22 @@ function SearchPageClient() {
                         {/* 搜索结果网格/列表 */}
                         <div className='pt-1'>
                           {isLoading && searchResults.length === 0 ? (
-                            <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-10 text-center dark:border-gray-700 dark:bg-gray-800'>
-                              <div className='flex items-center justify-center'>
-                                <FluentSpinner size='large' />
+                            <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-4 dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
+                              <div className='mb-4 flex items-center justify-between px-1 text-sm text-gray-500 dark:text-gray-400'>
+                                <span>正在整理搜索结果...</span>
+                                <span className='text-xs'>
+                                  已获取 {completedSources}/{totalSources || 1}{' '}
+                                  个来源
+                                </span>
                               </div>
-                              <div className='mt-4 text-sm font-medium text-gray-700 dark:text-gray-300'>
-                                正在整理搜索结果...
-                              </div>
-                              <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>
-                                已获取 {completedSources}/{totalSources || 1}{' '}
-                                个来源的结果
+                              <div className='grid grid-cols-3 gap-x-2 gap-y-6 px-1 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8'>
+                                {Array.from({ length: 9 }).map((_, i) => (
+                                  <div key={i} className='w-full'>
+                                    <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
+                                    <div className='mt-2 h-3 w-3/4 rounded bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
+                                    <div className='mt-1.5 h-3 w-1/2 rounded bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           ) : traditionalSearchError && !useFluidSearch ? (
@@ -1511,7 +1550,10 @@ function SearchPageClient() {
                     </div>
                     <div className='flex flex-wrap gap-2'>
                       {searchHistory.map((item) => (
-                        <div key={item} className='relative group'>
+                        <div
+                          key={item}
+                          className='flex items-center overflow-hidden rounded-full border border-gray-200 dark:border-gray-700 bg-white/75 dark:bg-gray-800'
+                        >
                           <button
                             onClick={() => {
                               setSearchQuery(item);
@@ -1519,23 +1561,21 @@ function SearchPageClient() {
                                 `/search?q=${encodeURIComponent(item.trim())}`,
                               );
                             }}
-                            className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/75 px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/10'
+                            className='flex-1 truncate px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10'
                           >
                             {item}
                           </button>
-                          {/* 删除按钮 */}
+                          {/* 删除按钮：独立尾部，命中区不覆盖词条文本 */}
                           <button
                             aria-label='删除搜索历史'
                             onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              deleteSearchHistory(item); // 事件监听会自动更新界面
+                              deleteSearchHistory(item);
                             }}
-                            className='absolute -top-1 -right-1 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-[10px] text-white transition-colors sm:h-4 sm:w-4 sm:min-h-0 sm:min-w-0 sm:opacity-0 sm:group-hover:opacity-100'
+                            className='flex h-9 w-9 shrink-0 items-center justify-center border-l border-gray-200/70 text-gray-400 transition-colors hover:bg-red-500 hover:text-white dark:border-gray-700 dark:text-gray-400 dark:hover:bg-red-600'
                           >
-                            <div className='flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 transition-colors group-hover:bg-red-500 sm:bg-gray-400'>
-                              <X className='w-3 h-3' />
-                            </div>
+                            <X className='h-4 w-4' />
                           </button>
                         </div>
                       ))}
