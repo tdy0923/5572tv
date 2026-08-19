@@ -338,9 +338,7 @@ export default function ModernNav({
         </div>
       </nav>
 
-      {/* Spacer for fixed navigation */}
-      <div className='hidden md:block h-16' />
-      <div className='md:hidden h-16' />
+      {/* 固定导航的空间补偿由 PageLayout 的 <main> padding 处理 */}
     </>
   );
 }
