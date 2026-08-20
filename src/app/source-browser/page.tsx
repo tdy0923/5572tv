@@ -5,6 +5,7 @@
 'use client';
 
 import {
+  ArrowUp,
   ExternalLink,
   Layers,
   Search,
@@ -82,6 +83,90 @@ export default function SourceBrowserPage() {
 
   // 详情预览
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  // 无障碍/交互增强：弹层焦点管理、网格键盘导航、回到顶部
+  const previewPanelRef = useRef<HTMLDivElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const [showTop, setShowTop] = useState(false);
+
+  const closePreview = useCallback(() => {
+    setPreviewOpen(false);
+  }, []);
+
+  // 打开弹层：锁定背景滚动、聚焦弹层、ESC 关闭；关闭后还原滚动与焦点
+  useEffect(() => {
+    if (!previewOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePreview();
+    };
+    window.addEventListener('keydown', onKey);
+    requestAnimationFrame(() => previewPanelRef.current?.focus());
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKey);
+      lastFocusedRef.current?.focus?.();
+      lastFocusedRef.current = null;
+    };
+  }, [previewOpen, closePreview]);
+
+  // 弹层内焦点陷阱：Tab 在可聚焦元素间循环，不跑出弹层
+  useEffect(() => {
+    if (!previewOpen) return;
+    const panel = previewPanelRef.current;
+    if (!panel) return;
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusables = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !panel.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !panel.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    panel.addEventListener('keydown', handleTab);
+    return () => panel.removeEventListener('keydown', handleTab);
+  }, [previewOpen]);
+
+  // 回到顶部按钮显隐
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 600);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // 网格方向键导航（左右/上下移动焦点）
+  const onGridKeyDown = (e: React.KeyboardEvent) => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const cards = Array.from(
+      grid.querySelectorAll<HTMLElement>('[role="listitem"]'),
+    );
+    if (cards.length === 0) return;
+    const idx = cards.indexOf(document.activeElement as HTMLElement);
+    if (idx === -1) return;
+    const w = window.innerWidth;
+    const cols = w < 640 ? 2 : w < 768 ? 3 : w < 1024 ? 4 : w < 1280 ? 5 : 6;
+    let next = idx;
+    if (e.key === 'ArrowRight') next = Math.min(idx + 1, cards.length - 1);
+    else if (e.key === 'ArrowLeft') next = Math.max(idx - 1, 0);
+    else if (e.key === 'ArrowDown')
+      next = Math.min(idx + cols, cards.length - 1);
+    else if (e.key === 'ArrowUp') next = Math.max(idx - cols, 0);
+    else return;
+    e.preventDefault();
+    cards[next].focus();
+  };
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<GlobalSearchResult | null>(
@@ -481,6 +566,7 @@ export default function SourceBrowserPage() {
   };
 
   const openPreview = async (item: Item) => {
+    lastFocusedRef.current = document.activeElement as HTMLElement;
     setPreviewItem(item);
     setPreviewOpen(true);
     setPreviewLoading(true);
@@ -619,12 +705,13 @@ export default function SourceBrowserPage() {
                 <p className='text-sm text-gray-500'>暂无可用来源</p>
               </div>
             ) : (
-              <div className='-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide'>
+              <div className='-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide md:flex-wrap md:overflow-visible md:gap-2 md:pb-0'>
                 {sources.map((s) => (
                   <PillButton
                     key={s.key}
                     onClick={() => setActiveSourceKey(s.key)}
                     active={activeSourceKey === s.key}
+                    aria-pressed={activeSourceKey === s.key}
                     className='shrink-0 px-3.5 py-1.5 text-sm'
                   >
                     {s.name}
@@ -663,6 +750,7 @@ export default function SourceBrowserPage() {
                       }
                     }}
                     placeholder='搜索当前来源，输入即搜'
+                    aria-label='搜索当前来源'
                     className='h-10 rounded-xl pl-9 pr-9 text-sm'
                   />
                   {query && (
@@ -692,6 +780,7 @@ export default function SourceBrowserPage() {
                   }`}
                   title='排序与筛选'
                   aria-expanded={filterOpen}
+                  aria-controls='source-filter-panel'
                 >
                   <SlidersHorizontal className='h-[18px] w-[18px]' />
                 </button>
@@ -699,7 +788,7 @@ export default function SourceBrowserPage() {
 
               {/* 分类 tabs：横向滚动，选中态表达层级 */}
               {mode === 'category' && (
-                <div className='flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide'>
+                <div className='flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide md:flex-wrap md:overflow-visible md:gap-2 md:pb-0'>
                   {loadingCategories ? (
                     <div className='flex items-center gap-2 px-2 text-sm text-gray-500'>
                       <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
@@ -716,6 +805,7 @@ export default function SourceBrowserPage() {
                       <button
                         key={String(c.type_id)}
                         onClick={() => setActiveCategory(c.type_id)}
+                        aria-pressed={activeCategory === c.type_id}
                         className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm transition-all duration-200 ${
                           activeCategory === c.type_id
                             ? 'bg-blue-600 font-medium text-white shadow-sm'
@@ -731,7 +821,12 @@ export default function SourceBrowserPage() {
 
               {/* 筛选展开行（低频操作，默认收起） */}
               {filterOpen && (
-                <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+                <div
+                  id='source-filter-panel'
+                  role='region'
+                  aria-label='排序与筛选'
+                  className='grid grid-cols-1 gap-2 sm:grid-cols-3'
+                >
                   <PanelSelect
                     value={sortBy}
                     onChange={(e) =>
@@ -780,8 +875,8 @@ export default function SourceBrowserPage() {
           {/* 内容区：精简状态行 + 海报网格 */}
           {activeSource && (
             <div>
-              <div className='mb-3 flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                <div className='truncate'>
+              <div className='mb-3 flex items-center justify-between gap-2 text-xs text-gray-600 dark:text-gray-400'>
+                <div className='truncate' aria-live='polite'>
                   {mode === 'search'
                     ? `搜索结果${query ? `：${query}` : ''}`
                     : `分类：${
@@ -819,16 +914,26 @@ export default function SourceBrowserPage() {
                   </div>
                 ) : (
                   <>
-                    <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                    <div
+                      ref={gridRef}
+                      role='list'
+                      aria-label='内容列表'
+                      onKeyDown={onGridKeyDown}
+                      className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+                    >
                       {filteredAndSorted.map((item, index) => (
                         <div
                           key={item.id}
                           className='group cursor-pointer transition-all duration-300 hover:-translate-y-0.5'
                           onClick={() => openPreview(item)}
-                          role='button'
+                          role='listitem'
                           tabIndex={0}
+                          aria-label={`${item.title}${item.year ? `，${item.year}年` : ''}`}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') openPreview(item);
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              openPreview(item);
+                            }
                           }}
                           style={{
                             animation: `fadeInUp 0.4s ease-out ${index * 0.02}s both`,
@@ -909,16 +1014,30 @@ export default function SourceBrowserPage() {
             </div>
           )}
 
+          {/* 回到顶部 */}
+          {showTop && (
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label='回到顶部'
+              className='fixed bottom-24 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white/90 text-gray-600 shadow-lg backdrop-blur-md transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/90 dark:text-gray-300 md:bottom-8 md:right-6'
+            >
+              <ArrowUp className='h-5 w-5' />
+            </button>
+          )}
+
           {/* 预览弹层 */}
           {previewOpen && (
             <div
               className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 py-6 pb-20 backdrop-blur-sm animate-fluent2-fade-in sm:p-4 md:pb-4'
               role='dialog'
               aria-modal='true'
-              onClick={() => setPreviewOpen(false)}
+              aria-label='详情预览'
+              onClick={closePreview}
             >
               <div
-                className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-lg  animate-fluent2-scale-in dark:border-gray-700 dark:bg-gray-900/82 md:max-h-[90vh]'
+                ref={previewPanelRef}
+                tabIndex={-1}
+                className='flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white/82 shadow-lg  animate-fluent2-scale-in dark:border-gray-700 dark:bg-gray-900/82 outline-none md:max-h-[90vh]'
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* 头部 */}
@@ -938,7 +1057,7 @@ export default function SourceBrowserPage() {
                   </div>
                   <button
                     className='ml-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white'
-                    onClick={() => setPreviewOpen(false)}
+                    onClick={closePreview}
                     title='关闭'
                   >
                     <X className='h-5 w-5' />
@@ -1288,7 +1407,7 @@ export default function SourceBrowserPage() {
                   </div>
                   <div className='flex items-center gap-2 sm:gap-3'>
                     <button
-                      onClick={() => setPreviewOpen(false)}
+                      onClick={closePreview}
                       className='ui-control rounded-full px-3 sm:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300'
                     >
                       取消

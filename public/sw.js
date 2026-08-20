@@ -1,4 +1,4 @@
-const CACHE_NAME = '5572tv-v5';
+const CACHE_NAME = '5572tv-v6';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -120,7 +120,13 @@ self.addEventListener('message', (event) => {
 
 // Fetch 事件处理
 self.addEventListener('fetch', (event) => {
-  var url = new URL(event.request.url);
+  // 只处理 http(s) 请求，忽略 chrome-extension:// 等非标准协议
+  // （浏览器扩展注入的请求无法写入 Cache Storage，会抛 TypeError）
+  const reqUrl = event.request.url;
+  if (!reqUrl.startsWith('http:') && !reqUrl.startsWith('https:')) {
+    return;
+  }
+  var url = new URL(reqUrl);
 
   // 处理下载请求（APK 等静态文件直接放行）
   if (url.pathname.startsWith('/download/') && !url.pathname.endsWith('.apk')) {
