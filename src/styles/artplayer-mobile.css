@@ -27,6 +27,15 @@
     font-size: 13px !important;
   }
 
+  /* 窄屏时隐藏可在设置面板中访问的次要控件，避免控制条溢出被边缘裁掉 */
+  .art-control-pip,
+  .art-control-flip,
+  .art-control-playbackRate,
+  .art-control-aspectRatio,
+  .art-control-lock {
+    display: none !important;
+  }
+
   /* 控制栏内边距 */
   .art-controls {
     padding: 0 4px !important;

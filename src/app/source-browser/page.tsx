@@ -723,7 +723,7 @@ export default function SourceBrowserPage() {
 
           {/* Sticky 控制条：搜索 + 筛选入口 + 分类 tabs */}
           {activeSource && (
-            <div className='sticky z-30 space-y-3 rounded-2xl border border-gray-200/80 bg-white/85 p-3 shadow-sm backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-900/85 top-[calc(52px+env(safe-area-inset-top))] md:top-[72px]'>
+            <div className='sticky z-30 space-y-3 rounded-2xl border border-gray-200/80 bg-white/95 p-3 shadow-sm dark:border-gray-700/80 dark:bg-gray-900/95 top-[calc(52px+env(safe-area-inset-top))] md:top-[72px] md:bg-white/85 md:backdrop-blur-xl dark:md:bg-gray-900/85'>
               {/* 搜索框 + 筛选入口 */}
               <div className='flex items-center gap-2'>
                 <div className='relative min-w-0 flex-1'>
