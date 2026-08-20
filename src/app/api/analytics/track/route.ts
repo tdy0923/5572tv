@@ -158,5 +158,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (type === 'login') {
+    trackEvent({ type: 'login', ts, uid, anon });
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ ok: false }, { status: 400 });
 }

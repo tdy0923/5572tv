@@ -27,33 +27,37 @@ export function SessionTracker() {
     }
   };
 
+  // 通用行为上报（sendBeacon，静默失败）
+  const sendTrack = (payload: Record<string, unknown>) => {
+    try {
+      const body = JSON.stringify({ anon: getAnonId(), ...payload });
+      navigator.sendBeacon
+        ? navigator.sendBeacon(
+            '/api/analytics/track',
+            new Blob([body], { type: 'application/json' }),
+          )
+        : fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+            keepalive: true,
+          }).catch(() => {});
+    } catch {
+      // 忽略上报异常
+    }
+  };
+
   // 上报页面访问（静默失败，不影响页面）
   const reportPageview = (path: string) => {
     if (typeof document === 'undefined') return;
     if (path === lastReportedRef.current) return;
     lastReportedRef.current = path;
 
-    try {
-      const payload = {
-        type: 'pageview',
-        anon: getAnonId(),
-        path,
-        ref: document.referrer?.slice(0, 300) || undefined,
-      };
-      navigator.sendBeacon
-        ? navigator.sendBeacon(
-            '/api/analytics/track',
-            new Blob([JSON.stringify(payload)], { type: 'application/json' }),
-          )
-        : fetch('/api/analytics/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-            keepalive: true,
-          }).catch(() => {});
-    } catch {
-      // 忽略上报异常
-    }
+    sendTrack({
+      type: 'pageview',
+      path,
+      ref: document.referrer?.slice(0, 300) || undefined,
+    });
   };
 
   useEffect(() => {
@@ -92,6 +96,9 @@ export function SessionTracker() {
         if (shouldRecordLogin) {
           //           // console.log('检测到新会话，记录登入时间');
 
+          // 行为分析：记录一次登录会话
+          sendTrack({ type: 'login' });
+
           // 记录新的登入时间
           const response = await fetch('/api/user/my-stats', {
             method: 'PUT',
@@ -127,6 +134,8 @@ export function SessionTracker() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
+    // reportPageview/sendTrack 每次渲染重建，加入依赖会导致无限上报
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]); // 路径变化时重新检测
 
   // 这个组件不渲染任何UI

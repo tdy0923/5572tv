@@ -5,7 +5,9 @@
  */
 
 /* eslint-disable unused-imports/no-unused-vars */
+import fs from 'fs';
 import os from 'os';
+import path from 'path';
 
 import { db } from './db';
 import {
@@ -18,6 +20,125 @@ import {
 const requestCache: RequestMetrics[] = [];
 const MAX_CACHE_SIZE = 10000; // 最多缓存 10000 条请求
 const MAX_CACHE_AGE = 48 * 60 * 60 * 1000; // 48 小时（毫秒）
+
+// 文件持久化：请求数据按天 JSONL 落盘，服务重启不丢失
+const perfDataDir =
+  process.env.PERF_DATA_DIR || path.join(process.cwd(), '.data', 'performance');
+const perfEventsDir = path.join(perfDataDir, 'requests');
+const perfBuffer: RequestMetrics[] = [];
+const PERF_FLUSH_INTERVAL_MS = 5000;
+const PERF_RETENTION_DAYS = 7;
+let perfFlushTimer: NodeJS.Timeout | null = null;
+let perfLoaded = false;
+
+function perfDayFile(ts: number): string {
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return path.join(perfEventsDir, `${y}-${m}-${day}.jsonl`);
+}
+
+function ensurePerfDirs(): void {
+  try {
+    fs.mkdirSync(perfEventsDir, { recursive: true });
+  } catch (e) {
+    console.error('❌ 性能数据目录创建失败:', e);
+  }
+}
+
+function flushPerfBuffer(): void {
+  if (perfBuffer.length === 0) return;
+  const items = perfBuffer.slice();
+  perfBuffer.length = 0;
+  try {
+    ensurePerfDirs();
+    const lines = items.map((r) => JSON.stringify(r));
+    fs.appendFileSync(perfDayFile(Date.now()), lines.join('\n') + '\n');
+  } catch (e) {
+    console.error('❌ 性能数据写入失败:', e);
+  }
+}
+
+function schedulePerfFlush(): void {
+  if (perfFlushTimer) return;
+  perfFlushTimer = setTimeout(() => {
+    perfFlushTimer = null;
+    flushPerfBuffer();
+  }, PERF_FLUSH_INTERVAL_MS);
+}
+
+function loadPerfHistory(): void {
+  if (perfLoaded) return;
+  perfLoaded = true;
+  try {
+    if (!fs.existsSync(perfEventsDir)) return;
+    const now = Date.now();
+    const cutoff = now - MAX_CACHE_AGE;
+    const loaded: RequestMetrics[] = [];
+    for (const file of fs.readdirSync(perfEventsDir)) {
+      const filePath = path.join(perfEventsDir, file);
+      let content = '';
+      try {
+        content = fs.readFileSync(filePath, 'utf8');
+      } catch {
+        continue;
+      }
+      for (const line of content.split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          const rec = JSON.parse(line) as RequestMetrics;
+          if (
+            rec &&
+            typeof rec.timestamp === 'number' &&
+            rec.timestamp >= cutoff
+          ) {
+            loaded.push(rec);
+          }
+        } catch {
+          // 忽略损坏行
+        }
+      }
+    }
+    loaded.sort((a, b) => a.timestamp - b.timestamp);
+    requestCache.push(...loaded.slice(-MAX_CACHE_SIZE));
+    prunePerfFiles();
+  } catch (e) {
+    console.error('❌ 加载性能历史数据失败:', e);
+  }
+}
+
+function prunePerfFiles(): void {
+  try {
+    if (!fs.existsSync(perfEventsDir)) return;
+    const cutoff = Date.now() - PERF_RETENTION_DAYS * 24 * 3600 * 1000;
+    for (const file of fs.readdirSync(perfEventsDir)) {
+      const m = /^(\d{4}-\d{2}-\d{2})\.jsonl$/.exec(file);
+      if (!m) continue;
+      const t = new Date(m[1] + 'T00:00:00').getTime();
+      if (t < cutoff) {
+        fs.unlinkSync(path.join(perfEventsDir, file));
+      }
+    }
+  } catch {
+    // 忽略
+  }
+}
+
+if (typeof process !== 'undefined' && process.on) {
+  process.on('exit', () => {
+    flushPerfBuffer();
+    perfFlushTimer = null;
+  });
+  process.on('SIGINT', () => {
+    flushPerfBuffer();
+    process.exit(0);
+  });
+  process.on('SIGTERM', () => {
+    flushPerfBuffer();
+    process.exit(0);
+  });
+}
 
 // Kvrocks 存储 key（仅用于清理旧数据）
 const PERFORMANCE_KEY = 'performance:requests';
@@ -76,20 +197,24 @@ export function resetDbQueryCount(): void {
 }
 
 /**
- * 从 Kvrocks 加载历史数据到内存（已禁用持久化）
+ * 从磁盘加载历史数据到内存
  */
 async function loadFromKvrocks(): Promise<void> {
-  if (dataLoaded) return;
-  // 持久化已禁用，直接标记为已加载
-  dataLoaded = true;
+  loadPerfHistory();
 }
 
 /**
- * 保存数据到 Kvrocks（已禁用持久化）
+ * 保存数据到磁盘（按天 JSONL 追加）
  */
 async function saveToKvrocks(snapshot: RequestMetrics[]): Promise<void> {
-  // 持久化已禁用，不再保存到 Kvrocks
-  return;
+  if (!snapshot || snapshot.length === 0) return;
+  try {
+    ensurePerfDirs();
+    const lines = snapshot.map((r) => JSON.stringify(r));
+    fs.appendFileSync(perfDayFile(Date.now()), lines.join('\n') + '\n');
+  } catch (e) {
+    console.error('❌ 性能数据保存失败:', e);
+  }
 }
 
 /**
@@ -101,6 +226,8 @@ export function recordRequest(metrics: RequestMetrics): void {
   }
 
   requestCache.push(metrics);
+  perfBuffer.push(metrics);
+  schedulePerfFlush();
 
   // 清理超过 48 小时的旧数据（批量splice代替逐个shift）
   const now = Date.now();
@@ -234,6 +361,7 @@ export function aggregateMetrics(
   startTime: number,
   endTime: number,
 ): HourlyMetrics {
+  loadPerfHistory();
   // 过滤时间范围内的请求
   const requests = requestCache.filter(
     (r) => r.timestamp >= startTime && r.timestamp < endTime,
@@ -320,7 +448,7 @@ export async function getRecentRequests(
   limit: number = 100,
   hours?: number,
 ): Promise<RequestMetrics[]> {
-  // 持久化已禁用，直接使用内存缓存
+  loadPerfHistory();
 
   // 如果指定了时间范围，按时间过滤
   let filteredRequests = requestCache;
@@ -342,7 +470,7 @@ export async function getRecentRequests(
  * 获取当前系统状态
  */
 export async function getCurrentStatus() {
-  // 持久化已禁用，直接使用内存缓存
+  loadPerfHistory();
 
   const systemMetrics = collectSystemMetrics();
   const recentRequests = requestCache.filter(
@@ -377,11 +505,24 @@ export async function clearCache(): Promise<void> {
   requestCache.length = 0;
   systemMetricsCache.length = 0;
   dbQueryCount = 0;
+  perfBuffer.length = 0;
+  perfLoaded = false;
+
+  // 清理磁盘上的性能数据文件
+  try {
+    ensurePerfDirs();
+    for (const file of fs.readdirSync(perfEventsDir)) {
+      if (file.endsWith('.jsonl')) {
+        fs.unlinkSync(path.join(perfEventsDir, file));
+      }
+    }
+  } catch {
+    // 忽略
+  }
 
   // 持久化已禁用，但仍然清理 Kvrocks 中可能存在的旧数据
   try {
     await db.deleteCache(PERFORMANCE_KEY);
-    //     console.log('✅ 已清空性能监控数据（包括 Kvrocks 中的旧数据）');
   } catch (error) {
     console.error('❌ 清空 Kvrocks 数据失败:', error);
   }
