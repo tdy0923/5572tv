@@ -180,14 +180,56 @@ const aiRecommendOptions = (enabled: boolean) =>
     gcTime: 30 * 60 * 1000,
   });
 
+const LOCAL_RECORDS_KEY = '5572tv_local_play_records';
+
+// 从本机构建最近观看时间线（未登录/接口不可用时兜底）
+const buildLocalTimeline = (): Record<string, any[]> => {
+  if (typeof window === 'undefined') return {};
+  try {
+    const records = JSON.parse(localStorage.getItem(LOCAL_RECORDS_KEY) || '{}');
+    const timeline: Record<string, any[]> = {};
+    const items: any[] = [];
+    Object.values(records).forEach((r: any) => {
+      if (!r || !r.title) return;
+      items.push({
+        key: `${r.source}+${r.id}`,
+        source: r.source,
+        id: r.id,
+        title: r.title,
+        cover: r.cover,
+        play_time: r.play_time,
+        total_time: r.total_time,
+        save_time: r.save_time || 0,
+      });
+    });
+    items.sort((a, b) => (b.save_time || 0) - (a.save_time || 0));
+    items.forEach((item) => {
+      const d = new Date(item.save_time || Date.now());
+      const dateStr = `${d.getMonth() + 1}月${d.getDate()}日`;
+      (timeline[dateStr] = timeline[dateStr] || []).push(item);
+    });
+    return timeline;
+  } catch {
+    return {};
+  }
+};
+
 const historyTimelineOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['history-timeline'],
     queryFn: async () => {
-      const res = await fetch('/api/play-history/timeline');
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      return data.timeline || {};
+      // 优先服务端（登录用户完整记录）
+      try {
+        const res = await fetch('/api/play-history/timeline');
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        if (data.timeline && Object.keys(data.timeline).length > 0) {
+          return data.timeline;
+        }
+      } catch {
+        // 未登录/接口不可用，走本机兜底
+      }
+      return buildLocalTimeline();
     },
     enabled,
     staleTime: 2 * 60 * 1000,
@@ -509,9 +551,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   const [favoriteGroupFilter, setFavoriteGroupFilter] =
     useState<string>('全部');
 
-  const { data: historyTimeline = {} } = useQuery(
-    historyTimelineOptions(activeTab === 'history'),
-  );
+  const { data: historyTimeline = {} } = useQuery(historyTimelineOptions(true));
 
   // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
@@ -996,21 +1036,45 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
             ) : activeTab === 'history' ? (
               <HistoryView historyTimeline={historyTimeline} />
             ) : (
-              <HomeContentView
-                hotMovies={hotMovies as DoubanItem[]}
-                hotTvShows={hotTvShows as DoubanItem[]}
-                hotVarietyShows={hotVarietyShows as DoubanItem[]}
-                hotAnime={hotAnime as DoubanItem[]}
-                hotShortDramas={hotShortDramas as ShortDramaItem[]}
-                upcomingReleases={upcomingReleases}
-                loading={loading}
-                username={username}
-                aiRecommendations={aiRecommendations}
-                aiRecommendLoading={aiRecommendLoading}
-                upcomingFilter={upcomingFilter}
-                setUpcomingFilter={setUpcomingFilter}
-                today={today}
-              />
+              <>
+                {/* 最近观看（本机/服务端记录，未登录也可用） */}
+                {Object.keys(historyTimeline).length > 0 && (
+                  <div id='continue-watching' className='scroll-mt-24'>
+                    <div className='mb-3 flex items-center justify-between px-1'>
+                      <h2 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200'>
+                        最近观看
+                      </h2>
+                      <button
+                        onClick={() =>
+                          dispatch({
+                            type: 'SET_ACTIVE_TAB',
+                            payload: 'history',
+                          })
+                        }
+                        className='text-sm text-gray-400 dark:text-gray-500 hover:text-green-500 transition-colors'
+                      >
+                        查看全部 ›
+                      </button>
+                    </div>
+                    <HistoryView historyTimeline={historyTimeline} />
+                  </div>
+                )}
+                <HomeContentView
+                  hotMovies={hotMovies as DoubanItem[]}
+                  hotTvShows={hotTvShows as DoubanItem[]}
+                  hotVarietyShows={hotVarietyShows as DoubanItem[]}
+                  hotAnime={hotAnime as DoubanItem[]}
+                  hotShortDramas={hotShortDramas as ShortDramaItem[]}
+                  upcomingReleases={upcomingReleases}
+                  loading={loading}
+                  username={username}
+                  aiRecommendations={aiRecommendations}
+                  aiRecommendLoading={aiRecommendLoading}
+                  upcomingFilter={upcomingFilter}
+                  setUpcomingFilter={setUpcomingFilter}
+                  today={today}
+                />
+              </>
             )}
           </div>
         </div>

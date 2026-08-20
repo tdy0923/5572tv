@@ -145,6 +145,17 @@ import { useSourceSearch } from './hooks/useSourceSearch';
 import { useTrailerFallback } from './hooks/useTrailerFallback';
 
 const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
+const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next';
+
+// 自动连播下一集开关（localStorage 记忆，默认开启）
+const isAutoPlayNextEnabled = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  try {
+    return localStorage.getItem(AUTOPLAY_NEXT_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+};
 
 function PlayPageClient() {
   const searchParams = useSearchParams();
@@ -340,6 +351,12 @@ function PlayPageClient() {
 
   // 短剧ID（用于获取详情显示，不影响源搜索）
   const [shortdramaId] = useState(searchParams.get('shortdrama_id') || '');
+
+  // 竖屏播放器"切回标准播放器"覆盖开关（用户手动退出竖屏模式后置为 true）
+  const [verticalModeOverride, setVerticalModeOverride] = useState(false);
+
+  // 自动连播下一集开关（localStorage 记忆）
+  const [autoPlayNext, setAutoPlayNext] = useState(isAutoPlayNextEnabled);
 
   // 短剧来源API（来自短剧卡片的 sd_source 参数，播放时优先请求该源）
   const [shortdramaSource] = useState(searchParams.get('sd_source') || '');
@@ -2011,6 +2028,47 @@ function PlayPageClient() {
           type: searchType || undefined,
         },
       });
+
+      // 同步写入本机播放记录（未登录/离线时首页"最近观看"可用）
+      try {
+        const LOCAL_RECORDS_KEY = '5572tv_local_play_records';
+        const localKey = generateStorageKey(
+          currentSourceRef.current,
+          currentIdRef.current,
+        );
+        const localRecords = JSON.parse(
+          localStorage.getItem(LOCAL_RECORDS_KEY) || '{}',
+        );
+        localRecords[localKey] = {
+          source: currentSourceRef.current,
+          id: currentIdRef.current,
+          title: videoTitleRef.current,
+          cover: resolveCardPosterUrl(detailRef.current?.poster),
+          index: currentEpisodeIndexRef.current + 1,
+          total_episodes: currentTotalEpisodes,
+          play_time: Math.floor(currentTime),
+          total_time: Math.floor(duration),
+          save_time: Date.now(),
+          search_title: searchTitle,
+        };
+        // 限制条数，仅保留最近 100 条
+        const localKeys = Object.keys(localRecords);
+        if (localKeys.length > 100) {
+          localKeys
+            .sort(
+              (a, b) =>
+                (localRecords[b].save_time || 0) -
+                (localRecords[a].save_time || 0),
+            )
+            .slice(100)
+            .forEach((k) => {
+              delete localRecords[k];
+            });
+        }
+        localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(localRecords));
+      } catch {
+        // ignore localStorage errors
+      }
 
       lastSaveTimeRef.current = Date.now();
       // // console.log('播放进度已保存:', {
@@ -4425,6 +4483,12 @@ function PlayPageClient() {
             return;
           }
 
+          // 自动连播开关关闭时不自动播放下一集（用户可手动点击下一集）
+          if (!isAutoPlayNextEnabled()) {
+            videoEndedHandledRef.current = true;
+            return;
+          }
+
           const d = detailRef.current;
           if (d && d.episodes && idx < d.episodes.length - 1) {
             videoEndedHandledRef.current = true;
@@ -4714,7 +4778,10 @@ function PlayPageClient() {
     <>
       {/* 短剧竖屏模式 - 移动端全屏 */}
       {isMobileGlobal &&
-        currentSourceRef.current === 'shortdrama' &&
+        !verticalModeOverride &&
+        (currentSourceRef.current === 'shortdrama' ||
+          detail?.source === 'shortdrama' ||
+          Boolean(shortdramaId)) &&
         detail && (
           <ShortDramaVerticalPlayer
             episodes={detail.episodes || []}
@@ -4734,11 +4801,18 @@ function PlayPageClient() {
               }
             }}
             onDownload={() => setShowDownloadEpisodeSelector(true)}
+            onExitVerticalMode={() => setVerticalModeOverride(true)}
           />
         )}
 
       {/* 原有播放器布局 - PC端或非短剧内容 */}
-      {!(isMobileGlobal && currentSourceRef.current === 'shortdrama') && (
+      {!(
+        isMobileGlobal &&
+        !verticalModeOverride &&
+        (currentSourceRef.current === 'shortdrama' ||
+          detail?.source === 'shortdrama' ||
+          Boolean(shortdramaId))
+      ) && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
             {/* 面包屑导航 */}
@@ -5008,6 +5082,31 @@ function PlayPageClient() {
                       </button>
                     </div>
                   )}
+
+                  {/* 自动连播开关 */}
+                  <button
+                    onClick={() => {
+                      const next = !autoPlayNext;
+                      setAutoPlayNext(next);
+                      try {
+                        localStorage.setItem(AUTOPLAY_NEXT_KEY, String(next));
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                    className={`mt-2 w-full flex items-center justify-center gap-1.5 py-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors ${
+                      autoPlayNext
+                        ? 'bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/30'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-transparent'
+                    }`}
+                  >
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        autoPlayNext ? 'bg-green-500' : 'bg-gray-400'
+                      }`}
+                    />
+                    {autoPlayNext ? '自动连播：开' : '自动连播：关'}
+                  </button>
                 </div>
               </div>
             </div>

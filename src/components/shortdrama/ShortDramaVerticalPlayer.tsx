@@ -7,6 +7,8 @@ import {
   Film,
   Frown,
   Heart,
+  LayoutGrid,
+  List,
   Maximize,
   Minimize,
   Share2,
@@ -26,7 +28,10 @@ interface ShortDramaVerticalPlayerProps {
   isFavorited?: boolean;
   onShare?: () => void;
   onDownload?: () => void;
+  onExitVerticalMode?: () => void;
 }
+
+const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next_vertical';
 
 export default function ShortDramaVerticalPlayer({
   episodes,
@@ -38,10 +43,20 @@ export default function ShortDramaVerticalPlayer({
   onFavorite,
   onShare,
   onDownload,
+  onExitVerticalMode,
 }: ShortDramaVerticalPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [showEpisodeList, setShowEpisodeList] = useState(false);
+  const [autoPlayNext, setAutoPlayNext] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return localStorage.getItem(AUTOPLAY_NEXT_KEY) !== 'false';
+    } catch {
+      return true;
+    }
+  });
   const [liked, setLiked] = useState(false);
   const [likeAnimation, setLikeAnimation] = useState(false);
   const [brightness, setBrightness] = useState(100);
@@ -228,6 +243,15 @@ export default function ShortDramaVerticalPlayer({
     }
   }, [currentIndex]);
 
+  // 自动连播开关持久化
+  useEffect(() => {
+    try {
+      localStorage.setItem(AUTOPLAY_NEXT_KEY, String(autoPlayNext));
+    } catch {
+      // ignore
+    }
+  }, [autoPlayNext]);
+
   const currentUrl = episodes[currentIndex] || '';
 
   return (
@@ -267,7 +291,7 @@ export default function ShortDramaVerticalPlayer({
                 setVideoLoading(false);
               }}
               onEnded={() => {
-                if (currentIndex < episodes.length - 1) {
+                if (autoPlayNext && currentIndex < episodes.length - 1) {
                   handleEpisodeChange(currentIndex + 1);
                 }
               }}
@@ -482,6 +506,30 @@ export default function ShortDramaVerticalPlayer({
                 {episodesTitles[currentIndex] || `第 ${currentIndex + 1} 集`}
               </p>
             </div>
+            <div className='flex items-center gap-2 shrink-0'>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowEpisodeList(true);
+                }}
+                className='flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-white text-sm'
+              >
+                <List className='w-4 h-4' />
+                选集
+              </button>
+              {onExitVerticalMode && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExitVerticalMode();
+                  }}
+                  className='flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-white text-sm'
+                >
+                  <LayoutGrid className='w-4 h-4' />
+                  标准
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -525,6 +573,20 @@ export default function ShortDramaVerticalPlayer({
 
             {/* 切换集数按钮 */}
             <div className='flex items-center gap-2'>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAutoPlayNext((prev) => !prev);
+                }}
+                className={`flex items-center gap-1 rounded-full px-3 py-2 text-xs ${
+                  autoPlayNext
+                    ? 'bg-green-500/80 text-white'
+                    : 'bg-white/20 text-white/70'
+                }`}
+              >
+                <Film className='w-3.5 h-3.5' />
+                {autoPlayNext ? '连播开' : '连播关'}
+              </button>
               {currentIndex > 0 && (
                 <button
                   onClick={(e) => {
@@ -557,6 +619,73 @@ export default function ShortDramaVerticalPlayer({
         <div className='absolute bottom-8 left-1/2 -translate-x-1/2 z-10'>
           <div className='px-3 py-1 bg-black/40 rounded-full text-white text-xs backdrop-blur-sm'>
             {currentIndex + 1} / {episodes.length}
+          </div>
+        </div>
+      )}
+
+      {/* 选集抽屉 */}
+      {showEpisodeList && (
+        <div
+          className='absolute inset-0 z-50 bg-black/70'
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowEpisodeList(false);
+          }}
+        >
+          <div
+            className='absolute bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='flex items-center justify-between mb-3'>
+              <span className='text-white font-semibold'>选集</span>
+              <button
+                onClick={() => setShowEpisodeList(false)}
+                className='text-white/70 text-sm px-2 py-1'
+              >
+                关闭
+              </button>
+            </div>
+            <div className='max-h-[50vh] overflow-y-auto'>
+              <div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
+                {episodes.map((ep, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setShowEpisodeList(false);
+                      if (idx !== currentIndex) handleEpisodeChange(idx);
+                    }}
+                    className={`rounded-lg py-2.5 text-sm ${
+                      idx === currentIndex
+                        ? 'bg-green-500 text-white font-semibold'
+                        : 'bg-gray-800 text-white/80'
+                    }`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+              </div>
+              <div className='flex flex-wrap gap-2 mt-3'>
+                {episodesTitles.map(
+                  (t, idx) =>
+                    t && (
+                      <button
+                        key={`t-${idx}`}
+                        onClick={() => {
+                          setShowEpisodeList(false);
+                          if (idx !== currentIndex) handleEpisodeChange(idx);
+                        }}
+                        className={`rounded-full px-3 py-1.5 text-xs ${
+                          idx === currentIndex
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-gray-800 text-white/70'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ),
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
