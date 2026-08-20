@@ -27,6 +27,7 @@ import { createPortal } from 'react-dom';
 import { AdminConfig, AdminConfigResult } from '@/lib/admin.types';
 
 import PerformanceMonitor from '@/components/admin/PerformanceMonitor';
+import PerformanceSummaryCards from '@/components/admin/PerformanceSummaryCards';
 import ThemeEditor from '@/components/admin/ThemeEditor';
 import AIRecommendConfig from '@/components/AIRecommendConfig';
 import CacheManager from '@/components/CacheManager';
@@ -779,30 +780,8 @@ function AdminPageClient() {
                   )}
 
                   {activeAdminGroup === '系统运维' &&
-                    activeAdminSection === 'system-performance' && (
-                      <div className='sm:col-span-2 xl:col-span-4 grid gap-3 lg:grid-cols-4'>
-                        <AdminMetricCard
-                          label='总请求'
-                          value='--'
-                          helper='最近 24 小时'
-                        />
-                        <AdminMetricCard
-                          label='外部流量'
-                          value='--'
-                          helper='按域名统计'
-                        />
-                        <AdminMetricCard
-                          label='平均响应'
-                          value='--'
-                          helper='性能趋势'
-                        />
-                        <AdminMetricCard
-                          label='访客来源'
-                          value='--'
-                          helper='来源域名 / 入口页'
-                        />
-                      </div>
-                    )}
+                    activeAdminSection === 'system-performance' &&
+                    role === 'owner' && <PerformanceSummaryCards />}
                 </div>
               </div>
 

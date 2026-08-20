@@ -98,6 +98,8 @@ export interface AnalyticsSummary {
   topSearches: { query: string; count: number }[];
   topVideos: { videoId: string; title: string; count: number }[];
   topDownloads: { apk: string; count: number }[];
+  topReferrers: { domain: string; count: number }[];
+  entryPages: { path: string; count: number }[];
   users: {
     uid: string;
     pv: number;
@@ -268,6 +270,9 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
   const topSearches = new Map<string, number>();
   const topVideos = new Map<string, { title: string; count: number }>();
   const topDownloads = new Map<string, number>();
+  const topReferrers = new Map<string, number>();
+  // 每个身份第一次进入的页面（入口页）
+  const entryPaths = new Map<string, { path: string; ts: number }>();
   const users = new Map<
     string,
     {
@@ -321,6 +326,29 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
           totalUv.add(identity);
           if (ev.path) {
             topPages.set(ev.path, (topPages.get(ev.path) || 0) + 1);
+          }
+          // 访客来源：解析 referrer 域名（空/同站视为直接访问）
+          if (ev.ref) {
+            let domain = '直接访问';
+            try {
+              const host = new URL(ev.ref).hostname;
+              if (host && host !== 'www.5572.net' && host !== '5572.net') {
+                domain = host.replace(/^www\./, '');
+              }
+            } catch {
+              domain = '直接访问';
+            }
+            topReferrers.set(domain, (topReferrers.get(domain) || 0) + 1);
+          } else {
+            topReferrers.set(
+              '直接访问',
+              (topReferrers.get('直接访问') || 0) + 1,
+            );
+          }
+          // 入口页：每个身份最早访问的页面
+          const existingEntry = entryPaths.get(identity);
+          if (!existingEntry || ev.ts < existingEntry.ts) {
+            entryPaths.set(identity, { path: ev.path || '/', ts: ev.ts });
           }
           addUser(users, identity, 'pv');
           break;
@@ -432,6 +460,23 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
       })),
       10,
     ),
+    topReferrers: sortTop(
+      Array.from(topReferrers.entries()).map(([domain, count]) => ({
+        domain,
+        count,
+      })),
+      10,
+    ),
+    entryPages: (() => {
+      const counts = new Map<string, number>();
+      for (const e of entryPaths.values()) {
+        counts.set(e.path, (counts.get(e.path) || 0) + 1);
+      }
+      return sortTop(
+        Array.from(counts.entries()).map(([path, count]) => ({ path, count })),
+        5,
+      );
+    })(),
     users: userList,
   };
 }
