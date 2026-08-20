@@ -350,7 +350,7 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
           if (!existingEntry || ev.ts < existingEntry.ts) {
             entryPaths.set(identity, { path: ev.path || '/', ts: ev.ts });
           }
-          addUser(users, identity, 'pv');
+          addUser(users, identity, 'pv', ev.ts);
           break;
         case 'search':
           d.searches++;
@@ -358,7 +358,7 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
             const q = ev.query.trim().slice(0, 60);
             if (q) topSearches.set(q, (topSearches.get(q) || 0) + 1);
           }
-          addUser(users, identity, 'search');
+          addUser(users, identity, 'search', ev.ts);
           break;
         case 'play':
           d.plays++;
@@ -371,23 +371,23 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
             if (ev.title) cur.title = ev.title;
             topVideos.set(ev.videoId, cur);
           }
-          addUser(users, identity, 'play');
+          addUser(users, identity, 'play', ev.ts);
           break;
         case 'favorite':
           if (ev.action === 'add') {
             d.favorites++;
-            addUser(users, identity, 'favorite');
+            addUser(users, identity, 'favorite', ev.ts);
           }
           break;
         case 'download':
           d.downloads++;
           if (ev.apk)
             topDownloads.set(ev.apk, (topDownloads.get(ev.apk) || 0) + 1);
-          addUser(users, identity, 'download');
+          addUser(users, identity, 'download', ev.ts);
           break;
         case 'login':
           d.logins++;
-          addUser(users, identity, 'login');
+          addUser(users, identity, 'login', ev.ts);
           break;
       }
     }
@@ -495,6 +495,7 @@ function addUser(
   >,
   identity: string,
   key: 'pv' | 'play' | 'search' | 'favorite' | 'download' | 'login',
+  ts: number,
 ): void {
   if (!identity || identity === 'unknown') return;
   let u = users.get(identity);
@@ -514,5 +515,5 @@ function addUser(
   else if (key === 'search') u.searches++;
   else if (key === 'favorite') u.favorites++;
   else if (key === 'download') u.downloads++;
-  u.lastActive = Math.max(u.lastActive, Date.now());
+  u.lastActive = Math.max(u.lastActive, ts);
 }

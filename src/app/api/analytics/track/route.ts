@@ -14,6 +14,17 @@ const ipCounters = new Map<string, { count: number; resetAt: number }>();
 const lastPageview = new Map<string, { path: string; ts: number }>();
 const PAGEVIEW_DEDUPE_MS = 3000;
 
+// 定期清理过期条目，避免 Map 无限增长
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, e] of ipCounters) {
+    if (e.resetAt < now) ipCounters.delete(ip);
+  }
+  for (const [id, e] of lastPageview) {
+    if (now - e.ts > PAGEVIEW_DEDUPE_MS * 10) lastPageview.delete(id);
+  }
+}, 60 * 1000).unref?.();
+
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const entry = ipCounters.get(ip);
@@ -92,68 +103,6 @@ export async function POST(request: NextRequest) {
       path,
       ref: typeof body.ref === 'string' ? body.ref.slice(0, 300) : undefined,
       ua: ua.slice(0, 200),
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (type === 'search') {
-    const query =
-      typeof body.query === 'string' ? body.query.slice(0, 100) : '';
-    if (!query.trim()) return NextResponse.json({ ok: true });
-    trackEvent({
-      type: 'search',
-      ts,
-      uid,
-      anon,
-      query,
-      results: typeof body.results === 'number' ? body.results : undefined,
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (type === 'play') {
-    const videoId =
-      typeof body.videoId === 'string' ? body.videoId.slice(0, 200) : '';
-    if (!videoId) return NextResponse.json({ ok: true });
-    trackEvent({
-      type: 'play',
-      ts,
-      uid,
-      anon,
-      videoId,
-      title: typeof body.title === 'string' ? body.title.slice(0, 200) : '',
-      sourceName:
-        typeof body.sourceName === 'string'
-          ? body.sourceName.slice(0, 100)
-          : undefined,
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (type === 'favorite') {
-    const videoId =
-      typeof body.videoId === 'string' ? body.videoId.slice(0, 200) : '';
-    if (!videoId) return NextResponse.json({ ok: true });
-    trackEvent({
-      type: 'favorite',
-      ts,
-      uid,
-      anon,
-      videoId,
-      title:
-        typeof body.title === 'string' ? body.title.slice(0, 200) : undefined,
-      action: body.action === 'remove' ? 'remove' : 'add',
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (type === 'download') {
-    trackEvent({
-      type: 'download',
-      ts,
-      uid,
-      anon,
-      apk: typeof body.apk === 'string' ? body.apk.slice(0, 100) : 'apk',
     });
     return NextResponse.json({ ok: true });
   }

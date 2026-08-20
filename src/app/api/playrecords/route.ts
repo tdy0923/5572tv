@@ -17,6 +17,16 @@ export const runtime = 'nodejs';
 
 // 播放事件去重：同一视频 10 分钟内只记一次
 const lastPlayTrack = new Map<string, number>();
+// 去重 Map 定期清理，避免长期运行后内存无限增长
+setInterval(
+  () => {
+    const cutoff = Date.now() - 10 * 60 * 1000;
+    for (const [k, ts] of lastPlayTrack) {
+      if (ts < cutoff) lastPlayTrack.delete(k);
+    }
+  },
+  10 * 60 * 1000,
+).unref?.();
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();

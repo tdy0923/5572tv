@@ -379,8 +379,6 @@ export function aggregateMetrics(
       maxMemory: 0,
       totalDbQueries: 0,
       totalTraffic: 0,
-      topPaths: [],
-      slowestPaths: [],
     };
   }
 
@@ -420,8 +418,6 @@ export function aggregateMetrics(
     maxMemory,
     totalDbQueries,
     totalTraffic,
-    topPaths: [],
-    slowestPaths: [],
   };
 }
 

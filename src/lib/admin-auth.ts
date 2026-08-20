@@ -31,7 +31,10 @@ export async function getAdminRoleFromRequest(
     return null;
   }
 
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  // 与 db.ts 的 STORAGE_TYPE 判定保持一致：优先 KVROCKS_URL，避免 NEXT_PUBLIC_ 构建期内联
+  const storageType = process.env.KVROCKS_URL
+    ? 'kvrocks'
+    : (process.env.STORAGE_TYPE as string) || 'localstorage';
 
   if (storageType === 'localstorage') {
     const password = authInfo.password || '';

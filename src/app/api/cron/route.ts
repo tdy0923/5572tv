@@ -1105,15 +1105,6 @@ async function cleanupInactiveUsers() {
       `✅ 用户检查完成: 需删除 ${usersToDelete.length}, 错误 ${userCheckErrors.length}`,
     );
 
-    // 收集需要删除的用户
-    usersToDelete.push(
-      ...userCheckResults.filter((r) => r.shouldDelete).map((r) => r.username),
-    );
-
-    console.log(
-      `✅ 用户检查完成: 需删除 ${usersToDelete.length}, 错误 ${userCheckErrors.length}`,
-    );
-
     // 🚀 阶段2优化：并发删除用户（3个并发，避免数据库压力）
     let deletedCount = 0;
     if (usersToDelete.length > 0) {
@@ -1158,10 +1149,6 @@ async function cleanupInactiveUsers() {
     } else {
       console.log('✨ 清理完成，无需删除任何用户');
     }
-
-    // 优化活跃用户的统计显示（等级系统）
-    console.log('🎯 开始优化活跃用户等级显示...');
-    await optimizeActiveUserLevels();
 
     // 返回统计数据
     return {
@@ -1255,62 +1242,6 @@ function calculateUserLevel(loginCount: number) {
     }
   }
   return USER_LEVELS[USER_LEVELS.length - 1];
-}
-
-async function optimizeActiveUserLevels() {
-  try {
-    const allUsers = await db.getAllUsers();
-    let optimizedCount = 0;
-
-    for (const user of allUsers) {
-      try {
-        // 检查用户是否存在
-        const userExists = await db.checkUserExist(user);
-        if (!userExists) continue;
-
-        const userStats = await db.getUserPlayStat(user);
-        if (!userStats || !userStats.loginCount) continue;
-
-        // 计算用户等级（所有用户都有等级）
-        const userLevel = calculateUserLevel(userStats.loginCount);
-
-        // 为所有用户记录等级信息
-        if (userStats.loginCount > 0) {
-          const _optimizedStats = {
-            ...userStats,
-            userLevel: {
-              level: userLevel.level,
-              name: userLevel.name,
-              icon: userLevel.icon,
-              description: userLevel.description,
-              displayTitle: `${userLevel.icon} ${userLevel.name}`,
-            },
-            displayLoginCount:
-              userStats.loginCount > 10000
-                ? '10000+'
-                : userStats.loginCount > 1000
-                  ? `${Math.floor(userStats.loginCount / 1000)}k+`
-                  : userStats.loginCount.toString(),
-            lastLevelUpdate: new Date().toISOString(),
-          };
-
-          // 注意：这里我们只计算等级信息用于日志显示，不保存到数据库
-          // 等级信息会在前端动态计算，确保数据一致性
-          optimizedCount++;
-
-          console.log(
-            `🎯 用户等级: ${user} -> ${userLevel.icon} ${userLevel.name} (登录${userStats.loginCount}次)`,
-          );
-        }
-      } catch (err) {
-        console.error(`❌ 优化用户等级失败 (${user}):`, err);
-      }
-    }
-
-    console.log(`✅ 等级优化完成，共优化 ${optimizedCount} 个用户`);
-  } catch (err) {
-    console.error('🚫 等级优化任务失败:', err);
-  }
 }
 
 /**
