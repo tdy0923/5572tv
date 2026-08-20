@@ -4,7 +4,15 @@
 
 'use client';
 
-import { ExternalLink, Layers, Server, Tv, X } from 'lucide-react';
+import {
+  ExternalLink,
+  Layers,
+  Search,
+  Server,
+  SlidersHorizontal,
+  Tv,
+  X,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -17,13 +25,7 @@ import type {
 import { FluentSpinner } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
-import {
-  GlassPanel,
-  PanelField,
-  PanelSelect,
-  PillButton,
-  PillGroup,
-} from '@/components/ui-surface';
+import { PanelField, PanelSelect, PillButton } from '@/components/ui-surface';
 
 type Source = { key: string; name: string; api: string };
 type Category = { type_id: string | number; type_name: string };
@@ -76,6 +78,7 @@ export default function SourceBrowserPage() {
   const [filterKeyword, setFilterKeyword] = useState('');
   const [filterYear, setFilterYear] = useState<string>('');
   const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   // 详情预览
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -574,366 +577,336 @@ export default function SourceBrowserPage() {
   return (
     <PageLayout activePath='/source-browser'>
       <MountAnimation>
-        <div className='-mt-6 space-y-6 md:mt-0'>
-          <div className='space-y-4'>
-            {/* Header */}
-            <GlassPanel className='p-5 sm:p-6'>
-              <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-                <div className='flex items-center gap-4'>
-                  <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_12px_28px_rgba(244,194,77,0.18)]'>
-                    <Layers className='h-7 w-7' />
-                  </div>
-                  <div>
-                    <h1 className='text-3xl font-bold text-gray-900 dark:text-white md:text-4xl'>
-                      源浏览器
-                    </h1>
-                    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
-                      浏览来源、分类和内容预览
-                    </p>
-                  </div>
-                </div>
-                <div className='flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300'>
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
-                    {sources.length} 个来源
-                  </span>
-                  <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
-                    {mode === 'search' ? '搜索模式' : '分类模式'}
-                  </span>
-                </div>
+        <div className='-mt-6 space-y-4 md:mt-0'>
+          {/* 紧凑页头 */}
+          <div className='flex items-center justify-between gap-3'>
+            <div className='flex min-w-0 items-center gap-3'>
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.18)]'>
+                <Layers className='h-5 w-5' />
               </div>
-            </GlassPanel>
-
-            {/* Sources */}
-            <GlassPanel className='overflow-hidden'>
-              <div className='border-b border-gray-200 dark:border-gray-700 px-5 py-4 dark:border-gray-700'>
-                <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
-                  <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/30'>
-                    <Server className='h-4 w-4 text-emerald-600 dark:text-emerald-400' />
-                  </div>
-                  <span>选择来源站</span>
-                </div>
+              <div className='min-w-0'>
+                <h1 className='truncate text-lg font-bold text-gray-900 dark:text-white sm:text-xl'>
+                  源浏览器
+                </h1>
+                <p className='truncate text-xs text-gray-500 dark:text-gray-400'>
+                  {activeSource
+                    ? `${activeSource.name} · ${filteredAndSorted.length} 条`
+                    : `${sources.length} 个来源`}
+                </p>
               </div>
-              <div className='p-4 sm:p-5'>
-                {loadingSources ? (
-                  <div className='flex items-center gap-2 text-sm text-gray-500'>
-                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent'></div>
-                    加载中...
-                  </div>
-                ) : sourceError ? (
-                  <div className='flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20'>
-                    <span className='text-sm text-red-600 dark:text-red-400'>
-                      {sourceError}
-                    </span>
-                  </div>
-                ) : sources.length === 0 ? (
-                  <div className='text-center py-8'>
-                    <div className='w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center'>
-                      <Server className='w-8 h-8 text-gray-400' />
-                    </div>
-                    <p className='text-sm text-gray-500'>暂无可用来源</p>
-                  </div>
-                ) : (
-                  <PillGroup className='flex flex-wrap gap-2.5 rounded-xl p-2'>
-                    {sources.map((s, index) => (
-                      <PillButton
-                        key={s.key}
-                        onClick={() => setActiveSourceKey(s.key)}
-                        active={activeSourceKey === s.key}
-                        className='px-4 py-2 duration-300'
-                        style={{
-                          animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
-                        }}
-                      >
-                        {s.name}
-                      </PillButton>
-                    ))}
-                  </PillGroup>
-                )}
+            </div>
+            <span className='shrink-0 rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'>
+              {mode === 'search' ? '搜索模式' : '分类模式'}
+            </span>
+          </div>
+
+          {/* 来源选择：横向滚动 pills（不占满整行） */}
+          <div>
+            {loadingSources ? (
+              <div className='flex items-center gap-2 text-sm text-gray-500'>
+                <div className='h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent'></div>
+                加载来源...
               </div>
-            </GlassPanel>
-
-            {/* Query & Sort */}
-            {activeSource && (
-              <GlassPanel className='overflow-hidden'>
-                <div className='space-y-4 border-b border-gray-200 dark:border-gray-700 px-4 py-4 dark:border-gray-700'>
-                  <div className='flex flex-col gap-3 lg:flex-row lg:items-center'>
-                    <div className='w-full lg:flex-1'>
-                      <PanelField
-                        value={query}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setQuery(val);
-                          if (debounceId) clearTimeout(debounceId);
-                          const id = setTimeout(() => {
-                            setMode(val.trim() ? 'search' : 'category');
-                            if (val.trim()) {
-                              fetchSearch(activeSourceKey, val.trim(), 1);
-                            } else if (activeCategory) {
-                              fetchItems(activeSourceKey, activeCategory, 1);
-                            }
-                          }, 500);
-                          setDebounceId(id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            setMode(query.trim() ? 'search' : 'category');
-                          }
-                        }}
-                        placeholder='输入关键词后自动切换到搜索'
-                        className='h-12 px-3 py-2.5'
-                      />
-                    </div>
-                    <div className='flex flex-wrap items-center gap-2'>
-                      {query && (
-                        <PillButton
-                          onClick={() => {
-                            setQuery('');
-                            setMode('category');
-                            if (activeCategory)
-                              fetchItems(activeSourceKey, activeCategory, 1);
-                          }}
-                          className='whitespace-nowrap px-3 py-2 text-xs'
-                          title='清除'
-                        >
-                          清除
-                        </PillButton>
-                      )}
-                      <div className='inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 whitespace-nowrap'>
-                        {mode === 'search' ? '搜索模式' : '分类模式'}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
-                    <PanelSelect
-                      value={sortBy}
-                      onChange={(e) =>
-                        setSortBy(
-                          e.target.value as
-                            | 'default'
-                            | 'title-asc'
-                            | 'title-desc'
-                            | 'year-asc'
-                            | 'year-desc',
-                        )
-                      }
-                      className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
-                      title='排序'
-                    >
-                      <option value='default'>默认</option>
-                      <option value='title-asc'>标题 A→Z</option>
-                      <option value='title-desc'>标题 Z→A</option>
-                      <option value='year-asc'>年份↑</option>
-                      <option value='year-desc'>年份↓</option>
-                    </PanelSelect>
-                    <PanelSelect
-                      value={filterYear}
-                      onChange={(e) => setFilterYear(e.target.value)}
-                      className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
-                      title='年份'
-                    >
-                      <option value=''>全部年份</option>
-                      {availableYears.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </PanelSelect>
-                    <PanelField
-                      value={filterKeyword}
-                      onChange={(e) => setFilterKeyword(e.target.value)}
-                      placeholder='地区/关键词'
-                      className='px-2 py-2 text-xs sm:px-3 sm:text-sm'
-                    />
-                  </div>
-                </div>
-              </GlassPanel>
+            ) : sourceError ? (
+              <div className='flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 dark:border-red-800 dark:bg-red-900/20'>
+                <span className='text-sm text-red-600 dark:text-red-400'>
+                  {sourceError}
+                </span>
+              </div>
+            ) : sources.length === 0 ? (
+              <div className='flex flex-col items-center py-8'>
+                <Server className='mb-2 h-8 w-8 text-gray-400' />
+                <p className='text-sm text-gray-500'>暂无可用来源</p>
+              </div>
+            ) : (
+              <div className='-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 scrollbar-hide'>
+                {sources.map((s) => (
+                  <PillButton
+                    key={s.key}
+                    onClick={() => setActiveSourceKey(s.key)}
+                    active={activeSourceKey === s.key}
+                    className='shrink-0 px-3.5 py-1.5 text-sm'
+                  >
+                    {s.name}
+                  </PillButton>
+                ))}
+              </div>
             )}
           </div>
 
-          {/* Categories and Items */}
+          {/* Sticky 控制条：搜索 + 筛选入口 + 分类 tabs */}
           {activeSource && (
-            <GlassPanel className='overflow-hidden'>
-              <div className='border-b border-gray-200 dark:border-gray-700 px-5 py-4 dark:border-gray-700'>
-                <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-                  <div className='flex items-center gap-2.5 font-semibold text-gray-900 dark:text-white'>
-                    <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30'>
-                      <Tv className='h-4 w-4 text-blue-600 dark:text-blue-400' />
-                    </div>
-                    <span>{activeSource.name} 分类</span>
-                  </div>
-                  <div className='flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                    <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
-                      {filteredAndSorted.length} 条内容
-                    </span>
-                    <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-3 py-1.5 dark:border-gray-700 dark:bg-gray-800'>
-                      第 {page} / {pageCount} 页
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className='space-y-5 p-5'>
-                {mode === 'category' && (
-                  <PillGroup className='flex flex-wrap gap-2.5 rounded-xl p-2'>
-                    {loadingCategories ? (
-                      <div className='flex items-center gap-2 text-sm text-gray-500'>
-                        <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
-                        加载分类...
-                      </div>
-                    ) : categoryError ? (
-                      <div className='flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>
-                        {categoryError}
-                      </div>
-                    ) : categories.length === 0 ? (
-                      <div className='w-full py-6 text-center'>
-                        <div className='mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700'>
-                          <Tv className='h-8 w-8 text-gray-400' />
-                        </div>
-                        <p className='text-sm text-gray-500'>暂无分类</p>
-                      </div>
-                    ) : (
-                      categories.map((c, index) => (
-                        <PillButton
-                          key={String(c.type_id)}
-                          onClick={() => setActiveCategory(c.type_id)}
-                          active={activeCategory === c.type_id}
-                          className='px-4 py-2 duration-300'
-                          style={{
-                            animation: `fadeInUp 0.3s ease-out ${index * 0.03}s both`,
-                          }}
-                        >
-                          {c.type_name}
-                        </PillButton>
-                      ))
-                    )}
-                  </PillGroup>
-                )}
-
-                <div className='flex flex-wrap items-center gap-2 rounded-[22px] border border-gray-200 dark:border-gray-700 bg-black/[0.02] px-3 py-2 text-xs text-gray-500 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-400'>
-                  <span>
-                    {mode === 'search'
-                      ? '当前为搜索结果'
-                      : `当前分类：${categories.find((c) => c.type_id === activeCategory)?.type_name || '未选择'}`}
-                  </span>
-                  {filterYear && <span>年份：{filterYear}</span>}
-                  {filterKeyword && <span>筛选：{filterKeyword}</span>}
-                </div>
-
-                <div>
-                  {loadingItems ? (
-                    <div className='flex items-center gap-2 text-sm text-gray-500'>
-                      <div className='w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
-                      加载内容...
-                    </div>
-                  ) : itemsError ? (
-                    <div className='flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400'>
-                      {itemsError}
-                    </div>
-                  ) : items.length === 0 ? (
-                    <div className='text-center py-12'>
-                      <div className='w-20 h-20 mx-auto mb-4 rounded-2xl bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center'>
-                        <Tv className='w-10 h-10 text-gray-400' />
-                      </div>
-                      <p className='text-sm text-gray-500'>暂无内容</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-                        {filteredAndSorted.map((item, index) => (
-                          <div
-                            key={item.id}
-                            className='group cursor-pointer transition-all duration-300 hover:-translate-y-0.5'
-                            onClick={() => openPreview(item)}
-                            role='button'
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') openPreview(item);
-                            }}
-                            style={{
-                              animation: `fadeInUp 0.4s ease-out ${index * 0.02}s both`,
-                            }}
-                          >
-                            <div className='relative aspect-[2/3] overflow-hidden rounded-[22px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 shadow-md transition-all duration-300 group-hover:shadow-lg dark:border-gray-700 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700'>
-                              {item.poster ? (
-                                <img
-                                  src={item.poster}
-                                  alt={item.title}
-                                  className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
-                                  referrerPolicy='no-referrer'
-                                  onError={(e) => {
-                                    const img = e.currentTarget;
-                                    if (!img.dataset.fallbackApplied) {
-                                      img.dataset.fallbackApplied = 'true';
-                                      img.src = '/placeholder-cover.jpg';
-                                    }
-                                  }}
-                                  loading='lazy'
-                                />
-                              ) : (
-                                <div className='w-full h-full flex items-center justify-center text-gray-400 text-xs sm:text-sm'>
-                                  <div className='text-center'>
-                                    <Tv className='w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-1 sm:mb-2 opacity-50' />
-                                    <div className='text-[10px] sm:text-sm'>
-                                      无封面
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                              {/* 渐变遮罩 */}
-                              <div className='absolute inset-0 bg-linear-to-t from-black/72 via-black/16 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100'></div>
-
-                              {/* 年份标签 */}
-                              {item.year && (
-                                <div className='absolute top-1 right-1 sm:top-2 sm:right-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg bg-black/70 backdrop-blur-sm text-white text-[10px] sm:text-xs font-medium'>
-                                  {item.year}
-                                </div>
-                              )}
-
-                              {/* 分类标签 */}
-                              {item.type_name && (
-                                <div className='absolute bottom-1 left-1 sm:bottom-2 sm:left-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg bg-blue-500/90 backdrop-blur-sm text-white text-[10px] sm:text-xs font-medium'>
-                                  {item.type_name}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className='space-y-1.5 px-1.5 pt-3 sm:px-2'>
-                              <div className='line-clamp-2 min-h-[2.4rem] text-sm font-medium leading-snug text-gray-900 transition-colors dark:text-white sm:min-h-[2.8rem]'>
-                                {item.title}
-                              </div>
-                              {item.remarks && (
-                                <div className='line-clamp-1 text-xs text-gray-500 dark:text-gray-400'>
-                                  {item.remarks}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {/* Infinite loader sentinel */}
-                      <div
-                        ref={loadMoreRef}
-                        className='mt-4 flex items-center justify-center py-4'
-                      >
-                        {loadingMore ? (
-                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800'>
-                            加载更多...
-                          </div>
-                        ) : hasMore ? (
-                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
-                            下拉加载更多
-                          </div>
-                        ) : (
-                          <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
-                            没有更多了
-                          </div>
-                        )}
-                      </div>
-                    </>
+            <div className='sticky z-30 space-y-3 rounded-2xl border border-gray-200/80 bg-white/85 p-3 shadow-sm backdrop-blur-xl dark:border-gray-700/80 dark:bg-gray-900/85 top-[calc(52px+env(safe-area-inset-top))] md:top-[72px]'>
+              {/* 搜索框 + 筛选入口 */}
+              <div className='flex items-center gap-2'>
+                <div className='relative min-w-0 flex-1'>
+                  <Search className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
+                  <PanelField
+                    value={query}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setQuery(val);
+                      if (debounceId) clearTimeout(debounceId);
+                      const id = setTimeout(() => {
+                        setMode(val.trim() ? 'search' : 'category');
+                        if (val.trim()) {
+                          fetchSearch(activeSourceKey, val.trim(), 1);
+                        } else if (activeCategory) {
+                          fetchItems(activeSourceKey, activeCategory, 1);
+                        }
+                      }, 500);
+                      setDebounceId(id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setMode(query.trim() ? 'search' : 'category');
+                      }
+                    }}
+                    placeholder='搜索当前来源，输入即搜'
+                    className='h-10 rounded-xl pl-9 pr-9 text-sm'
+                  />
+                  {query && (
+                    <button
+                      onClick={() => {
+                        setQuery('');
+                        setMode('category');
+                        if (activeCategory)
+                          fetchItems(activeSourceKey, activeCategory, 1);
+                      }}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200'
+                      title='清除'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
                   )}
                 </div>
+                <button
+                  onClick={() => setFilterOpen((v) => !v)}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors ${
+                    filterOpen ||
+                    sortBy !== 'default' ||
+                    filterYear ||
+                    filterKeyword
+                      ? 'border-amber-300 bg-amber-50 text-amber-600 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400'
+                      : 'border-gray-200 bg-white/70 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                  title='排序与筛选'
+                  aria-expanded={filterOpen}
+                >
+                  <SlidersHorizontal className='h-[18px] w-[18px]' />
+                </button>
               </div>
-            </GlassPanel>
+
+              {/* 分类 tabs：横向滚动，选中态表达层级 */}
+              {mode === 'category' && (
+                <div className='flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide'>
+                  {loadingCategories ? (
+                    <div className='flex items-center gap-2 px-2 text-sm text-gray-500'>
+                      <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
+                      加载分类...
+                    </div>
+                  ) : categoryError ? (
+                    <span className='px-2 text-sm text-red-600 dark:text-red-400'>
+                      {categoryError}
+                    </span>
+                  ) : categories.length === 0 ? (
+                    <span className='px-2 text-sm text-gray-500'>暂无分类</span>
+                  ) : (
+                    categories.map((c) => (
+                      <button
+                        key={String(c.type_id)}
+                        onClick={() => setActiveCategory(c.type_id)}
+                        className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm transition-all duration-200 ${
+                          activeCategory === c.type_id
+                            ? 'bg-blue-600 font-medium text-white shadow-sm'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        {c.type_name}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* 筛选展开行（低频操作，默认收起） */}
+              {filterOpen && (
+                <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
+                  <PanelSelect
+                    value={sortBy}
+                    onChange={(e) =>
+                      setSortBy(
+                        e.target.value as
+                          | 'default'
+                          | 'title-asc'
+                          | 'title-desc'
+                          | 'year-asc'
+                          | 'year-desc',
+                      )
+                    }
+                    className='px-2 py-1.5 text-xs sm:px-3 sm:text-sm'
+                    title='排序'
+                  >
+                    <option value='default'>默认</option>
+                    <option value='title-asc'>标题 A→Z</option>
+                    <option value='title-desc'>标题 Z→A</option>
+                    <option value='year-asc'>年份↑</option>
+                    <option value='year-desc'>年份↓</option>
+                  </PanelSelect>
+                  <PanelSelect
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(e.target.value)}
+                    className='px-2 py-1.5 text-xs sm:px-3 sm:text-sm'
+                    title='年份'
+                  >
+                    <option value=''>全部年份</option>
+                    {availableYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </PanelSelect>
+                  <PanelField
+                    value={filterKeyword}
+                    onChange={(e) => setFilterKeyword(e.target.value)}
+                    placeholder='地区/关键词'
+                    className='px-2 py-1.5 text-xs sm:px-3 sm:text-sm'
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 内容区：精简状态行 + 海报网格 */}
+          {activeSource && (
+            <div>
+              <div className='mb-3 flex items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                <div className='truncate'>
+                  {mode === 'search'
+                    ? `搜索结果${query ? `：${query}` : ''}`
+                    : `分类：${
+                        categories.find((c) => c.type_id === activeCategory)
+                          ?.type_name || '未选择'
+                      }`}
+                  {filterYear && (
+                    <span className='ml-1.5'>· 年份 {filterYear}</span>
+                  )}
+                  {filterKeyword && (
+                    <span className='ml-1.5'>· 筛选 {filterKeyword}</span>
+                  )}
+                </div>
+                <span className='shrink-0 text-gray-400'>
+                  {filteredAndSorted.length} 条
+                </span>
+              </div>
+
+              <div>
+                {loadingItems ? (
+                  <div className='flex items-center gap-2 text-sm text-gray-500'>
+                    <div className='h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent'></div>
+                    加载内容...
+                  </div>
+                ) : itemsError ? (
+                  <div className='flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'>
+                    {itemsError}
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className='py-12 text-center'>
+                    <div className='mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800'>
+                      <Tv className='h-10 w-10 text-gray-400' />
+                    </div>
+                    <p className='text-sm text-gray-500'>暂无内容</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+                      {filteredAndSorted.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className='group cursor-pointer transition-all duration-300 hover:-translate-y-0.5'
+                          onClick={() => openPreview(item)}
+                          role='button'
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') openPreview(item);
+                          }}
+                          style={{
+                            animation: `fadeInUp 0.4s ease-out ${index * 0.02}s both`,
+                          }}
+                        >
+                          <div className='relative aspect-[2/3] overflow-hidden rounded-[22px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 via-gray-50 to-gray-100 shadow-md transition-all duration-300 group-hover:shadow-lg dark:border-gray-700 dark:from-gray-700 dark:via-gray-800 dark:to-gray-700'>
+                            {item.poster ? (
+                              <img
+                                src={item.poster}
+                                alt={item.title}
+                                className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+                                referrerPolicy='no-referrer'
+                                onError={(e) => {
+                                  const img = e.currentTarget;
+                                  if (!img.dataset.fallbackApplied) {
+                                    img.dataset.fallbackApplied = 'true';
+                                    img.src = '/placeholder-cover.jpg';
+                                  }
+                                }}
+                                loading='lazy'
+                              />
+                            ) : (
+                              <div className='flex h-full w-full items-center justify-center text-gray-400 text-xs sm:text-sm'>
+                                <div className='text-center'>
+                                  <Tv className='mx-auto mb-1 h-8 w-8 opacity-50 sm:mb-2 sm:h-12 sm:w-12' />
+                                  <div className='text-[10px] sm:text-sm'>
+                                    无封面
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <div className='absolute inset-0 bg-linear-to-t from-black/72 via-black/16 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100'></div>
+                            {item.year && (
+                              <div className='absolute right-1 top-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm sm:right-2 sm:top-2 sm:rounded-lg sm:px-2 sm:py-1 sm:text-xs'>
+                                {item.year}
+                              </div>
+                            )}
+                            {item.type_name && (
+                              <div className='absolute bottom-1 left-1 rounded-md bg-blue-500/90 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm sm:bottom-2 sm:left-2 sm:rounded-lg sm:px-2 sm:py-1 sm:text-xs'>
+                                {item.type_name}
+                              </div>
+                            )}
+                          </div>
+                          <div className='space-y-1.5 px-1.5 pt-3 sm:px-2'>
+                            <div className='line-clamp-2 min-h-[2.4rem] text-sm font-medium leading-snug text-gray-900 transition-colors dark:text-white sm:min-h-[2.8rem]'>
+                              {item.title}
+                            </div>
+                            {item.remarks && (
+                              <div className='line-clamp-1 text-xs text-gray-500 dark:text-gray-400'>
+                                {item.remarks}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div
+                      ref={loadMoreRef}
+                      className='mt-4 flex items-center justify-center py-4'
+                    >
+                      {loadingMore ? (
+                        <div className='rounded-full border border-gray-200 bg-white/70 px-4 py-2 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800'>
+                          加载更多...
+                        </div>
+                      ) : hasMore ? (
+                        <div className='rounded-full border border-gray-200 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
+                          下拉加载更多
+                        </div>
+                      ) : (
+                        <div className='rounded-full border border-gray-200 bg-white/70 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800'>
+                          没有更多了
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           )}
 
           {/* 预览弹层 */}
