@@ -233,6 +233,7 @@ const historyTimelineOptions = (enabled: boolean) =>
     },
     enabled,
     staleTime: 2 * 60 * 1000,
+    retry: 0,
   });
 
 const favoriteGroupsOptions = (enabled: boolean) =>
