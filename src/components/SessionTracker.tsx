@@ -2,16 +2,64 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * 会话追踪组件
- * 负责检测会话恢复并记录登入时间
+ * 负责检测会话恢复并记录登入时间，同时上报页面访问行为
  */
 export function SessionTracker() {
   const pathname = usePathname();
+  const lastReportedRef = useRef<string>('');
+
+  // 获取/生成匿名访问 ID（持久化在 localStorage）
+  const getAnonId = (): string => {
+    const key = '5572_anon_id';
+    try {
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem(key, id);
+      }
+      return id;
+    } catch {
+      return 'anon';
+    }
+  };
+
+  // 上报页面访问（静默失败，不影响页面）
+  const reportPageview = (path: string) => {
+    if (typeof document === 'undefined') return;
+    if (path === lastReportedRef.current) return;
+    lastReportedRef.current = path;
+
+    try {
+      const payload = {
+        type: 'pageview',
+        anon: getAnonId(),
+        path,
+        ref: document.referrer?.slice(0, 300) || undefined,
+      };
+      navigator.sendBeacon
+        ? navigator.sendBeacon(
+            '/api/analytics/track',
+            new Blob([JSON.stringify(payload)], { type: 'application/json' }),
+          )
+        : fetch('/api/analytics/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true,
+          }).catch(() => {});
+    } catch {
+      // 忽略上报异常
+    }
+  };
 
   useEffect(() => {
+    // 路径变化时上报页面访问
+    reportPageview(pathname);
+
     const checkSessionResume = async () => {
       try {
         // 如果在登录页面，跳过检测（登录页面会自己记录）

@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import AnalyticsPanel from './AnalyticsPanel';
+
 interface PerformanceData {
   metrics: any[];
   recentRequests: {
@@ -791,6 +793,22 @@ export default function PerformanceMonitor() {
           </div>
         </details>
       )}
+
+      {/* 用户行为分析 */}
+      <details
+        className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'
+        open
+      >
+        <summary className='px-4 sm:px-6 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors'>
+          <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-200 inline'>
+            用户行为分析
+          </h3>
+          <span className='ml-2 text-xs text-gray-400'>最近 30 天</span>
+        </summary>
+        <div className='border-t border-gray-200 dark:border-gray-700 p-4 sm:p-6'>
+          <AnalyticsPanel autoRefresh={autoRefresh} />
+        </div>
+      </details>
 
       {/* 热门点播影片 */}
       {playStats?.topVideos && playStats.topVideos.length > 0 && (

@@ -394,6 +394,21 @@ export async function GET(request: NextRequest) {
       // 热门搜索记录失败不影响主流程
     }
 
+    // 行为分析：记录搜索词
+    try {
+      const { trackEvent } = await import('@/lib/analytics-store');
+      trackEvent({
+        type: 'search',
+        ts: Date.now(),
+        uid: authInfo?.username,
+        anon: ip,
+        query,
+        results: flattenedResults.length,
+      });
+    } catch {
+      // 分析记录失败不影响搜索
+    }
+
     recordRequest({
       timestamp: startTime,
       method: 'GET',

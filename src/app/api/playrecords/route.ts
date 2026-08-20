@@ -15,6 +15,9 @@ import { PlayRecord } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
+// 播放事件去重：同一视频 10 分钟内只记一次
+const lastPlayTrack = new Map<string, number>();
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   const startMemory = process.memoryUsage().heapUsed;
@@ -333,6 +336,27 @@ export async function POST(request: NextRequest) {
         id,
         finalRecord.play_time,
       );
+    }
+
+    // 行为分析：记录播放事件（同一视频 10 分钟内去重，避免进度更新重复计数）
+    try {
+      const now = Date.now();
+      const last = lastPlayTrack.get(key);
+      if (!last || now - last > 10 * 60 * 1000) {
+        lastPlayTrack.set(key, now);
+        const { trackEvent } = await import('@/lib/analytics-store');
+        trackEvent({
+          type: 'play',
+          ts: now,
+          uid: authInfo.username,
+          anon: authInfo.username,
+          videoId: `${source}:${id}`,
+          title: record.title || '',
+          sourceName: record.source_name || '',
+        });
+      }
+    } catch {
+      // 分析记录失败不影响播放
     }
 
     const successResponse = { success: true };

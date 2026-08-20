@@ -4,5 +4,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   url.pathname = '/static/download/5572tv-android-armv7a.apk';
+
+  try {
+    const { trackEvent } = await import('@/lib/analytics-store');
+    trackEvent({
+      type: 'download',
+      ts: Date.now(),
+      anon: 'download',
+      apk: '5572tv-android-armv7a.apk',
+    });
+  } catch {
+    // 分析记录失败不影响下载
+  }
+
   return NextResponse.redirect(url, { status: 302 });
 }

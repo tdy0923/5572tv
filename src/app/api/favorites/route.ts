@@ -374,6 +374,22 @@ export async function POST(request: NextRequest) {
 
     await db.saveFavorite(authInfo.username, source, id, finalFavorite);
 
+    // 行为分析：记录收藏动作
+    try {
+      const { trackEvent } = await import('@/lib/analytics-store');
+      trackEvent({
+        type: 'favorite',
+        ts: Date.now(),
+        uid: authInfo.username,
+        anon: authInfo.username,
+        videoId: `${source}:${id}`,
+        title: favorite.title || '',
+        action: 'add',
+      });
+    } catch {
+      // 分析记录失败不影响收藏
+    }
+
     const successResponse = { success: true };
     const responseSize = Buffer.byteLength(
       JSON.stringify(successResponse),

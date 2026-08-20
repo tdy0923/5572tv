@@ -492,6 +492,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/ai/', // AI 功能端点（公共数据，无需认证）
     '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
     '/api/version-check', // 版本检查（公共数据，无需认证）
+    '/api/analytics', // 行为分析上报（匿名采集，路由内自带限流与机器人过滤）
     '/api/danmu-external', // 弹幕 API（公共数据，无需认证）
     '/api/tvbox', // TVBox 配置端点（自身处理 token/cookie/开放认证）
     '/shortdrama', // 短剧页面（公共访问）

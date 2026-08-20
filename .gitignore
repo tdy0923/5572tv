@@ -94,3 +94,5 @@ _audit_parens.py
 static/download/5572tv-test.apk
 # runtime logs
 .deploy.log
+# file-based analytics data
+.data/
