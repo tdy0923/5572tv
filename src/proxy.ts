@@ -465,6 +465,9 @@ function handleAuthFailure(
 
 // 判断是否需要跳过认证的路径
 function shouldSkipAuth(pathname: string): boolean {
+  // 首页作为公开落地页，未登录也可浏览内容
+  if (pathname === '/' || pathname === '') return true;
+
   const skipPaths = [
     '/_next',
     '/favicon.ico',
