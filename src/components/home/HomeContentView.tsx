@@ -9,7 +9,6 @@ import { DoubanItem } from '@/lib/types';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 
-import ContinueWatching from '@/components/ContinueWatching';
 import HeroBanner from '@/components/HeroBanner';
 import LazySection from '@/components/LazySection';
 import ScrollableRow from '@/components/ScrollableRow';
@@ -133,12 +132,6 @@ export default function HomeContentView({
           />
         </section>
       )}
-
-      {/* 继续观看 - 个性化内容紧随 Hero 之后，无数据时组件返回 null */}
-      <div className='relative mb-6 sm:mb-10' id='continue-watching'>
-        <div className='pointer-events-none absolute inset-x-8 -top-5 h-12 rounded-full bg-linear-to-r from-transparent via-primary-400/10 to-transparent blur-2xl dark:via-primary-300/10' />
-        <ContinueWatching className='mb-0' />
-      </div>
 
       <section className='mb-8 md:mb-10 home-section'>
         <div className='mb-4 flex items-center justify-between'>
