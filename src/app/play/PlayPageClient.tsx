@@ -4797,6 +4797,11 @@ function PlayPageClient() {
             episodesTitles={
               shortdramaDetails?.episodes_titles || detail.episodes_titles || []
             }
+            fallbackEpisodes={
+              shortdramaDetails?.episodes?.length
+                ? detail.episodes || []
+                : undefined
+            }
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
             title={videoTitle || detail.title || ''}

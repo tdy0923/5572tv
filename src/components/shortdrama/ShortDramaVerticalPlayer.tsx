@@ -31,6 +31,8 @@ interface ShortDramaVerticalPlayerProps {
   onShare?: () => void;
   onDownload?: () => void;
   onExitVerticalMode?: () => void;
+  /** 备用集数列表（通用搜索源），主源播放失败时自动切换同一集 */
+  fallbackEpisodes?: string[];
 }
 
 const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next_vertical';
@@ -46,6 +48,7 @@ export default function ShortDramaVerticalPlayer({
   onShare,
   onDownload,
   onExitVerticalMode,
+  fallbackEpisodes,
 }: ShortDramaVerticalPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -80,6 +83,8 @@ export default function ShortDramaVerticalPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
+  // 已用过备用源的集号，避免同一集反复切换
+  const usedFallbackRef = useRef<Set<number>>(new Set());
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -285,6 +290,46 @@ export default function ShortDramaVerticalPlayer({
           });
           hls.on(Hls.Events.ERROR, (_: any, data: any) => {
             if (data?.fatal) {
+              // 主源失败 → 自动切换备用源的同一集（换 CDN 重试一次）
+              const fb = fallbackEpisodes?.[currentIndex];
+              if (
+                fb &&
+                !usedFallbackRef.current.has(currentIndex) &&
+                fb !== episodes[currentIndex]
+              ) {
+                usedFallbackRef.current.add(currentIndex);
+                try {
+                  hls.destroy();
+                } catch {}
+                hlsRef.current = null;
+                setVideoError(false);
+                // 用备用地址重建播放
+                (async () => {
+                  const v = videoRef.current;
+                  if (!v) return;
+                  const HlsMod = await getHlsModule();
+                  if (!HlsMod || !HlsMod.isSupported()) return;
+                  const hls2 = new HlsMod({
+                    enableWorker: true,
+                    lowLatencyMode: false,
+                  });
+                  hlsRef.current = hls2;
+                  hls2.loadSource(
+                    `/api/proxy/m3u8?url=${encodeURIComponent(fb)}`,
+                  );
+                  hls2.attachMedia(v);
+                  hls2.on(HlsMod.Events.MANIFEST_PARSED, () => {
+                    v.play().catch(() => {});
+                  });
+                  hls2.on(HlsMod.Events.ERROR, (_e: any, d2: any) => {
+                    if (d2?.fatal) {
+                      setVideoError(true);
+                      setVideoLoading(false);
+                    }
+                  });
+                })();
+                return;
+              }
               setVideoError(true);
               setVideoLoading(false);
             }
