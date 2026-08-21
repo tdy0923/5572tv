@@ -105,6 +105,73 @@ function getPasswordSecret(): string {
   return pwd || '';
 }
 
+// OIDC 会话签名密钥：优先独立 AUTH_SECRET，未配置时回退 PASSWORD（向后兼容）
+function getOidcSessionSecret(): string {
+  return process.env.AUTH_SECRET || getPasswordSecret();
+}
+
+// 异步签名 OIDC 会话字符串，返回 `${payload}.${signature}`
+export async function signOidcSessionValue(payload: string): Promise<string> {
+  const signature = await signHmac(getOidcSessionSecret(), payload);
+  return `${payload}.${signature}`;
+}
+
+// 校验并还原 OIDC 会话字符串；无效返回 null
+export async function verifyOidcSessionValue(
+  token: string,
+): Promise<string | null> {
+  const lastDot = token.lastIndexOf('.');
+  if (lastDot <= 0) return null;
+  const payload = token.slice(0, lastDot);
+  const signature = token.slice(lastDot + 1);
+  if (!payload || !signature) return null;
+  const ok = await verifyHmac(getOidcSessionSecret(), payload, signature);
+  return ok ? payload : null;
+}
+
+async function signHmac(secret: string, data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function verifyHmac(
+  secret: string,
+  data: string,
+  signatureHex: string,
+): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+    const signatureBuffer = new Uint8Array(
+      signatureHex.match(/.{1,2}/g)?.map((byte) => parseInt(byte, 16)) || [],
+    );
+    return await crypto.subtle.verify(
+      'HMAC',
+      key,
+      signatureBuffer,
+      encoder.encode(data),
+    );
+  } catch {
+    return false;
+  }
+}
+
 // Verify HMAC signature to prevent cookie forgery
 async function verifySignature(
   data: string,

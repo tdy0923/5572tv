@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { setAuthClientCookies } from '@/lib/auth';
+import { setAuthClientCookies, signOidcSessionValue } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 import {
@@ -735,7 +735,10 @@ export async function GET(request: NextRequest) {
       registerUrl.searchParams.set('redirect', redirectTarget);
     }
     const response = NextResponse.redirect(registerUrl);
-    response.cookies.set('oidc_session', JSON.stringify(oidcSession), {
+    const signedSession = await signOidcSessionValue(
+      JSON.stringify(oidcSession),
+    );
+    response.cookies.set('oidc_session', signedSession, {
       path: '/',
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

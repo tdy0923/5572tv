@@ -56,7 +56,7 @@ const TelegramWelcomeModal = dynamic(() =>
 
 // 🎯 优化：合并状态管理 - 使用 useReducer 减少重渲染
 interface HomeState {
-  activeTab: 'home' | 'favorites' | 'reminders' | 'history';
+  activeTab: 'home' | 'favorites' | 'reminders';
   hotMovies: DoubanItem[];
   hotTvShows: DoubanItem[];
   hotVarietyShows: DoubanItem[];
@@ -72,7 +72,7 @@ interface HomeState {
 type HomeAction =
   | {
       type: 'SET_ACTIVE_TAB';
-      payload: 'home' | 'favorites' | 'reminders' | 'history';
+      payload: 'home' | 'favorites' | 'reminders';
     }
   | { type: 'SET_HOT_MOVIES'; payload: DoubanItem[] }
   | { type: 'SET_HOT_TV_SHOWS'; payload: DoubanItem[] }
@@ -304,7 +304,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   // 🎯 处理URL查询参数，支持从其他页面跳转到特定tab
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && ['favorites', 'history', 'profile', 'reminders'].includes(tab)) {
+    if (tab && ['favorites', 'profile', 'reminders'].includes(tab)) {
       startTransition(() => {
         dispatch({ type: 'SET_ACTIVE_TAB', payload: tab as any });
       });
@@ -977,18 +977,13 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                     value: 'favorites',
                   },
                   { label: '想看', value: 'reminders' },
-                  { label: '历史', value: 'history' },
                 ]}
                 active={activeTab}
                 onChange={(value) =>
                   startTransition(() =>
                     dispatch({
                       type: 'SET_ACTIVE_TAB',
-                      payload: value as
-                        | 'home'
-                        | 'favorites'
-                        | 'reminders'
-                        | 'history',
+                      payload: value as 'home' | 'favorites' | 'reminders',
                     }),
                   )
                 }
@@ -1034,29 +1029,11 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 requireClearConfirmation={requireClearConfirmation}
                 favoritesLoading={favoritesLoading}
               />
-            ) : activeTab === 'history' ? (
-              <HistoryView historyTimeline={historyTimeline} />
             ) : (
               <>
                 {/* 最近观看（本机/服务端记录，未登录也可用） */}
                 {Object.keys(historyTimeline).length > 0 && (
                   <div id='continue-watching' className='scroll-mt-24'>
-                    <div className='mb-3 flex items-center justify-between px-1'>
-                      <h2 className='text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200'>
-                        最近观看
-                      </h2>
-                      <button
-                        onClick={() =>
-                          dispatch({
-                            type: 'SET_ACTIVE_TAB',
-                            payload: 'history',
-                          })
-                        }
-                        className='text-sm text-gray-400 dark:text-gray-500 hover:text-green-500 transition-colors'
-                      >
-                        查看全部 ›
-                      </button>
-                    </div>
                     <HistoryView historyTimeline={historyTimeline} />
                   </div>
                 )}

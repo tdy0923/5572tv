@@ -1,6 +1,8 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
+import { verifyOidcSessionValue } from '@/lib/auth';
+
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
@@ -13,7 +15,11 @@ export async function GET(request: NextRequest) {
 
     let oidcSession;
     try {
-      oidcSession = JSON.parse(oidcSessionCookie);
+      const verifiedPayload = await verifyOidcSessionValue(oidcSessionCookie);
+      if (!verifiedPayload) {
+        return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
+      }
+      oidcSession = JSON.parse(verifiedPayload);
     } catch {
       return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
     }

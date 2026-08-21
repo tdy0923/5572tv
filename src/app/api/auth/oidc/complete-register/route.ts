@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
-import { setAuthClientCookies } from '@/lib/auth';
+import { setAuthClientCookies, verifyOidcSessionValue } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
 
@@ -90,7 +90,12 @@ export async function POST(request: NextRequest) {
 
     let oidcSession: any;
     try {
-      oidcSession = JSON.parse(oidcSessionCookie);
+      // 校验签名后再解析，防止 trust_level/sub 被客户端伪造
+      const verifiedPayload = await verifyOidcSessionValue(oidcSessionCookie);
+      if (!verifiedPayload) {
+        return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
+      }
+      oidcSession = JSON.parse(verifiedPayload);
     } catch {
       return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
     }
