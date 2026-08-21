@@ -29,6 +29,10 @@ const STORAGE_TYPE =
         | 'kvrocks'
         | undefined)) || 'localstorage';
 
+// 统一的存储类型判定——供 register/login/server-config 等处复用，
+// 避免各文件用 NEXT_PUBLIC_STORAGE_TYPE 判定导致与实际存储实例不一致
+export const getStorageType = (): string => STORAGE_TYPE;
+
 // 创建存储实例
 function createStorage(): IStorage {
   switch (STORAGE_TYPE) {

@@ -3,19 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { setAuthClientCookies } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
-import { db } from '@/lib/db';
+import { db, getStorageType } from '@/lib/db';
 import { consumeInviteCode, validateInviteCode } from '@/lib/invite-code';
 
 export const runtime = 'nodejs';
 
-// 读取存储类型环境变量，默认 localstorage
-const STORAGE_TYPE =
-  (process.env.NEXT_PUBLIC_STORAGE_TYPE as
-    | 'localstorage'
-    | 'redis'
-    | 'upstash'
-    | 'kvrocks'
-    | undefined) || 'localstorage';
+// 统一存储类型判定（与 db.ts 一致，避免 NEXT_PUBLIC_ 前缀缺失导致的误判）
+const STORAGE_TYPE = getStorageType();
 
 // 生成签名
 async function generateSignature(
@@ -247,8 +241,7 @@ export async function POST(req: NextRequest) {
       clearConfigCache();
 
       // 注册成功后自动登录
-      const storageType =
-        process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+      const storageType = STORAGE_TYPE;
       const response = NextResponse.json({
         ok: true,
         message: '注册成功，已自动登录',

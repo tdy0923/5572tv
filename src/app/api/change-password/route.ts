@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie, revokeToken } from '@/lib/auth';
-import { db } from '@/lib/db';
+import { db, getStorageType } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -15,7 +15,7 @@ function validatePasswordStrength(password: string): string | null {
 }
 
 export async function POST(request: NextRequest) {
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  const storageType = getStorageType();
 
   if (storageType === 'localstorage') {
     return NextResponse.json(

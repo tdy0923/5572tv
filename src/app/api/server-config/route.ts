@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
+import { getStorageType } from '@/lib/db';
 import { CURRENT_VERSION } from '@/lib/version';
 
 export const runtime = 'nodejs';
@@ -13,7 +14,7 @@ export async function GET(_request: NextRequest) {
     AnnouncementTitle: config.SiteConfig.AnnouncementTitle || '站点公告',
     Announcement: config.SiteConfig.Announcement || '',
     AdSettings: config.SiteConfig.AdSettings,
-    StorageType: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
+    StorageType: getStorageType(),
     Version: CURRENT_VERSION,
     DownloadEnabled: config.DownloadConfig?.enabled ?? true,
     EnableExternalPlayer: config.SiteConfig?.EnableExternalPlayer ?? false,
