@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
-import { isUrlSafe } from '@/lib/ssrf-protection';
+import { isUrlSafeDeep as isUrlSafe } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';

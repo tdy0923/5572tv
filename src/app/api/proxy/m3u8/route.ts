@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { filterAdsFromM3U8 } from '@/lib/hls-ad-filter';
 import { getBaseUrl, resolveUrl } from '@/lib/live';
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
-import { isUrlSafe } from '@/lib/ssrf-protection';
+import { isUrlSafeDeep as isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 

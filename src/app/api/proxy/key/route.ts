@@ -3,7 +3,7 @@
 import { NextResponse } from 'next/server';
 
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
-import { isUrlSafe } from '@/lib/ssrf-protection';
+import { isUrlSafeDeep as isUrlSafe } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
