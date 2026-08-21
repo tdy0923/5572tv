@@ -4801,7 +4801,8 @@ function PlayPageClient() {
       {isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama') &&
+          detail?.source === 'shortdrama' ||
+          Boolean(shortdramaId)) &&
         detail && (
           <ShortDramaVerticalPlayer
             episodes={detail.episodes || []}
@@ -4830,7 +4831,8 @@ function PlayPageClient() {
         isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama')
+          detail?.source === 'shortdrama' ||
+          Boolean(shortdramaId))
       ) && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>

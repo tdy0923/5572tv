@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
+import Script from 'next/script';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 
@@ -214,10 +215,10 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: customCSS }}
           />
         )}
-        <script
-          defer
+        <Script
           src='https://tg.yunku.de/script.js'
           data-website-id='73df4a1d-50cd-41de-a1b0-308bcb1018ea'
+          strategy='lazyOnload'
         />
       </head>
       <body

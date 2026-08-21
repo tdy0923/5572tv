@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { getHlsModule } from '@/app/play/utils';
+
 interface ShortDramaVerticalPlayerProps {
   episodes: string[];
   episodesTitles: string[];
@@ -77,6 +79,7 @@ export default function ShortDramaVerticalPlayer({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<any>(null);
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -235,13 +238,85 @@ export default function ShortDramaVerticalPlayer({
     }
   }, [isMuted]);
 
-  // 集数变化时自动播放
+  // 集数变化时自动播放（支持 HLS / m3u8）
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.load();
-      videoRef.current.play().catch(() => {});
+    const video = videoRef.current;
+    const url = episodes[currentIndex] || '';
+    if (!video || !url) return;
+
+    // 清理旧的 HLS 实例
+    if (hlsRef.current) {
+      try {
+        hlsRef.current.destroy();
+      } catch {}
+      hlsRef.current = null;
     }
-  }, [currentIndex]);
+
+    // HLS 流需要 hls.js
+    const isHls = url.includes('.m3u8');
+    if (isHls) {
+      // iOS 原生支持 HLS
+      const canNative =
+        typeof video.canPlayType === 'function' &&
+        video.canPlayType('application/vnd.apple.mpegurl') !== '';
+      if (canNative) {
+        video.src = url;
+        video.load();
+        video.play().catch(() => {});
+        return;
+      }
+      // 其他平台用 hls.js
+      (async () => {
+        try {
+          const Hls = await getHlsModule();
+          if (!Hls || !Hls.isSupported()) {
+            video.src = url;
+            video.load();
+            video.play().catch(() => {});
+            return;
+          }
+          const hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: false,
+          });
+          hlsRef.current = hls;
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.play().catch(() => {});
+          });
+          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+            if (data?.fatal) {
+              setVideoError(true);
+              setVideoLoading(false);
+            }
+          });
+        } catch {
+          video.src = url;
+          video.load();
+          video.play().catch(() => {});
+        }
+      })();
+      return;
+    }
+
+    // 普通 MP4
+    video.src = url;
+    video.load();
+    video.play().catch(() => {});
+  }, [currentIndex, episodes]);
+
+  // 清理 HLS 实例
+  useEffect(() => {
+    return () => {
+      if (hlsRef.current) {
+        try {
+          hlsRef.current.destroy();
+        } catch {}
+        hlsRef.current = null;
+      }
+    };
+  }, []);
 
   // 自动连播开关持久化
   useEffect(() => {
@@ -273,7 +348,6 @@ export default function ShortDramaVerticalPlayer({
             <video
               ref={videoRef}
               className='w-full h-full object-contain'
-              src={currentUrl}
               poster={poster}
               autoPlay
               playsInline
