@@ -217,7 +217,7 @@ export default async function RootLayout({
         )}
         <Script
           src='https://tg.yunku.de/script.js'
-          data-website-id='73df4a1d-50cd-41de-a1b0-308bcb1018ea'
+          data-website-id='aee57899-3202-43be-ac10-bfd03cec21c4'
           strategy='lazyOnload'
         />
       </head>
