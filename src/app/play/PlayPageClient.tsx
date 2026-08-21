@@ -358,6 +358,10 @@ function PlayPageClient() {
   // 自动连播下一集开关（localStorage 记忆）
   const [autoPlayNext, setAutoPlayNext] = useState(isAutoPlayNextEnabled);
 
+  // 检测是否为竖屏视频（如 9:16 短视频/竖屏剧集），用于移动端标准播放器自适应放大
+  const [isPortrait, setIsPortrait] = useState(false);
+  const isPortraitRef = useRef(false);
+
   // 短剧来源API（来自短剧卡片的 sd_source 参数，播放时优先请求该源）
   const [shortdramaSource] = useState(searchParams.get('sd_source') || '');
 
@@ -2454,7 +2458,8 @@ function PlayPageClient() {
           lang: 'zh-cn',
           hotkey: false,
           fastForward: true,
-          autoOrientation: true,
+          // 自动横屏由自研 orientationchange 处理器负责（socket 升级前调用 lock 会报错导致全屏闪退）
+          autoOrientation: false,
           lock: true,
           // AirPlay 仅在支持 WebKit API 的浏览器中启用
           // 主要是 Safari (桌面和移动端) 和 iOS 上的其他浏览器
@@ -3400,6 +3405,22 @@ function PlayPageClient() {
 
           // 使用ArtPlayer layers API添加分辨率徽章（带渐变和发光效果）
           const video = artPlayerRef.current.video as HTMLVideoElement;
+
+          // 🔍 实时检测视频宽高比，竖屏视频（如 9:16）在移动端标准播放器自动放大
+          const checkPortrait = () => {
+            const { videoWidth, videoHeight } = artPlayerRef.current.video;
+            if (!videoWidth || !videoHeight) return;
+            const portrait = videoHeight > videoWidth * 1.05;
+            if (portrait !== isPortraitRef.current) {
+              isPortraitRef.current = portrait;
+              setIsPortrait(portrait);
+            }
+          };
+          checkPortrait();
+          artPlayerRef.current.on('video:loadedmetadata', checkPortrait);
+          artPlayerRef.current.on('video:resize', checkPortrait);
+          video.addEventListener('loadedmetadata', checkPortrait);
+          video.addEventListener('resize', checkPortrait);
 
           // 🖥️ 应用保存的显示模式设置（支持超宽屏）
           const savedObjectFit =
@@ -4780,8 +4801,7 @@ function PlayPageClient() {
       {isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama' ||
-          Boolean(shortdramaId)) &&
+          detail?.source === 'shortdrama') &&
         detail && (
           <ShortDramaVerticalPlayer
             episodes={detail.episodes || []}
@@ -4810,8 +4830,7 @@ function PlayPageClient() {
         isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama' ||
-          Boolean(shortdramaId))
+          detail?.source === 'shortdrama')
       ) && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
@@ -4901,17 +4920,25 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
+                  <div
+                    className={`relative w-full flex items-center justify-center ${
+                      isPortrait && currentSourceRef.current !== 'shortdrama'
+                        ? 'min-h-[40vh] lg:h-full'
+                        : 'h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px]'
+                    }`}
+                  >
                     <div
                       className={`relative ${
                         currentSourceRef.current === 'shortdrama'
                           ? 'h-full aspect-[9/16] max-w-full'
-                          : 'w-full h-full'
+                          : isPortrait
+                            ? 'aspect-[9/16] h-auto max-w-full mx-auto max-h-[78vh] lg:max-h-none'
+                            : 'w-full h-full'
                       }`}
                     >
                       <div
                         ref={artRef}
-                        className='bg-black w-full h-full rounded-xl shadow-lg'
+                        className='bg-black w-full h-full rounded-xl shadow-lg overflow-hidden'
                         onDoubleClick={() => {
                           const player = artPlayerRef.current;
                           if (player) {
