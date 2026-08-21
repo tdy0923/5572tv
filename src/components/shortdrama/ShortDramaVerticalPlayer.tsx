@@ -252,39 +252,11 @@ export default function ShortDramaVerticalPlayer({
       hlsRef.current = null;
     }
 
-    // HLS 流需要 hls.js — 被封锁的 CDN 强制走代理以绕过 CORS
-    const BLOCKED_CDNS = [
-      'cdnlz29.com',
-      'bfllvip.com',
-      'hhuus.com',
-      'xluuss.com',
-      'gsuus.com',
-      'ppqrrs.com',
-      'bfvvs.com',
-      'huyall.com',
-      'maowushi.com',
-      'oag7h.com',
-      'zuidazym3u8.com',
-      'ffzy-online4.com',
-      'feifei-online.com',
-      'power34play.vip',
-      'lzcdn',
-      's3.bfllvip.com',
-      'bfllvip',
-      'ukzyvod',
-    ];
-    const isBlocked = BLOCKED_CDNS.some((cdn) => url.includes(cdn));
-    const effectiveUrl = isBlocked
-      ? `/api/proxy/m3u8?url=${encodeURIComponent(url)}`
-      : url;
-
+    // 所有 m3u8 强制走代理以彻底解决 CORS
+    const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
     const isHls = url.includes('.m3u8');
     if (isHls) {
-      // iOS 原生支持 HLS，但被封锁的 CDN 即使原生也需走代理（分片仍会 CORS 失败）
-      const canNative =
-        typeof video.canPlayType === 'function' &&
-        video.canPlayType('application/vnd.apple.mpegurl') !== '' &&
-        !isBlocked;
+      const canNative = false;
       if (canNative) {
         video.src = effectiveUrl;
         video.load();

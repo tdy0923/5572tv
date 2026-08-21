@@ -2466,36 +2466,9 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: async function (video: HTMLVideoElement, url: string) {
-              // 已知被浏览器直接请求会 CORS 失败的 CDN，强制走服务端代理
-              const BLOCKED_CDNS = [
-                'cdnlz29.com',
-                'bfllvip.com',
-                'hhuus.com',
-                'xluuss.com',
-                'gsuus.com',
-                'ppqrrs.com',
-                'bfvvs.com',
-                'huyall.com',
-                'maowushi.com',
-                'oag7h.com',
-                'zuidazym3u8.com',
-                'ffzy-online4.com',
-                'feifei-online.com',
-                'power34play.vip',
-                'lzcdn',
-                's3.bfllvip.com',
-                'bfllvip',
-                'ukzyvod',
-              ];
-              const isBlocked = BLOCKED_CDNS.some((cdn) => url.includes(cdn));
-              const effectiveUrl = isBlocked
-                ? `/api/proxy/m3u8?url=${encodeURIComponent(url)}`
-                : url;
-
-              const canUseNativeHls =
-                typeof video.canPlayType === 'function' &&
-                video.canPlayType('application/vnd.apple.mpegurl') !== '' &&
-                !isBlocked;
+              // 所有 m3u8 强制走服务端代理以彻底解决 CORS（覆盖所有 CDN 包括 v.lfthirtytwo/play.phimgood 等）
+              const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+              const canUseNativeHls = false;
 
               if (canUseNativeHls) {
                 video.src = effectiveUrl;

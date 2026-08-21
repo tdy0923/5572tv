@@ -141,7 +141,22 @@ export async function GET(request: Request) {
       stats.errors++;
       clearTimeout(timeoutId);
 
-      // 服务端获取失败 → 降级为 302 重定向（让浏览器直连 CDN）
+      // 对被封锁的 CDN，不做 302 重定向（浏览器直连会被 CORS 拦截），直接透传错误响应并带上 CORS 头
+      if (isBlockedCdn) {
+        return new NextResponse(response.body, {
+          status: response.status,
+          headers: {
+            'Content-Type':
+              response.headers.get('Content-Type') || 'text/plain',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+            'Cache-Control': 'no-cache',
+          },
+        });
+      }
+
+      // 非封锁 CDN，降级为 302 重定向（让浏览器直连）
       return new NextResponse(null, {
         status: 302,
         headers: {
@@ -292,6 +307,21 @@ export async function GET(request: Request) {
   } catch (error: any) {
     stats.errors++;
     clearTimeout(timeoutId);
+
+    // 被封锁 CDN 不做 302（浏览器直连会被 CORS 拦截），直接返回 502 带 CORS
+    if (isBlockedCdn) {
+      return NextResponse.json(
+        { error: '上游获取失败', url: decodedUrl },
+        {
+          status: 502,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+          },
+        },
+      );
+    }
 
     // 服务端获取失败 → 降级为 302 重定向（让浏览器直连）
     return new NextResponse(null, {
