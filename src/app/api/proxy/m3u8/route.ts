@@ -61,7 +61,7 @@ export async function GET(request: Request) {
 
   const ua = await getSourceUserAgent(source);
 
-  // 已知封锁服务器IP的CDN列表 - 先尝试服务端代理，失败则返回302
+  // 已知封锁服务器IP或 CORS 严格的 CDN - 强制走代理并透传错误（不做 302）
   const BLOCKED_CDNS = [
     'cdnlz29.com',
     'bfllvip.com',
@@ -77,6 +77,20 @@ export async function GET(request: Request) {
     'ffzy-online4.com',
     'feifei-online.com',
     'power34play.vip',
+    'lzcdn',
+    's3.bfllvip',
+    'bfllvip',
+    'ukzyvod',
+    'lfthirtytwo',
+    'phimgood',
+    'fengbao',
+    'ryplay',
+    'jisuzyv',
+    'yzzy',
+    'v.fengbao',
+    'play.phimgood',
+    'svip.ryplay',
+    'vv.jisuzyv',
   ];
 
   let isBlockedCdn = false;
