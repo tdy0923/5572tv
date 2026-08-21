@@ -206,6 +206,22 @@ async function verifySignature(
   }
 }
 
+// 尝试用 AUTH_SECRET 或 PASSWORD 校验，兼容旧 cookie
+async function verifySignatureWithFallback(
+  data: string,
+  signature: string,
+): Promise<boolean> {
+  const primary = getOidcSessionSecret();
+  if (primary) {
+    if (await verifySignature(data, signature, primary)) return true;
+  }
+  const fallback = getPasswordSecret();
+  if (fallback && fallback !== primary) {
+    if (await verifySignature(data, signature, fallback)) return true;
+  }
+  return false;
+}
+
 // 从cookie获取认证信息并验证签名 (服务端使用)
 export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
   password?: string;
@@ -247,30 +263,30 @@ export async function getAuthInfoFromCookie(request: NextRequest): Promise<{
       return null;
     }
 
-    // Verify HMAC signature (support both old and new formats)
-    const secret = getPasswordSecret();
-
-    // New format: sign(username:role)
+    // Verify HMAC signature (support both old and new formats, AUTH_SECRET 优先)
     const newSignData = `${authData.username}:${authData.role || 'user'}`;
     let isValid = false;
 
-    if (secret) {
-      isValid = await verifySignature(newSignData, authData.signature, secret);
+    const hasSecret = getOidcSessionSecret() || getPasswordSecret();
+    if (hasSecret) {
+      isValid = await verifySignatureWithFallback(
+        newSignData,
+        authData.signature,
+      );
 
       // Backward compatibility: old format sign(username)
       if (!isValid) {
-        isValid = await verifySignature(
+        isValid = await verifySignatureWithFallback(
           authData.username,
           authData.signature,
-          secret,
         );
       }
     } else {
-      // No PASSWORD set — reject all authentication attempts
+      // No secret set — reject all authentication attempts
       console.error(
-        '[Auth] PASSWORD environment variable is not set. ' +
+        '[Auth] PASSWORD/AUTH_SECRET environment variable is not set. ' +
           'Authentication is disabled for security. ' +
-          'Set a strong PASSWORD in production.',
+          'Set a strong secret in production.',
       );
       return null;
     }

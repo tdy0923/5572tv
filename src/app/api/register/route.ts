@@ -38,7 +38,11 @@ async function generateSignature(
     .join('');
 }
 
-// 生成认证Cookie（带签名）
+function getSigningSecret(): string {
+  return process.env.AUTH_SECRET || process.env.PASSWORD || '';
+}
+
+// 生成认证Cookie（带签名，优先独立 AUTH_SECRET）
 async function generateAuthCookie(
   username?: string,
   password?: string,
@@ -52,11 +56,12 @@ async function generateAuthCookie(
     authData.password = password;
   }
 
-  if (username && process.env.PASSWORD) {
+  const signingSecret = getSigningSecret();
+  if (username && signingSecret) {
     authData.username = username;
-    // 使用密码作为密钥对 username:role 进行签名（与 login 保持一致）
+    // 使用独立密钥对 username:role 进行签名（与 login 保持一致）
     const signData = `${username}:${role || 'user'}`;
-    const signature = await generateSignature(signData, process.env.PASSWORD);
+    const signature = await generateSignature(signData, signingSecret);
     authData.signature = signature;
     authData.timestamp = Date.now(); // 添加时间戳防重放攻击
   }
@@ -200,6 +205,20 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // 额外：大小写不敏感检查，防止 Admin/admin 这类仅大小写不同的重复账号造成混淆
+      try {
+        const allUsers = await db.getAllUsers();
+        const lower = username.toLowerCase();
+        if (allUsers.some((u) => u.toLowerCase() === lower)) {
+          return NextResponse.json(
+            { error: '该用户名已被注册' },
+            { status: 400 },
+          );
+        }
+      } catch {
+        // 忽略获取失败，不阻断注册
+      }
+
       // 清除缓存（在注册前清除，避免读到旧缓存）
       clearConfigCache();
 
@@ -210,21 +229,15 @@ export async function POST(req: NextRequest) {
           ? config.SiteConfig.DefaultUserTags
           : undefined;
 
-      // 如果有默认用户组，使用 V2 注册；否则使用 V1 注册（保持兼容性）
-      if (defaultTags) {
-        // V2 注册（支持 tags）
-        await db.createUserV2(
-          username,
-          password,
-          'user',
-          defaultTags, // 默认分组
-          undefined, // oidcSub
-          undefined, // enabledApis
-        );
-      } else {
-        // V1 注册（无 tags，保持现有行为）
-        await db.registerUser(username, password);
-      }
+      // 统一使用 V2 注册，保证立即进入 users:list 并写入用户信息，避免 V1 的竞态窗口
+      await db.createUserV2(
+        username,
+        password,
+        'user',
+        defaultTags,
+        undefined, // oidcSub
+        undefined, // enabledApis
+      );
 
       // 如果启用了邀请码系统，标记邀请码已使用
       const requireInviteCode = config.UserConfig?.RequireInviteCode === true;

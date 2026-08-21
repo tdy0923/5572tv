@@ -43,7 +43,11 @@ async function generateSignature(
     .join('');
 }
 
-// 生成认证Cookie（带签名）
+function getSigningSecret(): string {
+  return process.env.AUTH_SECRET || process.env.PASSWORD || '';
+}
+
+// 生成认证Cookie（带签名，优先独立 AUTH_SECRET）
 async function generateAuthCookie(
   username?: string,
   password?: string,
@@ -57,11 +61,12 @@ async function generateAuthCookie(
     authData.password = password;
   }
 
-  if (username && process.env.PASSWORD) {
+  const signingSecret = getSigningSecret();
+  if (username && signingSecret) {
     authData.username = username;
     // 签名包含username和role，防止role篡改
     const signData = `${username}:${role || 'user'}`;
-    const signature = await generateSignature(signData, process.env.PASSWORD);
+    const signature = await generateSignature(signData, signingSecret);
     authData.signature = signature;
     authData.timestamp = Date.now(); // 添加时间戳防重放攻击
     authData.loginTime = Date.now(); // 添加登入时间记录
@@ -242,13 +247,14 @@ export async function POST(req: NextRequest) {
       const userAgent = req.headers.get('user-agent') || '';
       await trackDevice('local_user', userAgent, ip);
 
-      // 验证成功，设置认证cookie
+      // 验证成功，设置认证cookie（带签名+密码，保证 proxy/admin-auth 能校验）
       const response = NextResponse.json({ ok: true });
+      const localUsername = process.env.USERNAME || 'admin';
       const cookieValue = await generateAuthCookie(
-        undefined,
-        undefined,
-        'user',
-        false,
+        localUsername,
+        password,
+        'owner',
+        true,
       );
       const expires = new Date();
       expires.setDate(expires.getDate() + 7);
@@ -257,8 +263,8 @@ export async function POST(req: NextRequest) {
         response,
         cookieValue,
         expires,
-        'local_user',
-        'user',
+        localUsername,
+        'owner',
       );
 
       return response;
