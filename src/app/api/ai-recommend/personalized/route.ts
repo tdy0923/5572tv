@@ -9,9 +9,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const AI_API_BASE = process.env.AI_API_BASE || 'https://apihub.agnes-ai.com/v1';
-// Agnes 网关不支持 gpt-4o-mini（503 model_not_found），默认用其自有模型；
+// Agnes 网关不支持 gpt-4o-mini（503 model_not_found），默认用其最新模型；
 // 可通过 AI_MODEL 覆盖
-const AI_MODEL = process.env.AI_MODEL || 'agnes-2.0-flash';
+const AI_MODEL = process.env.AI_MODEL || 'agnes-2.5-flash';
 // 模型回退链：首选模型失败时依次尝试
 const AI_MODEL_FALLBACKS = [AI_MODEL, 'agnes-2.0-flash'].filter(
   (m, i, arr) => m && arr.indexOf(m) === i,

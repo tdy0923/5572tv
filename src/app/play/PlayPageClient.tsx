@@ -4789,8 +4789,14 @@ function PlayPageClient() {
           Boolean(shortdramaId)) &&
         detail && (
           <ShortDramaVerticalPlayer
-            episodes={detail.episodes || []}
-            episodesTitles={detail.episodes_titles || []}
+            episodes={
+              shortdramaDetails?.episodes?.length
+                ? shortdramaDetails.episodes
+                : detail.episodes || []
+            }
+            episodesTitles={
+              shortdramaDetails?.episodes_titles || detail.episodes_titles || []
+            }
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
             title={videoTitle || detail.title || ''}
