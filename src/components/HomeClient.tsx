@@ -39,7 +39,6 @@ import CapsuleSwitch from '@/components/CapsuleSwitch';
 import { FluentLoadingPage } from '@/components/FluentSpinner';
 import { triggerGlobalError } from '@/components/GlobalErrorIndicator';
 import FavoritesView from '@/components/home/FavoritesView';
-import HistoryView from '@/components/home/HistoryView';
 import HomeContentView from '@/components/home/HomeContentView';
 import RemindersView from '@/components/home/RemindersView';
 import HomeInlineSearch from '@/components/HomeInlineSearch';
@@ -180,62 +179,6 @@ const aiRecommendOptions = (enabled: boolean) =>
     gcTime: 30 * 60 * 1000,
   });
 
-const LOCAL_RECORDS_KEY = '5572tv_local_play_records';
-
-// 从本机构建最近观看时间线（未登录/接口不可用时兜底）
-const buildLocalTimeline = (): Record<string, any[]> => {
-  if (typeof window === 'undefined') return {};
-  try {
-    const records = JSON.parse(localStorage.getItem(LOCAL_RECORDS_KEY) || '{}');
-    const timeline: Record<string, any[]> = {};
-    const items: any[] = [];
-    Object.values(records).forEach((r: any) => {
-      if (!r || !r.title) return;
-      items.push({
-        key: `${r.source}+${r.id}`,
-        source: r.source,
-        id: r.id,
-        title: r.title,
-        cover: r.cover,
-        play_time: r.play_time,
-        total_time: r.total_time,
-        save_time: r.save_time || 0,
-      });
-    });
-    items.sort((a, b) => (b.save_time || 0) - (a.save_time || 0));
-    items.forEach((item) => {
-      const d = new Date(item.save_time || Date.now());
-      const dateStr = `${d.getMonth() + 1}月${d.getDate()}日`;
-      (timeline[dateStr] = timeline[dateStr] || []).push(item);
-    });
-    return timeline;
-  } catch {
-    return {};
-  }
-};
-
-const historyTimelineOptions = (enabled: boolean) =>
-  queryOptions({
-    queryKey: ['history-timeline'],
-    queryFn: async () => {
-      // 优先服务端（登录用户完整记录）
-      try {
-        const res = await fetch('/api/play-history/timeline');
-        if (!res.ok) throw new Error('Failed');
-        const data = await res.json();
-        if (data.timeline && Object.keys(data.timeline).length > 0) {
-          return data.timeline;
-        }
-      } catch {
-        // 未登录/接口不可用，走本机兜底
-      }
-      return buildLocalTimeline();
-    },
-    enabled,
-    staleTime: 2 * 60 * 1000,
-    retry: 0,
-  });
-
 const favoriteGroupsOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['favorite-groups'],
@@ -299,8 +242,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   // 解构状态以便使用
   const { activeTab, upcomingReleases, username, showAnnouncement } = state;
 
-  const [showContinueWatching, setShowContinueWatching] = useState(false);
-
   // 🎯 处理URL查询参数，支持从其他页面跳转到特定tab
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -315,16 +256,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     typeof window !== 'undefined' &&
     announcement !== undefined &&
     localStorage.getItem('hasSeenAnnouncement') !== announcement;
-
-  // 滚动检测 - 显示"继续观看"浮动按钮
-  useEffect(() => {
-    const handleScroll = () => {
-      // 当滚动超过 Hero Banner 高度（约 50vh）时显示按钮
-      setShowContinueWatching(window.scrollY > window.innerHeight * 0.5);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // AI 个性化推荐
   const { data: aiRecommendations = [], isLoading: aiRecommendLoading } =
@@ -551,8 +482,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   );
   const [favoriteGroupFilter, setFavoriteGroupFilter] =
     useState<string>('全部');
-
-  const { data: historyTimeline = {} } = useQuery(historyTimelineOptions(true));
 
   // 🎯 优化：缓存收藏夹统计信息计算
   const favoriteStats = useMemo(() => {
@@ -1030,29 +959,21 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 favoritesLoading={favoritesLoading}
               />
             ) : (
-              <>
-                {/* 最近观看（本机/服务端记录，未登录也可用） */}
-                {Object.keys(historyTimeline).length > 0 && (
-                  <div id='continue-watching' className='scroll-mt-24'>
-                    <HistoryView historyTimeline={historyTimeline} />
-                  </div>
-                )}
-                <HomeContentView
-                  hotMovies={hotMovies as DoubanItem[]}
-                  hotTvShows={hotTvShows as DoubanItem[]}
-                  hotVarietyShows={hotVarietyShows as DoubanItem[]}
-                  hotAnime={hotAnime as DoubanItem[]}
-                  hotShortDramas={hotShortDramas as ShortDramaItem[]}
-                  upcomingReleases={upcomingReleases}
-                  loading={loading}
-                  username={username}
-                  aiRecommendations={aiRecommendations}
-                  aiRecommendLoading={aiRecommendLoading}
-                  upcomingFilter={upcomingFilter}
-                  setUpcomingFilter={setUpcomingFilter}
-                  today={today}
-                />
-              </>
+              <HomeContentView
+                hotMovies={hotMovies as DoubanItem[]}
+                hotTvShows={hotTvShows as DoubanItem[]}
+                hotVarietyShows={hotVarietyShows as DoubanItem[]}
+                hotAnime={hotAnime as DoubanItem[]}
+                hotShortDramas={hotShortDramas as ShortDramaItem[]}
+                upcomingReleases={upcomingReleases}
+                loading={loading}
+                username={username}
+                aiRecommendations={aiRecommendations}
+                aiRecommendLoading={aiRecommendLoading}
+                upcomingFilter={upcomingFilter}
+                setUpcomingFilter={setUpcomingFilter}
+                today={today}
+              />
             )}
           </div>
         </div>
@@ -1117,21 +1038,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
             document.body,
           )}
       </PullToRefresh>
-
-      {/* "继续观看"浮动按钮 */}
-      {showContinueWatching && activeTab === 'home' && (
-        <button
-          onClick={() => {
-            document
-              .getElementById('continue-watching')
-              ?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className='fixed bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-70 flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 hover:scale-105'
-        >
-          <span className='text-sm font-medium'>继续观看</span>
-          <span className='text-xs'>↓</span>
-        </button>
-      )}
     </PageLayout>
   );
 }
