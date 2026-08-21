@@ -4797,9 +4797,20 @@ function PlayPageClient() {
             episodesTitles={
               shortdramaDetails?.episodes_titles || detail.episodes_titles || []
             }
-            fallbackEpisodes={
+            episodeCandidates={
               shortdramaDetails?.episodes?.length
-                ? detail.episodes || []
+                ? [
+                    shortdramaDetails.episodes,
+                    ...(availableSources || [])
+                      .filter(
+                        (s) =>
+                          s.source !== 'shortdrama' &&
+                          s.episodes &&
+                          s.episodes.length > 0 &&
+                          s.episodes[0] !== shortdramaDetails.episodes[0],
+                      )
+                      .map((s) => s.episodes),
+                  ]
                 : undefined
             }
             currentIndex={currentEpisodeIndex}

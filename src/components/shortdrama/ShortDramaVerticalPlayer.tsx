@@ -31,8 +31,12 @@ interface ShortDramaVerticalPlayerProps {
   onShare?: () => void;
   onDownload?: () => void;
   onExitVerticalMode?: () => void;
-  /** 备用集数列表（通用搜索源），主源播放失败时自动切换同一集 */
-  fallbackEpisodes?: string[];
+  /**
+   * 多源集数候选链（仿电影 preferBestSource 架构）：
+   * [专用短剧源, 通用源A, 通用源B...]，播放失败自动轮转到下一个源，
+   * 某个源成功后记住它（后续集数直接用可用源，不再撞死链）
+   */
+  episodeCandidates?: string[][];
 }
 
 const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next_vertical';
@@ -48,7 +52,7 @@ export default function ShortDramaVerticalPlayer({
   onShare,
   onDownload,
   onExitVerticalMode,
-  fallbackEpisodes,
+  episodeCandidates,
 }: ShortDramaVerticalPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -83,8 +87,12 @@ export default function ShortDramaVerticalPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
-  // 已用过备用源的集号，避免同一集反复切换
-  const usedFallbackRef = useRef<Set<number>>(new Set());
+  // 多源轮转：当前生效的候选源下标（一旦某源可用即锁定，后续集数直接用它）
+  const [activeCandidate, setActiveCandidate] = useState(0);
+  // 正在轮转换源中（避免重复触发）
+  const rotatingRef = useRef(false);
+  // 当前剧标识（首集地址），换剧时重置轮转
+  const lastDramaKeyRef = useRef<string>('');
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -243,11 +251,23 @@ export default function ShortDramaVerticalPlayer({
     }
   }, [isMuted]);
 
-  // 集数变化时自动播放（支持 HLS / m3u8）
+  // 集数变化时自动播放（支持 HLS / m3u8，多源候选链自动轮转）
   useEffect(() => {
     const video = videoRef.current;
     const url = episodes[currentIndex] || '';
     if (!video || !url) return;
+
+    // 换了新剧（首集地址变化）→ 轮转归零，从专用源重新开始
+    const dramaKey = episodes[0] || '';
+    if (lastDramaKeyRef.current !== dramaKey) {
+      lastDramaKeyRef.current = dramaKey;
+      if (activeCandidate !== 0) {
+        // 异步重置，避免 effect 内同步 setState 触发级联渲染
+        setTimeout(() => setActiveCandidate(0), 0);
+        return;
+      }
+    }
+    rotatingRef.current = false;
 
     // 清理旧的 HLS 实例
     if (hlsRef.current) {
@@ -257,97 +277,93 @@ export default function ShortDramaVerticalPlayer({
       hlsRef.current = null;
     }
 
-    // 所有 m3u8 强制走代理以彻底解决 CORS
-    const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
-    const isHls = url.includes('.m3u8');
-    if (isHls) {
-      const canNative = false;
-      if (canNative) {
+    // 当前生效集数地址：优先用已验证可用的候选源
+    const activeSet = episodeCandidates?.[activeCandidate];
+    const activeUrl =
+      activeSet && activeSet.length > currentIndex
+        ? activeSet[currentIndex]
+        : url;
+    const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
+
+    // 异步标记加载态，避免 effect 内同步 setState 触发级联渲染
+    const loadingTimer = setTimeout(() => setVideoLoading(true), 0);
+
+    /** 轮转到下一个含当前集的候选源；返回是否发起了切换 */
+    const rotateToNextSource = () => {
+      if (rotatingRef.current || !episodeCandidates?.length) return false;
+      for (
+        let next = activeCandidate + 1;
+        next < episodeCandidates.length;
+        next++
+      ) {
+        const cand = episodeCandidates[next];
+        if (cand && cand.length > currentIndex && cand[currentIndex]) {
+          rotatingRef.current = true;
+          try {
+            hlsRef.current?.destroy();
+          } catch {}
+          hlsRef.current = null;
+          setActiveCandidate(next);
+          return true; // activeCandidate 变化会触发本 effect 重建播放
+        }
+      }
+      return false;
+    };
+
+    const attachHls = async () => {
+      const Hls = await getHlsModule();
+      if (!Hls || !Hls.isSupported()) {
         video.src = effectiveUrl;
         video.load();
         video.play().catch(() => {});
         return;
       }
-      // 其他平台用 hls.js
-      (async () => {
-        try {
-          const Hls = await getHlsModule();
-          if (!Hls || !Hls.isSupported()) {
-            video.src = effectiveUrl;
-            video.load();
-            video.play().catch(() => {});
-            return;
-          }
-          const hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: false,
-          });
-          hlsRef.current = hls;
-          hls.loadSource(effectiveUrl);
-          hls.attachMedia(video);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play().catch(() => {});
-          });
-          hls.on(Hls.Events.ERROR, (_: any, data: any) => {
-            if (data?.fatal) {
-              // 主源失败 → 自动切换备用源的同一集（换 CDN 重试一次）
-              const fb = fallbackEpisodes?.[currentIndex];
-              if (
-                fb &&
-                !usedFallbackRef.current.has(currentIndex) &&
-                fb !== episodes[currentIndex]
-              ) {
-                usedFallbackRef.current.add(currentIndex);
-                try {
-                  hls.destroy();
-                } catch {}
-                hlsRef.current = null;
-                setVideoError(false);
-                // 用备用地址重建播放
-                (async () => {
-                  const v = videoRef.current;
-                  if (!v) return;
-                  const HlsMod = await getHlsModule();
-                  if (!HlsMod || !HlsMod.isSupported()) return;
-                  const hls2 = new HlsMod({
-                    enableWorker: true,
-                    lowLatencyMode: false,
-                  });
-                  hlsRef.current = hls2;
-                  hls2.loadSource(
-                    `/api/proxy/m3u8?url=${encodeURIComponent(fb)}`,
-                  );
-                  hls2.attachMedia(v);
-                  hls2.on(HlsMod.Events.MANIFEST_PARSED, () => {
-                    v.play().catch(() => {});
-                  });
-                  hls2.on(HlsMod.Events.ERROR, (_e: any, d2: any) => {
-                    if (d2?.fatal) {
-                      setVideoError(true);
-                      setVideoLoading(false);
-                    }
-                  });
-                })();
-                return;
-              }
-              setVideoError(true);
-              setVideoLoading(false);
-            }
-          });
-        } catch {
-          video.src = effectiveUrl;
-          video.load();
-          video.play().catch(() => {});
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+      });
+      hlsRef.current = hls;
+      hls.loadSource(effectiveUrl);
+      hls.attachMedia(video);
+      let healthy = false;
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+      hls.on(Hls.Events.FRAG_LOADED, () => {
+        // 第一个分片加载成功 = 该源真正可用，锁定它
+        if (!healthy) {
+          healthy = true;
+          rotatingRef.current = false;
         }
-      })();
-      return;
-    }
+      });
+      hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+        if (!data?.fatal) return;
+        // 失败 → 自动轮转到下一个可用源；全部失败才显示错误
+        if (!healthy && rotateToNextSource()) {
+          return;
+        }
+        setVideoError(true);
+        setVideoLoading(false);
+      });
+    };
 
-    // 普通 MP4
-    video.src = effectiveUrl;
-    video.load();
-    video.play().catch(() => {});
-  }, [currentIndex, episodes]);
+    const isHls = activeUrl.includes('.m3u8');
+    if (isHls) {
+      attachHls();
+    } else {
+      // 普通 MP4
+      video.src = effectiveUrl;
+      video.load();
+      video.play().catch(() => {});
+      video.onerror = () => {
+        if (!rotateToNextSource()) {
+          setVideoError(true);
+          setVideoLoading(false);
+        }
+      };
+    }
+    return () => clearTimeout(loadingTimer);
+  }, [currentIndex, episodes, activeCandidate, episodeCandidates]);
 
   // 清理 HLS 实例
   useEffect(() => {
