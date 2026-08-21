@@ -252,15 +252,41 @@ export default function ShortDramaVerticalPlayer({
       hlsRef.current = null;
     }
 
-    // HLS 流需要 hls.js
+    // HLS 流需要 hls.js — 被封锁的 CDN 强制走代理以绕过 CORS
+    const BLOCKED_CDNS = [
+      'cdnlz29.com',
+      'bfllvip.com',
+      'hhuus.com',
+      'xluuss.com',
+      'gsuus.com',
+      'ppqrrs.com',
+      'bfvvs.com',
+      'huyall.com',
+      'maowushi.com',
+      'oag7h.com',
+      'zuidazym3u8.com',
+      'ffzy-online4.com',
+      'feifei-online.com',
+      'power34play.vip',
+      'lzcdn',
+      's3.bfllvip.com',
+      'bfllvip',
+      'ukzyvod',
+    ];
+    const isBlocked = BLOCKED_CDNS.some((cdn) => url.includes(cdn));
+    const effectiveUrl = isBlocked
+      ? `/api/proxy/m3u8?url=${encodeURIComponent(url)}`
+      : url;
+
     const isHls = url.includes('.m3u8');
     if (isHls) {
-      // iOS 原生支持 HLS
+      // iOS 原生支持 HLS，但被封锁的 CDN 即使原生也需走代理（分片仍会 CORS 失败）
       const canNative =
         typeof video.canPlayType === 'function' &&
-        video.canPlayType('application/vnd.apple.mpegurl') !== '';
+        video.canPlayType('application/vnd.apple.mpegurl') !== '' &&
+        !isBlocked;
       if (canNative) {
-        video.src = url;
+        video.src = effectiveUrl;
         video.load();
         video.play().catch(() => {});
         return;
@@ -270,7 +296,7 @@ export default function ShortDramaVerticalPlayer({
         try {
           const Hls = await getHlsModule();
           if (!Hls || !Hls.isSupported()) {
-            video.src = url;
+            video.src = effectiveUrl;
             video.load();
             video.play().catch(() => {});
             return;
@@ -280,7 +306,7 @@ export default function ShortDramaVerticalPlayer({
             lowLatencyMode: false,
           });
           hlsRef.current = hls;
-          hls.loadSource(url);
+          hls.loadSource(effectiveUrl);
           hls.attachMedia(video);
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             video.play().catch(() => {});
@@ -292,7 +318,7 @@ export default function ShortDramaVerticalPlayer({
             }
           });
         } catch {
-          video.src = url;
+          video.src = effectiveUrl;
           video.load();
           video.play().catch(() => {});
         }
@@ -301,7 +327,7 @@ export default function ShortDramaVerticalPlayer({
     }
 
     // 普通 MP4
-    video.src = url;
+    video.src = effectiveUrl;
     video.load();
     video.play().catch(() => {});
   }, [currentIndex, episodes]);

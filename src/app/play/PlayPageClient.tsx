@@ -358,10 +358,6 @@ function PlayPageClient() {
   // 自动连播下一集开关（localStorage 记忆）
   const [autoPlayNext, setAutoPlayNext] = useState(isAutoPlayNextEnabled);
 
-  // 检测是否为竖屏视频（如 9:16 短视频/竖屏剧集），用于移动端标准播放器自适应放大
-  const [isPortrait, setIsPortrait] = useState(false);
-  const isPortraitRef = useRef(false);
-
   // 短剧来源API（来自短剧卡片的 sd_source 参数，播放时优先请求该源）
   const [shortdramaSource] = useState(searchParams.get('sd_source') || '');
 
@@ -2470,13 +2466,40 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: async function (video: HTMLVideoElement, url: string) {
+              // 已知被浏览器直接请求会 CORS 失败的 CDN，强制走服务端代理
+              const BLOCKED_CDNS = [
+                'cdnlz29.com',
+                'bfllvip.com',
+                'hhuus.com',
+                'xluuss.com',
+                'gsuus.com',
+                'ppqrrs.com',
+                'bfvvs.com',
+                'huyall.com',
+                'maowushi.com',
+                'oag7h.com',
+                'zuidazym3u8.com',
+                'ffzy-online4.com',
+                'feifei-online.com',
+                'power34play.vip',
+                'lzcdn',
+                's3.bfllvip.com',
+                'bfllvip',
+                'ukzyvod',
+              ];
+              const isBlocked = BLOCKED_CDNS.some((cdn) => url.includes(cdn));
+              const effectiveUrl = isBlocked
+                ? `/api/proxy/m3u8?url=${encodeURIComponent(url)}`
+                : url;
+
               const canUseNativeHls =
                 typeof video.canPlayType === 'function' &&
-                video.canPlayType('application/vnd.apple.mpegurl') !== '';
+                video.canPlayType('application/vnd.apple.mpegurl') !== '' &&
+                !isBlocked;
 
               if (canUseNativeHls) {
-                video.src = url;
-                ensureVideoSource(video, url);
+                video.src = effectiveUrl;
+                ensureVideoSource(video, effectiveUrl);
                 return;
               }
 
@@ -2612,11 +2635,11 @@ function PlayPageClient() {
                   : HlsModule.DefaultConfig.loader,
               });
 
-              hls.loadSource(url);
+              hls.loadSource(effectiveUrl);
               hls.attachMedia(video);
               video.hls = hls;
 
-              ensureVideoSource(video, url);
+              ensureVideoSource(video, effectiveUrl);
 
               // HLS音轨事件监听
               hls.on(
@@ -3405,22 +3428,6 @@ function PlayPageClient() {
 
           // 使用ArtPlayer layers API添加分辨率徽章（带渐变和发光效果）
           const video = artPlayerRef.current.video as HTMLVideoElement;
-
-          // 🔍 实时检测视频宽高比，竖屏视频（如 9:16）在移动端标准播放器自动放大
-          const checkPortrait = () => {
-            const { videoWidth, videoHeight } = artPlayerRef.current.video;
-            if (!videoWidth || !videoHeight) return;
-            const portrait = videoHeight > videoWidth * 1.05;
-            if (portrait !== isPortraitRef.current) {
-              isPortraitRef.current = portrait;
-              setIsPortrait(portrait);
-            }
-          };
-          checkPortrait();
-          artPlayerRef.current.on('video:loadedmetadata', checkPortrait);
-          artPlayerRef.current.on('video:resize', checkPortrait);
-          video.addEventListener('loadedmetadata', checkPortrait);
-          video.addEventListener('resize', checkPortrait);
 
           // 🖥️ 应用保存的显示模式设置（支持超宽屏）
           const savedObjectFit =
@@ -4922,20 +4929,12 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div
-                    className={`relative w-full flex items-center justify-center ${
-                      isPortrait && currentSourceRef.current !== 'shortdrama'
-                        ? 'min-h-[40vh] lg:h-full'
-                        : 'h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px]'
-                    }`}
-                  >
+                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
                     <div
                       className={`relative ${
                         currentSourceRef.current === 'shortdrama'
                           ? 'h-full aspect-[9/16] max-w-full'
-                          : isPortrait
-                            ? 'aspect-[9/16] h-auto max-w-full mx-auto max-h-[78vh] lg:max-h-none'
-                            : 'w-full h-full'
+                          : 'w-full h-full'
                       }`}
                     >
                       <div
