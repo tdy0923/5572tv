@@ -149,35 +149,47 @@ export async function GET(request: Request) {
       ua,
     );
 
+    // 上游 403 时重试一次：去掉 Referer/Origin（部分 CDN 白名单校验拒绝陌生来源）
+    if (response.status === 403) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      const retryHeaders = { ...headers };
+      delete retryHeaders.Referer;
+      delete retryHeaders.Origin;
+      delete retryHeaders['Sec-Fetch-Site'];
+      try {
+        response = await fetchWithRetry(
+          decodedUrl,
+          {
+            cache: 'no-cache',
+            redirect: 'follow',
+            signal: controller.signal,
+            headers: retryHeaders,
+            agent: typeof window === 'undefined' ? agent : undefined,
+          },
+          ua,
+        );
+      } catch {}
+    }
+
     clearTimeout(timeoutId);
 
     if (!response.ok) {
       stats.errors++;
       clearTimeout(timeoutId);
 
-      // 对被封锁的 CDN，不做 302 重定向（浏览器直连会被 CORS 拦截），直接透传错误响应并带上 CORS 头
-      if (isBlockedCdn) {
-        return new NextResponse(response.body, {
-          status: response.status,
-          headers: {
-            'Content-Type':
-              response.headers.get('Content-Type') || 'text/plain',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
-            'Cache-Control': 'no-cache',
-          },
-        });
-      }
-
-      // 非封锁 CDN，降级为 302 重定向（让浏览器直连）
-      return new NextResponse(null, {
-        status: 302,
+      // ⚠️ 彻底移除 302 直连降级：任何 CDN 都可能严格 CORS，
+      // 浏览器直连必然被拦。始终透传上游状态并带 CORS 头，
+      // 让 hls.js 拿到干净错误以切换线路
+      return new NextResponse(response.body, {
+        status: response.status,
         headers: {
-          Location: decodedUrl,
+          'Content-Type': response.headers.get('Content-Type') || 'text/plain',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
           'Access-Control-Allow-Headers': '*',
+          'Cache-Control': 'no-cache',
         },
       });
     }
@@ -322,31 +334,19 @@ export async function GET(request: Request) {
     stats.errors++;
     clearTimeout(timeoutId);
 
-    // 被封锁 CDN 不做 302（浏览器直连会被 CORS 拦截），直接返回 502 带 CORS
-    if (isBlockedCdn) {
-      return NextResponse.json(
-        { error: '上游获取失败', url: decodedUrl },
-        {
-          status: 502,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
-          },
+    // 上游获取失败（网络层）：返回 502 带 CORS，让 hls.js 拿到干净错误切换线路。
+    // 绝不 302 直连——浏览器直连会被 CORS 拦截
+    return NextResponse.json(
+      { error: '上游获取失败', url: decodedUrl },
+      {
+        status: 502,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
         },
-      );
-    }
-
-    // 服务端获取失败 → 降级为 302 重定向（让浏览器直连）
-    return new NextResponse(null, {
-      status: 302,
-      headers: {
-        Location: decodedUrl,
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
       },
-    });
+    );
   } finally {
     clearTimeout(timeoutId);
 
