@@ -124,7 +124,7 @@ ${
             temperature: 0.7,
             max_tokens: 1000,
           }),
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(25000),
         });
 
         if (!response.ok) {
