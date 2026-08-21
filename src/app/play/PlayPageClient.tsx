@@ -3918,14 +3918,20 @@ function PlayPageClient() {
                 }
 
                 // 额外监听屏幕方向变化事件，确保完全自动适配
+                // ⚠️ 只监听 orientationchange 且仅在方向真实变化时动作：
+                // 之前同时监听 resize，导致手机点全屏按钮 → 容器尺寸变化触发
+                // resize → 处理器误判"竖屏+全屏"→ 立刻退出全屏（闪烁抖动）
+                let lastOrientationIsLandscape: boolean | null = null;
                 const handleOrientationChange = () => {
                   if (isConfigVisible) {
                     setTimeout(adjustPanelPosition, 100);
                   }
-                  // 手机横屏自动进入全屏，退出横屏自动退出全屏
                   const isLandscape = window.matchMedia(
                     '(orientation: landscape)',
                   ).matches;
+                  // 方向未变则跳过（resize/全屏切换都会触发本回调）
+                  if (lastOrientationIsLandscape === isLandscape) return;
+                  lastOrientationIsLandscape = isLandscape;
                   const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(
                     navigator.userAgent,
                   );
@@ -3949,7 +3955,6 @@ function PlayPageClient() {
                   'orientationchange',
                   handleOrientationChange,
                 );
-                window.addEventListener('resize', handleOrientationChange);
 
                 // 清理函数
                 const _cleanup = () => {
@@ -3957,7 +3962,6 @@ function PlayPageClient() {
                     'orientationchange',
                     handleOrientationChange,
                   );
-                  window.removeEventListener('resize', handleOrientationChange);
                 };
 
                 // 点击其他地方自动隐藏

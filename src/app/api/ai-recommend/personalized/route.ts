@@ -9,7 +9,13 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const AI_API_BASE = process.env.AI_API_BASE || 'https://apihub.agnes-ai.com/v1';
-const AI_MODEL = process.env.AI_MODEL || 'gpt-4o-mini';
+// Agnes 网关不支持 gpt-4o-mini（503 model_not_found），默认用其自有模型；
+// 可通过 AI_MODEL 覆盖
+const AI_MODEL = process.env.AI_MODEL || 'agnes-2.0-flash';
+// 模型回退链：首选模型失败时依次尝试
+const AI_MODEL_FALLBACKS = [AI_MODEL, 'agnes-2.0-flash'].filter(
+  (m, i, arr) => m && arr.indexOf(m) === i,
+);
 
 const AI_KEYS = [
   process.env.AI_API_KEY_1,
@@ -98,45 +104,54 @@ ${
   if (!AI_KEYS.length) return [];
 
   const errors: string[] = [];
-  // Try each key in round-robin, up to all keys
-  for (let attempt = 0; attempt < AI_KEYS.length; attempt++) {
-    const apiKey = getNextKey();
-    try {
-      const response = await fetch(`${AI_API_BASE}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: AI_MODEL,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-        signal: AbortSignal.timeout(8000),
-      });
+  // 遍历模型回退链 × key 轮询，任一组合成功即返回
+  for (const model of AI_MODEL_FALLBACKS) {
+    for (let attempt = 0; attempt < AI_KEYS.length; attempt++) {
+      const apiKey = getNextKey();
+      try {
+        const response = await fetch(`${AI_API_BASE}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 1000,
+          }),
+          signal: AbortSignal.timeout(8000),
+        });
 
-      if (!response.ok) {
-        errors.push(`Key attempt ${attempt + 1}: ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '';
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.recommendations?.length) {
-          return parsed.recommendations;
+        if (!response.ok) {
+          errors.push(
+            `model=${model} Key attempt ${attempt + 1}: ${response.status}`,
+          );
+          continue;
         }
+
+        const data = await response.json();
+        const content = data.choices?.[0]?.message?.content || '';
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed.recommendations?.length) {
+              return parsed.recommendations;
+            }
+          } catch {
+            // AI 返回非法 JSON，继续尝试
+          }
+        }
+      } catch (error: any) {
+        errors.push(
+          `model=${model} Key attempt ${attempt + 1}: ${error.message}`,
+        );
       }
-      return [];
-    } catch (error: any) {
-      errors.push(`Key attempt ${attempt + 1}: ${error.message}`);
     }
   }
 
