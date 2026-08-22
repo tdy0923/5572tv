@@ -225,7 +225,23 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
   }
 }
 
+// 服务端内存缓存：SSR 每次渲染都会内部调用本接口（force-no-store），
+// 上游聚合耗时 1-2s，无缓存会导致 SSR 超时、首页短剧区空白
+const recommendCache = new Map<string, { data: unknown; ts: number }>();
+const RECOMMEND_CACHE_TTL = 5 * 60 * 1000;
+
 export async function GET(request: NextRequest) {
+  const cacheKey = request.url;
+  const cachedEntry = recommendCache.get(cacheKey);
+  if (cachedEntry && Date.now() - cachedEntry.ts < RECOMMEND_CACHE_TTL) {
+    return NextResponse.json(cachedEntry.data, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, s-maxage=300',
+        'X-Memory-Cache': 'HIT',
+      },
+    });
+  }
+
   const startTime = Date.now();
   const startMemory = process.memoryUsage().heapUsed;
   resetDbQueryCount();
@@ -265,6 +281,13 @@ export async function GET(request: NextRequest) {
       categoryNum,
       pageSize,
     );
+
+    // 写入内存缓存（限大小防泄漏）
+    if (recommendCache.size > 20) {
+      const oldest = recommendCache.keys().next().value;
+      if (oldest) recommendCache.delete(oldest);
+    }
+    recommendCache.set(cacheKey, { data: result, ts: Date.now() });
 
     // 测试1小时HTTP缓存策略
     const response = NextResponse.json(result);
