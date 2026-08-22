@@ -131,17 +131,19 @@ export function useSourceSwitching(params: {
       source?: string,
     ): Promise<'ok' | 'slow' | 'fail'> => {
       try {
-        // 直接访问视频源，不使用代理（和其他电影站一样）
+        // 经代理探测：直连 no-cors 拿不到真实状态码（opaque 恒为 ok），
+        // 死链会被误判可用导致无限换源；代理能返回真实 404/403
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeout);
-        const resp = await fetch(url, {
-          method: 'HEAD',
-          mode: 'no-cors',
-          signal: controller.signal,
-        });
+        const resp = await fetch(
+          `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
+          {
+            method: 'HEAD',
+            signal: controller.signal,
+          },
+        );
         clearTimeout(timer);
-        // no-cors模式下resp.type为opaque，表示请求成功
-        if (resp.ok || resp.type === 'opaque') return 'ok';
+        if (resp.ok) return 'ok';
         return 'fail';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'slow';

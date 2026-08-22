@@ -294,13 +294,18 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
     // 检测是否为iPad（无论什么浏览器）
     const isIPad = /iPad/i.test(userAgent);
 
+    // 统一经代理测速：与真实播放路径一致，避免直连 CDN 的 CORS 报错与误判
+    const testUrl = m3u8Url.startsWith('/api/proxy/')
+      ? m3u8Url
+      : `/api/proxy/m3u8?url=${encodeURIComponent(m3u8Url)}`;
+
     if (isIPad) {
       // iPad使用最简单的ping测试，不创建任何video或HLS实例
       //       console.log('iPad检测，使用简化测速避免崩溃');
 
       const startTime = performance.now();
       try {
-        await fetch(m3u8Url, {
+        await fetch(testUrl, {
           method: 'HEAD',
           mode: 'cors',
           signal: AbortSignal.timeout(2000),
@@ -340,7 +345,7 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
       const pingStart = performance.now();
       let pingTime = 0;
 
-      const pingPromise = fetch(m3u8Url, { method: 'HEAD', mode: 'cors' })
+      const pingPromise = fetch(testUrl, { method: 'HEAD', mode: 'cors' })
         .then(() => {
           pingTime = performance.now() - pingStart;
         })
@@ -563,7 +568,7 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
 
       // 加载m3u8
       try {
-        hls.loadSource(m3u8Url);
+        hls.loadSource(testUrl);
         hls.attachMedia(video);
       } catch (error) {
         cleanup();

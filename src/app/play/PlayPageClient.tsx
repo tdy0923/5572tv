@@ -1135,9 +1135,9 @@ function PlayPageClient() {
 
           // 仅测试连通性和响应时间
           const startTime = performance.now();
-          await fetch(episodeUrl, {
+          // 经代理测速：与真实播放路径一致，且能正确识别 404/403 死链
+          await fetch(`/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`, {
             method: 'HEAD',
-            mode: 'no-cors',
             signal: AbortSignal.timeout(3000), // 3秒超时
           });
           const pingTime = performance.now() - startTime;
