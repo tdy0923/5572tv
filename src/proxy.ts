@@ -485,6 +485,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/cache', // 缓存 API 端点（内部使用，无需认证）
     '/api/douban', // 豆瓣 API 端点（公共数据，无需认证）
     '/api/image-proxy', // 图片代理（公共数据，无需认证）
+    '/api/poster-edge', // 图片代理的 Worker 回源别名（同样公开）
     '/api/video-proxy', // 视频代理（公共数据，无需认证）
     '/api/poster-cache', // 海报本地缓存（公共数据，无需认证）
     '/api/video-cache', // 视频缩略图缓存（公共数据，无需认证）
