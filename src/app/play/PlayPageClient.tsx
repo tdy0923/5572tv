@@ -1752,7 +1752,45 @@ function PlayPageClient() {
         }
       } else {
         // 没有source和id，正常搜索流程
-        sourcesInfo = await fetchSourcesData(searchTitle || videoTitle);
+        if (shortdramaId) {
+          // 短剧卡片进入：并行拉取专用短剧源，作为最高优先候选，
+          // 并强制走测速优选（与电影同级），自动跳过死链选活源
+          const [searchResults, dedicated] = await Promise.all([
+            fetchSourcesData(searchTitle || videoTitle),
+            (async () => {
+              try {
+                const dramaTitle =
+                  searchParams.get('title') || videoTitleRef.current || '';
+                const tParam = dramaTitle
+                  ? `&name=${encodeURIComponent(dramaTitle)}`
+                  : '';
+                const res = await fetch(
+                  `/api/shortdrama/detail?id=${shortdramaId}&episode=1${tParam}${shortdramaSourceParam}`,
+                  { signal: AbortSignal.timeout(15000) },
+                );
+                if (!res.ok) return null;
+                const dd: any = await res.json();
+                if (!dd?.episodes?.length || !dd.title || !dd.poster)
+                  return null;
+                return {
+                  ...dd,
+                  source: 'shortdrama',
+                  id: shortdramaId,
+                } as SearchResult;
+              } catch {
+                return null;
+              }
+            })(),
+          ]);
+          sourcesInfo = searchResults;
+          if (dedicated) {
+            sourcesInfo = [dedicated, ...sourcesInfo];
+            needPreferRef.current = true;
+            setNeedPrefer(true);
+          }
+        } else {
+          sourcesInfo = await fetchSourcesData(searchTitle || videoTitle);
+        }
       }
 
       if (!detailData && sourcesInfo.length === 0) {

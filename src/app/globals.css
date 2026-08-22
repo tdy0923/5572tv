@@ -251,9 +251,16 @@
   }
 
   .ui-nav-surface {
-    @apply relative border-b bg-white/85 backdrop-blur-xl;
+    @apply relative border-b bg-white;
     border-color: var(--color-stroke-subtle);
     box-shadow: var(--shadow-2);
+  }
+  /* 移动端用实色导航：backdrop-blur 在手机上逐帧重采样，
+     是首页/列表滚动（尤其上滑）卡顿的主要元凶；桌面保留毛玻璃 */
+  @media (min-width: 768px) {
+    .ui-nav-surface {
+      @apply bg-white/85 backdrop-blur-xl;
+    }
   }
   .ui-nav-surface::before {
     content: '';
@@ -274,6 +281,12 @@
   .dark .ui-nav-surface {
     background: rgba(12, 12, 14, 0.68);
     border-color: var(--color-stroke);
+  }
+  /* 移动端深色导航同样改实色（无 blur 时半透明会透出滚动内容） */
+  @media (max-width: 767px) {
+    .dark .ui-nav-surface {
+      background: #0c0c0e;
+    }
   }
 
   .ui-section-heading {

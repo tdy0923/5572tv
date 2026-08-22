@@ -285,7 +285,7 @@ export default function ModernNav({
       {/* Mobile Bottom Navigation - Netflix Full-Width Style with Light Mode Support */}
       {!isImmersive && (
         <nav
-          className='md:hidden fixed left-0 right-0 z-30 bg-white dark:bg-black/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-700 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
+          className='md:hidden fixed left-0 right-0 z-30 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-700 shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/40'
           style={{
             bottom: 0,
             paddingBottom: 'env(safe-area-inset-bottom)',

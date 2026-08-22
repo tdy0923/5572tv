@@ -30,6 +30,9 @@ export default function PullToRefresh({
   }, [onRefresh, threshold]);
 
   const applyDistance = useCallback((v: number) => {
+    // 值未变化时跳过 setState：滚动期间 touchmove 每帧触发，
+    // 无差别 setState 会造成整页级联渲染（上滑卡顿元凶之一）
+    if (pullRef.current === v) return;
     pullRef.current = v;
     setPullDistance(v);
   }, []);
@@ -43,24 +46,28 @@ export default function PullToRefresh({
       if (!atTop()) return;
       startY.current = e.touches[0].clientY;
       tracking.current = true;
-      setDragging(true);
+      // 延迟到真正下拉时再置 dragging，避免每次点按/上滑都触发渲染
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (!tracking.current || refreshingRef.current) return;
-      // 拉到一半页面滚动了，放弃接管，交给原生滚动
-      if (!atTop()) {
-        tracking.current = false;
-        applyDistance(0);
-        setDragging(false);
-        return;
-      }
       const diff = e.touches[0].clientY - startY.current;
       if (diff > 0) {
+        // 拉到一半页面滚动了，放弃接管，交给原生滚动
+        if (!atTop()) {
+          tracking.current = false;
+          applyDistance(0);
+          setDragging(false);
+          return;
+        }
         // 主动接管手势，阻止原生滚动/回弹，避免与下拉冲突
         e.preventDefault();
+        if (!dragging) setDragging(true);
         applyDistance(Math.min(diff * 0.5, thresholdRef.current * 1.5));
       } else {
+        // 上滑：一次性复位并停止跟踪，之后交给原生滚动
+        tracking.current = false;
+        setDragging(false);
         applyDistance(0);
       }
     };
