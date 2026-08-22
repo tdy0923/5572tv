@@ -32,9 +32,6 @@ interface HomeContentViewProps {
   hotShortDramas: ShortDramaItem[];
   upcomingReleases: ReleaseCalendarItem[];
   loading: boolean;
-  username: string;
-  aiRecommendations: any[];
-  aiRecommendLoading: boolean;
   upcomingFilter: 'all' | 'movie' | 'tv';
   setUpcomingFilter: (filter: 'all' | 'movie' | 'tv') => void;
   today: string;
@@ -48,9 +45,6 @@ export default function HomeContentView({
   hotShortDramas,
   upcomingReleases,
   loading,
-  username,
-  aiRecommendations,
-  aiRecommendLoading,
   upcomingFilter,
   setUpcomingFilter,
   today,
@@ -271,55 +265,6 @@ export default function HomeContentView({
           </ScrollableRow>
         </section>
       </LazySection>
-      <LazySection fallbackHeight={200}>
-        <section className='mb-8 md:mb-10'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='猜你想看'
-              icon={Sparkles}
-              iconColor='text-purple-500'
-              kicker='For You'
-              index='02'
-            />
-            <span className='text-xs text-gray-400 dark:text-gray-500'>
-              AI 推荐
-            </span>
-          </div>
-          {aiRecommendLoading ? (
-            <ScrollableRow>
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={`skeleton-${i}`}
-                  className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
-                >
-                  <div className='aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]' />
-                  <div className='mt-2 h-3 bg-gray-200 dark:bg-gray-700 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] w-3/4' />
-                </div>
-              ))}
-            </ScrollableRow>
-          ) : (
-            <ScrollableRow>
-              {aiRecommendations.map((item: any, index: number) => (
-                <div
-                  key={item.id || index}
-                  className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
-                >
-                  <VideoCard
-                    title={item.title || item}
-                    poster={item.poster || ''}
-                    year={item.year || ''}
-                    rate={item.rate || ''}
-                    from='douban'
-                    source={item.source || 'douban'}
-                    id={item.id || ''}
-                    type={item.type || 'movie'}
-                  />
-                </div>
-              ))}
-            </ScrollableRow>
-          )}
-        </section>
-      </LazySection>
       <section className='mb-8 md:mb-10 home-section'>
         <div className='mb-4 flex items-center justify-between'>
           <SectionTitle
@@ -327,7 +272,7 @@ export default function HomeContentView({
             icon={Film}
             iconColor='text-red-500'
             kicker='Trending'
-            index='03'
+            index='02'
           />
           <Link
             href='/douban?type=movie'
@@ -371,7 +316,7 @@ export default function HomeContentView({
               icon={Tv}
               iconColor='text-blue-500'
               kicker='Series'
-              index='04'
+              index='03'
             />
             <Link
               href='/douban?type=tv'
@@ -416,7 +361,7 @@ export default function HomeContentView({
               icon={Play}
               iconColor='text-orange-500'
               kicker='Short Drama'
-              index='05'
+              index='04'
             />
             <Link
               href='/shortdrama'
@@ -451,7 +396,7 @@ export default function HomeContentView({
               icon={Sparkles}
               iconColor='text-pink-500'
               kicker='Variety'
-              index='06'
+              index='05'
             />
             <Link
               href='/douban?type=show'
@@ -496,7 +441,7 @@ export default function HomeContentView({
               icon={Calendar}
               iconColor='text-purple-500'
               kicker='Anime'
-              index='07'
+              index='06'
             />
             <Link
               href='/douban?type=anime'

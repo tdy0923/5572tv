@@ -165,20 +165,6 @@ const allRemindersOptions = () =>
     gcTime: 10 * 60 * 1000,
   });
 
-const aiRecommendOptions = (enabled: boolean) =>
-  queryOptions({
-    queryKey: ['ai-recommendations'],
-    queryFn: async () => {
-      const res = await fetch('/api/ai-recommend/personalized');
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      return data.recommendations || [];
-    },
-    enabled,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-  });
-
 const favoriteGroupsOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['favorite-groups'],
@@ -256,10 +242,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     typeof window !== 'undefined' &&
     announcement !== undefined &&
     localStorage.getItem('hasSeenAnnouncement') !== announcement;
-
-  // AI 个性化推荐
-  const { data: aiRecommendations = [], isLoading: aiRecommendLoading } =
-    useQuery(aiRecommendOptions(!!username));
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
@@ -967,9 +949,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 hotShortDramas={hotShortDramas as ShortDramaItem[]}
                 upcomingReleases={upcomingReleases}
                 loading={loading}
-                username={username}
-                aiRecommendations={aiRecommendations}
-                aiRecommendLoading={aiRecommendLoading}
                 upcomingFilter={upcomingFilter}
                 setUpcomingFilter={setUpcomingFilter}
                 today={today}
