@@ -1,4 +1,4 @@
-const CACHE_NAME = '5572tv-v6';
+const CACHE_NAME = '5572tv-v7';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
