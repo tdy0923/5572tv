@@ -70,21 +70,40 @@ async function handleM3U8Proxy(request, url) {
     : '';
 
   try {
-    const response = await fetch(targetUrl, {
+    let response = await fetch(targetUrl, {
       headers: buildHeaders(source),
       redirect: 'follow',
       signal: AbortSignal.timeout(15000),
     });
 
+    // 上游 403 时重试一次：去掉 Referer/Origin（部分 CDN 拒绝陌生来源）
+    if (response.status === 403) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      const retryHeaders = buildHeaders(source);
+      delete retryHeaders.Referer;
+      delete retryHeaders.Origin;
+      try {
+        response = await fetch(targetUrl, {
+          headers: retryHeaders,
+          redirect: 'follow',
+          signal: AbortSignal.timeout(15000),
+        });
+      } catch {}
+    }
+
     if (!response.ok) {
-      // 服务端获取失败 → 302 重定向，让浏览器直连 CDN
-      return new Response(null, {
-        status: 302,
+      // ⚠️ 绝不 302 直连：浏览器直连会被 CORS 拦截。
+      // 始终透传上游状态并带 CORS 头，让 hls.js 拿到干净错误以切换线路
+      return new Response(response.body, {
+        status: response.status,
         headers: {
-          Location: targetUrl,
+          'Content-Type': response.headers.get('Content-Type') || 'text/plain',
           'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
           'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
           'Access-Control-Allow-Headers': '*',
+          'Cache-Control': 'no-store',
         },
       });
     }
@@ -135,16 +154,8 @@ async function handleM3U8Proxy(request, url) {
       headers: respHeaders,
     });
   } catch (err) {
-    // 网络错误也降级为 302，让浏览器尝试直连
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: targetUrl,
-        'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-        'Access-Control-Allow-Headers': '*',
-      },
-    });
+    // 网络错误：返回 502 带 CORS，绝不 302 直连（会被浏览器 CORS 拦截）
+    return jsonResponse({ error: '上游获取失败' }, 502, true, request);
   }
 }
 
