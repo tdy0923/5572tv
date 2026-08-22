@@ -93,6 +93,8 @@ export default function ShortDramaVerticalPlayer({
   const rotatingRef = useRef(false);
   // 当前剧标识（首集地址），换剧时重置轮转
   const lastDramaKeyRef = useRef<string>('');
+  // 最后加载的代理地址（防止同 URL 重复销毁重建）
+  const lastLoadedUrlRef = useRef<string>('');
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -284,6 +286,12 @@ export default function ShortDramaVerticalPlayer({
         ? activeSet[currentIndex]
         : url;
     const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
+
+    // 双保险：同一 URL 已在播（父组件重渲染导致 effect 重跑）→ 不销毁重建
+    if (hlsRef.current && lastLoadedUrlRef.current === effectiveUrl) {
+      return;
+    }
+    lastLoadedUrlRef.current = effectiveUrl;
 
     // 异步标记加载态，避免 effect 内同步 setState 触发级联渲染
     const loadingTimer = setTimeout(() => setVideoLoading(true), 0);

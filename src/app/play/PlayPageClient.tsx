@@ -837,6 +837,24 @@ function PlayPageClient() {
     danmuLoadingRef,
   });
 
+  // 短剧多源候选链：useMemo 稳定引用，避免父组件每秒重渲染导致
+  // 竖屏播放器 effect 反复销毁重建 HLS 实例（播放永远起不来的根因）
+  const dramaEpisodeCandidates = useMemo(() => {
+    if (!shortdramaDetails?.episodes?.length) return undefined;
+    return [
+      shortdramaDetails.episodes,
+      ...(availableSources || [])
+        .filter(
+          (s) =>
+            s.source !== 'shortdrama' &&
+            s.episodes &&
+            s.episodes.length > 0 &&
+            s.episodes[0] !== shortdramaDetails.episodes[0],
+        )
+        .map((s) => s.episodes),
+    ];
+  }, [shortdramaDetails, availableSources]);
+
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const danmakuConfigCleanupRef = useRef<(() => void) | null>(null);
@@ -4797,22 +4815,7 @@ function PlayPageClient() {
             episodesTitles={
               shortdramaDetails?.episodes_titles || detail.episodes_titles || []
             }
-            episodeCandidates={
-              shortdramaDetails?.episodes?.length
-                ? [
-                    shortdramaDetails.episodes,
-                    ...(availableSources || [])
-                      .filter(
-                        (s) =>
-                          s.source !== 'shortdrama' &&
-                          s.episodes &&
-                          s.episodes.length > 0 &&
-                          s.episodes[0] !== shortdramaDetails.episodes[0],
-                      )
-                      .map((s) => s.episodes),
-                  ]
-                : undefined
-            }
+            episodeCandidates={dramaEpisodeCandidates}
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
             title={videoTitle || detail.title || ''}
