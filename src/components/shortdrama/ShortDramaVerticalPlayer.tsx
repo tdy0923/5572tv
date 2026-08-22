@@ -46,6 +46,21 @@ interface ShortDramaVerticalPlayerProps {
 
 const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next_vertical';
 
+// 死亡名单：确认无法播放的候选源（首集URL→死亡时间），10分钟内直接跳过，
+// 不再产生请求与控制台报错，大幅加快换集/重试速度
+const deadCandidateAt = new Map<string, number>();
+const DEAD_CANDIDATE_TTL = 10 * 60 * 1000;
+
+function isCandidateDead(key: string): boolean {
+  const t = deadCandidateAt.get(key);
+  if (!t) return false;
+  if (Date.now() - t > DEAD_CANDIDATE_TTL) {
+    deadCandidateAt.delete(key);
+    return false;
+  }
+  return true;
+}
+
 export default function ShortDramaVerticalPlayer({
   episodes,
   episodesTitles,
@@ -346,15 +361,17 @@ export default function ShortDramaVerticalPlayer({
         next++
       ) {
         const cand = episodeCandidates[next];
-        if (cand && cand.length > currentIndex && cand[currentIndex]) {
-          rotatingRef.current = true;
-          try {
-            hlsRef.current?.destroy();
-          } catch {}
-          hlsRef.current = null;
-          setActiveCandidate(next);
-          return true; // activeCandidate 变化会触发本 effect 重建播放
-        }
+        if (!cand || cand.length <= currentIndex || !cand[currentIndex])
+          continue;
+        // 死亡名单内的候选直接跳过（10 分钟内已确认无法播放）
+        if (isCandidateDead(cand[0] || '')) continue;
+        rotatingRef.current = true;
+        try {
+          hlsRef.current?.destroy();
+        } catch {}
+        hlsRef.current = null;
+        setActiveCandidate(next);
+        return true; // activeCandidate 变化会触发本 effect 重建播放
       }
       return false;
     };
@@ -388,6 +405,9 @@ export default function ShortDramaVerticalPlayer({
       });
       hls.on(Hls.Events.ERROR, (_: any, data: any) => {
         if (!data?.fatal) return;
+        // 当前源确认死亡 → 记入死亡名单（10 分钟内轮转直接跳过）
+        const curSet = episodeCandidates?.[activeCandidate];
+        if (curSet?.[0]) deadCandidateAt.set(curSet[0], Date.now());
         // 失败 → 自动轮转到下一个可用源；全部失败才显示错误
         if (!healthy && rotateToNextSource()) {
           return;

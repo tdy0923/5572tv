@@ -221,8 +221,11 @@ export function processImageUrl(originalUrl: string): string {
     normalizedUrl.includes('manmankan.com')
   ) {
     // These CDNs have Referer restrictions, need proxy
-  } else if (isRemoteHttpUrl) {
-    // All other remote images load directly (no proxy needed)
+  } else if (
+    isRemoteHttpUrl &&
+    // 短剧图床走边缘缓存代理（CF 全球节点共享热缓存，与豆瓣海报同等待遇）
+    !normalizedUrl.includes('hongniuzyimage.com')
+  ) {
     return normalizedUrl;
   }
 
