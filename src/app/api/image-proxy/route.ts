@@ -50,14 +50,28 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    let p = inFlight.get(url);
-    if (!p) {
-      p = fetchWithRetry(url, 3).finally(() => {
-        inFlight.delete(url);
-      });
-      inFlight.set(url, p);
+    // 豆瓣系图片：构建镜像回退链（当前配置源 → 腾讯/阿里 CDN → 官方源），
+    // 任一镜像成功即返回，彻底解决单点限流
+    const candidates = buildDoubanMirrorCandidates(url);
+    let data: ArrayBuffer | null = null;
+    let lastErr: unknown = null;
+    for (const cand of candidates) {
+      try {
+        let p = inFlight.get(cand);
+        if (!p) {
+          p = fetchWithRetry(cand, 1).finally(() => {
+            inFlight.delete(cand);
+          });
+          inFlight.set(cand, p);
+        }
+        data = await p;
+        break;
+      } catch (err) {
+        lastErr = err;
+        continue;
+      }
     }
-    const data = await p;
+    if (!data) throw lastErr ?? new Error('all mirrors failed');
     const contentType = detectImageType(data);
     cacheSet(url, data, contentType);
     return new NextResponse(new Uint8Array(data), {
@@ -146,6 +160,28 @@ function cacheGet(
 
 // 并发去重：同一海报同时到达时共享一次回源，避免互相挤兑超时
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
+
+// 豆瓣镜像池（与前端 DOUBAN_CDN_MIRRORS 保持一致）
+const DOUBAN_IMAGE_HOSTS = [
+  'img.doubanio.cmliussss.net', // 腾讯 CDN
+  'img.doubanio.cmliussss.com', // 阿里 CDN
+  'img3.doubanio.com',
+];
+
+/** 豆瓣系图片构建镜像回退链：当前配置源优先，其余镜像依次兜底 */
+function buildDoubanMirrorCandidates(rawUrl: string): string[] {
+  try {
+    const u = new URL(rawUrl);
+    if (!/doubanio\./i.test(u.hostname)) return [rawUrl]; // 非豆瓣系单候选
+    const tail = u.pathname + u.search;
+    const ordered = [u.hostname, ...DOUBAN_IMAGE_HOSTS].filter(
+      (h, i, arr) => arr.indexOf(h) === i,
+    );
+    return ordered.map((h) => `https://${h}${tail}`);
+  } catch {
+    return [rawUrl];
+  }
+}
 
 function cacheSet(url: string, data: ArrayBuffer, contentType: string) {
   if (imageCache.size >= IMAGE_CACHE_MAX) {

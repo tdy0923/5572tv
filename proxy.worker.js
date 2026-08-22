@@ -14,6 +14,8 @@ addEventListener('fetch', (event) => {
     event.respondWith(handleSegmentProxy(event.request, url));
   } else if (path === '/api/proxy/key') {
     event.respondWith(handleKeyProxy(event.request, url));
+  } else if (path === '/api/image-proxy') {
+    event.respondWith(handleImageProxy(event.request, url, event));
   } else if (path === '/') {
     event.respondWith(
       new Response(getRootHtml(), {
@@ -157,6 +159,81 @@ async function handleM3U8Proxy(request, url) {
     // 网络错误：返回 502 带 CORS，绝不 302 直连（会被浏览器 CORS 拦截）
     return jsonResponse({ error: '上游获取失败' }, 502, true, request);
   }
+}
+
+// ---------- Image Proxy (edge-cached) ----------
+
+function isBlockedHost(hostname) {
+  return /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|0\.|::1)/i.test(
+    hostname,
+  );
+}
+
+// 边缘缓存图片：全球 CF 节点共享热海报，源站与豆瓣限流压力趋零。
+// 回源仍走 Node 源站（保留镜像回退/去重/内存缓存逻辑）
+async function handleImageProxy(request, url, event) {
+  const targetUrl = url.searchParams.get('url') || '';
+  if (!targetUrl) {
+    return jsonResponse({ error: 'Missing url' }, 400, true, request);
+  }
+  let u;
+  try {
+    u = new URL(targetUrl);
+  } catch {
+    return jsonResponse({ error: 'Invalid url' }, 400, true, request);
+  }
+  if (!/^https?:$/.test(u.protocol) || isBlockedHost(u.hostname)) {
+    return jsonResponse({ error: 'URL rejected' }, 403, true, request);
+  }
+
+  const cache = caches.default;
+  const cacheKey = new Request(request.url, { method: 'GET' });
+  try {
+    const hit = await cache.match(cacheKey);
+    if (hit) {
+      const r = new Response(hit.body, hit);
+      r.headers.set('X-Edge-Cache', 'HIT');
+      return r;
+    }
+  } catch {}
+
+  let upstream;
+  try {
+    // 回源走内部别名 /api/poster-edge（不在 Worker 路由表内，避免自引用死循环）
+    upstream = await fetch(
+      `${url.origin}/api/poster-edge?url=${encodeURIComponent(targetUrl)}`,
+      { headers: { 'User-Agent': UA } },
+    );
+  } catch {
+    return jsonResponse({ error: '上游获取失败' }, 502, true, request);
+  }
+  if (!upstream.ok) {
+    return new Response(null, {
+      status: upstream.status,
+      headers: addCorsHeaders(new Headers({ 'Cache-Control': 'no-store' })),
+    });
+  }
+  const ct = upstream.headers.get('Content-Type') || '';
+  if (!ct.startsWith('image/')) {
+    return new Response(null, {
+      status: 502,
+      headers: addCorsHeaders(new Headers({ 'Cache-Control': 'no-store' })),
+    });
+  }
+  const out = new Response(upstream.body, {
+    status: 200,
+    headers: addCorsHeaders(
+      new Headers({
+        'Content-Type': ct,
+        // 边缘缓存 7 天 + 浏览器缓存 30 天
+        'Cache-Control': 'public, max-age=2592000, s-maxage=604800',
+      }),
+    ),
+  });
+  try {
+    event.waitUntil(cache.put(cacheKey, out.clone()));
+  } catch {}
+  return out;
 }
 
 // ---------- Segment Proxy ----------
