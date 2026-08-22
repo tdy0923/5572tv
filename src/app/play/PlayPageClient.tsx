@@ -837,23 +837,60 @@ function PlayPageClient() {
     danmuLoadingRef,
   });
 
+  // 跨源兜底：按剧名到其他短剧采集源搜索同名剧集（非阻塞，异步追加）
+  const [dramaAlternatives, setDramaAlternatives] = useState<string[][]>([]);
+  useEffect(() => {
+    setDramaAlternatives([]);
+    const title = shortdramaDetails?.title;
+    if (!title) return;
+    let cancelled = false;
+    fetch(
+      `/api/shortdrama/alternatives?name=${encodeURIComponent(title)}&exclude=${encodeURIComponent(shortdramaSource)}`,
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d?.alternatives?.length) return;
+        const sets: string[][] = d.alternatives
+          .map((a: any) => a.episodes as string[])
+          .filter((eps: string[]) => eps?.length > 0);
+        if (sets.length) setDramaAlternatives(sets);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [shortdramaDetails, shortdramaSource]);
+
   // 短剧多源候选链：useMemo 稳定引用，避免父组件每秒重渲染导致
   // 竖屏播放器 effect 反复销毁重建 HLS 实例（播放永远起不来的根因）
+  // 候选顺序：专用短剧源 → 跨源同名剧 → 全源搜索同名结果
   const dramaEpisodeCandidates = useMemo(() => {
-    if (!shortdramaDetails?.episodes?.length) return undefined;
-    return [
-      shortdramaDetails.episodes,
-      ...(availableSources || [])
-        .filter(
-          (s) =>
-            s.source !== 'shortdrama' &&
-            s.episodes &&
-            s.episodes.length > 0 &&
-            s.episodes[0] !== shortdramaDetails.episodes[0],
-        )
-        .map((s) => s.episodes),
-    ];
-  }, [shortdramaDetails, availableSources]);
+    const base = shortdramaDetails?.episodes?.length
+      ? [shortdramaDetails.episodes]
+      : [];
+    const generic = (availableSources || [])
+      .filter(
+        (s) =>
+          s.source !== 'shortdrama' &&
+          s.episodes &&
+          s.episodes.length > 0 &&
+          (!shortdramaDetails?.episodes?.length ||
+            s.episodes[0] !== shortdramaDetails.episodes[0]),
+      )
+      .map((s) => s.episodes);
+
+    // 按首集地址去重合并
+    const seen = new Set<string>();
+    const out: string[][] = [];
+    for (const set of [...base, ...dramaAlternatives, ...generic]) {
+      const k = set[0] || '';
+      if (k && !seen.has(k)) {
+        seen.add(k);
+        out.push(set);
+      }
+    }
+    return out.length ? out : undefined;
+  }, [shortdramaDetails, dramaAlternatives, availableSources]);
 
   // 🎬 电影级前置验货（仿 preferBestSource）：并行探测各候选源当前集，
   // 健康的源排前，直接从可用源开播，避免逐个撞死链
