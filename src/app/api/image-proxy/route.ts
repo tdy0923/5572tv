@@ -50,7 +50,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await fetchWithRetry(url, 3);
+    let p = inFlight.get(url);
+    if (!p) {
+      p = fetchWithRetry(url, 3).finally(() => {
+        inFlight.delete(url);
+      });
+      inFlight.set(url, p);
+    }
+    const data = await p;
     const contentType = detectImageType(data);
     cacheSet(url, data, contentType);
     return new NextResponse(new Uint8Array(data), {
@@ -62,20 +69,25 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch {
-    return new NextResponse(
-      Buffer.from(
-        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-        'base64',
-      ),
-      {
-        status: 200,
+    // 回源失败：优先返回过期缓存（陈旧胜于空白），且绝不缓存失败结果
+    const stale = cacheGet(url, true);
+    if (stale) {
+      return new NextResponse(new Uint8Array(stale.buffer), {
         headers: {
-          'Content-Type': 'image/gif',
+          'Content-Type': stale.contentType,
           'Access-Control-Allow-Origin': '*',
           'Cache-Control': 'public, max-age=3600',
+          'X-Image-Cache': 'stale',
         },
+      });
+    }
+    return new NextResponse(null, {
+      status: 404,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*',
       },
-    );
+    });
   }
 }
 
@@ -118,15 +130,22 @@ const imageCache = new Map<
   { buffer: ArrayBuffer; contentType: string; ts: number }
 >();
 
-function cacheGet(url: string) {
+function cacheGet(
+  url: string,
+  allowStale = false,
+): { buffer: ArrayBuffer; contentType: string; ts: number } | null {
   const entry = imageCache.get(url);
   if (!entry) return null;
-  if (Date.now() - entry.ts > IMAGE_CACHE_TTL) {
+  const expired = Date.now() - entry.ts > IMAGE_CACHE_TTL;
+  if (expired && !allowStale) {
     imageCache.delete(url);
     return null;
   }
   return entry;
 }
+
+// 并发去重：同一海报同时到达时共享一次回源，避免互相挤兑超时
+const inFlight = new Map<string, Promise<ArrayBuffer>>();
 
 function cacheSet(url: string, data: ArrayBuffer, contentType: string) {
   if (imageCache.size >= IMAGE_CACHE_MAX) {
