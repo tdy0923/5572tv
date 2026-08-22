@@ -2,6 +2,7 @@
 
 import {
   ChevronDown,
+  ChevronLeft,
   ChevronUp,
   Download,
   Film,
@@ -11,10 +12,12 @@ import {
   List,
   Maximize,
   Minimize,
+  RotateCcw,
   Share2,
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getHlsModule } from '@/app/play/utils';
@@ -57,6 +60,7 @@ export default function ShortDramaVerticalPlayer({
   episodeCandidates,
   preferredCandidateIndex,
 }: ShortDramaVerticalPlayerProps) {
+  const router = useRouter();
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -82,6 +86,8 @@ export default function ShortDramaVerticalPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [episodeSwitching, setEpisodeSwitching] = useState(false);
+  // 播完全部集数后的完结面板
+  const [playFinished, setPlayFinished] = useState(false);
   const [seekIndicator, setSeekIndicator] = useState<{
     time: number;
     side: 'left' | 'right';
@@ -109,12 +115,23 @@ export default function ShortDramaVerticalPlayer({
     (index: number) => {
       setVideoError(false);
       setVideoLoading(true);
+      setPlayFinished(false);
       setEpisodeSwitching(true);
       onEpisodeChange(index);
       setTimeout(() => setEpisodeSwitching(false), 300);
     },
     [onEpisodeChange],
   );
+
+  // 加载看门狗：转圈超过 20 秒自动转为可重试错误，杜绝无限加载圈
+  useEffect(() => {
+    if (!videoLoading || videoError) return;
+    const watchdog = setTimeout(() => {
+      setVideoLoading(false);
+      setVideoError(true);
+    }, 20000);
+    return () => clearTimeout(watchdog);
+  }, [videoLoading, videoError]);
 
   // 自动隐藏控制栏（3秒后）
   useEffect(() => {
@@ -465,6 +482,10 @@ export default function ShortDramaVerticalPlayer({
               onEnded={() => {
                 if (autoPlayNext && currentIndex < episodes.length - 1) {
                   handleEpisodeChange(currentIndex + 1);
+                } else {
+                  // 已是最后一集：停止转圈，显示完结面板
+                  setPlayFinished(true);
+                  setVideoLoading(false);
                 }
               }}
             />
@@ -481,6 +502,43 @@ export default function ShortDramaVerticalPlayer({
           {videoLoading && currentUrl && !videoError && (
             <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
               <div className='w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin' />
+            </div>
+          )}
+
+          {/* 播完全部集数 */}
+          {playFinished && !videoError && (
+            <div className='absolute inset-0 flex items-center justify-center bg-black/70 z-30'>
+              <div className='text-center'>
+                <Film className='w-10 h-10 mx-auto mb-3 text-white/80' />
+                <p className='text-white text-sm mb-5'>
+                  已播完本剧全部 {episodes.length} 集
+                </p>
+                <div className='flex items-center gap-3 justify-center'>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPlayFinished(false);
+                      if (videoRef.current) {
+                        videoRef.current.currentTime = 0;
+                        videoRef.current.play().catch(() => {});
+                      }
+                    }}
+                    className='flex items-center gap-1.5 px-5 py-2.5 bg-white text-black rounded-full text-sm font-medium'
+                  >
+                    <RotateCcw className='w-4 h-4' />
+                    重新播放
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push('/shortdrama');
+                    }}
+                    className='px-5 py-2.5 bg-white/20 text-white rounded-full text-sm backdrop-blur-sm'
+                  >
+                    返回选剧
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -667,6 +725,22 @@ export default function ShortDramaVerticalPlayer({
           </button>
         </div>
       )}
+
+      {/* 返回按钮 - 始终显示，不随控制栏隐藏 */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (typeof document !== 'undefined' && document.referrer) {
+            router.back();
+          } else {
+            router.push('/shortdrama');
+          }
+        }}
+        aria-label='返回'
+        className='absolute left-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm active:scale-95'
+      >
+        <ChevronLeft className='h-6 w-6' />
+      </button>
 
       {/* 顶部信息栏 */}
       {showControls && (
