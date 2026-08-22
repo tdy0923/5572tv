@@ -855,6 +855,53 @@ function PlayPageClient() {
     ];
   }, [shortdramaDetails, availableSources]);
 
+  // 🎬 电影级前置验货（仿 preferBestSource）：并行探测各候选源当前集，
+  // 健康的源排前，直接从可用源开播，避免逐个撞死链
+  const [dramaPreferredIdx, setDramaPreferredIdx] = useState<
+    number | undefined
+  >(undefined);
+  const dramaProbeKeyRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!dramaEpisodeCandidates?.length) {
+      setDramaPreferredIdx(undefined);
+      return;
+    }
+    const probeKey = dramaEpisodeCandidates[0]?.[0] || '';
+    if (dramaProbeKeyRef.current === probeKey) return; // 同一部剧只探测一次
+    dramaProbeKeyRef.current = probeKey;
+    setDramaPreferredIdx(undefined);
+
+    let cancelled = false;
+    (async () => {
+      const epIdx = currentEpisodeIndexRef.current || 0;
+      const probes = dramaEpisodeCandidates.map(async (set) => {
+        const url = set[epIdx] || set[0];
+        if (!url) return false;
+        try {
+          const res = await fetch(
+            `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
+            { signal: AbortSignal.timeout(6000) },
+          );
+          if (!res.ok) return false;
+          const txt = await res.text();
+          return txt.includes('#EXTM3U');
+        } catch {
+          return false;
+        }
+      });
+      const results = await Promise.allSettled(probes);
+      if (cancelled) return;
+      const firstHealthy = results.findIndex(
+        (r) => r.status === 'fulfilled' && r.value === true,
+      );
+      setDramaPreferredIdx(firstHealthy >= 0 ? firstHealthy : undefined);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dramaEpisodeCandidates]);
+
   // Wake Lock 相关
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const danmakuConfigCleanupRef = useRef<(() => void) | null>(null);
@@ -4816,6 +4863,7 @@ function PlayPageClient() {
               shortdramaDetails?.episodes_titles || detail.episodes_titles || []
             }
             episodeCandidates={dramaEpisodeCandidates}
+            preferredCandidateIndex={dramaPreferredIdx}
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
             title={videoTitle || detail.title || ''}

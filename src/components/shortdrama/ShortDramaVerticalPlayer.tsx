@@ -37,6 +37,8 @@ interface ShortDramaVerticalPlayerProps {
    * 某个源成功后记住它（后续集数直接用可用源，不再撞死链）
    */
   episodeCandidates?: string[][];
+  /** 父组件并行探活后推荐的首个健康候选下标；仅在尚未成功播放时采纳 */
+  preferredCandidateIndex?: number;
 }
 
 const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next_vertical';
@@ -53,6 +55,7 @@ export default function ShortDramaVerticalPlayer({
   onDownload,
   onExitVerticalMode,
   episodeCandidates,
+  preferredCandidateIndex,
 }: ShortDramaVerticalPlayerProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -91,6 +94,8 @@ export default function ShortDramaVerticalPlayer({
   const [activeCandidate, setActiveCandidate] = useState(0);
   // 正在轮转换源中（避免重复触发）
   const rotatingRef = useRef(false);
+  // 已有分片成功加载 = 当前源真实可用，锁定后不再响应外部推荐切换
+  const healthyLockedRef = useRef(false);
   // 当前剧标识（首集地址），换剧时重置轮转
   const lastDramaKeyRef = useRef<string>('');
   // 最后加载的代理地址（防止同 URL 重复销毁重建）
@@ -263,9 +268,28 @@ export default function ShortDramaVerticalPlayer({
     const dramaKey = episodes[0] || '';
     if (lastDramaKeyRef.current !== dramaKey) {
       lastDramaKeyRef.current = dramaKey;
+      healthyLockedRef.current = false;
       if (activeCandidate !== 0) {
         // 异步重置，避免 effect 内同步 setState 触发级联渲染
         setTimeout(() => setActiveCandidate(0), 0);
+        return;
+      }
+    }
+    // 父组件探活完成且尚未成功播放 → 直接跳到首个健康候选（电影级验货）
+    if (
+      preferredCandidateIndex != null &&
+      !healthyLockedRef.current &&
+      preferredCandidateIndex !== activeCandidate &&
+      !rotatingRef.current
+    ) {
+      const cand = episodeCandidates?.[preferredCandidateIndex];
+      if (cand && cand.length > currentIndex && cand[currentIndex]) {
+        rotatingRef.current = true;
+        // 异步切换，避免 effect 内同步 setState 触发级联渲染
+        setTimeout(() => {
+          rotatingRef.current = false;
+          setActiveCandidate(preferredCandidateIndex);
+        }, 0);
         return;
       }
     }
@@ -341,6 +365,7 @@ export default function ShortDramaVerticalPlayer({
         // 第一个分片加载成功 = 该源真正可用，锁定它
         if (!healthy) {
           healthy = true;
+          healthyLockedRef.current = true;
           rotatingRef.current = false;
         }
       });
@@ -371,7 +396,13 @@ export default function ShortDramaVerticalPlayer({
       };
     }
     return () => clearTimeout(loadingTimer);
-  }, [currentIndex, episodes, activeCandidate, episodeCandidates]);
+  }, [
+    currentIndex,
+    episodes,
+    activeCandidate,
+    episodeCandidates,
+    preferredCandidateIndex,
+  ]);
 
   // 清理 HLS 实例
   useEffect(() => {
