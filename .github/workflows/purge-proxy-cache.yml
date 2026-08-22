@@ -1,0 +1,30 @@
+name: Purge Proxy Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Purge Cloudflare cache for media proxies
+        run: |
+          TOKEN="${{ secrets.CF_API_TOKEN }}"
+          EMAIL="${{ secrets.CF_EMAIL }}"
+          ZONE=""
+          for NAME in www.5572.net 5572.net; do
+            ZONE=$(curl -s -H "X-Auth-Key: $TOKEN" -H "X-Auth-Email: $EMAIL" \
+              "https://api.cloudflare.com/client/v4/zones?name=$NAME" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['result'][0]['id'] if d.get('result') else '')")
+            [ -n "$ZONE" ] && break
+          done
+          if [ -n "$ZONE" ]; then
+            echo "Zone: $ZONE"
+            # 精准清除媒体代理路径的旧缓存（含历史302）
+            curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
+              -H "X-Auth-Key: $TOKEN" -H "X-Auth-Email: $EMAIL" \
+              -H "Content-Type: application/json" \
+              --data '{"prefixes":["www.5572.net/api/proxy/","5572.net/api/proxy/"]}'
+            echo ""
+          else
+            echo "No zone found"
+          fi
