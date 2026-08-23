@@ -304,36 +304,52 @@ export default function ShortDramaVerticalPlayer({
     const url = episodes[currentIndex] || '';
     if (!video || !url) return;
 
-    // 换了新剧（首集地址变化）→ 轮转归零，从专用源重新开始
+    // 换了新剧（首集地址变化）→ 直接从父组件已验证健康的候选起步
+    // （不再强制归零撞死链：诊断数据显示起播因此慢6-8秒）
     const dramaKey = episodes[0] || '';
     if (lastDramaKeyRef.current !== dramaKey) {
       lastDramaKeyRef.current = dramaKey;
       healthyLockedRef.current = false;
-      if (activeCandidate !== 0) {
+      const start = preferredCandidateIndex ?? 0;
+      if (activeCandidate !== start) {
         // 异步重置，避免 effect 内同步 setState 触发级联渲染
-        setTimeout(() => setActiveCandidate(0), 0);
-        return;
-      }
-    }
-    // 父组件探活完成且尚未成功播放 → 直接跳到首个健康候选（电影级验货）
-    if (
-      preferredCandidateIndex != null &&
-      !healthyLockedRef.current &&
-      preferredCandidateIndex !== activeCandidate &&
-      !rotatingRef.current
-    ) {
-      const cand = episodeCandidates?.[preferredCandidateIndex];
-      if (cand && cand.length > currentIndex && cand[currentIndex]) {
-        rotatingRef.current = true;
-        // 异步切换，避免 effect 内同步 setState 触发级联渲染
         setTimeout(() => {
           rotatingRef.current = false;
-          setActiveCandidate(preferredCandidateIndex);
+          setActiveCandidate(start);
         }, 0);
         return;
       }
     }
+    // 父组件探活完成且尚未成功播放 → 跳到首个健康候选（电影级验货）。
+    // 允许打断盲轮转：父组件的并行验货结果优先于逐个试错
+    const preferredCand =
+      episodeCandidates?.[preferredCandidateIndex as number];
+    if (
+      preferredCandidateIndex != null &&
+      !healthyLockedRef.current &&
+      preferredCandidateIndex !== activeCandidate &&
+      preferredCand &&
+      preferredCand.length > currentIndex &&
+      preferredCand[currentIndex] &&
+      // 目标候选若在死亡名单内则不跳（探活与播放结论冲突时以播放为准）
+      (() => {
+        const k = preferredCand[0] || '';
+        const deadAt = deadCandidateAt.get(k);
+        return !(deadAt && Date.now() - deadAt < 10 * 60 * 1000);
+      })()
+    ) {
+      rotatingRef.current = true;
+      // 异步切换，避免 effect 内同步 setState 触发级联渲染
+      setTimeout(() => {
+        rotatingRef.current = false;
+        setActiveCandidate(preferredCandidateIndex);
+      }, 0);
+      return;
+    }
     rotatingRef.current = false;
+
+    // 新一轮加载开始 → 清掉上一次残留的错误浮层（自动恢复中不让用户看到旧错误）
+    setTimeout(() => setVideoError(false), 0);
 
     // 清理旧的 HLS 实例
     if (hlsRef.current) {
@@ -466,12 +482,15 @@ export default function ShortDramaVerticalPlayer({
         video.play().catch(() => {});
       });
       hls.on(Hls.Events.FRAG_LOADED, () => {
-        // 第一个分片加载成功 = 该源真正可用，锁定它并解除看门狗
+        // 第一个分片加载成功 = 该源真正可用，锁定它并解除看门狗；
+        // 同时清除历史错误浮层与加载态（修复"已在播却显示失败点击重试"）
         if (!healthy) {
           healthy = true;
           healthyLockedRef.current = true;
           rotatingRef.current = false;
           clearTimeout(watchdog);
+          setVideoError(false);
+          setVideoLoading(false);
           if (typeof window !== 'undefined') {
             (window as any).__dbg = (window as any).__dbg || [];
             (window as any).__dbg.push({
