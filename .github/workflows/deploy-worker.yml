@@ -21,7 +21,10 @@ jobs:
           node-version: 22
 
       - name: Deploy to Cloudflare Workers
-        run: npx --yes wrangler@3 deploy
+        run: >-
+          npx --yes wrangler@3 deploy
+          --var DENO_SEGMENT_BASE:${{ secrets.DENO_SEGMENT_BASE }}
+          --var DENO_PROXY_TOKEN:${{ secrets.DENO_PROXY_TOKEN }}
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL }}

@@ -113,6 +113,14 @@ async function handleM3U8Proxy(request, url) {
           });
         } catch {}
       }
+      // 仍403 → 公益中继池接力（独立出口IP池，轮换放大穿透率）
+      if (response.status === 403) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        const relayed = await fetchViaRelays(targetUrl, buildHeaders(source));
+        if (relayed) response = relayed;
+      }
     }
 
     if (!response.ok) {
@@ -153,13 +161,20 @@ async function handleM3U8Proxy(request, url) {
     const finalUrl = response.url;
     const m3u8Content = await response.text();
     const proxyBase = `${request.url.startsWith('https') ? 'https' : 'https'}://${url.host}/api/proxy`;
-    const denoBase = 'https://seg.5572.net';
-    const rewritten = rewriteM3U8(
+    // Deno 分片加速节点（东京/新加坡，离中国用户近）
+    // 通过 wrangler --var 注入；未配置则全部分片走源站
+    const denoBase =
+      typeof DENO_SEGMENT_BASE !== 'undefined' ? DENO_SEGMENT_BASE : '';
+    const denoToken =
+      typeof DENO_PROXY_TOKEN !== 'undefined' ? DENO_PROXY_TOKEN : '';
+    const rewritten = await rewriteM3U8(
       m3u8Content,
       finalUrl,
       proxyBase,
       sourceParam,
       denoBase,
+      denoToken,
+      geoBlocked,
     );
 
     const respHeaders = addCorsHeaders(new Headers());
@@ -381,15 +396,41 @@ function resolveUrl(base, relative) {
 }
 
 // 智能路由：按 CDN 域名决定分片走 Deno 边缘还是源站回源
-// 'deno' = 走 seg.5572.net（快，离用户近）
+// 'deno' = 走 Deno Deploy 东京/新加坡（快，离中国用户近）
 // 'origin' = 走源站德国 VPS（兜底，兼容性好）
-// 未列出的 CDN 默认走 origin，后续根据播放结果自动学习
+// 首次遇到新 CDN 域名时经 Deno 探测可达性（缓存10分钟），可达即启用加速
 const cdnRouteMap = new Map();
+const denoProbeCache = new Map(); // hostname -> {ok, ts}
 
 function getSegmentBase(hostname, proxyBase, denoBase) {
   const route = cdnRouteMap.get(hostname);
   if (route === 'deno') return denoBase;
   return proxyBase; // origin 兜底
+}
+
+async function probeDenoReachable(hostname, targetUrl, denoBase, denoToken) {
+  if (!denoBase || !denoToken) return false;
+  const cached = denoProbeCache.get(hostname);
+  const now = Date.now();
+  if (cached && now - cached.ts < 600000) return cached.ok; // 10分钟缓存
+
+  let ok = false;
+  try {
+    // 用当前已验证可用的目标URL做HEAD探测：检验"Deno→该CDN"完整链路
+    // （部分CDN对Deno出口IP返回region denied，需逐域名实测）
+    const probeUrl = `${denoBase}/segment?url=${encodeURIComponent(
+      targetUrl,
+    )}&token=${encodeURIComponent(denoToken)}`;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3000);
+    const res = await fetch(probeUrl, { method: 'HEAD', signal: ctrl.signal });
+    clearTimeout(t);
+    ok = res.status === 200;
+  } catch {
+    ok = false;
+  }
+  denoProbeCache.set(hostname, { ok, ts: now });
+  return ok;
 }
 
 // 标记某个 CDN 的分片从 Deno 加载失败 → 后续走 origin
@@ -398,10 +439,42 @@ function markDenoFailed(hostname) {
   cdnRouteMap.set(hostname, 'origin');
 }
 
-function rewriteM3U8(content, baseUrl, proxyBase, sourceParam, denoBase) {
+async function rewriteM3U8(
+  content,
+  baseUrl,
+  proxyBase,
+  sourceParam,
+  denoBase,
+  denoToken,
+  geoBlockedTarget,
+) {
   const lines = content.split('\n');
   const result = [];
   const vars = new Map();
+
+  // 分片路由决策：
+  // - 地域封锁CDN → 分片改写为绝对CDN直连URL（浏览器中国IP可直接拉取）
+  // - 其他CDN → 探测Deno可达性；可达走Deno加速，否则走源站兜底
+  let segmentBase = proxyBase;
+  let segmentToken = '';
+  if (geoBlockedTarget) {
+    segmentBase = 'direct'; // 特殊标记：输出绝对CDN URL
+  } else if (denoBase && denoToken) {
+    try {
+      const segHost = new URL(baseUrl).hostname;
+      const ok = await probeDenoReachable(
+        segHost,
+        baseUrl,
+        denoBase,
+        denoToken,
+      );
+      if (ok) {
+        cdnRouteMap.set(segHost, 'deno');
+        segmentBase = denoBase;
+        segmentToken = `&token=${encodeURIComponent(denoToken)}`;
+      }
+    } catch {}
+  }
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
@@ -425,15 +498,22 @@ function rewriteM3U8(content, baseUrl, proxyBase, sourceParam, denoBase) {
     if (!trimmed.startsWith('#')) {
       const resolved = resolveUrl(baseUrl, trimmed);
       const finalSrc = substituteVars(resolved, vars);
-      try {
-        const segHost = new URL(finalSrc).hostname;
-        const base = getSegmentBase(segHost, proxyBase, denoBase);
-        const proxyUrl = `${base}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
-        result.push(proxyUrl);
-      } catch {
-        result.push(
-          `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`,
-        );
+      if (segmentBase === 'direct') {
+        // 浏览器直连CDN分片（地域封锁内容的中国用户路径）
+        result.push(finalSrc);
+      } else {
+        try {
+          const segHost = new URL(finalSrc).hostname;
+          const base = getSegmentBase(segHost, proxyBase, denoBase);
+          const tok = base === denoBase && segmentToken ? segmentToken : '';
+          result.push(
+            `${base}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}${tok}`,
+          );
+        } catch {
+          result.push(
+            `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`,
+          );
+        }
       }
       continue;
     }
@@ -565,6 +645,38 @@ const GEO_BLOCKED_CDNS = [
   'power34play',
   'ijycnd.com',
 ];
+
+// 公益中继池：地域封锁CDN的m3u8救援
+// 原理：各代理有独立出口IP池，穿透率互相独立，轮换放大成功率
+// （自有Worker约65%，seep实测100%，corsapi约60%；三梯队在自身403后依次接力）
+const RELAY_POOL = [
+  {
+    name: 'seep',
+    build: (u) => `https://seep.eu.org/${u}`,
+  },
+  {
+    name: 'corsapi',
+    build: (u) =>
+      `https://corsapi.smone.workers.dev/p/test?url=${encodeURIComponent(u)}`,
+  },
+];
+
+async function fetchViaRelays(targetUrl, headers) {
+  for (const relay of RELAY_POOL) {
+    try {
+      const res = await fetch(relay.build(targetUrl), {
+        headers,
+        redirect: 'follow',
+        signal: AbortSignal.timeout(12000),
+      });
+      if (res.ok) return res;
+      try {
+        await res.body?.cancel();
+      } catch {}
+    } catch {}
+  }
+  return null;
+}
 
 function isGeoBlockedTarget(url) {
   try {
