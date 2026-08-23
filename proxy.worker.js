@@ -132,8 +132,8 @@ async function handleM3U8Proxy(request, url) {
     // Rewrite M3U8 content
     const finalUrl = response.url;
     const m3u8Content = await response.text();
-    // 分片走 Deno Deploy 边缘代理（离中国用户近），清单和密钥仍走本 Worker
-    const DENO_SEGMENT_BASE = 'https://seg.5572.net';
+    // 分片统一走源站（德国）——部分中国CDN封锁CF/Deno边缘IP，
+    // 只有源站IP能稳定回源；延迟由 hls.js 预缓冲掩盖
     const proxyBase = `${request.url.startsWith('https') ? 'https' : 'https'}://${url.host}/api/proxy`;
     const rewritten = rewriteM3U8(
       m3u8Content,
@@ -387,7 +387,7 @@ function rewriteM3U8(content, baseUrl, proxyBase, sourceParam) {
     if (!trimmed.startsWith('#')) {
       const resolved = resolveUrl(baseUrl, trimmed);
       const finalSrc = substituteVars(resolved, vars);
-      const proxyUrl = `${DENO_SEGMENT_BASE}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
+      const proxyUrl = `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       result.push(proxyUrl);
       continue;
     }
@@ -399,7 +399,7 @@ function rewriteM3U8(content, baseUrl, proxyBase, sourceParam) {
       (uri) => {
         const resolved = resolveUrl(baseUrl, uri);
         const finalSrc = substituteVars(resolved, vars);
-        return `${DENO_SEGMENT_BASE}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
+        return `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-MAP:',
       '#EXT-X-PART:',
