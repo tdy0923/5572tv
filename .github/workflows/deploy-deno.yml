@@ -1,5 +1,8 @@
 name: Deploy Deno Segment Proxy
 
+# 分片加速节点（东京/新加坡）：普通CDN分片经此中继，离中国用户近。
+# 必须配置 PROXY_TOKEN 鉴权 —— 无鉴权的开放代理会被TVBox白嫖社群
+# 扫描滥用，流媒体中继的CPU消耗会迅速耗尽免费额度（已发生过一次）。
 on:
   workflow_dispatch:
   push:
@@ -26,8 +29,10 @@ jobs:
       - name: Deploy to Deno Deploy
         env:
           DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+          PROXY_TOKEN: ${{ secrets.DENO_PROXY_TOKEN }}
         run: |
           deployctl deploy \
             --project=5572tv-segments \
             --entrypoint=deno/segment-proxy.ts \
+            --env=PROXY_TOKEN=$PROXY_TOKEN \
             --prod
