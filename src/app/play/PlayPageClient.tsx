@@ -1788,46 +1788,9 @@ function PlayPageClient() {
           detailData = sourcesInfo[0];
         }
       } else {
-        // 没有source和id，正常搜索流程
-        if (shortdramaId) {
-          // 短剧卡片进入：并行拉取专用短剧源，作为最高优先候选，
-          // 并强制走测速优选（与电影同级），自动跳过死链选活源
-          const [searchResults, dedicated] = await Promise.all([
-            fetchSourcesData(searchTitle || videoTitle),
-            (async () => {
-              try {
-                const dramaTitle =
-                  searchParams.get('title') || videoTitleRef.current || '';
-                const tParam = dramaTitle
-                  ? `&name=${encodeURIComponent(dramaTitle)}`
-                  : '';
-                const res = await fetch(
-                  `/api/shortdrama/detail?id=${shortdramaId}&episode=1${tParam}${shortdramaSourceParam}`,
-                  { signal: AbortSignal.timeout(15000) },
-                );
-                if (!res.ok) return null;
-                const dd: any = await res.json();
-                if (!dd?.episodes?.length || !dd.title || !dd.poster)
-                  return null;
-                return {
-                  ...dd,
-                  source: 'shortdrama',
-                  id: shortdramaId,
-                } as SearchResult;
-              } catch {
-                return null;
-              }
-            })(),
-          ]);
-          sourcesInfo = searchResults;
-          if (dedicated) {
-            sourcesInfo = [dedicated, ...sourcesInfo];
-            needPreferRef.current = true;
-            setNeedPrefer(true);
-          }
-        } else {
-          sourcesInfo = await fetchSourcesData(searchTitle || videoTitle);
-        }
+        // 没有source和id：统一走全源搜索流程（与电影/剧集完全一致）
+        // 短剧也用55条管理线搜索，不单独走硬编码的drama API
+        sourcesInfo = await fetchSourcesData(searchTitle || videoTitle);
       }
 
       if (!detailData && sourcesInfo.length === 0) {
@@ -4925,8 +4888,7 @@ function PlayPageClient() {
       {isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama' ||
-          Boolean(shortdramaId)) &&
+          detail?.source === 'shortdrama') &&
         detail && (
           <ShortDramaVerticalPlayer
             episodes={
@@ -4963,8 +4925,7 @@ function PlayPageClient() {
         isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama' ||
-          Boolean(shortdramaId))
+          detail?.source === 'shortdrama')
       ) && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
