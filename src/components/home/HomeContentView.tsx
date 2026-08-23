@@ -10,6 +10,7 @@ import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 
 import HeroBanner from '@/components/HeroBanner';
+const ContinueWatching = dynamic(() => import('@/components/ContinueWatching'));
 import LazySection from '@/components/LazySection';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -126,6 +127,11 @@ export default function HomeContentView({
           />
         </section>
       )}
+
+      {/* 继续观看：有播放记录才渲染（空态自返回 null） */}
+      <div className='mb-8 md:mb-10'>
+        <ContinueWatching />
+      </div>
 
       <LazySection fallbackHeight={280}>
         <section className='mb-8 md:mb-10'>
