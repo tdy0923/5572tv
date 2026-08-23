@@ -2569,8 +2569,24 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: async function (video: HTMLVideoElement, url: string) {
-              // 所有 m3u8 强制走服务端代理以彻底解决 CORS（覆盖所有 CDN 包括 v.lfthirtytwo/play.phimgood 等）
-              const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+              // 智能路由：已知海外被封锁的地域限制CDN走浏览器直连（中国用户可访问），
+              // 其余仍走服务端代理以彻底解决 CORS
+              const GEO_BLOCKED_CDNS = [
+                'yzzyssvip',
+                'yzzyvip',
+                'vvvip-plays',
+                'high20-playback',
+                'high23-playback',
+                'yzzy32-play',
+                'power34play',
+                'ijycnd.com',
+              ];
+              const isGeoBlocked = GEO_BLOCKED_CDNS.some((cdn) =>
+                url.includes(cdn),
+              );
+              const effectiveUrl = isGeoBlocked
+                ? url
+                : `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
               const canUseNativeHls = false;
 
               if (canUseNativeHls) {
