@@ -2,10 +2,29 @@
 
 import { Frown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface PlayErrorDisplayProps {
   error: string;
   videoTitle?: string;
+}
+
+/** 收集诊断快照：便于用户一键复制反馈，替代来回猜问题 */
+function buildDiagnostics(error: string, videoTitle?: string): string {
+  const nav = typeof navigator !== 'undefined' ? navigator : null;
+  return [
+    `时间: ${new Date().toISOString()}`,
+    `错误: ${error}`,
+    `片名: ${videoTitle || '-'}`,
+    `页面: ${typeof location !== 'undefined' ? location.href : '-'}`,
+    `设备: ${nav ? nav.userAgent : '-'}`,
+    `网络: ${
+      nav && 'connection' in nav
+        ? String((nav as any).connection?.effectiveType || '-')
+        : '-'
+    }`,
+    `屏幕: ${typeof screen !== 'undefined' ? `${screen.width}x${screen.height}` : '-'}`,
+  ].join('\n');
 }
 
 export default function PlayErrorDisplay({
@@ -13,6 +32,18 @@ export default function PlayErrorDisplay({
   videoTitle,
 }: PlayErrorDisplayProps) {
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
+
+  const copyDiagnostics = async () => {
+    try {
+      await navigator.clipboard.writeText(buildDiagnostics(error, videoTitle));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // 剪贴板不可用时降级为选中文本提示
+      setCopied(false);
+    }
+  };
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-transparent'>
@@ -72,6 +103,13 @@ export default function PlayErrorDisplay({
             className='w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200'
           >
             🔄 重新尝试
+          </button>
+
+          <button
+            onClick={copyDiagnostics}
+            className='w-full px-6 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors'
+          >
+            {copied ? '✅ 已复制诊断信息' : '📋 复制诊断信息（反馈给站长）'}
           </button>
         </div>
       </div>
