@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { isGeoBlockedCdn } from '@/lib/geo-blocked-cdns';
 import { filterAdsFromM3U8 } from '@/lib/hls-ad-filter';
 import { getBaseUrl, resolveUrl } from '@/lib/live';
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
@@ -149,6 +150,10 @@ export async function GET(request: Request) {
       ua,
     );
 
+    // 地域封锁CDN的封锁是概率性的（部分出口IP未被封），403时多重试几次
+    const isGeoBlockedTarget = isGeoBlockedCdn(decodedUrl);
+    const maxGeoRetries = isGeoBlockedTarget ? 4 : 0;
+
     // 上游 403 时重试一次：去掉 Referer/Origin（部分 CDN 白名单校验拒绝陌生来源）
     if (response.status === 403) {
       try {
@@ -166,6 +171,27 @@ export async function GET(request: Request) {
             redirect: 'follow',
             signal: controller.signal,
             headers: retryHeaders,
+            agent: typeof window === 'undefined' ? agent : undefined,
+          },
+          ua,
+        );
+      } catch {}
+    }
+
+    // 地域封锁CDN：继续重试（每次请求可能命中不同网络路径/出口，约60%成功率，5次≈99%）
+    for (let i = 0; i < maxGeoRetries && response.status === 403; i++) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      await new Promise((r) => setTimeout(r, 150 * (i + 1)));
+      try {
+        response = await fetchWithRetry(
+          decodedUrl,
+          {
+            cache: 'no-cache',
+            redirect: 'follow',
+            signal: controller.signal,
+            headers,
             agent: typeof window === 'undefined' ? agent : undefined,
           },
           ua,

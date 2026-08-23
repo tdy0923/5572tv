@@ -78,6 +78,9 @@ async function handleM3U8Proxy(request, url) {
       signal: AbortSignal.timeout(15000),
     });
 
+    // 地域封锁CDN的封锁是概率性的：CF出口IP池约60%未被封，403时重试（5次≈99%成功）
+    const geoBlocked = isGeoBlockedTarget(targetUrl);
+
     // 上游 403 时重试一次：去掉 Referer/Origin（部分 CDN 拒绝陌生来源）
     if (response.status === 403) {
       try {
@@ -93,6 +96,23 @@ async function handleM3U8Proxy(request, url) {
           signal: AbortSignal.timeout(15000),
         });
       } catch {}
+    }
+
+    // 地域封锁CDN：继续重试，每次请求可能命中不同出口路径
+    if (geoBlocked) {
+      for (let i = 0; i < 4 && response.status === 403; i++) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        await new Promise((r) => setTimeout(r, 120 * (i + 1)));
+        try {
+          response = await fetch(targetUrl, {
+            headers: buildHeaders(source),
+            redirect: 'follow',
+            signal: AbortSignal.timeout(15000),
+          });
+        } catch {}
+      }
     }
 
     if (!response.ok) {
@@ -533,6 +553,27 @@ function substituteVars(text, vars) {
 }
 
 // ---------- Helpers ----------
+
+// 地域封锁CDN名单：对海外固定IP返回403，但CF出口IP池约60%可穿透
+const GEO_BLOCKED_CDNS = [
+  'yzzyssvip',
+  'yzzyvip',
+  'vvvip-plays',
+  'high20-playback',
+  'high23-playback',
+  'yzzy32-play',
+  'power34play',
+  'ijycnd.com',
+];
+
+function isGeoBlockedTarget(url) {
+  try {
+    const u = url.toLowerCase();
+    return GEO_BLOCKED_CDNS.some((cdn) => u.includes(cdn));
+  } catch {
+    return false;
+  }
+}
 
 function buildHeaders(sourceDomain) {
   const h = {

@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { isGeoBlockedCdn } from '@/lib/geo-blocked-cdns';
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
 import { isUrlSafeDeep as isUrlSafe } from '@/lib/ssrf-protection';
 
@@ -102,6 +103,33 @@ export async function GET(request: Request) {
       },
       ua,
     );
+
+    // 地域封锁CDN的封锁是概率性的（部分出口IP未被封），403时重试（每次约60%成功率）
+    if (response.status === 403 && isGeoBlockedCdn(decodedUrl)) {
+      for (let i = 0; i < 4 && response.status === 403; i++) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        await new Promise((r) => setTimeout(r, 100 * (i + 1)));
+        if (controller.signal.aborted) break;
+        try {
+          response = await fetchWithRetry(
+            decodedUrl,
+            {
+              signal: controller.signal,
+              headers: {
+                'User-Agent': ua,
+                Accept: 'video/mp2t, video/*, */*',
+                'Accept-Encoding': 'identity',
+                Referer: refererOrigin ? refererOrigin + '/' : undefined,
+              },
+              agent: typeof window === 'undefined' ? agent : undefined,
+            },
+            ua,
+          );
+        } catch {}
+      }
+    }
 
     clearTimeout(timeoutId);
 

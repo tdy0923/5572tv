@@ -2578,9 +2578,25 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: async function (video: HTMLVideoElement, url: string) {
-              // 智能路由：已知海外被封锁的地域限制CDN走浏览器直连（中国用户可访问），
+              // 智能路由：已知海外被封锁的地域限制CDN优先走浏览器直连（中国用户可访问、零服务器带宽），
+              // 直连失败（CORS等）自动降级到服务端代理（代理侧已带403重试，成功率约95%）；
               // 其余仍走服务端代理以彻底解决 CORS
-              const effectiveUrl = resolvePlaybackUrl(url);
+              const geoBlocked = isGeoBlockedCdn(url);
+              let effectiveUrl = resolvePlaybackUrl(url);
+              if (geoBlocked) {
+                // 预检直连可达性：2秒内拿不到清单则改走代理，避免hls.js黑盒失败
+                try {
+                  const probe = await fetch(url, {
+                    signal: AbortSignal.timeout(2500),
+                  });
+                  const txt = await probe.text();
+                  if (!txt.includes('#EXTM3U')) {
+                    effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+                  }
+                } catch {
+                  effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+                }
+              }
               const canUseNativeHls = false;
 
               if (canUseNativeHls) {
