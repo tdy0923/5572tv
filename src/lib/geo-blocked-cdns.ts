@@ -1,5 +1,9 @@
-// 地域封锁 CDN 名单：这些 CDN 对海外服务器（VPS/CF/Deno）返回 403，
-// 仅中国大陆 IP 可访问。相关 URL 必须绕过服务端代理、由浏览器直连。
+// 地域封锁 CDN 名单：这些 CDN 对海外服务器（VPS/CF）返回 403，
+// 仅中国大陆 IP 可直接访问。Worker 侧依据此名单启用重试+中继池。
+//
+// 客户端策略（学习 LibreTV 全代理模式）：所有 m3u8/分片一律经服务端代理，
+// 不再让浏览器直连问题CDN —— CORS/Referer/地域限制与浏览器彻底隔离。
+
 export const GEO_BLOCKED_CDNS = [
   'yzzyssvip',
   'yzzyvip',
@@ -15,9 +19,7 @@ export function isGeoBlockedCdn(url: string): boolean {
   return GEO_BLOCKED_CDNS.some((cdn) => url.includes(cdn));
 }
 
-// 播放用：地域封锁 CDN 直连，其余走服务端代理
-export function resolvePlaybackUrl(url: string): string {
-  return isGeoBlockedCdn(url)
-    ? url
-    : `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+// 播放地址统一走服务端代理
+export function resolvePlaybackUrl(_url: string): string {
+  return `/api/proxy/m3u8?url=${encodeURIComponent(_url)}`;
 }

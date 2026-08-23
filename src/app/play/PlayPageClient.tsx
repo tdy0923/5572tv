@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey } from '@/lib/db.client';
-import { isGeoBlockedCdn, resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 import { attachMobileGestures } from '@/lib/player-gestures';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
@@ -919,14 +919,11 @@ function PlayPageClient() {
       const probes = dramaEpisodeCandidates.map(async (set) => {
         const url = set[epIdx] || set[0];
         if (!url) return false;
-        // 地域封锁CDN：服务器代理必403，改由浏览器直连探测
-        const probeUrl = isGeoBlockedCdn(url)
-          ? url
-          : `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
         try {
-          const res = await fetch(probeUrl, {
-            signal: AbortSignal.timeout(6000),
-          });
+          const res = await fetch(
+            `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
+            { signal: AbortSignal.timeout(6000) },
+          );
           if (!res.ok) return false;
           const txt = await res.text();
           return txt.includes('#EXTM3U');
@@ -1180,11 +1177,7 @@ function PlayPageClient() {
           // 仅测试连通性和响应时间
           const startTime = performance.now();
           // 经代理测速：与真实播放路径一致，且能正确识别 404/403 死链
-          // 地域封锁CDN例外：直连测速（服务器代理必403，浏览器可访问）
-          const probeUrl = isGeoBlockedCdn(episodeUrl)
-            ? episodeUrl
-            : `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`;
-          await fetch(probeUrl, {
+          await fetch(`/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`, {
             method: 'HEAD',
             signal: AbortSignal.timeout(3000), // 3秒超时
           });
@@ -1300,8 +1293,7 @@ function PlayPageClient() {
         newUrl &&
         newUrl.includes('.m3u8') &&
         !newUrl.includes(window.location.host) &&
-        !isEmbySource &&
-        !isGeoBlockedCdn(newUrl)
+        !isEmbySource
       ) {
         const encodedUrl = encodeURIComponent(newUrl);
         const source = detailData.source || '';
@@ -2583,25 +2575,9 @@ function PlayPageClient() {
           // HLS 支持配置
           customType: {
             m3u8: async function (video: HTMLVideoElement, url: string) {
-              // 智能路由：已知海外被封锁的地域限制CDN优先走浏览器直连（中国用户可访问、零服务器带宽），
-              // 直连失败（CORS等）自动降级到服务端代理（代理侧已带403重试，成功率约95%）；
-              // 其余仍走服务端代理以彻底解决 CORS
-              const geoBlocked = isGeoBlockedCdn(url);
-              let effectiveUrl = resolvePlaybackUrl(url);
-              if (geoBlocked) {
-                // 预检直连可达性：2秒内拿不到清单则改走代理，避免hls.js黑盒失败
-                try {
-                  const probe = await fetch(url, {
-                    signal: AbortSignal.timeout(2500),
-                  });
-                  const txt = await probe.text();
-                  if (!txt.includes('#EXTM3U')) {
-                    effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
-                  }
-                } catch {
-                  effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
-                }
-              }
+              // 所有 m3u8 一律走服务端代理（Worker带403重试+公益中继池），
+              // 与 LibreTV 全代理策略一致：CORS/Referer/地域限制与浏览器隔离
+              const effectiveUrl = resolvePlaybackUrl(url);
               const canUseNativeHls = false;
 
               if (canUseNativeHls) {

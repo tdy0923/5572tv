@@ -20,7 +20,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { isGeoBlockedCdn, resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 
 import { getHlsModule } from '@/app/play/utils';
 
@@ -417,28 +417,12 @@ export default function ShortDramaVerticalPlayer({
         video.play().catch(() => {});
         return;
       }
-      // 地域封锁CDN：预检直连可达性（含CORS），失败自动降级到
-      // 服务端代理（Worker侧带重试+公益中继池）
-      let loadUrl = effectiveUrl;
-      if (isGeoBlockedCdn(activeUrl)) {
-        try {
-          const probe = await fetch(activeUrl, {
-            signal: AbortSignal.timeout(2500),
-          });
-          const txt = await probe.text();
-          if (!txt.includes('#EXTM3U')) {
-            loadUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
-          }
-        } catch {
-          loadUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
-        }
-      }
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
       });
       hlsRef.current = hls;
-      hls.loadSource(loadUrl);
+      hls.loadSource(effectiveUrl);
       hls.attachMedia(video);
 
       // ⏱️ 看门狗：12s 内没有成功加载任何分片 → 判定该源卡死
@@ -476,9 +460,7 @@ export default function ShortDramaVerticalPlayer({
               : null;
           if (nextUrl && !warmedUrlsRef.current.has(nextUrl)) {
             warmedUrlsRef.current.add(nextUrl);
-            const warmupUrl = isGeoBlockedCdn(nextUrl)
-              ? nextUrl
-              : `/api/proxy/m3u8?url=${encodeURIComponent(nextUrl)}`;
+            const warmupUrl = `/api/proxy/m3u8?url=${encodeURIComponent(nextUrl)}`;
             const warmSignal = AbortSignal.timeout(10000);
             fetch(warmupUrl, { signal: warmSignal })
               .then(async (r) => {
@@ -498,9 +480,7 @@ export default function ShortDramaVerticalPlayer({
                 try {
                   segAbs = new URL(
                     segRel,
-                    isGeoBlockedCdn(nextUrl)
-                      ? nextUrl
-                      : new URL(warmupUrl, location.href).href,
+                    new URL(warmupUrl, location.href).href,
                   ).href;
                 } catch {}
                 return fetch(segAbs, {

@@ -297,11 +297,38 @@ async function handleSegmentProxy(request, url) {
   } catch {}
 
   try {
-    const response = await fetch(targetUrl, {
+    let response = await fetch(targetUrl, {
       headers: buildHeaders(source || targetOrigin),
       redirect: 'follow',
       signal: AbortSignal.timeout(10000),
     });
+
+    // 地域封锁CDN：403时重试（出口IP池概率穿透）→ 公益中继池兜底
+    if (response.status === 403 && isGeoBlockedTarget(targetUrl)) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      for (let i = 0; i < 3 && response.status === 403; i++) {
+        await new Promise((r) => setTimeout(r, 120 * (i + 1)));
+        try {
+          response = await fetch(targetUrl, {
+            headers: buildHeaders(source || targetOrigin),
+            redirect: 'follow',
+            signal: AbortSignal.timeout(15000),
+          });
+        } catch {}
+      }
+      if (response.status === 403) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        const relayed = await fetchViaRelays(
+          targetUrl,
+          buildHeaders(source || targetOrigin),
+        );
+        if (relayed) response = relayed;
+      }
+    }
 
     if (!response.ok) {
       return jsonResponse(
@@ -350,11 +377,35 @@ async function handleKeyProxy(request, url) {
   }
 
   try {
-    const response = await fetch(targetUrl, {
+    let response = await fetch(targetUrl, {
       headers: buildHeaders(),
       redirect: 'follow',
       signal: AbortSignal.timeout(10000),
     });
+
+    // 地域封锁CDN：KEY是AES流的命脉，403时重试+中继池兜底
+    if (response.status === 403 && isGeoBlockedTarget(targetUrl)) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      for (let i = 0; i < 3 && response.status === 403; i++) {
+        await new Promise((r) => setTimeout(r, 100 * (i + 1)));
+        try {
+          response = await fetch(targetUrl, {
+            headers: buildHeaders(),
+            redirect: 'follow',
+            signal: AbortSignal.timeout(10000),
+          });
+        } catch {}
+      }
+      if (response.status === 403) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        const relayed = await fetchViaRelays(targetUrl, buildHeaders());
+        if (relayed) response = relayed;
+      }
+    }
 
     if (!response.ok) {
       return jsonResponse(
@@ -460,13 +511,14 @@ async function rewriteM3U8(
   const result = [];
   const vars = new Map();
 
-  // 分片路由决策：
-  // - 地域封锁CDN → 分片改写为绝对CDN直连URL（浏览器中国IP可直接拉取）
+  // 分片路由决策（学习 LibreTV 全代理策略）：
+  // - 地域封锁CDN → 分片也经本 Worker 中继（403重试+中继池兜底），
+  //   彻底隔离 CDN 的 CORS/Referer/地域限制，任何网络环境的用户都能播
   // - 其他CDN → 探测Deno可达性；可达走Deno加速，否则走源站兜底
   let segmentBase = proxyBase;
   let segmentToken = '';
   if (geoBlockedTarget) {
-    segmentBase = 'direct'; // 特殊标记：输出绝对CDN URL
+    segmentBase = proxyBase; // 经本Worker，handleSegmentProxy 内有重试+中继
   } else if (denoBase && denoToken) {
     try {
       const segHost = new URL(baseUrl).hostname;
@@ -506,22 +558,17 @@ async function rewriteM3U8(
     if (!trimmed.startsWith('#')) {
       const resolved = resolveUrl(baseUrl, trimmed);
       const finalSrc = substituteVars(resolved, vars);
-      if (segmentBase === 'direct') {
-        // 浏览器直连CDN分片（地域封锁内容的中国用户路径）
-        result.push(finalSrc);
-      } else {
-        try {
-          const segHost = new URL(finalSrc).hostname;
-          const base = getSegmentBase(segHost, proxyBase, denoBase);
-          const tok = base === denoBase && segmentToken ? segmentToken : '';
-          result.push(
-            `${base}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}${tok}`,
-          );
-        } catch {
-          result.push(
-            `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`,
-          );
-        }
+      try {
+        const segHost = new URL(finalSrc).hostname;
+        const base = getSegmentBase(segHost, proxyBase, denoBase);
+        const tok = base === denoBase && segmentToken ? segmentToken : '';
+        result.push(
+          `${base}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}${tok}`,
+        );
+      } catch {
+        result.push(
+          `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`,
+        );
       }
       continue;
     }

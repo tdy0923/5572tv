@@ -6,7 +6,9 @@ compatibility_date = "2026-01-01"
 # 只拦截视频代理路由（m3u8/segment/key），其他代理路径仍由 Next.js 处理
 routes = [
   { pattern = "www.5572.net/api/proxy/m3u8*", zone_name = "5572.net" },
-  # 分片不经过 Worker：调用量最大（每集数百次），由源站处理以节省免费额度
+  # 分片经 Worker：仅地域封锁短剧的分片会被重写到此处（带403重试+中继兜底），
+  # 普通内容分片仍由源站/Deno 处理以控制免费额度用量
+  { pattern = "www.5572.net/api/proxy/segment*", zone_name = "5572.net" },
   { pattern = "www.5572.net/api/proxy/key*", zone_name = "5572.net" },
-  { pattern = "www.5572.net/api/image-proxy*", zone_name = "5572.net" },
+  { pattern = "www.5572.net/api/proxy/image-proxy*", zone_name = "5572.net" },
 ]
