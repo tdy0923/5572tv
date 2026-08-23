@@ -11,6 +11,7 @@ import {
   mapApiItemToShortDramaItem,
   SHORT_DRAMA_KEYWORDS,
 } from '@/lib/shortdrama-constants';
+import { sinkDeadDramas } from '@/lib/shortdrama-dead-registry';
 import { getEnabledSources } from '@/lib/shortdrama-sources';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
@@ -234,7 +235,13 @@ export async function GET(request: NextRequest) {
   const cacheKey = request.url;
   const cachedEntry = recommendCache.get(cacheKey);
   if (cachedEntry && Date.now() - cachedEntry.ts < RECOMMEND_CACHE_TTL) {
-    return NextResponse.json(cachedEntry.data, {
+    // 缓存命中同样做死剧沉底（实时反映最新上报）
+    const data = Array.isArray(cachedEntry.data)
+      ? (sinkDeadDramas(
+          cachedEntry.data as Array<{ name?: string }>,
+        ) as unknown as unknown)
+      : cachedEntry.data;
+    return NextResponse.json(data, {
       headers: {
         'Cache-Control': 'public, max-age=300, s-maxage=300',
         'X-Memory-Cache': 'HIT',
@@ -289,8 +296,16 @@ export async function GET(request: NextRequest) {
     }
     recommendCache.set(cacheKey, { data: result, ts: Date.now() });
 
+    // 死剧沉底（不删除）：客户端播放失败上报的剧排到末尾，
+    // 12小时未再上报自动过期回到原位。缓存的是原始顺序，每次响应实时排序。
+    const orderedResult = Array.isArray(result)
+      ? (sinkDeadDramas(
+          result as Array<{ name?: string }>,
+        ) as unknown as typeof result)
+      : result;
+
     // 测试1小时HTTP缓存策略
-    const response = NextResponse.json(result);
+    const response = NextResponse.json(orderedResult);
 
     console.log('🕐 [RECOMMEND] 设置1小时HTTP缓存 - 测试自动过期刷新');
 

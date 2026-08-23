@@ -123,6 +123,9 @@ export default function ShortDramaVerticalPlayer({
   const lastDramaKeyRef = useRef<string>('');
   // 最后加载的代理地址（防止同 URL 重复销毁重建）
   const lastLoadedUrlRef = useRef<string>('');
+
+  // 已上报死剧的剧名集合（组件级，跨集数/候选切换保持）
+  const reportedDeadTitlesRef = useRef<Set<string>>(new Set());
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -355,6 +358,18 @@ export default function ShortDramaVerticalPlayer({
     const loadingTimer = setTimeout(() => setVideoLoading(true), 0);
 
     /** 轮转到下一个含当前集的候选源；返回是否发起了切换 */
+    // 全部候选源失败后上报死剧（每部剧只报一次，fire-and-forget）
+    const reportDeadOnce = () => {
+      if (!title || reportedDeadTitlesRef.current.has(title)) return;
+      reportedDeadTitlesRef.current.add(title);
+      fetch('/api/shortdrama/report-dead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: title }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+
     const rotateToNextSource = () => {
       if (rotatingRef.current || !episodeCandidates?.length) return false;
       for (
@@ -432,6 +447,8 @@ export default function ShortDramaVerticalPlayer({
         }
         setVideoError(true);
         setVideoLoading(false);
+        // 所有源均失败 → 上报死剧（服务端推荐降权，12h 过期自愈）
+        reportDeadOnce();
       });
     };
 
@@ -447,6 +464,7 @@ export default function ShortDramaVerticalPlayer({
         if (!rotateToNextSource()) {
           setVideoError(true);
           setVideoLoading(false);
+          reportDeadOnce();
         }
       };
     }
