@@ -649,7 +649,8 @@ const GEO_BLOCKED_CDNS = [
 
 // 公益中继池：地域封锁CDN的m3u8救援
 // 原理：各代理有独立出口IP池，穿透率互相独立，轮换放大成功率
-// （自有Worker约65%，seep实测100%，corsapi约60%；三梯队在自身403后依次接力）
+// 实测（2026-08）：seep 100%穿透、corsapi约60%；mengze已死、corsworkers限流
+// 策略：轮询起点 + 健康熔断（连败3次冷却30分钟）+ 全败返回原始错误
 const RELAY_POOL = [
   {
     name: 'seep',
@@ -661,20 +662,48 @@ const RELAY_POOL = [
       `https://corsapi.smone.workers.dev/p/test?url=${encodeURIComponent(u)}`,
   },
 ];
+let relayCursor = 0;
+const relayHealth = new Map(); // name -> { fails, cooldownUntil }
+const RELAY_COOLDOWN_MS = 30 * 60 * 1000;
+const RELAY_MAX_FAILS = 3;
+
+function relayIsDown(name) {
+  const h = relayHealth.get(name);
+  return !!(h && h.fails >= RELAY_MAX_FAILS && Date.now() < h.cooldownUntil);
+}
+function relayMarkFail(name) {
+  const h = relayHealth.get(name) || { fails: 0, cooldownUntil: 0 };
+  h.fails += 1;
+  if (h.fails >= RELAY_MAX_FAILS) {
+    h.cooldownUntil = Date.now() + RELAY_COOLDOWN_MS;
+  }
+  relayHealth.set(name, h);
+}
 
 async function fetchViaRelays(targetUrl, headers) {
-  for (const relay of RELAY_POOL) {
+  const n = RELAY_POOL.length;
+  for (let k = 0; k < n; k++) {
+    const idx = (relayCursor + k) % n;
+    const relay = RELAY_POOL[idx];
+    if (relayIsDown(relay.name)) continue;
     try {
       const res = await fetch(relay.build(targetUrl), {
         headers,
         redirect: 'follow',
         signal: AbortSignal.timeout(12000),
       });
-      if (res.ok) return res;
+      if (res.ok) {
+        relayCursor = (idx + 1) % n; // 下次从下一个代理开始（负载分摊）
+        relayHealth.delete(relay.name);
+        return res;
+      }
       try {
         await res.body?.cancel();
       } catch {}
-    } catch {}
+      relayMarkFail(relay.name);
+    } catch {
+      relayMarkFail(relay.name);
+    }
   }
   return null;
 }
