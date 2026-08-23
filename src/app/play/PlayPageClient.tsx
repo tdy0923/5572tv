@@ -2665,12 +2665,14 @@ function PlayPageClient() {
 
                 // 🎯 官方推荐的缓冲策略 - iOS13+ 特别优化
                 /* 缓冲长度配置 - 参考 hlsDefaultConfig - 桌面设备应用用户配置 */
+                // 移动端加大前向缓冲（VOD短剧场景）：分片经代理往返延迟高，
+                // 8-15s缓冲在网速波动时易卡顿；24-30s可显著平滑
                 maxBufferLength: isMobile
                   ? localIsIOS13
-                    ? 8
+                    ? 20
                     : isIOS
-                      ? 10
-                      : 15 // iOS13+: 8s, iOS: 10s, Android: 15s
+                      ? 24
+                      : 30 // iOS13+: 20s, iOS: 24s, Android: 30s
                   : bufferConfig.maxBufferLength, // 桌面使用用户配置
                 backBufferLength: isMobile
                   ? localIsIOS13
@@ -4925,6 +4927,9 @@ function PlayPageClient() {
   return (
     <>
       {/* 短剧竖屏模式 - 移动端全屏 */}
+      {/* 短剧竖屏模式 - 移动端全屏。
+          🚀 快速起播：专用源详情(~0.3s)就绪即挂载开播，不等55线全源搜索；
+          detail 稍后由后台搜索补齐，候选链/优选照常在后台进行 */}
       {isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
@@ -4932,22 +4937,29 @@ function PlayPageClient() {
           // 从短剧卡片进入（URL携带shortdrama_id）一律竖屏，
           // 即使播放源已统一为CMS线路
           Boolean(shortdramaId)) &&
-        detail && (
+        (detail ||
+          (Boolean(shortdramaId) && !!shortdramaDetails?.episodes?.length)) && (
           <ShortDramaVerticalPlayer
             episodes={
               shortdramaDetails?.episodes?.length
                 ? shortdramaDetails.episodes
-                : detail.episodes || []
+                : detail?.episodes || []
             }
             episodesTitles={
-              shortdramaDetails?.episodes_titles || detail.episodes_titles || []
+              shortdramaDetails?.episodes_titles ||
+              detail?.episodes_titles ||
+              []
             }
             episodeCandidates={dramaEpisodeCandidates}
             preferredCandidateIndex={dramaPreferredIdx}
             currentIndex={currentEpisodeIndex}
             onEpisodeChange={handleEpisodeChange}
-            title={videoTitle || detail.title || ''}
-            poster={resolveCardPosterUrl(detail.poster)}
+            title={videoTitle || detail?.title || ''}
+            poster={resolveCardPosterUrl(
+              detail?.poster ||
+                (shortdramaDetails as unknown as { cover?: string })?.cover ||
+                '',
+            )}
             onFavorite={handleToggleFavorite}
             isFavorited={favorited}
             onShare={() => {
