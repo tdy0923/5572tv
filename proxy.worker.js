@@ -132,14 +132,14 @@ async function handleM3U8Proxy(request, url) {
     // Rewrite M3U8 content
     const finalUrl = response.url;
     const m3u8Content = await response.text();
-    // 分片统一走源站（德国）——部分中国CDN封锁CF/Deno边缘IP，
-    // 只有源站IP能稳定回源；延迟由 hls.js 预缓冲掩盖
     const proxyBase = `${request.url.startsWith('https') ? 'https' : 'https'}://${url.host}/api/proxy`;
+    const denoBase = 'https://seg.5572.net';
     const rewritten = rewriteM3U8(
       m3u8Content,
       finalUrl,
       proxyBase,
       sourceParam,
+      denoBase,
     );
 
     const respHeaders = addCorsHeaders(new Headers());
@@ -360,7 +360,25 @@ function resolveUrl(base, relative) {
   }
 }
 
-function rewriteM3U8(content, baseUrl, proxyBase, sourceParam) {
+// 智能路由：按 CDN 域名决定分片走 Deno 边缘还是源站回源
+// 'deno' = 走 seg.5572.net（快，离用户近）
+// 'origin' = 走源站德国 VPS（兜底，兼容性好）
+// 未列出的 CDN 默认走 origin，后续根据播放结果自动学习
+const cdnRouteMap = new Map();
+
+function getSegmentBase(hostname, proxyBase, denoBase) {
+  const route = cdnRouteMap.get(hostname);
+  if (route === 'deno') return denoBase;
+  return proxyBase; // origin 兜底
+}
+
+// 标记某个 CDN 的分片从 Deno 加载失败 → 后续走 origin
+function markDenoFailed(hostname) {
+  if (cdnRouteMap.size > 200) cdnRouteMap.clear(); // 防无限增长
+  cdnRouteMap.set(hostname, 'origin');
+}
+
+function rewriteM3U8(content, baseUrl, proxyBase, sourceParam, denoBase) {
   const lines = content.split('\n');
   const result = [];
   const vars = new Map();
@@ -387,8 +405,16 @@ function rewriteM3U8(content, baseUrl, proxyBase, sourceParam) {
     if (!trimmed.startsWith('#')) {
       const resolved = resolveUrl(baseUrl, trimmed);
       const finalSrc = substituteVars(resolved, vars);
-      const proxyUrl = `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
-      result.push(proxyUrl);
+      try {
+        const segHost = new URL(finalSrc).hostname;
+        const base = getSegmentBase(segHost, proxyBase, denoBase);
+        const proxyUrl = `${base}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
+        result.push(proxyUrl);
+      } catch {
+        result.push(
+          `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`,
+        );
+      }
       continue;
     }
 
