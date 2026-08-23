@@ -351,14 +351,27 @@ export default function ShortDramaVerticalPlayer({
         : url;
     const effectiveUrl = resolvePlaybackUrl(activeUrl);
 
-    // 双保险：同一 URL 已在播（父组件重渲染导致 effect 重跑）→ 不销毁重建
-    if (hlsRef.current && lastLoadedUrlRef.current === effectiveUrl) {
+    // 双保险：同一 URL 已在播（父组件重渲染导致 effect 重跑）→ 不销毁重建。
+    // 健康播放中且目标地址未变时，忽略候选链数组身份变化带来的重建，
+    // 防止后台 otherSources 更新把正在播的流打断
+    if (
+      healthyLockedRef.current &&
+      hlsRef.current &&
+      lastLoadedUrlRef.current === effectiveUrl &&
+      !rotatingRef.current
+    ) {
       return;
+    }
+    if (!(hlsRef.current && lastLoadedUrlRef.current === effectiveUrl)) {
+      healthyLockedRef.current = false;
     }
     lastLoadedUrlRef.current = effectiveUrl;
 
     // 异步标记加载态，避免 effect 内同步 setState 触发级联渲染
     const loadingTimer = setTimeout(() => setVideoLoading(true), 0);
+
+    // 看门狗定时器（effect级作用域，attachHls 内赋值，cleanup 清理）
+    let watchdog: ReturnType<typeof setTimeout> | null = null;
 
     /** 轮转到下一个含当前集的候选源；返回是否发起了切换 */
     // 全部候选源失败后上报死剧（每部剧只报一次，fire-and-forget）
@@ -427,16 +440,33 @@ export default function ShortDramaVerticalPlayer({
       hlsRef.current = hls;
       hls.loadSource(loadUrl);
       hls.attachMedia(video);
+
+      // ⏱️ 看门狗：12s 内没有成功加载任何分片 → 判定该源卡死
+      // （清单不解析/分片被拦/网络挂起），强制走轮转或报错，
+      // 从机制上杜绝"一直转圈圈"
+      let watchdogFired = false;
+      if (watchdog) clearTimeout(watchdog);
+      watchdog = setTimeout(() => {
+        if (healthy || watchdogFired) return;
+        watchdogFired = true;
+        const curSet = episodeCandidates?.[activeCandidate];
+        if (curSet?.[0]) deadCandidateAt.set(curSet[0], Date.now());
+        if (rotateToNextSource()) return;
+        setVideoError(true);
+        setVideoLoading(false);
+        reportDeadOnce();
+      }, 12000);
       let healthy = false;
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(() => {});
       });
       hls.on(Hls.Events.FRAG_LOADED, () => {
-        // 第一个分片加载成功 = 该源真正可用，锁定它
+        // 第一个分片加载成功 = 该源真正可用，锁定它并解除看门狗
         if (!healthy) {
           healthy = true;
           healthyLockedRef.current = true;
           rotatingRef.current = false;
+          clearTimeout(watchdog);
           // 预热下一集：m3u8 清单 + 首个分片进浏览器缓存，
           // 上滑切换时 hls.js 命中缓存实现近秒开（低优先级不抢当前集带宽）
           const nextSet = episodeCandidates?.[activeCandidate];
@@ -514,7 +544,10 @@ export default function ShortDramaVerticalPlayer({
         }
       };
     }
-    return () => clearTimeout(loadingTimer);
+    return () => {
+      clearTimeout(loadingTimer);
+      clearTimeout(watchdog);
+    };
   }, [
     currentIndex,
     episodes,
