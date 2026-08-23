@@ -16,6 +16,7 @@ import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey } from '@/lib/db.client';
 import { isGeoBlockedCdn, resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+import { attachMobileGestures } from '@/lib/player-gestures';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
@@ -524,6 +525,8 @@ function PlayPageClient() {
 
   // ArtPlayer ref
   const artPlayerRef = useRef<any>(null);
+  // 移动端手势增强句柄（随播放器重建销毁）
+  const gestureHandleRef = useRef<{ destroy: () => void } | null>(null);
   const artRef = useRef<HTMLDivElement | null>(null);
 
   const tryTrailerFallback = useTrailerFallback(
@@ -1418,6 +1421,8 @@ function PlayPageClient() {
         }
 
         // 1. 先销毁 ArtPlayer，停止所有控制
+        gestureHandleRef.current?.destroy();
+        gestureHandleRef.current = null;
         artPlayerRef.current.destroy(false);
         artPlayerRef.current = null;
         // // console.log('[Cleanup] ArtPlayer已销毁');
@@ -3591,6 +3596,23 @@ function PlayPageClient() {
               zIndex: '20',
             },
           });
+
+          // 📱 移动端手势：双击快退/快进10s、长按2x倍速
+          if (artRef.current && artPlayerRef.current?.$video) {
+            gestureHandleRef.current?.destroy();
+            gestureHandleRef.current = attachMobileGestures(
+              artRef.current,
+              artPlayerRef.current.$video as HTMLVideoElement,
+              {
+                isMobile: isMobileGlobal,
+                showToast: (msg: string) => {
+                  try {
+                    artPlayerRef.current!.notice.show = msg;
+                  } catch {}
+                },
+              },
+            );
+          }
 
           // 自动隐藏徽章的定时器
           let badgeHideTimer: NodeJS.Timeout | null = null;
