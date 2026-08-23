@@ -230,92 +230,11 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
 const recommendCache = new Map<string, { data: unknown; ts: number }>();
 const RECOMMEND_CACHE_TTL = 5 * 60 * 1000;
 
-// 短剧存活缓存：后台异步探测每部剧第一集链接，死剧从推荐中过滤
-const dramaAliveCache = new Map<number, { alive: boolean; ts: number }>();
-const DRAMA_ALIVE_TTL = 30 * 60 * 1000; // 30 分钟
-
-/** 异步批量验证短剧第一集是否可播（不阻塞响应） */
-function validateDramasAsync(
-  dramas: Array<{ id: number | string; name?: string }>,
-) {
-  const toCheck = dramas.filter((d) => {
-    const c = dramaAliveCache.get(Number(d.id));
-    return !c || Date.now() - c.ts > DRAMA_ALIVE_TTL;
-  });
-  if (toCheck.length === 0) return;
-
-  // 并行验证，每个限制 6 秒
-  Promise.allSettled(
-    toCheck.map(async (drama) => {
-      try {
-        const res = await fetch(
-          `${process.env.SITE_BASE || 'http://127.0.0.1:' + (process.env.PORT || 3000)}/api/shortdrama/detail?id=${drama.id}&episode=1`,
-          { signal: AbortSignal.timeout(6000) },
-        );
-        if (!res.ok) {
-          dramaAliveCache.set(Number(drama.id), {
-            alive: false,
-            ts: Date.now(),
-          });
-          return;
-        }
-        const data = await res.json();
-        const ep1 = data.episodes?.[0];
-        if (!ep1) {
-          dramaAliveCache.set(Number(drama.id), {
-            alive: false,
-            ts: Date.now(),
-          });
-          return;
-        }
-        // 探测分片代理是否能拿到内容
-        const probe = await fetch(
-          `/api/proxy/m3u8?url=${encodeURIComponent(ep1)}`,
-          { signal: AbortSignal.timeout(6000) },
-        );
-        const alive = probe.ok && (await probe.text()).includes('#EXTM3U');
-        try {
-          await probe.body?.cancel();
-        } catch {}
-        dramaAliveCache.set(Number(drama.id), {
-          alive,
-          ts: Date.now(),
-        });
-      } catch {
-        // 探测失败不算死，可能是暂时性网络问题
-      }
-    }),
-  ).then(() => {
-    // 清理过期条目
-    if (dramaAliveCache.size > 500) {
-      const now = Date.now();
-      for (const [k, v] of dramaAliveCache) {
-        if (now - v.ts > DRAMA_ALIVE_TTL) dramaAliveCache.delete(k);
-      }
-    }
-  });
-}
-
-/** 过滤掉已确认死亡的短剧 */
-function filterDeadDramas<T extends { id: number | string }>(dramas: T[]): T[] {
-  if (dramaAliveCache.size === 0) return dramas;
-  return dramas.filter((d) => {
-    const c = dramaAliveCache.get(Number(d.id));
-    if (!c) return true; // 未验证的保留
-    if (Date.now() - c.ts > DRAMA_ALIVE_TTL) return true; // 过期重新展示
-    return c.alive;
-  });
-}
-
 export async function GET(request: NextRequest) {
   const cacheKey = request.url;
   const cachedEntry = recommendCache.get(cacheKey);
   if (cachedEntry && Date.now() - cachedEntry.ts < RECOMMEND_CACHE_TTL) {
-    // 缓存命中也要过滤死剧
-    const data = Array.isArray(cachedEntry.data)
-      ? filterDeadDramas(cachedEntry.data as Array<{ id: number | string }>)
-      : cachedEntry.data;
-    return NextResponse.json(data, {
+    return NextResponse.json(cachedEntry.data, {
       headers: {
         'Cache-Control': 'public, max-age=300, s-maxage=300',
         'X-Memory-Cache': 'HIT',
@@ -370,18 +289,8 @@ export async function GET(request: NextRequest) {
     }
     recommendCache.set(cacheKey, { data: result, ts: Date.now() });
 
-    // 过滤已确认死亡的短剧
-    const filtered = Array.isArray(result)
-      ? filterDeadDramas(result as Array<{ id: number | string }>)
-      : result;
-
-    // 后台异步验活（不阻塞本次响应，下次请求生效）
-    if (Array.isArray(result) && result.length > 0) {
-      validateDramasAsync(result as Array<{ id: number | string }>);
-    }
-
     // 测试1小时HTTP缓存策略
-    const response = NextResponse.json(filtered);
+    const response = NextResponse.json(result);
 
     console.log('🕐 [RECOMMEND] 设置1小时HTTP缓存 - 测试自动过期刷新');
 
