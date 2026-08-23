@@ -126,6 +126,9 @@ export default function ShortDramaVerticalPlayer({
 
   // 已上报死剧的剧名集合（组件级，跨集数/候选切换保持）
   const reportedDeadTitlesRef = useRef<Set<string>>(new Set());
+
+  // 已预热过的下一集URL集合（防重复预热）
+  const warmedUrlsRef = useRef<Set<string>>(new Set());
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -434,6 +437,49 @@ export default function ShortDramaVerticalPlayer({
           healthy = true;
           healthyLockedRef.current = true;
           rotatingRef.current = false;
+          // 预热下一集：m3u8 清单 + 首个分片进浏览器缓存，
+          // 上滑切换时 hls.js 命中缓存实现近秒开（低优先级不抢当前集带宽）
+          const nextSet = episodeCandidates?.[activeCandidate];
+          const nextUrl =
+            nextSet && nextSet.length > currentIndex + 1
+              ? nextSet[currentIndex + 1]
+              : null;
+          if (nextUrl && !warmedUrlsRef.current.has(nextUrl)) {
+            warmedUrlsRef.current.add(nextUrl);
+            const warmupUrl = isGeoBlockedCdn(nextUrl)
+              ? nextUrl
+              : `/api/proxy/m3u8?url=${encodeURIComponent(nextUrl)}`;
+            const warmSignal = AbortSignal.timeout(10000);
+            fetch(warmupUrl, { signal: warmSignal })
+              .then(async (r) => {
+                if (!r.ok) return;
+                const text = await r.text();
+                // 解析子清单首个分片并整段预热（读入即入HTTP缓存）
+                let segRel: string | null = null;
+                for (const line of text.split('\n')) {
+                  const l = line.trim();
+                  if (l && !l.startsWith('#')) {
+                    segRel = l;
+                    break;
+                  }
+                }
+                if (!segRel) return;
+                let segAbs = segRel;
+                try {
+                  segAbs = new URL(
+                    segRel,
+                    isGeoBlockedCdn(nextUrl)
+                      ? nextUrl
+                      : new URL(warmupUrl, location.href).href,
+                  ).href;
+                } catch {}
+                return fetch(segAbs, {
+                  signal: warmSignal,
+                  priority: 'low' as any,
+                }).then((sr) => sr.arrayBuffer());
+              })
+              .catch(() => {});
+          }
         }
       });
       hls.on(Hls.Events.ERROR, (_: any, data: any) => {
