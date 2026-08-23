@@ -38,7 +38,8 @@
     "node_modules",
     "**/__tests__/**",
     "**/*.test.*",
-    "**/__mocks__/**"
+    "**/__mocks__/**",
+    "deno"
   ],
   "moduleResolution": ["node_modules", ".next", "node"]
 }
