@@ -386,6 +386,26 @@ export default function ShortDramaVerticalPlayer({
       }).catch(() => {});
     };
 
+    // 零操作诊断：失败/卡死时自动回传事件链到服务器（站长docker logs可见）
+    const flushDebug = (reason: string) => {
+      try {
+        const dbg = (window as any).__dbg || [];
+        const nav: any = navigator;
+        fetch('/api/shortdrama/debug-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            title,
+            reason,
+            ua: nav.userAgent || '',
+            net: nav.connection?.effectiveType || '',
+            events: dbg.slice(-40),
+          }),
+        }).catch(() => {});
+      } catch {}
+    };
+
     const rotateToNextSource = () => {
       if (rotatingRef.current || !episodeCandidates?.length) return false;
       for (
@@ -439,6 +459,7 @@ export default function ShortDramaVerticalPlayer({
         setVideoError(true);
         setVideoLoading(false);
         reportDeadOnce();
+        flushDebug('watchdog');
       }, 12000);
       let healthy = false;
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -451,6 +472,23 @@ export default function ShortDramaVerticalPlayer({
           healthyLockedRef.current = true;
           rotatingRef.current = false;
           clearTimeout(watchdog);
+          if (typeof window !== 'undefined') {
+            (window as any).__dbg = (window as any).__dbg || [];
+            (window as any).__dbg.push({
+              t: new Date().toISOString().slice(11, 23),
+              ev: 'fragOk',
+              candidate: activeCandidate,
+            });
+            fetch('/api/shortdrama/debug-report', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title,
+                reason: 'ok',
+                events: ((window as any).__dbg || []).slice(-5),
+              }),
+            }).catch(() => {});
+          }
           // 预热下一集：m3u8 清单 + 首个分片进浏览器缓存，
           // 上滑切换时 hls.js 命中缓存实现近秒开（低优先级不抢当前集带宽）
           const nextSet = episodeCandidates?.[activeCandidate];
@@ -533,6 +571,7 @@ export default function ShortDramaVerticalPlayer({
         setVideoLoading(false);
         // 所有源均失败 → 上报死剧（服务端推荐降权，12h 过期自愈）
         reportDeadOnce();
+        flushDebug('hlsFatal');
       });
     };
 
@@ -549,6 +588,7 @@ export default function ShortDramaVerticalPlayer({
           setVideoError(true);
           setVideoLoading(false);
           reportDeadOnce();
+          flushDebug('videoError');
         }
       };
     }
