@@ -4952,7 +4952,10 @@ function PlayPageClient() {
         isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama')
+          detail?.source === 'shortdrama' ||
+          // 与竖屏挂载条件保持一致：短剧卡片入口（URL含shortdrama_id）
+          // 在移动端只渲染竖屏播放器，避免双播放器同屏抢流
+          Boolean(shortdramaId))
       ) && (
         <PageLayout activePath='/play'>
           <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
