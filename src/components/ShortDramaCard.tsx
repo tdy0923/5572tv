@@ -350,7 +350,7 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 - 代理图片不能用next/image */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-lg dark:bg-gray-800'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40'>
           <img
             src={posterUrl}
             alt={drama.name}
