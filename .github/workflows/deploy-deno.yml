@@ -1,0 +1,33 @@
+name: Deploy Deno Segment Proxy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'deno/**'
+      - '.github/workflows/deploy-deno.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Install deployctl
+        run: deno install -Arf jsr:@deno/deployctl
+
+      - name: Deploy to Deno Deploy
+        env:
+          DENO_DEPLOY_TOKEN: ${{ secrets.DENO_DEPLOY_TOKEN }}
+        run: |
+          deployctl deploy \
+            --project=5572tv-segments \
+            --entrypoint=deno/segment-proxy.ts \
+            --prod
