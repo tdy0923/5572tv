@@ -20,7 +20,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+import { isGeoBlockedCdn, resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 
 import { getHlsModule } from '@/app/play/utils';
 
@@ -386,12 +386,28 @@ export default function ShortDramaVerticalPlayer({
         video.play().catch(() => {});
         return;
       }
+      // 地域封锁CDN：预检直连可达性（含CORS），失败自动降级到
+      // 服务端代理（Worker侧带重试+公益中继池）
+      let loadUrl = effectiveUrl;
+      if (isGeoBlockedCdn(activeUrl)) {
+        try {
+          const probe = await fetch(activeUrl, {
+            signal: AbortSignal.timeout(2500),
+          });
+          const txt = await probe.text();
+          if (!txt.includes('#EXTM3U')) {
+            loadUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
+          }
+        } catch {
+          loadUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
+        }
+      }
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
       });
       hlsRef.current = hls;
-      hls.loadSource(effectiveUrl);
+      hls.loadSource(loadUrl);
       hls.attachMedia(video);
       let healthy = false;
       hls.on(Hls.Events.MANIFEST_PARSED, () => {

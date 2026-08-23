@@ -80,6 +80,7 @@ async function handleM3U8Proxy(request, url) {
 
     // 地域封锁CDN的封锁是概率性的：CF出口IP池约60%未被封，403时重试（5次≈99%成功）
     const geoBlocked = isGeoBlockedTarget(targetUrl);
+    let relayUsed = false; // 经中继池取回时，重写基准需用原始URL（见下方）
 
     // 上游 403 时重试一次：去掉 Referer/Origin（部分 CDN 拒绝陌生来源）
     if (response.status === 403) {
@@ -119,7 +120,10 @@ async function handleM3U8Proxy(request, url) {
           await response.body?.cancel();
         } catch {}
         const relayed = await fetchViaRelays(targetUrl, buildHeaders(source));
-        if (relayed) response = relayed;
+        if (relayed) {
+          response = relayed;
+          relayUsed = true;
+        }
       }
     }
 
@@ -159,6 +163,9 @@ async function handleM3U8Proxy(request, url) {
 
     // Rewrite M3U8 content
     const finalUrl = response.url;
+    // ⚠️ 经中继池取回时 response.url 是中继地址（如 seep.eu.org/<原始URL>），
+    // 直接用作重写基准会产生双层代理嵌套 → 必须回退到原始目标URL
+    const rewriteBase = relayUsed ? targetUrl : finalUrl;
     const m3u8Content = await response.text();
     const proxyBase = `${request.url.startsWith('https') ? 'https' : 'https'}://${url.host}/api/proxy`;
     // Deno 分片加速节点（东京/新加坡，离中国用户近）
@@ -169,7 +176,7 @@ async function handleM3U8Proxy(request, url) {
       typeof DENO_PROXY_TOKEN !== 'undefined' ? DENO_PROXY_TOKEN : '';
     const rewritten = await rewriteM3U8(
       m3u8Content,
-      finalUrl,
+      rewriteBase,
       proxyBase,
       sourceParam,
       denoBase,

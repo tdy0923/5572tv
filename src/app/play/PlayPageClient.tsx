@@ -4914,7 +4914,10 @@ function PlayPageClient() {
       {isMobileGlobal &&
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
-          detail?.source === 'shortdrama') &&
+          detail?.source === 'shortdrama' ||
+          // 从短剧卡片进入（URL携带shortdrama_id）一律竖屏，
+          // 即使播放源已统一为CMS线路
+          Boolean(shortdramaId)) &&
         detail && (
           <ShortDramaVerticalPlayer
             episodes={
