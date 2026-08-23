@@ -4,7 +4,7 @@ import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
   {
-    ignores: ['public/sw.js', 'public/workbox-*.js', 'node_modules/**', '.next/**'],
+    ignores: ['public/sw.js', 'public/workbox-*.js', 'public/*.min.js', 'node_modules/**', '.next/**'],
   },
   ...nextVitals,
   {

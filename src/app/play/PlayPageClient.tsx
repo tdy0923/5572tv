@@ -247,6 +247,22 @@ function PlayPageClient() {
 
   // 获取服务器配置（下载功能开关）
 
+  // 🔍 真机调试模式：URL 带 &debug=1 时加载 vConsole，
+  // 用于远程收集手机端 hls/网络错误（生产排障用，不影响普通用户）
+  useEffect(() => {
+    if (searchParams.get('debug') !== '1') return;
+    if ((window as any).VConsole) return;
+    const s = document.createElement('script');
+    s.src = '/vconsole.min.js';
+    s.onload = () => {
+      try {
+        new (window as any).VConsole();
+        console.log('[debug] vConsole 已启用');
+      } catch {}
+    };
+    document.head.appendChild(s);
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchServerConfig = async () => {
       try {

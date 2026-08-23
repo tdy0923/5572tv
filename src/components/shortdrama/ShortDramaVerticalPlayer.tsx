@@ -492,7 +492,35 @@ export default function ShortDramaVerticalPlayer({
           }
         }
       });
+      // 真机调试：把关键事件推到 window.__dbg，vConsole 可见
+      if (typeof window !== 'undefined') {
+        (window as any).__dbg = (window as any).__dbg || [];
+        (window as any).__dbg.push({
+          t: new Date().toISOString().slice(11, 23),
+          ev: 'load',
+          candidate: activeCandidate,
+          url: effectiveUrl,
+        });
+      }
       hls.on(Hls.Events.ERROR, (_: any, data: any) => {
+        if (typeof window !== 'undefined') {
+          (window as any).__dbg = (window as any).__dbg || [];
+          (window as any).__dbg.push({
+            t: new Date().toISOString().slice(11, 23),
+            ev: 'hlsError',
+            fatal: data?.fatal,
+            type: data?.type,
+            details: data?.details,
+            response: data?.response?.code,
+            url: (data?.response?.url || '').slice(0, 120),
+          });
+          console.warn(
+            '[短剧HLS]',
+            data?.fatal,
+            data?.details,
+            data?.response?.code,
+          );
+        }
         if (!data?.fatal) return;
         // 当前源确认死亡 → 记入死亡名单（10 分钟内轮转直接跳过）
         const curSet = episodeCandidates?.[activeCandidate];
@@ -1007,45 +1035,47 @@ export default function ShortDramaVerticalPlayer({
               </button>
             </div>
             <div className='max-h-[50vh] overflow-y-auto'>
-              <div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
-                {episodes.map((ep, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setShowEpisodeList(false);
-                      if (idx !== currentIndex) handleEpisodeChange(idx);
-                    }}
-                    className={`rounded-lg py-2.5 text-sm ${
-                      idx === currentIndex
-                        ? 'bg-green-500 text-white font-semibold'
-                        : 'bg-gray-800 text-white/80'
-                    }`}
-                  >
-                    {idx + 1}
-                  </button>
-                ))}
-              </div>
-              <div className='flex flex-wrap gap-2 mt-3'>
-                {episodesTitles.map(
-                  (t, idx) =>
-                    t && (
-                      <button
-                        key={`t-${idx}`}
-                        onClick={() => {
-                          setShowEpisodeList(false);
-                          if (idx !== currentIndex) handleEpisodeChange(idx);
-                        }}
-                        className={`rounded-full px-3 py-1.5 text-xs ${
-                          idx === currentIndex
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-gray-800 text-white/70'
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ),
-                )}
-              </div>
+              {/* 有集数标题时只显示标题胶囊，避免数字网格+标题两套并存 */}
+              {episodesTitles.filter(Boolean).length === episodes.length &&
+              episodes.length > 0 ? (
+                <div className='flex flex-wrap gap-2'>
+                  {episodesTitles.map((t, idx) => (
+                    <button
+                      key={`t-${idx}`}
+                      onClick={() => {
+                        setShowEpisodeList(false);
+                        if (idx !== currentIndex) handleEpisodeChange(idx);
+                      }}
+                      className={`rounded-full px-3 py-1.5 text-xs ${
+                        idx === currentIndex
+                          ? 'bg-green-500 text-white font-semibold'
+                          : 'bg-gray-800 text-white/70'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className='grid grid-cols-4 sm:grid-cols-6 gap-2'>
+                  {episodes.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setShowEpisodeList(false);
+                        if (idx !== currentIndex) handleEpisodeChange(idx);
+                      }}
+                      className={`rounded-lg py-2.5 text-sm ${
+                        idx === currentIndex
+                          ? 'bg-green-500 text-white font-semibold'
+                          : 'bg-gray-800 text-white/80'
+                      }`}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
