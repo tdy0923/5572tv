@@ -20,6 +20,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+
 import { getHlsModule } from '@/app/play/utils';
 
 interface ShortDramaVerticalPlayerProps {
@@ -341,7 +343,7 @@ export default function ShortDramaVerticalPlayer({
       activeSet && activeSet.length > currentIndex
         ? activeSet[currentIndex]
         : url;
-    const effectiveUrl = `/api/proxy/m3u8?url=${encodeURIComponent(activeUrl)}`;
+    const effectiveUrl = resolvePlaybackUrl(activeUrl);
 
     // 双保险：同一 URL 已在播（父组件重渲染导致 effect 重跑）→ 不销毁重建
     if (hlsRef.current && lastLoadedUrlRef.current === effectiveUrl) {

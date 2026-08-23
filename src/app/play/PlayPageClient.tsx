@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey } from '@/lib/db.client';
+import { isGeoBlockedCdn, resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
 import type { DanmuManualOverride } from '@/hooks/useDanmu';
@@ -915,11 +916,14 @@ function PlayPageClient() {
       const probes = dramaEpisodeCandidates.map(async (set) => {
         const url = set[epIdx] || set[0];
         if (!url) return false;
+        // 地域封锁CDN：服务器代理必403，改由浏览器直连探测
+        const probeUrl = isGeoBlockedCdn(url)
+          ? url
+          : `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
         try {
-          const res = await fetch(
-            `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
-            { signal: AbortSignal.timeout(6000) },
-          );
+          const res = await fetch(probeUrl, {
+            signal: AbortSignal.timeout(6000),
+          });
           if (!res.ok) return false;
           const txt = await res.text();
           return txt.includes('#EXTM3U');
@@ -1173,7 +1177,11 @@ function PlayPageClient() {
           // 仅测试连通性和响应时间
           const startTime = performance.now();
           // 经代理测速：与真实播放路径一致，且能正确识别 404/403 死链
-          await fetch(`/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`, {
+          // 地域封锁CDN例外：直连测速（服务器代理必403，浏览器可访问）
+          const probeUrl = isGeoBlockedCdn(episodeUrl)
+            ? episodeUrl
+            : `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`;
+          await fetch(probeUrl, {
             method: 'HEAD',
             signal: AbortSignal.timeout(3000), // 3秒超时
           });
@@ -1289,7 +1297,8 @@ function PlayPageClient() {
         newUrl &&
         newUrl.includes('.m3u8') &&
         !newUrl.includes(window.location.host) &&
-        !isEmbySource
+        !isEmbySource &&
+        !isGeoBlockedCdn(newUrl)
       ) {
         const encodedUrl = encodeURIComponent(newUrl);
         const source = detailData.source || '';
@@ -2571,22 +2580,7 @@ function PlayPageClient() {
             m3u8: async function (video: HTMLVideoElement, url: string) {
               // 智能路由：已知海外被封锁的地域限制CDN走浏览器直连（中国用户可访问），
               // 其余仍走服务端代理以彻底解决 CORS
-              const GEO_BLOCKED_CDNS = [
-                'yzzyssvip',
-                'yzzyvip',
-                'vvvip-plays',
-                'high20-playback',
-                'high23-playback',
-                'yzzy32-play',
-                'power34play',
-                'ijycnd.com',
-              ];
-              const isGeoBlocked = GEO_BLOCKED_CDNS.some((cdn) =>
-                url.includes(cdn),
-              );
-              const effectiveUrl = isGeoBlocked
-                ? url
-                : `/api/proxy/m3u8?url=${encodeURIComponent(url)}`;
+              const effectiveUrl = resolvePlaybackUrl(url);
               const canUseNativeHls = false;
 
               if (canUseNativeHls) {

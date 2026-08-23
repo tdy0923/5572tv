@@ -6,6 +6,8 @@ import he from 'he';
 import Hls from 'hls.js';
 import { twMerge } from 'tailwind-merge';
 
+import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+
 /**
  * 生成统一的存储键
  */
@@ -298,9 +300,10 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
     const isIPad = /iPad/i.test(userAgent);
 
     // 统一经代理测速：与真实播放路径一致，避免直连 CDN 的 CORS 报错与误判
+    // 地域封锁CDN例外：直连测速（服务器代理必403，浏览器可访问）
     const testUrl = m3u8Url.startsWith('/api/proxy/')
       ? m3u8Url
-      : `/api/proxy/m3u8?url=${encodeURIComponent(m3u8Url)}`;
+      : resolvePlaybackUrl(m3u8Url);
 
     if (isIPad) {
       // iPad使用最简单的ping测试，不创建任何video或HLS实例

@@ -1,1 +1,2 @@
 {"timestamp":1787468298349,"method":"GET","path":"/api/shortdrama/recommend","statusCode":200,"duration":1466,"memoryUsed":9.991317749023438,"dbQueries":0,"requestSize":0,"responseSize":13232}
+{"timestamp":1787470132137,"method":"GET","path":"/api/shortdrama/recommend","statusCode":200,"duration":1268,"memoryUsed":3.4636383056640625,"dbQueries":0,"requestSize":0,"responseSize":12523}
