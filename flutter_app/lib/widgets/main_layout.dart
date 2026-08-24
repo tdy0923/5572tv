@@ -460,19 +460,23 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             ),
           ),
-          // 完全居中的 Logo
-          Center(
-            child: GestureDetector(
-              onTap: widget.onHomeTap,
-              behavior: HitTestBehavior.opaque,
-              child: AppText.monospace(
-                '5572 影视',
-                fontSize: 24,
-                fontWeight: FontWeight.w400,
-                color: themeService.isDarkMode
-                    ? Colors.white
-                    : AppTheme.foreground,
-                letterSpacing: 1.5,
+          // 完全居中的 Logo（Flexible 约束避免被左右按钮挤压截断）
+          Positioned.fill(
+            child: Center(
+              child: GestureDetector(
+                onTap: widget.onHomeTap,
+                behavior: HitTestBehavior.opaque,
+                child: AppText.monospace(
+                  '5572 影视',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w400,
+                  color: themeService.isDarkMode
+                      ? Colors.white
+                      : AppTheme.foreground,
+                  letterSpacing: 1.5,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ),

@@ -1362,7 +1362,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         final availableWidth = screenWidth - horizontalPadding;
         final cardsPerView = _state.isTablet ? 6.2 : 3.2;
         final cardWidth = (availableWidth / cardsPerView) - 6;
-        final cardHeight = cardWidth * 1.8 / 3;
+        final cardHeight = cardWidth * 1.5; // 标准 2:3 海报比例
 
         return SizedBox(
           height: cardHeight,
