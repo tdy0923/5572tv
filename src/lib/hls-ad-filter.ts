@@ -85,20 +85,27 @@ function detectAds(
     const mainGroup = groups.reduce((a, b) =>
       a.totalDuration > b.totalDuration ? a : b,
     );
+    // 主块片段数作为基准：广告块通常是主块片段数的一小部分
+    const mainCount = mainGroup.segments.length || 1;
+
     for (const group of groups) {
       if (group === mainGroup) continue;
 
-      // 判断该组是否为"广告组"：
-      //   - 组内任一片段 URL 命中广告特征 → 整组移除（含 seg4/seg5 之类正常短组不受影响）
-      //   - 或组总时长极短（<30s）且片段数 ≤ 4 且组内含广告时长片段 → 移除
       const hasAdUrlInGroup = group.segments.some((s) => isAdUrl(s.url));
-      const hasAdDurationInGroup = group.segments.some(
-        (s) => isAdDuration(s.duration).hit,
-      );
-      const isTinyGroup =
-        group.totalDuration < 30 && group.segments.length <= 4;
 
-      if (hasAdUrlInGroup || (isTinyGroup && hasAdDurationInGroup)) {
+      // 广告块判定（适用于"正常块 20 片段/40s + 广告短块"的模式）：
+      //  - 含广告 URL → 移除
+      //  - 或 主块片段数较多（≥8）时，片段数 ≤ 10 且 明显少于主块（<50%）
+      //    且 总时长 < 25s 的短块 → 移除。主块片段少（短片/短视频）时不启用，
+      //    避免把正常短视频误当广告。
+      const count = group.segments.length;
+      const isShortAdBlock =
+        mainCount >= 8 &&
+        count <= 10 &&
+        count < mainCount * 0.5 &&
+        group.totalDuration < 25;
+
+      if (hasAdUrlInGroup || isShortAdBlock) {
         for (const s of group.segments) {
           s.isAd = true;
         }

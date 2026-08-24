@@ -61,10 +61,10 @@ function ScrollableRow({
         {children}
       </div>
 
-      {/* 左箭头按钮 */}
+      {/* 左箭头按钮 - 移动端隐藏（手势滑动足够），sm+ 显示 */}
       <button
         onClick={() => scrollBy('left')}
-        className={`pointer-coarse:hidden absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
+        className={`hidden sm:flex absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
           showLeft
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -87,10 +87,10 @@ function ScrollableRow({
         </svg>
       </button>
 
-      {/* 右箭头按钮 */}
+      {/* 右箭头按钮 - 移动端隐藏（手势滑动足够），sm+ 显示 */}
       <button
         onClick={() => scrollBy('right')}
-        className={`pointer-coarse:hidden absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg flex items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
+        className={`hidden sm:flex absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-white/80 dark:bg-gray-800/80 text-gray-800 dark:text-white shadow-lg items-center justify-center transition-opacity duration-200 hover:bg-white dark:hover:bg-gray-700 focus:outline-none ${
           showRight
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
