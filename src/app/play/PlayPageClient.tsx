@@ -5106,8 +5106,8 @@ function PlayPageClient() {
           // 在移动端只渲染竖屏播放器，避免双播放器同屏抢流
           Boolean(shortdramaId))
       ) && (
-        <PageLayout activePath='/play'>
-          <div className='flex flex-col gap-3 py-4 md:px-4 lg:px-[3rem] 2xl:px-20'>
+        <PageLayout activePath='/play' noPadding>
+          <div className='flex flex-col gap-3 py-4 px-3 sm:px-5 lg:px-[3rem] 2xl:px-20'>
             {/* 面包屑导航 */}
             <nav className='flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500'>
               <Link
@@ -5182,7 +5182,7 @@ function PlayPageClient() {
               </div>
 
               <div
-                className={`grid gap-4 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] lg:grid-rows-[minmax(0,1fr)] transition-all duration-300 ease-in-out ${
+                className={`grid gap-4 -mx-3 sm:-mx-5 lg:mx-0 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] lg:grid-rows-[minmax(0,1fr)] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
                     : 'grid-cols-1 md:grid-cols-4'

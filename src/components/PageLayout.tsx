@@ -16,9 +16,10 @@ import { useSite } from './SiteProvider';
 interface PageLayoutProps {
   children: React.ReactNode;
   activePath?: string;
-  useModernNav?: boolean; // 新增：是否使用2025现代化导航
+  useModernNav?: boolean;
   onAnnouncementClick?: () => void;
   hasUnreadAnnouncement?: boolean;
+  noPadding?: boolean;
 }
 
 const PageLayout = ({
@@ -27,6 +28,7 @@ const PageLayout = ({
   useModernNav = true,
   onAnnouncementClick,
   hasUnreadAnnouncement = false,
+  noPadding = false,
 }: PageLayoutProps) => {
   const { siteName } = useSite();
 
@@ -98,8 +100,20 @@ const PageLayout = ({
               paddingBottom: 'calc(4rem + env(safe-area-inset-bottom))',
             }}
           >
-            <div className='ui-page-frame px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
-              <div className='ui-page-container px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7'>
+            <div
+              className={`ui-page-frame ${
+                noPadding
+                  ? 'px-0'
+                  : 'px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'
+              }`}
+            >
+              <div
+                className={`ui-page-container ${
+                  noPadding
+                    ? 'px-0 py-0'
+                    : 'px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-7'
+                }`}
+              >
                 {children}
                 <SiteAdSlot position='footer' className='mt-8' />
               </div>
