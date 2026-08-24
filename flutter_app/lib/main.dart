@@ -1,5 +1,4 @@
 import 'package:media_5572/theme/app_theme.dart';
-import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';

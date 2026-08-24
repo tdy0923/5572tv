@@ -88,8 +88,6 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   int _remainingSeconds = 0;
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _isCapturing = false;
-  DateTime? _lastTapTime;
-  Offset? _lastTapPosition;
   bool _showSeekForward = false;
   bool _showSeekBackward = false;
   Timer? _seekIndicatorTimer;

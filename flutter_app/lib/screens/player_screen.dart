@@ -656,12 +656,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     super.dispose();
   }
 
-  /// 检测当前是否为短剧源
-  bool _isShortDramaSource() {
-    return _state.currentSource == 'shortdrama' ||
-        _state.currentSource.contains('shortdrama');
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

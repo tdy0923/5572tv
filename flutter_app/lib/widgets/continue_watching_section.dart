@@ -60,10 +60,6 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
   bool _showRightScroll = false;
   bool _isHovered = false;
   
-  // hover 状态
-  bool _isClearButtonHovered = false;
-  bool _isMoreButtonHovered = false;
-
   @override
   void initState() {
     super.initState();
@@ -391,20 +387,6 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                         cursor: DeviceUtils.isPC()
                             ? SystemMouseCursors.click
                             : MouseCursor.defer,
-                        onEnter: DeviceUtils.isPC()
-                            ? (_) {
-                                setState(() {
-                                  _isClearButtonHovered = true;
-                                });
-                              }
-                            : null,
-                        onExit: DeviceUtils.isPC()
-                            ? (_) {
-                                setState(() {
-                                  _isClearButtonHovered = false;
-                                });
-                              }
-                            : null,
                         child: AppButton(
                           label: '清空',
                           onPressed: _showClearConfirmation,
@@ -421,20 +403,6 @@ class _ContinueWatchingSectionState extends State<ContinueWatchingSection>
                     cursor: DeviceUtils.isPC()
                         ? SystemMouseCursors.click
                         : MouseCursor.defer,
-                    onEnter: DeviceUtils.isPC()
-                        ? (_) {
-                            setState(() {
-                              _isMoreButtonHovered = true;
-                            });
-                          }
-                        : null,
-                    onExit: DeviceUtils.isPC()
-                        ? (_) {
-                            setState(() {
-                              _isMoreButtonHovered = false;
-                            });
-                          }
-                        : null,
                     child: AppButton(
                       label: '查看全部 >',
                       onPressed: widget.onViewAll,
