@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
+import { isFloatAdElement, textContainsAdKeyword } from '@/lib/ad-blocker';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey } from '@/lib/db.client';
@@ -630,6 +631,63 @@ function PlayPageClient() {
     filterAdsFromM3U8,
     formatTime,
   } = useAdFilter(currentSourceRef);
+
+  // 🚫 广告浮层清理器：检测并移除页面上的文字广告浮层
+  // （四角/上下漂浮/跑马灯等 DOM 注入的广告元素）
+  useEffect(() => {
+    if (!blockAdEnabledRef.current) return;
+
+    let observer: MutationObserver | null = null;
+    let scanTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const isAdOverlay = (el: Element): boolean => {
+      if (!(el instanceof HTMLElement)) return false;
+      const cls = el.className?.toString?.() || '';
+      const id = el.id || '';
+      if (cls.includes('art-')) return false;
+
+      if (isFloatAdElement(cls, id, '')) return true;
+
+      const cs = window.getComputedStyle(el);
+      const isPositioned =
+        cs.position === 'fixed' || cs.position === 'absolute';
+      if (!isPositioned) return false;
+
+      const rect = el.getBoundingClientRect();
+      if (rect.width > window.innerWidth * 0.6) return false;
+      if (rect.height < 12 || rect.height > window.innerHeight * 0.4)
+        return false;
+
+      const text = (el.textContent || '').slice(0, 200);
+      return textContainsAdKeyword(text);
+    };
+
+    const removeAdOverlays = () => {
+      try {
+        const targets = document.querySelectorAll('div, span, a, marquee');
+        for (const el of targets) {
+          if (isAdOverlay(el)) {
+            (el as HTMLElement).style.display = 'none';
+          }
+        }
+      } catch {}
+    };
+
+    removeAdOverlays();
+    observer = new MutationObserver(() => {
+      removeAdOverlays();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    scanTimer = setTimeout(() => {
+      removeAdOverlays();
+    }, 3000);
+
+    return () => {
+      observer?.disconnect();
+      if (scanTimer) clearTimeout(scanTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blockAdEnabled]);
 
   const {
     selectedCelebrityName,
@@ -2665,6 +2723,28 @@ function PlayPageClient() {
                     config: any,
                     callbacks: any,
                   ) {
+                    // 拦截广告分片：URL 命中广告特征时跳过加载
+                    const url = (context as any)?.url || '';
+                    if (
+                      (context as any)?.type === 'fragment' ||
+                      (context as any)?.type === 'key'
+                    ) {
+                      if (
+                        blockAdEnabledRef.current &&
+                        /ads?\.(?:ts|mp4|m4s|aac)|advert|adbreak|commercial|\/promo\/|sponsor|doubleclick|googlesyndication|ffzyad|bytegoofy|[?&](?:is_?ad|ad[_=]|adid)=/i.test(
+                          url,
+                        )
+                      ) {
+                        if (typeof callbacks?.onError === 'function') {
+                          callbacks.onError(
+                            { type: 'networkError', details: 'blocked-ad' },
+                            { aborted: false },
+                            context,
+                          );
+                        }
+                        return;
+                      }
+                    }
                     if (
                       (context as any).type === 'manifest' ||
                       (context as any).type === 'level'
@@ -3136,7 +3216,7 @@ function PlayPageClient() {
                     name: 'screenshot',
                     index: 6,
                     position: 'right' as const,
-                    html: '<div style="padding:0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="截图"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg></div>',
+                    html: '<div style="padding:0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;" title="截图"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg></div>',
                     click: function () {
                       if (!artPlayerRef.current) return;
                       const video = artPlayerRef.current.video;

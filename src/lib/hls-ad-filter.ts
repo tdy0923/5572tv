@@ -1,46 +1,19 @@
 /**
- * HLS Ad Filter - Ported from KatelyaTVLocal
- * Detects and removes ad segments from M3U8 playlists
+ * HLS Ad Filter
+ * 基于统一广告特征库 (ad-blocker.ts) 的 M3U8 广告过滤。
+ *
+ * 检测层次（按置信度排序）：
+ *  1. URL / 域名特征（最高置信度）
+ *  2. #EXT-X-DISCONTINUITY 分块中的短广告块
+ *  3. 播放列表边缘的连续广告时长片段（前/后贴片）
+ *  4. 时长特征仅作为广告块内部的次要信号，避免误杀正常内容
  */
-
-// Known ad segment patterns (±15% tolerance)
-const KNOWN_AD_SEGMENT_PATTERNS = [
-  { minDuration: 2.3, maxDuration: 3.5, label: '3s ad' },
-  { minDuration: 4.5, maxDuration: 6.5, label: '5.6s ad' },
-  { minDuration: 12.5, maxDuration: 17.0, label: '15s ad' },
-  { minDuration: 18.0, maxDuration: 22.0, label: '20s ad' },
-  { minDuration: 25.0, maxDuration: 35.0, label: '30s ad' },
-  { minDuration: 40.0, maxDuration: 50.0, label: '45s ad' },
-  { minDuration: 55.0, maxDuration: 65.0, label: '60s ad' },
-  { minDuration: 85.0, maxDuration: 95.0, label: '90s ad' },
-];
-
-// Ad-related URL patterns
-const AD_URL_PATTERNS = [
-  /ads?\.(?:m3u8|ts|mp4)/i,
-  /advert(?:isement)?/i,
-  /commercial/i,
-  /promo/i,
-  /sponsor/i,
-  /prebid|vpaid/i,
-  /doubleclick|googlesyndication/i,
-  /[?&](?:is_?ad|ad[_=]|adid)=/i,
-];
-
-// Ad domain patterns
-const AD_DOMAIN_PATTERNS = [
-  /ffzyad/i,
-  /bytegoofy/i,
-  /iqiyi\.hbuioo\.com/i,
-  /^ad[0-9]*\./i,
-  /^ads\./,
-  /^adv\./,
-];
+import { isAdDuration, isAdUrl } from './ad-blocker';
 
 interface ParsedSegment {
   index: number;
-  durationLine: string; // #EXTINF:5.640000,...
-  urlLine: string; // segment URL
+  durationLine: string;
+  urlLine: string;
   duration: number;
   url: string;
   isAd: boolean;
@@ -52,63 +25,16 @@ function parseDurationFromExtinf(line: string): number {
   return match ? parseFloat(match[1]) : 0;
 }
 
-function isAdUrl(url: string): boolean {
-  return AD_URL_PATTERNS.some((p) => p.test(url));
-}
-
-function isAdDomain(url: string): boolean {
-  try {
-    const hostname = new URL(url).hostname;
-    return AD_DOMAIN_PATTERNS.some((d) =>
-      d instanceof RegExp ? d.test(hostname) : hostname.includes(d),
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Detect ad segments using duration matching
- */
-function detectByDuration(segments: ParsedSegment[]): void {
-  for (const seg of segments) {
-    for (const pattern of KNOWN_AD_SEGMENT_PATTERNS) {
-      if (
-        seg.duration >= pattern.minDuration &&
-        seg.duration <= pattern.maxDuration
-      ) {
-        seg.isAd = true;
-        seg.reasons.push(`duration:${pattern.label}`);
-      }
-    }
-  }
-}
-
-/**
- * Detect ad segments by URL patterns
- */
-function detectByUrl(segments: ParsedSegment[]): void {
-  for (const seg of segments) {
-    if (isAdUrl(seg.url)) {
-      seg.isAd = true;
-      seg.reasons.push('url-pattern');
-    }
-    if (isAdDomain(seg.url)) {
-      seg.isAd = true;
-      seg.reasons.push('ad-domain');
-    }
-  }
-}
-
-/**
- * Detect ad segments by discontinuity grouping
- * Ad segments are often in a separate group with different duration characteristics
- */
-function detectByDiscontinuity(
+/** 按 DISCONTINUITY 分组 */
+function buildGroups(
   lines: string[],
   segments: ParsedSegment[],
-): void {
-  // Find discontinuity boundaries
+): {
+  start: number;
+  end: number;
+  segments: ParsedSegment[];
+  totalDuration: number;
+}[] {
   const boundaries: number[] = [0];
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].trim().startsWith('#EXT-X-DISCONTINUITY')) {
@@ -117,59 +43,119 @@ function detectByDiscontinuity(
   }
   boundaries.push(lines.length);
 
-  // Analyze each block
-  const blockStats: Array<{
+  const groups: {
     start: number;
     end: number;
-    segmentCount: number;
+    segments: ParsedSegment[];
     totalDuration: number;
-  }> = [];
-
+  }[] = [];
   for (let b = 0; b < boundaries.length - 1; b++) {
-    const blockStart = boundaries[b];
-    const blockEnd = boundaries[b + 1];
-    let segCount = 0;
-    let totalDur = 0;
-
-    for (const seg of segments) {
-      if (seg.index >= blockStart && seg.index < blockEnd) {
-        segCount++;
-        totalDur += seg.duration;
-      }
-    }
-
-    blockStats.push({
-      start: blockStart,
-      end: blockEnd,
-      segmentCount: segCount,
-      totalDuration: totalDur,
+    const groupSegs = segments.filter(
+      (s) => s.index >= boundaries[b] && s.index < boundaries[b + 1],
+    );
+    groups.push({
+      start: boundaries[b],
+      end: boundaries[b + 1],
+      segments: groupSegs,
+      totalDuration: groupSegs.reduce((sum, s) => sum + s.duration, 0),
     });
   }
-
-  if (blockStats.length <= 1) return;
-
-  // Find the longest block (main content)
-  const mainBlock = blockStats.reduce((a, b) =>
-    a.totalDuration > b.totalDuration ? a : b,
-  );
-
-  // Mark non-main blocks as potential ads if they're short
-  for (const block of blockStats) {
-    if (block === mainBlock) continue;
-    if (block.totalDuration < 180 && block.segmentCount <= 60) {
-      for (const seg of segments) {
-        if (seg.index >= block.start && seg.index < block.end) {
-          seg.isAd = true;
-          seg.reasons.push('discontinuity-block');
-        }
-      }
-    }
-  }
+  return groups;
 }
 
-/**
- * Main filter function
- */
+function detectAds(
+  lines: string[],
+  segments: ParsedSegment[],
+): { removedIndices: Set<number>; reasons: string[] } {
+  const removedIndices = new Set<number>();
+  const reasons = new Set<string>();
+
+  // Pass 1: URL / 域名特征（最高置信度）
+  for (const seg of segments) {
+    if (isAdUrl(seg.url)) {
+      seg.isAd = true;
+      reasons.add('url-pattern');
+    }
+  }
+
+  const groups = buildGroups(lines, segments);
+
+  // Pass 2: discontinuity 分块
+  if (groups.length > 1) {
+    const mainGroup = groups.reduce((a, b) =>
+      a.totalDuration > b.totalDuration ? a : b,
+    );
+    for (const group of groups) {
+      if (group === mainGroup) continue;
+
+      // 判断该组是否为"广告组"：
+      //   - 组内任一片段 URL 命中广告特征 → 整组移除（含 seg4/seg5 之类正常短组不受影响）
+      //   - 或组总时长极短（<30s）且片段数 ≤ 4 且组内含广告时长片段 → 移除
+      const hasAdUrlInGroup = group.segments.some((s) => isAdUrl(s.url));
+      const hasAdDurationInGroup = group.segments.some(
+        (s) => isAdDuration(s.duration).hit,
+      );
+      const isTinyGroup =
+        group.totalDuration < 30 && group.segments.length <= 4;
+
+      if (hasAdUrlInGroup || (isTinyGroup && hasAdDurationInGroup)) {
+        for (const s of group.segments) {
+          s.isAd = true;
+        }
+        reasons.add('discontinuity-block');
+      }
+    }
+  } else {
+    // Pass 3: 无 discontinuity —— 仅检测开头/结尾连续 ≥2 个"超短"片段（<3.5s，广告贴片）
+    const durations = segments.map((s) => s.duration);
+    const edgeAds = new Set<number>();
+
+    let i = 0;
+    let headCount = 0;
+    while (i < segments.length && headCount < 3) {
+      const dur = isAdDuration(durations[i]);
+      // 只有 <3.5s 的极短片段才算 pre-roll 广告贴片，避免误伤正常分片
+      if (dur.hit && durations[i] < 3.5) {
+        edgeAds.add(i);
+        headCount++;
+      } else {
+        break;
+      }
+      i++;
+    }
+
+    let j = segments.length - 1;
+    let tailCount = 0;
+    while (j >= 0 && tailCount < 3) {
+      const dur = isAdDuration(durations[j]);
+      if (dur.hit && durations[j] < 3.5) {
+        edgeAds.add(j);
+        tailCount++;
+      } else {
+        break;
+      }
+      j--;
+    }
+
+    if (edgeAds.size >= 2) {
+      for (const idx of edgeAds) {
+        segments[idx].isAd = true;
+      }
+      reasons.add('edge-ad-run');
+    }
+  }
+
+  // 收集移除索引
+  for (const seg of segments) {
+    if (seg.isAd) {
+      removedIndices.add(seg.index);
+      removedIndices.add(seg.index + 1);
+    }
+  }
+
+  return { removedIndices, reasons: [...reasons] };
+}
+
 export function filterAdsFromM3U8(content: string): {
   filtered: string;
   removedCount: number;
@@ -177,9 +163,7 @@ export function filterAdsFromM3U8(content: string): {
 } {
   const lines = content.split('\n');
   const segments: ParsedSegment[] = [];
-  const allReasons: string[] = [];
 
-  // Parse segments
   let i = 0;
   while (i < lines.length) {
     const line = lines[i].trim();
@@ -207,25 +191,11 @@ export function filterAdsFromM3U8(content: string): {
     return { filtered: content, removedCount: 0, reasons: [] };
   }
 
-  // Run detection passes
-  detectByDuration(segments);
-  detectByUrl(segments);
-  detectByDiscontinuity(lines, segments);
+  const { removedIndices, reasons } = detectAds(lines, segments);
 
-  // Collect removed segments
-  const removedIndices = new Set<number>();
-  for (const seg of segments) {
-    if (seg.isAd) {
-      removedIndices.add(seg.index);
-      removedIndices.add(seg.index + 1); // URL line
-      allReasons.push(...seg.reasons);
-    }
-  }
-
-  // Build filtered output
   const filteredLines = lines.filter((_, idx) => !removedIndices.has(idx));
 
-  // Clean up consecutive DISCONTINUITY tags
+  // 清理连续 DISCONTINUITY
   const cleanedLines: string[] = [];
   let lastWasDiscontinuity = false;
   for (const line of filteredLines) {
@@ -239,11 +209,9 @@ export function filterAdsFromM3U8(content: string): {
     cleanedLines.push(line);
   }
 
-  const uniqueReasons = [...new Set(allReasons)];
-
   return {
     filtered: cleanedLines.join('\n'),
-    removedCount: removedIndices.size / 2, // Each segment = 2 lines
-    reasons: uniqueReasons,
+    removedCount: removedIndices.size / 2,
+    reasons,
   };
 }

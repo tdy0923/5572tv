@@ -41,6 +41,26 @@
     padding: 0 4px !important;
   }
 
+  /* 控制栏稳定深色半透明背景：浅色主题下白色图标也不至于消失成"白色方块" */
+  .art-bottom,
+  .art-controls {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65),
+      rgba(0, 0, 0, 0.2) 60%,
+      transparent
+    ) !important;
+  }
+
+  /* 控制栏内所有图标强制白色，保证浅色主题下清晰可见 */
+  .art-controls .art-icon,
+  .art-controls .art-icon svg,
+  .art-controls .art-control-icon {
+    color: #fff !important;
+    stroke: #fff !important;
+    fill: currentColor !important;
+  }
+
   /* 全屏按钮始终可见 */
   .art-control-fullscreen {
     display: flex !important;
