@@ -312,32 +312,38 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   // 🚀 Web Worker引用
   const workerRef = useRef<Worker | null>(null);
 
-  // 🎯 优化：缓存问候语计算
-  const [greeting] = useState(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return '早上好';
-    if (hour < 18) return '下午好';
-    return '晚上好';
-  });
+  // 🎯 优化：缓存问候语计算（水合后设置，避免 SSR/CSR 时间不一致触发 hydration mismatch）
+  const [greeting, setGreeting] = useState('');
 
-  // 🎯 优化：缓存今天的日期（用于上映日期计算）
-  const [today] = useState(() => {
+  useEffect(() => {
+    const hour = new Date().getHours();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setGreeting(hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好');
+  }, []);
+
+  // 🎯 优化：缓存今天的日期（用于上映日期计算；水合后设置避免 mismatch）
+  const [today, setToday] = useState('');
+
+  useEffect(() => {
     const dateStr = new Date().toLocaleDateString('zh-CN', {
       timeZone: 'Asia/Shanghai',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     });
-    return dateStr.replace(/\//g, '-');
-  });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(dateStr.replace(/\//g, '-'));
+  }, []);
 
-  const [requireClearConfirmation] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('requireClearConfirmation');
-      if (saved !== null) return JSON.parse(saved);
+  const [requireClearConfirmation, setRequireClearConfirmation] =
+    useState(false);
+  useEffect(() => {
+    const saved = localStorage.getItem('requireClearConfirmation');
+    if (saved !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRequireClearConfirmation(JSON.parse(saved));
     }
-    return false;
-  });
+  }, []);
   const [announcementPinned, setAnnouncementPinned] = useState(false);
   const router = useRouter();
   const [homeSearchQuery, setHomeSearchQuery] = useState('');
