@@ -9,8 +9,24 @@
 /* Tailwind 4 Dark Mode Configuration - 使用 class 选择器而非媒体查询 */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 触屏设备（粗指针）变体：用于移动端强制显示 hover 交互、隐藏桌面专属元素 */
-@custom-variant pointer-coarse (@media (pointer: coarse) { & });
+/* 触屏设备（粗指针）变体：用纯 CSS 媒体查询实现（Tailwind 4 @custom-variant
+   在该项目构建中不生成规则，故用显式 CSS 兜底，确保触屏设备强制显示操作按钮） */
+
+/* 触屏设备兜底：强制显示 hover 才出现的卡片操作按钮（替代 tailwind 变体，确保生效） */
+@media (pointer: coarse) {
+  .pointer-coarse\:opacity-100 {
+    opacity: 1 !important;
+  }
+  .pointer-coarse\:scale-100 {
+    transform: scale(1) !important;
+  }
+  .pointer-coarse\:translate-y-0 {
+    transform: translateY(0) !important;
+  }
+  .pointer-coarse\:translate-x-0 {
+    transform: translateX(0) !important;
+  }
+}
 
 /* ============================================
    @property - 注册自定义属性支持动画
