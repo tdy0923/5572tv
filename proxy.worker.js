@@ -166,7 +166,85 @@ async function handleM3U8Proxy(request, url) {
     // ⚠️ 经中继池取回时 response.url 是中继地址（如 seep.eu.org/<原始URL>），
     // 直接用作重写基准会产生双层代理嵌套 → 必须回退到原始目标URL
     const rewriteBase = relayUsed ? targetUrl : finalUrl;
-    const m3u8Content = await response.text();
+    let m3u8Content = await response.text();
+
+    // 🚫 广告分片过滤：检测 DISCONTINUITY 短块（广告插入）并移除。
+    // 与 Next.js 端 src/lib/hls-ad-filter.ts 保持一致的启发式：
+    //   - URL 命中广告特征 → 移除
+    //   - 非主块中片段数 ≤ 10、< 主块50%、总时长 < 25s 的短块 → 视为广告移除
+    try {
+      const segLines = m3u8Content.split('\n');
+      const adUrlRe =
+        /ads?\.(?:m3u8|ts|mp4|m4s|aac)|advert(?:isement)?|adbreak|commercial|\/promo\/|sponsor|doubleclick|googlesyndication|ffzyad|bytegoofy|[?&](?:is_?ad|ad[_=]|adid)=/i;
+      // 解析片段
+      const segs = [];
+      for (let i = 0; i < segLines.length; i++) {
+        const line = segLines[i].trim();
+        if (line.startsWith('#EXTINF:')) {
+          const next = i + 1 < segLines.length ? segLines[i + 1].trim() : '';
+          const durM = line.match(/#EXTINF:([0-9.]+)/);
+          if (next && !next.startsWith('#')) {
+            segs.push({
+              idx: i,
+              dur: durM ? parseFloat(durM[1]) : 0,
+              url: next,
+              isAd: false,
+            });
+            i++;
+          }
+        }
+      }
+      if (segs.length > 0) {
+        // URL 特征
+        for (const s of segs) if (adUrlRe.test(s.url)) s.isAd = true;
+        // DISCONTINUITY 分块短块检测
+        const boundaries = [0];
+        for (let i = 0; i < segLines.length; i++) {
+          if (segLines[i].trim().startsWith('#EXT-X-DISCONTINUITY'))
+            boundaries.push(i);
+        }
+        boundaries.push(segLines.length);
+        const groups = [];
+        for (let b = 0; b < boundaries.length - 1; b++) {
+          const gs = segs.filter(
+            (s) => s.idx >= boundaries[b] && s.idx < boundaries[b + 1],
+          );
+          if (gs.length) groups.push(gs);
+        }
+        if (groups.length > 1) {
+          const main = groups.reduce((a, b) => (a.length >= b.length ? a : b));
+          const mainCount = main.length || 1;
+          for (const g of groups) {
+            if (g === main) continue;
+            if (g.some((s) => s.isAd)) {
+              for (const s of g) s.isAd = true;
+              continue;
+            }
+            const totalDur = g.reduce((sum, s) => sum + s.dur, 0);
+            if (
+              mainCount >= 8 &&
+              g.length <= 10 &&
+              g.length < mainCount * 0.5 &&
+              totalDur < 25
+            ) {
+              for (const s of g) s.isAd = true;
+            }
+          }
+        }
+        const removeIdx = new Set();
+        for (const s of segs)
+          if (s.isAd) {
+            removeIdx.add(s.idx);
+            removeIdx.add(s.idx + 1);
+          }
+        m3u8Content = segLines
+          .filter((_, idx) => !removeIdx.has(idx))
+          .join('\n');
+      }
+    } catch (e) {
+      // 广告过滤失败不应影响播放
+    }
+
     const proxyBase = `${request.url.startsWith('https') ? 'https' : 'https'}://${url.host}/api/proxy`;
     // Deno 分片加速节点（东京/新加坡，离中国用户近）
     // 通过 wrangler --var 注入；未配置则全部分片走源站
