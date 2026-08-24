@@ -55,7 +55,13 @@ function DoubanPageClient() {
   const [useVirtualization, setUseVirtualization] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('useDoubanVirtualization');
-      return saved !== null ? JSON.parse(saved) : true; // 默认启用
+      if (saved !== null) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return true; // 默认启用
+        }
+      }
     }
     return true;
   });

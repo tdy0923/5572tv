@@ -229,8 +229,13 @@ export default function PrivateLibraryPage() {
       if (savedSortOrder === 'Ascending' || savedSortOrder === 'Descending')
         setSortOrder(savedSortOrder);
       const savedVirtualization = localStorage.getItem('useEmbyVirtualization');
-      if (savedVirtualization !== null)
-        setUseVirtualization(JSON.parse(savedVirtualization));
+      if (savedVirtualization !== null) {
+        try {
+          setUseVirtualization(JSON.parse(savedVirtualization));
+        } catch {
+          /* ignore corrupt value */
+        }
+      }
     };
     loadPrefs();
   }, []);

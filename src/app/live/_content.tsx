@@ -101,7 +101,13 @@ function LivePageClient() {
   const [directPlaybackEnabled, setDirectPlaybackEnabled] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('live-direct-playback-enabled');
-      return saved ? JSON.parse(saved) : false;
+      if (saved !== null) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return false;
+        }
+      }
     }
     return false;
   });

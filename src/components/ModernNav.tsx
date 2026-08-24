@@ -20,6 +20,8 @@ import {
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
+
 import { FastLink } from './FastLink';
 import { NavActionCluster } from './NavActionCluster';
 import { useSite } from './SiteProvider';
@@ -91,11 +93,20 @@ export default function ModernNav({
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [showMoreMenu]);
+  // 仅已登录用户才需要查询 Emby 配置与公共源，避免未登录时 401 刷屏
+  const isLoggedIn = !!getAuthInfoFromBrowserCookie()?.username;
+
   // 检查用户是否配置了 Emby
-  const { data: userEmbyConfig } = useQuery(userEmbyConfigOptions());
+  const { data: userEmbyConfig } = useQuery({
+    ...userEmbyConfigOptions(),
+    enabled: isLoggedIn,
+  });
 
   // 检查管理员是否设置了公共源
-  const { data: publicSourcesData } = useQuery(publicSourcesOptions());
+  const { data: publicSourcesData } = useQuery({
+    ...publicSourcesOptions(),
+    enabled: isLoggedIn,
+  });
 
   const currentActive = useMemo(() => {
     const queryString = searchParams.toString();

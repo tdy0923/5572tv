@@ -223,6 +223,17 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   });
 
   const { announcement, announcementTitle } = useSite();
+  const [hasUnreadAnnouncement, setHasUnreadAnnouncement] = useState(false);
+
+  // 延迟确定公告未读状态，避免 SSR/CSR 因 localStorage 读取不一致导致 hydration mismatch
+  useEffect(() => {
+    if (announcement === undefined) return;
+    const unread = localStorage.getItem('hasSeenAnnouncement') !== announcement;
+    // 仅在状态发生变化时更新，避免同步 setState 触发级联渲染
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHasUnreadAnnouncement((prev) => (prev === unread ? prev : unread));
+  }, [announcement]);
+
   const searchParams = useSearchParams();
 
   // 解构状态以便使用
@@ -237,11 +248,6 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
       });
     }
   }, [searchParams]);
-
-  const hasUnreadAnnouncement =
-    typeof window !== 'undefined' &&
-    announcement !== undefined &&
-    localStorage.getItem('hasSeenAnnouncement') !== announcement;
 
   // 🚀 从 TanStack Query 获取首页数据，本地状态作为详情增强
   const hotMovies = useMemo(() => {
