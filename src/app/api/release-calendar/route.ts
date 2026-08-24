@@ -12,11 +12,9 @@ export const runtime = 'nodejs';
 // 移除内存缓存，使用数据库缓存实现全局共享
 
 export async function GET(request: NextRequest) {
-  // 检查用户认证
-  const authInfo = await getAuthInfoFromCookie(request);
-  if (!authInfo || !authInfo.username) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // 发布日历是公开数据（电影/剧集上映排期），匿名可读；
+  // 仅手动刷新（POST）需要登录，见下方 POST 处理。
+  // 移除旧的登录强校验，否则未登录用户首页"即将上映"区块永远 401 为空。
 
   try {
     const { searchParams } = new URL(request.url);

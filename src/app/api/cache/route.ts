@@ -10,8 +10,15 @@ async function requireOwner(request: NextRequest): Promise<boolean> {
   return !!auth && (auth.role === 'owner' || auth.role === 'admin');
 }
 
+// 读缓存放行到任意登录用户（缓存均为公开内容，如豆瓣详情/搜索结果）；
+// 写/删仍仅限 owner/admin，见 requireOwner
+async function requireRead(request: NextRequest): Promise<boolean> {
+  const auth = await getAuthInfoFromCookie(request);
+  return !!auth && !!auth.username;
+}
+
 export async function GET(request: NextRequest) {
-  if (!(await requireOwner(request))) {
+  if (!(await requireRead(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
