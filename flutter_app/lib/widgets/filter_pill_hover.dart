@@ -55,7 +55,7 @@ class _FilterPillHoverState extends State<FilterPillHover> {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
           ),
           child: Row(
             children: [

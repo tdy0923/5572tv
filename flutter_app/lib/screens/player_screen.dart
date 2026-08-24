@@ -1484,7 +1484,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                       end: Alignment.bottomCenter,
                       colors: [AppTheme.primaryDark, AppTheme.error],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.orange.withValues(alpha: 0.3),
@@ -1809,7 +1809,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                         height: 100,
                         decoration: BoxDecoration(
                           color: AppTheme.success.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                         ),
                       ),
                     ),

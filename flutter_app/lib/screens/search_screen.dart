@@ -767,7 +767,7 @@ class _SearchScreenState extends State<SearchScreen>
                             ),
                             decoration: BoxDecoration(
                               color: backgroundColor,
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                               border: Border.all(
                                 color: borderColor,
                                 width: 1,
@@ -1425,7 +1425,7 @@ class _SearchScreenState extends State<SearchScreen>
           padding: EdgeInsets.fromLTRB(isFirst ? 0 : 8, 6, 8, 6),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
           ),
           child: Row(
             children: [
@@ -1606,7 +1606,7 @@ class _SearchScreenState extends State<SearchScreen>
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
           ),
           child: Row(
             children: [

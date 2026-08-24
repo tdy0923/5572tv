@@ -66,7 +66,7 @@ class SwitchLoadingOverlay extends StatelessWidget {
                           height: 100,
                           decoration: BoxDecoration(
                             color: AppTheme.success.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                           ),
                         ),
                       ),

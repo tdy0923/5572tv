@@ -1298,7 +1298,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1363,7 +1363,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1442,7 +1442,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppTheme.radius2xl),
                 ),
                 child: Icon(
                   _isLocked ? Icons.lock : Icons.lock_open,

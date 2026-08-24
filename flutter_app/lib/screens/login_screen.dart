@@ -271,7 +271,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 72,
           decoration: BoxDecoration(
             color: AppTheme.darkBackground,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppTheme.radius2xl),
             boxShadow: [
               BoxShadow(
                 color: AppTheme.primary.withValues(alpha: 0.3),
@@ -316,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> {
             height: 80,
             decoration: BoxDecoration(
               color: AppTheme.darkBackground,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(AppTheme.radius2xl),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primary.withValues(alpha: 0.3),
