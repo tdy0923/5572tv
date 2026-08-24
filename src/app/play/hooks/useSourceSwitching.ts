@@ -233,10 +233,20 @@ export function useSourceSwitching(params: {
         sessionStorage.setItem(tempProgressKey, currentPlayTime.toString());
       }
 
-      const newDetail = availableSources.find(
+      let newDetail = availableSources.find(
         (source) => source.source === newSource && source.id === newId,
       );
+      // 兜底：state 可能因渲染时序落后于最新收集结果，ref 始终持有最新数组
       if (!newDetail) {
+        newDetail = availableSourcesRef.current.find(
+          (source) => source.source === newSource && source.id === newId,
+        );
+      }
+      if (!newDetail) {
+        console.warn('[换源] 未在可用源中找到', newSource, newId, {
+          stateCount: availableSources.length,
+          refCount: availableSourcesRef.current.length,
+        });
         isSourceChangingRef.current = false;
         setIsVideoLoading(false);
         params.setError('未找到匹配结果');
