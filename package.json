@@ -6,7 +6,7 @@
     "dev": "pnpm gen:manifest && next dev -H 0.0.0.0",
     "build": "node scripts/check-no-next-image-for-proxy.js && pnpm gen:manifest && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src",
     "lint:fix": "eslint src --fix && pnpm format",
     "lint:strict": "eslint src",
     "typecheck": "tsc --noEmit --incremental false",
