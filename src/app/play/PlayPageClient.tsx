@@ -253,6 +253,12 @@ function PlayPageClient() {
   >(null);
   // 首命中已开播标记：防止后续优选流程覆盖正在播放的流（反复重启根因）
   const earlyStartedRef = useRef(false);
+  // 统一播放失败恢复函数引用：HLS致命错误/安全网定时器均可触发
+  const autoRecoveryFnRef = useRef<null | (() => void)>(null);
+  const recoveryBusyRef = useRef(false);
+  // 本次加载是否已由HLS致命分支处理（防安全网重复触发）
+  const fatalHandledRef = useRef(false);
+  const safetyNetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 获取服务器配置（下载功能开关）
 
@@ -1411,6 +1417,13 @@ function PlayPageClient() {
       clearTimeout(episodeSwitchTimeoutRef.current);
       episodeSwitchTimeoutRef.current = null;
     }
+
+    // 清理15s起播安全网定时器，避免换源/卸载后误触发恢复
+    if (safetyNetTimer.current) {
+      clearTimeout(safetyNetTimer.current);
+      safetyNetTimer.current = null;
+    }
+    fatalHandledRef.current = false;
 
     // 清理弹幕状态引用
     danmuPluginStateRef.current = null;
@@ -2787,6 +2800,23 @@ function PlayPageClient() {
 
               ensureVideoSource(video, effectiveUrl);
 
+              // 🛟 Layer3：15秒安全网。若既无致命回调又没播起来（网络挂起/
+              // 清单静默失败等未知形态），强制走统一恢复，杜绝无限转圈
+              fatalHandledRef.current = false;
+              if (safetyNetTimer.current) {
+                clearTimeout(safetyNetTimer.current);
+              }
+              safetyNetTimer.current = setTimeout(() => {
+                if (
+                  !fatalHandledRef.current &&
+                  !recoveryBusyRef.current &&
+                  (video.currentTime || 0) < 1
+                ) {
+                  console.warn('[安全网] 15s未起播，触发自动换源');
+                  autoRecoveryFnRef.current?.();
+                }
+              }, 15000);
+
               // HLS音轨事件监听
               hls.on(
                 HlsModule.Events.AUDIO_TRACKS_UPDATED,
@@ -2909,8 +2939,8 @@ function PlayPageClient() {
                       hls.recoverMediaError();
                       break;
                     default:
-                      // // console.log('无法恢复的错误，标记源无效');
-                      // 标记当前源为无效，触发 ArtPlayer error 事件进行换源
+                      // 🛟 Layer2：hls.js致命错误常不冒泡为<video>error，
+                      // 必须在此直接触发统一恢复（此前只销毁导致静默卡死）
                       const hlsFailSource = currentSourceRef.current;
                       const hlsFailId = currentIdRef.current;
                       if (hlsFailSource && hlsFailId) {
@@ -2919,6 +2949,8 @@ function PlayPageClient() {
                         );
                       }
                       hls.destroy();
+                      fatalHandledRef.current = true;
+                      autoRecoveryFnRef.current?.();
                       break;
                   }
                 }
@@ -4367,6 +4399,15 @@ function PlayPageClient() {
           requestWakeLock();
         }
 
+        artPlayerRef.current.on('video:playing', () => {
+          // 起播成功 → 解除15s安全网与致命标记
+          // （playing事件触发时currentTime可能仍≈0，须无条件清除）
+          fatalHandledRef.current = false;
+          if (safetyNetTimer.current) {
+            clearTimeout(safetyNetTimer.current);
+            safetyNetTimer.current = null;
+          }
+        });
         artPlayerRef.current.on('video:volumechange', () => {
           lastVolumeRef.current = artPlayerRef.current.volume;
         });
@@ -4594,6 +4635,77 @@ function PlayPageClient() {
           }
         });
 
+        // 🛟 统一播放失败恢复（三层兜底的执行核心）：
+        // 等待流式收集完成→标记失败源→并行探活候选→切换首个可用；
+        // 全部失败才落到错误页（含诊断复制按钮）
+        const triggerAutoRecovery = async () => {
+          if (recoveryBusyRef.current) return;
+          recoveryBusyRef.current = true;
+          try {
+            // 流式搜索可能仍在收集候选，最多等6s保证列表充足
+            const sp = streamSearchRef.current?.promise;
+            if (sp) {
+              await Promise.race([sp, new Promise((r) => setTimeout(r, 6000))]);
+            }
+
+            sourceErrorCountRef.current++;
+            if (sourceErrorCountRef.current > MAX_SOURCE_ERRORS) {
+              setError('播放失败，请尝试刷新页面或切换其他线路');
+              return;
+            }
+
+            const failSource = currentSourceRef.current;
+            const failId = currentIdRef.current;
+            const failUrl =
+              detailRef.current?.episodes?.[currentEpisodeIndexRef.current] ||
+              '';
+            if (failSource && failId) {
+              markSourceFailed(getSourceIdentityKey(failSource, failId));
+            }
+
+            const nextSource = await findWorkingSource(
+              failSource,
+              failId,
+              failUrl,
+            );
+            if (nextSource) {
+              sourceErrorCountRef.current = 0;
+              await handleSourceChange(
+                nextSource.source,
+                nextSource.id,
+                nextSource.title || '',
+              );
+              return;
+            }
+
+            // 所有已知源都不可用 → 会话级兜底重试一次
+            if (
+              !fallbackAutoRetriedRef.current &&
+              filterInvalidSources(availableSourcesRef.current).length > 0 &&
+              totalSessionFailuresRef.current < MAX_SESSION_FAILURES
+            ) {
+              fallbackAutoRetriedRef.current = true;
+              const retrySource = availableSourcesRef.current[0];
+              if (retrySource) {
+                setTimeout(() => {
+                  handleSourceChange(
+                    retrySource.source,
+                    retrySource.id,
+                    retrySource.title || '',
+                  );
+                }, 2000);
+                return;
+              }
+            }
+            setError('当前线路播放失败，且没有其他可用线路');
+          } finally {
+            setTimeout(() => {
+              recoveryBusyRef.current = false;
+            }, 1500);
+          }
+        };
+        autoRecoveryFnRef.current = triggerAutoRecovery;
+
         // 监听播放器错误 - 自动切换到备用源
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
@@ -4603,59 +4715,7 @@ function PlayPageClient() {
             return;
           }
 
-          sourceErrorCountRef.current++;
-
-          // 超过错误限制，停止重试并显示错误
-          if (sourceErrorCountRef.current > MAX_SOURCE_ERRORS) {
-            setError('播放失败，请尝试刷新页面或切换其他线路');
-            return;
-          }
-
-          // 标记当前源为无效
-          const failSource = currentSourceRef.current;
-          const failId = currentIdRef.current;
-          const failUrl =
-            detailRef.current?.episodes?.[currentEpisodeIndexRef.current] || '';
-          if (failSource && failId) {
-            const failKey = getSourceIdentityKey(failSource, failId);
-            markSourceFailed(failKey);
-          }
-
-          // 尝试切换到备用源
-          findWorkingSource(failSource, failId, failUrl).then((nextSource) => {
-            if (nextSource) {
-              sourceErrorCountRef.current = 0;
-              handleSourceChange(
-                nextSource.source,
-                nextSource.id,
-                nextSource.title || '',
-              );
-            } else {
-              // 所有源都不可用，显示错误
-              if (
-                fallbackAutoRetriedRef.current ||
-                totalSessionFailuresRef.current >= MAX_SESSION_FAILURES ||
-                filterInvalidSources(availableSourcesRef.current).length === 0
-              ) {
-                setError('当前线路播放失败，且没有其他可用线路');
-              } else {
-                // 尝试一次重试
-                fallbackAutoRetriedRef.current = true;
-                const retrySource = availableSourcesRef.current[0];
-                if (retrySource) {
-                  setTimeout(() => {
-                    handleSourceChange(
-                      retrySource.source,
-                      retrySource.id,
-                      retrySource.title || '',
-                    );
-                  }, 2000);
-                } else {
-                  setError('当前线路播放失败，且没有其他可用线路');
-                }
-              }
-            }
-          });
+          triggerAutoRecovery();
         });
 
         // 监听视频播放结束事件，自动播放下一集
