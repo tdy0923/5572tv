@@ -5402,10 +5402,6 @@ function PlayPageClient() {
               </div>
             </div>
 
-            <div className='mt-4 overflow-hidden'>
-              <SiteAdSlot position='play_sidebar' />
-            </div>
-
             {/* 详情展示 */}
             <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
               {/* 海报 - 左侧 */}
@@ -5536,6 +5532,12 @@ function PlayPageClient() {
                 />
               </div>
             )}
+
+            {/* 广告位：置于页面底部（详情/推荐/评价之后），
+                避免抢占选集面板与播放器区域，防止在手机上压住内容 */}
+            <div className='mt-4 overflow-hidden'>
+              <SiteAdSlot position='play_sidebar' />
+            </div>
           </div>
 
           {/* 返回顶部悬浮按钮 - 使用独立组件优化性能 */}
