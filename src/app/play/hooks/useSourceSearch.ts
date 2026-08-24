@@ -228,6 +228,147 @@ const generateSearchVariants = (originalQuery: string): string[] => {
   return Array.from(new Set(variants));
 };
 
+// ---------------------------------------------------------------------------
+// 🚀 流式搜索（首命中即返）：消费 /api/search/ws 的逐源SSE，
+// 第一个通过标题校验的结果立即 resolve，供播放页秒级开播；
+// 其余源继续收集并通过 onProgress 增量上报，直到 complete。
+// ---------------------------------------------------------------------------
+
+export interface StreamSearchHandle {
+  promise: Promise<SearchResult | null>;
+  abort: () => void;
+}
+
+function titleMatches(result: SearchResult, queryTitle: string): boolean {
+  const t = safeStr(result.title).replaceAll(' ', '').toLowerCase();
+  if (!t) return false;
+  if (t === queryTitle) return true;
+  const strip = (x: string) => x.replace(/\d+|[：:]/g, '');
+  return strip(t) === strip(queryTitle);
+}
+
+function looselyMatches(result: SearchResult, queryTitle: string): boolean {
+  const t = safeStr(result.title).replaceAll(' ', '').toLowerCase();
+  return (
+    t.includes(queryTitle) ||
+    queryTitle.includes(t) ||
+    (queryTitle.length > 4 && checkAllKeywordsMatch(queryTitle, t))
+  );
+}
+
+export function searchStreamingFirstHit(params: {
+  query: string;
+  videoYear?: string;
+  searchType?: string;
+  onProgress?: (all: SearchResult[]) => void;
+}): StreamSearchHandle {
+  const { query, onProgress } = params;
+  let abortRequested = false;
+  const controllerStub = { aborted: false };
+  const abort = () => {
+    abortRequested = true;
+    controllerStub.aborted = true;
+    readerRef.abort();
+  };
+  // 用可变容器持有 reader 以支持外部 abort
+  const readerRef: { abort: () => void } = {
+    abort: () => {
+      abortRequested = true;
+      controllerStub.aborted = true;
+    },
+  };
+
+  const queryTitle = query.replaceAll(' ', '').toLowerCase();
+
+  const promise = new Promise<SearchResult | null>(async (resolve) => {
+    try {
+      const res = await fetch(`/api/search/ws?q=${encodeURIComponent(query)}`, {
+        headers: { Accept: 'text/event-stream' },
+      });
+      if (!res.ok || !res.body) {
+        resolve(null);
+        return;
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      const all: SearchResult[] = [];
+      let firstHit: SearchResult | null = null;
+      let settled = false;
+
+      const finish = (value: SearchResult | null) => {
+        if (!settled) {
+          settled = true;
+          resolve(value);
+        }
+      };
+
+      while (!controllerStub.aborted) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const chunks = buffer.split('\n\n');
+        buffer = chunks.pop() || '';
+        for (const chunk of chunks) {
+          const line = chunk.trim();
+          if (!line.startsWith('data:')) continue;
+          try {
+            const evt = JSON.parse(line.slice(5).trim());
+            if (evt.type === 'source_result' && Array.isArray(evt.results)) {
+              for (const r of evt.results as SearchResult[]) {
+                if (isAdultContent(r)) continue;
+                const k = `${safeStr(r.source)}|${safeStr(r.id)}`;
+                if (
+                  all.some((x) => `${safeStr(x.source)}|${safeStr(x.id)}` === k)
+                )
+                  continue;
+                all.push(r);
+                if (
+                  !firstHit &&
+                  titleMatches(r, queryTitle) &&
+                  r.episodes?.length
+                ) {
+                  firstHit = r; // 立刻放行首个命中，流继续收集其余
+                  finish(firstHit);
+                }
+              }
+              onProgress?.(all.slice());
+            } else if (evt.type === 'complete') {
+              if (!firstHit) {
+                // 无严格命中 → 宽松兜底挑一个有集数的
+                firstHit =
+                  all.find(
+                    (r) => looselyMatches(r, queryTitle) && r.episodes?.length,
+                  ) || null;
+              }
+              finish(firstHit);
+            }
+          } catch {}
+          if (settled && !onProgress) break;
+        }
+        if (abortRequested) break;
+      }
+      // 流自然结束仍未 settle（无complete事件等）→ 兜底
+      if (!settled) {
+        const fallback =
+          all.find((r) => titleMatches(r, queryTitle) && r.episodes?.length) ||
+          all.find(
+            (r) => looselyMatches(r, queryTitle) && r.episodes?.length,
+          ) ||
+          null;
+        finish(fallback);
+      }
+      try {
+        await reader.cancel();
+      } catch {}
+    } catch {
+      resolve(null);
+    }
+  });
+
+  return { promise, abort };
+}
+
 export function useSourceSearch(params: {
   videoTitleRef: React.MutableRefObject<string>;
   videoYearRef: React.MutableRefObject<string>;

@@ -24,6 +24,8 @@ import { deduplicateDanmaku, useDanmu } from '@/hooks/useDanmu';
 
 import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
 
+import { searchStreamingFirstHit } from '@/app/play/hooks/useSourceSearch';
+
 import { useAdFilter } from './hooks/useAdFilter';
 import { useAudioTracks } from './hooks/useAudioTracks';
 import { useBangumiDetails } from './hooks/useBangumiDetails';
@@ -244,6 +246,11 @@ function PlayPageClient() {
 
   // resize事件防抖管理
   const resizeResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 🚀 流式搜索句柄（initAll 赋值；切视频时用于abort旧流）
+  const streamSearchRef = useRef<
+    import('@/app/play/hooks/useSourceSearch').StreamSearchHandle | null
+  >(null);
 
   // 获取服务器配置（下载功能开关）
 
@@ -1810,9 +1817,40 @@ function PlayPageClient() {
           detailData = sourcesInfo[0];
         }
       } else {
-        // 没有source和id：统一走全源搜索流程（与电影/剧集完全一致）
-        // 短剧也用55条管理线搜索，不单独走硬编码的drama API
-        sourcesInfo = await fetchSourcesData(searchTitle || videoTitle);
+        // 没有source和id：🚀 流式搜索首命中即开播（与短剧快速起播同策略），
+        // 其余源在后台继续收集并更新 availableSources，供换源/候选使用
+        const collected: SearchResult[] = [];
+        let progressScheduled = false;
+        streamSearchRef.current = searchStreamingFirstHit({
+          query: searchTitle || videoTitle,
+          videoYear: videoYearRef.current || '',
+          onProgress: (all) => {
+            collected.length = 0;
+            collected.push(...all);
+            if (progressScheduled) return;
+            progressScheduled = true;
+            setTimeout(() => {
+              progressScheduled = false;
+              setAvailableSourcesWithWeight(collected.slice()).catch(() => {});
+            }, 800);
+          },
+        });
+        const first = await Promise.race([
+          streamSearchRef.current.promise,
+          new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+        ]);
+        if (first && first.episodes?.length && !currentSource && !detailData) {
+          // 立即开播首个命中；prefer 跳过（后续失败路径已有重试机制）
+          detailData = first;
+          needPreferRef.current = false;
+          setNeedPrefer(false);
+          sourcesInfo = collected.slice();
+        } else {
+          // 首命中超时/无果 → 回退传统全量结果流程
+          sourcesInfo = collected.length
+            ? collected
+            : await fetchSourcesData(searchTitle || videoTitle);
+        }
       }
 
       if (!detailData && sourcesInfo.length === 0) {
