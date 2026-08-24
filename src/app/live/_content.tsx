@@ -1999,7 +1999,7 @@ function LivePageClient() {
                     {expandedChannels.has('page-title') ? (
                       <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
                     ) : (
-                      <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
+                      <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
                     )}
                     {/* 文字提示 - 仅桌面端显示 */}
                     <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>
@@ -2378,7 +2378,7 @@ function LivePageClient() {
                           {expandedChannels.has('current-channel-info') ? (
                             <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
                           ) : (
-                            <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
+                            <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
                           )}
                           {/* 文字提示 - 仅桌面端显示 */}
                           <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>

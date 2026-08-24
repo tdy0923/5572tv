@@ -298,7 +298,7 @@ export default function SourceScripts() {
       )}
 
       {scripts.length === 0 && !showForm && (
-        <div className='text-center py-8 text-gray-400 dark:text-gray-500 text-sm'>
+        <div className='text-center py-8 text-gray-400 dark:text-gray-400 text-sm'>
           暂无脚本，点击"新建脚本"开始
         </div>
       )}

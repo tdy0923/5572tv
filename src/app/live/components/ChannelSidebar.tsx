@@ -172,7 +172,7 @@ function ChannelItem({
               {expandedChannels.has(channel.id) ? (
                 <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
               ) : (
-                <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
+                <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
               )}
               <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>
                 {expandedChannels.has(channel.id) ? '收起' : '展开'}
@@ -411,7 +411,7 @@ export default function ChannelSidebar({
                     <div className='flex flex-col items-center justify-center py-12 text-center'>
                       <div className='relative mb-6'>
                         <div className='w-20 h-20 bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 rounded-2xl flex items-center justify-center shadow-lg'>
-                          <Tv className='w-10 h-10 text-gray-400 dark:text-gray-500' />
+                          <Tv className='w-10 h-10 text-gray-400 dark:text-gray-400' />
                         </div>
                         <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
                         <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
@@ -535,7 +535,7 @@ export default function ChannelSidebar({
                                 {expandedChannels.has(channel.id) ? (
                                   <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
                                 ) : (
-                                  <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
+                                  <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
                                 )}
                                 <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>
                                   {expandedChannels.has(channel.id)
@@ -558,12 +558,12 @@ export default function ChannelSidebar({
                 ) : (
                   <div className='flex flex-col items-center justify-center py-12 text-center'>
                     <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>
-                      <Search className='w-8 h-8 text-gray-400 dark:text-gray-600' />
+                      <Search className='w-8 h-8 text-gray-400 dark:text-gray-300' />
                     </div>
                     <p className='text-gray-500 dark:text-gray-400 font-medium'>
                       未找到匹配的频道
                     </p>
-                    <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>
+                    <p className='text-sm text-gray-400 dark:text-gray-400 mt-1'>
                       在当前直播源 &quot;{currentSource?.name}&quot;
                       中未找到匹配结果
                     </p>
@@ -748,12 +748,12 @@ export default function ChannelSidebar({
                   {sourceSearchQuery.trim() ? (
                     <>
                       <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>
-                        <Search className='w-8 h-8 text-gray-400 dark:text-gray-600' />
+                        <Search className='w-8 h-8 text-gray-400 dark:text-gray-300' />
                       </div>
                       <p className='text-gray-500 dark:text-gray-400 font-medium'>
                         未找到匹配的直播源
                       </p>
-                      <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>
+                      <p className='text-sm text-gray-400 dark:text-gray-400 mt-1'>
                         搜索 &quot;{sourceSearchQuery}&quot; 无结果
                       </p>
                     </>

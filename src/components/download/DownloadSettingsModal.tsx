@@ -182,13 +182,13 @@ export function DownloadSettingsModal({
                         <span className='text-red-500 font-bold'>✗</span>
                       )}
                       <span
-                        className={`font-medium ${!streamModeSupport.serviceWorker ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}`}
+                        className={`font-medium ${!streamModeSupport.serviceWorker ? 'text-gray-400 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}
                       >
                         {getStreamModeName('service-worker')}
                       </span>
                     </div>
                     <p
-                      className={`text-xs mt-1 ${!streamModeSupport.serviceWorker ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}
+                      className={`text-xs mt-1 ${!streamModeSupport.serviceWorker ? 'text-gray-400 dark:text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}
                     >
                       {streamModeSupport.serviceWorker
                         ? getStreamModeDescription('service-worker')
@@ -222,7 +222,7 @@ export function DownloadSettingsModal({
                         <span className='text-red-500 font-bold'>✗</span>
                       )}
                       <span
-                        className={`font-medium ${!streamModeSupport.fileSystem ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}`}
+                        className={`font-medium ${!streamModeSupport.fileSystem ? 'text-gray-400 dark:text-gray-400' : 'text-gray-900 dark:text-white'}`}
                       >
                         {getStreamModeName('file-system')}
                       </span>
@@ -233,7 +233,7 @@ export function DownloadSettingsModal({
                       )}
                     </div>
                     <p
-                      className={`text-xs mt-1 ${!streamModeSupport.fileSystem ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'}`}
+                      className={`text-xs mt-1 ${!streamModeSupport.fileSystem ? 'text-gray-400 dark:text-gray-400' : 'text-gray-500 dark:text-gray-400'}`}
                     >
                       {streamModeSupport.fileSystem
                         ? getStreamModeDescription('file-system')

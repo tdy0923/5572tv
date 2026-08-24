@@ -153,7 +153,7 @@ export default function PullToRefresh({
           </div>
         ) : pullDistance > 10 ? (
           <div
-            className='text-sm text-gray-400 dark:text-gray-500 transition-transform'
+            className='text-sm text-gray-400 dark:text-gray-400 transition-transform'
             style={{ transform: `rotate(${progress * 180}deg)` }}
           >
             <svg

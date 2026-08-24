@@ -648,7 +648,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </button>
                 <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isDoubanDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-gray-400 dark:text-gray-400 transition-transform duration-200 ${isDoubanDropdownOpen ? 'rotate-180' : ''}`}
                   />
                 </div>
                 {isDoubanDropdownOpen && (
@@ -743,7 +743,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 </button>
                 <div className='absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none'>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isDoubanImageProxyDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-gray-400 dark:text-gray-400 transition-transform duration-200 ${isDoubanImageProxyDropdownOpen ? 'rotate-180' : ''}`}
                   />
                 </div>
                 {isDoubanImageProxyDropdownOpen && (
@@ -931,7 +931,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                 <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                   播放缓冲优化
                 </h4>
-                <p className='text-xs text-gray-400 dark:text-gray-500 mt-1'>
+                <p className='text-xs text-gray-400 dark:text-gray-400 mt-1'>
                   根据网络环境选择合适的缓冲模式，减少播放卡顿
                 </p>
               </div>
@@ -983,7 +983,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                             {option.label}
                           </span>
                         </div>
-                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-1'>
+                        <p className='text-xs text-gray-400 dark:text-gray-400 mt-0.5 line-clamp-1'>
                           {option.description}
                         </p>
                       </div>
@@ -1415,7 +1415,7 @@ export const SettingsPanel = memo(({ isOpen, onClose }: SettingsPanelProps) => {
                       />
                     </div>
                   </div>
-                  <p className='text-xs text-gray-400 dark:text-gray-500 mt-2'>
+                  <p className='text-xs text-gray-400 dark:text-gray-400 mt-2'>
                     当前：{isDarkMode ? '深色' : '浅色'}模式
                   </p>
                 </div>

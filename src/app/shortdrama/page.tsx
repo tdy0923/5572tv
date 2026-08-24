@@ -240,7 +240,7 @@ export default function ShortDramaPage() {
             {/* 搜索栏 */}
             <div className='mb-6'>
               <div className='relative group'>
-                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
+                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-400 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
                 <PanelField
                   type='text'
                   placeholder='搜索短剧名称...'
@@ -567,7 +567,7 @@ export default function ShortDramaPage() {
                     <div className='relative'>
                       <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
                         <svg
-                          className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                          className='w-12 h-12 text-gray-400 dark:text-gray-400'
                           fill='none'
                           stroke='currentColor'
                           viewBox='0 0 24 24'

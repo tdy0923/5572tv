@@ -771,7 +771,7 @@ export const UserMenu: React.FC = () => {
               <div className='font-semibold text-gray-900 dark:text-gray-100 text-sm truncate'>
                 {authInfo?.username || 'default'}
               </div>
-              <div className='text-[10px] text-gray-400 dark:text-gray-500'>
+              <div className='text-[10px] text-gray-400 dark:text-gray-400'>
                 数据存储：
                 {storageType === 'localstorage' ? '本地' : storageType}
               </div>
@@ -1036,7 +1036,7 @@ export const UserMenu: React.FC = () => {
                 <button
                   type='button'
                   onClick={() => setShowOldPassword(!showOldPassword)}
-                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
                   aria-label={showOldPassword ? '隐藏旧密码' : '显示旧密码'}
                 >
                   {showOldPassword ? (
@@ -1065,7 +1065,7 @@ export const UserMenu: React.FC = () => {
                 <button
                   type='button'
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
                   aria-label={showNewPassword ? '隐藏新密码' : '显示新密码'}
                 >
                   {showNewPassword ? (
@@ -1109,7 +1109,7 @@ export const UserMenu: React.FC = () => {
                 <button
                   type='button'
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                  className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
                   aria-label={
                     showConfirmPassword ? '隐藏确认密码' : '显示确认密码'
                   }
@@ -1237,7 +1237,7 @@ export const UserMenu: React.FC = () => {
                 <div className='text-gray-500 dark:text-gray-400 text-sm'>
                   暂无新剧集更新
                 </div>
-                <div className='text-xs text-gray-400 dark:text-gray-500 mt-2'>
+                <div className='text-xs text-gray-400 dark:text-gray-400 mt-2'>
                   系统会定期检查您观看过的剧集是否有新集数更新
                 </div>
               </div>
@@ -1488,11 +1488,11 @@ export const UserMenu: React.FC = () => {
           {/* 空状态 */}
           {playRecords.length === 0 && (
             <div className='text-center py-12'>
-              <PlayCircle className='w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4' />
+              <PlayCircle className='w-16 h-16 text-gray-300 dark:text-gray-300 mx-auto mb-4' />
               <p className='text-gray-500 dark:text-gray-400 mb-2'>
                 暂无需要继续观看的内容
               </p>
-              <p className='text-xs text-gray-400 dark:text-gray-500'>
+              <p className='text-xs text-gray-400 dark:text-gray-400'>
                 {enableContinueWatchingFilter
                   ? `观看进度在${continueWatchingMinProgress}%-${continueWatchingMaxProgress}%之间且播放时间超过2分钟的内容会显示在这里`
                   : '播放时间超过2分钟的所有内容都会显示在这里'}
@@ -1616,9 +1616,9 @@ export const UserMenu: React.FC = () => {
           {/* 空状态 */}
           {favorites.length === 0 && (
             <div className='text-center py-12'>
-              <Heart className='w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4' />
+              <Heart className='w-16 h-16 text-gray-300 dark:text-gray-300 mx-auto mb-4' />
               <p className='text-gray-500 dark:text-gray-400 mb-2'>暂无收藏</p>
-              <p className='text-xs text-gray-400 dark:text-gray-500'>
+              <p className='text-xs text-gray-400 dark:text-gray-400'>
                 在详情页点击收藏按钮即可添加收藏
               </p>
             </div>

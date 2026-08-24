@@ -737,7 +737,7 @@ const PlayStatsPage: React.FC = () => {
                                           }}
                                         />
                                       ) : (
-                                        <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500'>
+                                        <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-400'>
                                           <svg
                                             className='w-6 h-6'
                                             fill='none'
@@ -804,7 +804,7 @@ const PlayStatsPage: React.FC = () => {
                           ) : (
                             <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
                               <svg
-                                className='w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600'
+                                className='w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-300'
                                 fill='none'
                                 stroke='currentColor'
                                 viewBox='0 0 24 24'
@@ -1374,7 +1374,7 @@ const PlayStatsPage: React.FC = () => {
                               }}
                             />
                           ) : (
-                            <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500'>
+                            <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-400'>
                               <svg
                                 className='w-8 h-8'
                                 fill='none'
@@ -1436,7 +1436,7 @@ const PlayStatsPage: React.FC = () => {
                 ) : (
                   <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
                     <svg
-                      className='w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600'
+                      className='w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-300'
                       fill='none'
                       stroke='currentColor'
                       viewBox='0 0 24 24'
@@ -2079,7 +2079,7 @@ const PlayStatsPage: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500'>
+                        <div className='w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-400'>
                           <svg
                             className='w-8 h-8'
                             fill='none'
@@ -2141,7 +2141,7 @@ const PlayStatsPage: React.FC = () => {
             ) : (
               <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
                 <svg
-                  className='w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600'
+                  className='w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-300'
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'

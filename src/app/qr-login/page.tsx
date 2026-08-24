@@ -328,7 +328,7 @@ function QRLoginClient() {
                 <button
                   type='button'
                   onClick={() => setShowPassword(!showPassword)}
-                  className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                  className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300'
                   aria-label={showPassword ? '隐藏密码' : '显示密码'}
                 >
                   {showPassword ? (
@@ -452,7 +452,7 @@ function QRLoginClient() {
               <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center'>
                 打开手机上的浏览器，扫描此二维码
               </p>
-              <p className='text-xs text-gray-500 dark:text-gray-500 text-center mt-2 break-all'>
+              <p className='text-xs text-gray-500 dark:text-gray-400 text-center mt-2 break-all'>
                 或手动访问：
                 <span className='font-mono text-[10px]'>{qrUrl}</span>
               </p>

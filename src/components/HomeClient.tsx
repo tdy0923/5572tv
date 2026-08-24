@@ -868,7 +868,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 className='shrink-0 cursor-pointer'
                 aria-label='搜索'
               >
-                <Search className='h-5 w-5 text-gray-400 dark:text-gray-500' />
+                <Search className='h-5 w-5 text-gray-400 dark:text-gray-400' />
               </button>
               <input
                 value={homeSearchQuery}

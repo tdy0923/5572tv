@@ -815,7 +815,7 @@ function SearchPageClient() {
 
               <form onSubmit={handleSearch} className='w-full'>
                 <div className='relative group'>
-                  <Search className='absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500 transition-all duration-300 group-focus-within:text-green-500 dark:group-focus-within:text-green-400 group-focus-within:scale-110' />
+                  <Search className='absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-400 transition-all duration-300 group-focus-within:text-green-500 dark:group-focus-within:text-green-400 group-focus-within:scale-110' />
 
                   <PanelField
                     id='searchInput'
@@ -1118,7 +1118,7 @@ function SearchPageClient() {
                         <div className='text-gray-500 dark:text-gray-400'>
                           未找到相关演员作品
                         </div>
-                        <p className='mt-2 text-sm text-gray-400 dark:text-gray-500'>
+                        <p className='mt-2 text-sm text-gray-400 dark:text-gray-400'>
                           换个演员名字，或切换电影 / 电视剧后再试一次。
                         </p>
                       </div>
@@ -1262,7 +1262,7 @@ function SearchPageClient() {
                               <div className='text-gray-500 dark:text-gray-400'>
                                 未找到相关影视结果
                               </div>
-                              <p className='mt-2 text-sm text-gray-400 dark:text-gray-500'>
+                              <p className='mt-2 text-sm text-gray-400 dark:text-gray-400'>
                                 可以尝试更短的关键词，或关闭精确搜索后再试一次。
                               </p>
                             </div>

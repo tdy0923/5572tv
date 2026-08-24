@@ -195,7 +195,7 @@ export default function EpgScrollableRow({
           <div className='w-16 sm:w-20'></div>
         </div>
         <div className='min-h-[100px] sm:min-h-[120px] flex items-center justify-center'>
-          <div className='flex items-center gap-2 sm:gap-3 text-gray-400 dark:text-gray-500'>
+          <div className='flex items-center gap-2 sm:gap-3 text-gray-400 dark:text-gray-400'>
             <Tv className='w-4 h-4 sm:w-5 sm:h-5' />
             <span className='text-sm sm:text-base'>暂无节目单数据</span>
           </div>
@@ -267,7 +267,7 @@ export default function EpgScrollableRow({
                   >
                     {formatTime(program.start)}
                   </span>
-                  <span className='text-xs text-gray-400 dark:text-gray-500'>
+                  <span className='text-xs text-gray-400 dark:text-gray-400'>
                     {formatTime(program.end)}
                   </span>
                 </div>

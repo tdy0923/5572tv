@@ -158,7 +158,7 @@ export default function PlaylistManager({
             <div className='text-center py-8 text-gray-500'>加载中...</div>
           ) : playlists.length === 0 ? (
             <div className='text-center py-8'>
-              <ListPlus className='w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3' />
+              <ListPlus className='w-12 h-12 mx-auto text-gray-300 dark:text-gray-300 mb-3' />
               <p className='text-gray-500 dark:text-gray-400'>还没有片单</p>
               <button
                 onClick={() => setShowCreateForm(true)}

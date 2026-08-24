@@ -350,12 +350,12 @@ export default function GroupSelectorModal({
             ) : (
               <div className='flex flex-col items-center justify-center py-12 text-center'>
                 <div className='w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4'>
-                  <Menu className='w-8 h-8 text-gray-400 dark:text-gray-500' />
+                  <Menu className='w-8 h-8 text-gray-400 dark:text-gray-400' />
                 </div>
                 <p className='text-gray-500 dark:text-gray-400 font-medium'>
                   未找到匹配的分类
                 </p>
-                <p className='text-sm text-gray-400 dark:text-gray-500 mt-1'>
+                <p className='text-sm text-gray-400 dark:text-gray-400 mt-1'>
                   请尝试其他搜索关键词
                 </p>
               </div>

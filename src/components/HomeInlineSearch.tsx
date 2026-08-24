@@ -162,7 +162,7 @@ export default function HomeInlineSearch({
 
       {!loading && done && !error && results.length === 0 && (
         <div className='flex flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white py-12 text-center dark:border-gray-700 dark:bg-gray-800/60'>
-          <SearchX className='h-10 w-10 text-gray-300 dark:text-gray-600' />
+          <SearchX className='h-10 w-10 text-gray-300 dark:text-gray-300' />
           <p className='text-sm text-gray-500 dark:text-gray-400'>
             没有找到与“{query.trim()}”相关的内容
           </p>

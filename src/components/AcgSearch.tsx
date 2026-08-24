@@ -263,7 +263,7 @@ export default function AcgSearch({
       {allItems.length === 0 && (
         <div className='flex items-center justify-center py-12'>
           <div className='text-center'>
-            <AlertCircle className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-600' />
+            <AlertCircle className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-300' />
             <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
               未找到相关资源，请尝试切换其他搜索源
             </p>

@@ -196,7 +196,7 @@ const MessageItem = memo(
                   </span>
                   <span className='font-medium'>推荐影片</span>
                 </div>
-                <span className='text-gray-400 dark:text-gray-500 opacity-75'>
+                <span className='text-gray-400 dark:text-gray-400 opacity-75'>
                   {message.recommendations.length < 4
                     ? `${message.recommendations.length} 个推荐`
                     : `前 4 个推荐`}
@@ -256,7 +256,7 @@ const MessageItem = memo(
                   </span>
                   YouTube视频推荐
                 </div>
-                <span className='text-gray-400 dark:text-gray-500'>
+                <span className='text-gray-400 dark:text-gray-400'>
                   {message.youtubeVideos.length} 个视频
                 </span>
               </div>
@@ -340,7 +340,7 @@ const MessageItem = memo(
                   </span>
                   视频链接解析结果
                 </div>
-                <span className='text-gray-400 dark:text-gray-500'>
+                <span className='text-gray-400 dark:text-gray-400'>
                   {message.videoLinks.length} 个链接
                 </span>
               </div>

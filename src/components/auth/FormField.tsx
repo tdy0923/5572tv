@@ -34,7 +34,7 @@ export function FormField({
       </label>
       <div className='relative'>
         <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 sm:pl-4'>
-          <span className='text-gray-400 transition-colors group-focus-within:text-[#f4c24d] dark:text-gray-500'>
+          <span className='text-gray-400 transition-colors group-focus-within:text-[#f4c24d] dark:text-gray-400'>
             {icon}
           </span>
         </div>

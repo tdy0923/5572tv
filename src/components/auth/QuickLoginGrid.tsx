@@ -46,7 +46,7 @@ export function QuickLoginGrid({
           <div className='w-full border-t border-gray-200 dark:border-white/10' />
         </div>
         <div className='relative flex justify-center'>
-          <span className='flex items-center gap-1.5 bg-transparent px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500'>
+          <span className='flex items-center gap-1.5 bg-transparent px-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-400'>
             快捷登录
           </span>
         </div>

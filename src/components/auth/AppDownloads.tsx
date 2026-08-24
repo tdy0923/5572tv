@@ -37,7 +37,7 @@ export function AppDownloads() {
   const versionClass =
     'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 active:scale-95';
   const primaryClass =
-    'bg-gray-900 text-white shadow-md hover:bg-gray-700 hover:shadow-lg dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200';
+    'bg-gray-900 text-white shadow-md hover:bg-gray-700 hover:shadow-lg dark:bg-white dark:text-gray-100 dark:hover:bg-gray-200';
   const ghostClass =
     'border border-gray-300 bg-white text-gray-700 hover:border-[#f4c24d] hover:text-[#d89c18] dark:border-white/15 dark:bg-white/[0.04] dark:text-gray-200 dark:hover:border-[#f4c24d]/60 dark:hover:text-[#f4c24d]';
 
@@ -63,7 +63,7 @@ export function AppDownloads() {
             <span className='hidden sm:inline'>，</span>
             多端同步播放
           </p>
-          <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+          <p className='mt-1 text-xs text-gray-400 dark:text-gray-400'>
             手机 / 平板 / 电视无缝切换
           </p>
         </div>
@@ -92,7 +92,7 @@ export function AppDownloads() {
         </a>
       </div>
 
-      <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-gray-400 dark:text-gray-500'>
+      <p className='mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-gray-400 dark:text-gray-400'>
         <Download className='h-3.5 w-3.5' />
         免费下载，极速安装
       </p>

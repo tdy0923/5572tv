@@ -236,7 +236,7 @@ export function getProviderButtonStyle(
     case 'apple':
       return 'bg-black hover:bg-gray-900 text-white border-2 border-black dark:bg-gray-900 dark:hover:bg-gray-800';
     case 'linuxdo':
-      return 'bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800';
+      return 'bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-200';
     default:
       return 'bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-gray-200 dark:border-gray-600';
   }

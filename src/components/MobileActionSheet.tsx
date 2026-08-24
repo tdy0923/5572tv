@@ -293,7 +293,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
                   <span
                     className={`transition-colors duration-150 ${
                       action.disabled
-                        ? 'text-gray-400 dark:text-gray-600'
+                        ? 'text-gray-400 dark:text-gray-300'
                         : getActionColor(action.color)
                     }`}
                   >
@@ -307,7 +307,7 @@ const MobileActionSheet: React.FC<MobileActionSheetProps> = ({
                   text-left font-medium text-base flex-1
                   ${
                     action.disabled
-                      ? 'text-gray-400 dark:text-gray-600'
+                      ? 'text-gray-400 dark:text-gray-300'
                       : 'text-gray-900 dark:text-gray-100'
                   }
                 `}

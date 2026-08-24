@@ -1137,7 +1137,7 @@ function DoubanPageClient() {
                         <div className='relative'>
                           <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
                             <svg
-                              className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                              className='w-12 h-12 text-gray-400 dark:text-gray-400'
                               fill='none'
                               stroke='currentColor'
                               viewBox='0 0 24 24'
@@ -1331,7 +1331,7 @@ function DoubanPageClient() {
                         <div className='relative'>
                           <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
                             <svg
-                              className='w-12 h-12 text-gray-400 dark:text-gray-500'
+                              className='w-12 h-12 text-gray-400 dark:text-gray-400'
                               fill='none'
                               stroke='currentColor'
                               viewBox='0 0 24 24'

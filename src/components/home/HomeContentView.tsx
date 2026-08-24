@@ -243,7 +243,7 @@ export default function HomeContentView({
                 return (
                   <div
                     key={`${release.id}-${index}`}
-                    className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                   >
                     <VideoCard
                       source='upcoming_release'
@@ -296,7 +296,7 @@ export default function HomeContentView({
             : hotMovies.map((movie, index) => (
                 <div
                   key={movie.id}
-                  className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                  className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                 >
                   <VideoCard
                     from='douban'
@@ -340,7 +340,7 @@ export default function HomeContentView({
               : hotTvShows.map((show, index) => (
                   <div
                     key={show.id}
-                    className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                   >
                     <VideoCard
                       from='douban'
@@ -386,7 +386,7 @@ export default function HomeContentView({
                   <ShortDramaCard
                     key={drama.id}
                     drama={drama}
-                    className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                     disableEpisodeFetch
                     priority={index < 3}
                   />
@@ -420,7 +420,7 @@ export default function HomeContentView({
               : hotVarietyShows.map((show, index) => (
                   <div
                     key={show.id}
-                    className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                   >
                     <VideoCard
                       from='douban'
@@ -465,7 +465,7 @@ export default function HomeContentView({
               : hotAnime.map((anime, index) => (
                   <div
                     key={`${anime.id}-${index}`}
-                    className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
                   >
                     <VideoCard
                       from='douban'

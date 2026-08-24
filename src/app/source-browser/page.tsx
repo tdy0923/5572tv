@@ -1176,7 +1176,7 @@ export default function SourceBrowserPage() {
                         </div>
                         <div className='flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-600 dark:text-gray-300 sm:text-sm'>
                           <div>
-                            <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                            <span className='text-[11px] text-gray-400 dark:text-gray-400'>
                               年份
                             </span>
                             <span className='ml-2 font-medium text-gray-900 dark:text-white'>
@@ -1184,7 +1184,7 @@ export default function SourceBrowserPage() {
                             </span>
                           </div>
                           <div>
-                            <span className='text-[11px] text-gray-400 dark:text-gray-500'>
+                            <span className='text-[11px] text-gray-400 dark:text-gray-400'>
                               来源
                             </span>
                             <span className='ml-2 font-medium text-gray-900 dark:text-white'>

@@ -9,6 +9,9 @@
 /* Tailwind 4 Dark Mode Configuration - 使用 class 选择器而非媒体查询 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* 触屏设备（粗指针）变体：用于移动端强制显示 hover 交互、隐藏桌面专属元素 */
+@custom-variant pointer-coarse (@media (pointer: coarse) { & });
+
 /* ============================================
    @property - 注册自定义属性支持动画
    这是 Tailwind CSS 4.0 的新特性，提升性能
@@ -114,6 +117,15 @@
   --duration-slow: 400ms;
   --ease-standard: cubic-bezier(0.33, 0, 0.67, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(1, 0, 1, 1);
+
+  /* Fluent 2 时长覆盖 —— 不修改 377 处组件代码，
+     通过覆盖 Tailwind 内置 duration 值让所有现有组件自动对齐 Fluent 2 */
+  --duration-200: 150ms; /* 原有 200ms → Fluent fast (150ms) */
+  --duration-300: 250ms; /* 原有 300ms → Fluent normal (250ms) */
+  --duration-500: 400ms; /* 原有 500ms → Fluent slow (400ms) */
+  --duration-700: 400ms; /* 原有 700ms → Fluent slow (400ms) */
+  --duration-1000: 400ms; /* 原有 1000ms → Fluent slow (400ms)，较长动画也收敛 */
 
   /* ============================================
      Z-Index Token System

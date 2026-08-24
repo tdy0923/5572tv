@@ -50,7 +50,7 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
                     className={`w-4 h-4 ${
                       i < comment.rating
                         ? 'text-yellow-400'
-                        : 'text-gray-300 dark:text-gray-600'
+                        : 'text-gray-300 dark:text-gray-300'
                     }`}
                     fill='currentColor'
                     viewBox='0 0 20 20'

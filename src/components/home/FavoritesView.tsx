@@ -467,7 +467,7 @@ export default function FavoritesView({
                       stroke='currentColor'
                       strokeWidth='2'
                       strokeDasharray='5,5'
-                      className='text-gray-400 dark:text-gray-500'
+                      className='text-gray-400 dark:text-gray-400'
                     />
                   </svg>
                 </div>

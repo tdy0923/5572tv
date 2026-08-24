@@ -24,7 +24,7 @@ export default function Error({
           抱歉，页面加载时发生了错误。请重试，或返回首页看看其他内容。
         </p>
         {isDev && error.message && (
-          <p className='text-sm text-gray-500 dark:text-gray-500 mb-6 font-mono bg-gray-100 dark:bg-gray-800 p-3 rounded-lg break-all'>
+          <p className='text-sm text-gray-500 dark:text-gray-400 mb-6 font-mono bg-gray-100 dark:bg-gray-800 p-3 rounded-lg break-all'>
             {error.message}
           </p>
         )}

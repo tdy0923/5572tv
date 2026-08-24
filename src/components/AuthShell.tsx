@@ -120,7 +120,7 @@ export function AuthShell({
                 ))}
               </div>
 
-              <div className='mt-9 flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500'>
+              <div className='mt-9 flex items-center gap-3 text-xs text-gray-400 dark:text-gray-400'>
                 <span className='h-px w-10 bg-gradient-to-r from-transparent to-[#f4c24d]/60' />
                 登录后，多端同步你的片单与进度
               </div>

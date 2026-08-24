@@ -924,7 +924,7 @@ export default function SourceTestModule() {
                       <p className='text-sm text-gray-500 dark:text-gray-400'>
                         来源: {selectedResults[0].source_name}
                       </p>
-                      <span className='text-gray-300 dark:text-gray-600'>
+                      <span className='text-gray-300 dark:text-gray-300'>
                         •
                       </span>
                       <p className='text-sm text-gray-500 dark:text-gray-400'>
@@ -964,7 +964,7 @@ export default function SourceTestModule() {
                   </div>
                 ) : (
                   <div className='flex flex-col items-center justify-center h-full text-center py-12'>
-                    <Search className='w-16 h-16 text-gray-300 dark:text-gray-600 mb-4' />
+                    <Search className='w-16 h-16 text-gray-300 dark:text-gray-300 mb-4' />
                     <p className='text-gray-500 dark:text-gray-400 text-lg'>
                       暂无搜索结果
                     </p>

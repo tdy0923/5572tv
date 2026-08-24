@@ -145,7 +145,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                                     parseFloat(bangumiDetails.rating.score) / 2,
                                   )
                                     ? 'text-pink-500 drop-shadow-[0_0_4px_rgba(236,72,153,0.5)] group-hover:scale-110'
-                                    : 'text-gray-300 dark:text-gray-600'
+                                    : 'text-gray-300 dark:text-gray-300'
                                 }`}
                                 fill='currentColor'
                                 viewBox='0 0 20 20'
@@ -256,7 +256,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                                   i <
                                   Math.floor(parseFloat(movieDetails.rate) / 2)
                                     ? 'text-yellow-500 drop-shadow-[0_0_4px_rgba(234,179,8,0.5)] group-hover:scale-110'
-                                    : 'text-gray-300 dark:text-gray-600'
+                                    : 'text-gray-300 dark:text-gray-300'
                                 }`}
                                 fill='currentColor'
                                 viewBox='0 0 20 20'
@@ -521,7 +521,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                               {celebrity.role}
                             </p>
                           ) : (
-                            <p className='mt-1 text-xs text-gray-400 dark:text-gray-500'>
+                            <p className='mt-1 text-xs text-gray-400 dark:text-gray-400'>
                               查看相关作品
                             </p>
                           )}
@@ -675,7 +675,7 @@ function VideoInfoSection(props: VideoInfoSectionProps) {
                 <p className='text-gray-500 dark:text-gray-400 mb-2'>
                   暂无相关作品
                 </p>
-                <p className='text-sm text-gray-400 dark:text-gray-500'>
+                <p className='text-sm text-gray-400 dark:text-gray-400'>
                   可能该演员的作品暂未收录
                 </p>
               </div>

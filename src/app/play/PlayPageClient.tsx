@@ -5109,7 +5109,7 @@ function PlayPageClient() {
         <PageLayout activePath='/play' noPadding>
           <div className='flex flex-col gap-3 py-4 px-3 sm:px-5 lg:px-[3rem] 2xl:px-20'>
             {/* 面包屑导航 */}
-            <nav className='flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500'>
+            <nav className='flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-400'>
               <Link
                 href='/'
                 className='hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
@@ -5488,7 +5488,7 @@ function PlayPageClient() {
                     </div>
                   )}
                   {!relatedLoading && relatedMovies.length === 0 && (
-                    <p className='text-xs text-gray-400 dark:text-gray-500'>
+                    <p className='text-xs text-gray-400 dark:text-gray-400'>
                       暂无相关推荐
                     </p>
                   )}

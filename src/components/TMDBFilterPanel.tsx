@@ -183,7 +183,7 @@ export const TMDBFilterPanel: React.FC<TMDBFilterPanelProps> = ({
               </PillButton>
               <button
                 onClick={onToggleVisible}
-                className='text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+                className='text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300'
               >
                 <X className='h-5 w-5' />
               </button>

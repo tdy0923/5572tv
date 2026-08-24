@@ -130,7 +130,7 @@ export default function ReviewSection({
                   className={`w-6 h-6 ${
                     star <= userRating
                       ? 'text-yellow-400 fill-yellow-400'
-                      : 'text-gray-300 dark:text-gray-600'
+                      : 'text-gray-300 dark:text-gray-300'
                   }`}
                 />
               </button>
@@ -189,7 +189,7 @@ export default function ReviewSection({
                       className={`w-3 h-3 ${
                         star <= review.rating
                           ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300 dark:text-gray-600'
+                          : 'text-gray-300 dark:text-gray-300'
                       }`}
                     />
                   ))}

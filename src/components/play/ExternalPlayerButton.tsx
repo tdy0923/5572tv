@@ -137,7 +137,7 @@ const ExternalPlayerButton = memo(function ExternalPlayerButton({
             onClick={() => setIsOpen(false)}
           />
           <div className='absolute right-0 top-full mt-2 z-50 w-56 py-2 ui-surface rounded-2xl shadow-xl border border-gray-200/60 dark:border-gray-700/60'>
-            <div className='px-3 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-500'>
+            <div className='px-3 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-400'>
               选择播放器
             </div>
             {recommendedPlayers.map((player) => (

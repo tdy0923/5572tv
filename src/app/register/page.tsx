@@ -237,7 +237,7 @@ function RegisterPageClient() {
                   {disabledReason || '管理员已关闭用户注册功能'}
                 </p>
               </div>
-              <p className='text-xs text-gray-500 dark:text-gray-500'>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
                 如需注册账户，请联系网站管理员
               </p>
               <button
@@ -298,7 +298,7 @@ function RegisterPageClient() {
             <button
               type='button'
               onClick={() => setShowPassword(!showPassword)}
-              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300'
               aria-label={showPassword ? '隐藏密码' : '显示密码'}
             >
               {showPassword ? (
@@ -340,7 +340,7 @@ function RegisterPageClient() {
             <button
               type='button'
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'
+              className='flex items-center p-2 text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300'
               aria-label={showConfirmPassword ? '隐藏密码' : '显示密码'}
             >
               {showConfirmPassword ? (
