@@ -200,8 +200,15 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // 使用 V1 注册用户
-        await db.registerUser(targetUsername!, targetPassword);
+        // 使用 V2 注册用户，与新注册路径保持一致，避免再产生 V1 旧桶用户
+        await db.createUserV2(
+          targetUsername!,
+          targetPassword,
+          'user',
+          body.userGroup && body.userGroup.trim()
+            ? [body.userGroup.trim()]
+            : undefined,
+        );
 
         // 获取用户组信息
         const { userGroup } = body as { userGroup?: string };

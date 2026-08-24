@@ -725,23 +725,12 @@ export abstract class BaseRedisStorage implements IStorage {
 
   // ---------- 获取全部用户 ----------
   async getAllUsers(): Promise<string[]> {
-    // V2：从 Sorted Set 获取（O(N) 但不扫描全库）
+    // 从 Sorted Set 获取（O(N) 但不扫描全库）
+    // V1 用户已全部迁移到 V2（u:*:pwd 键清空），不再需要 SCAN 兼容合并
     const v2Members = await this.withRetry(() =>
       this.client.zRange(this.userListKey(), 0, -1),
     );
-    const v2Users = ensureStringArray(v2Members as any[]);
-
-    // V1 兼容：SCAN 扫描获取仅存在于 V1 存储中的用户
-    const v1Keys = await this.scanKeys('u:*:pwd');
-    const v1Users = v1Keys
-      .map((k) => {
-        const m = k.match(/^u:(.+?):pwd$/);
-        return m ? ensureString(m[1]) : undefined;
-      })
-      .filter((u): u is string => typeof u === 'string');
-
-    // 合并 V1 和 V2 用户，去重
-    return Array.from(new Set([...v2Users, ...v1Users]));
+    return ensureStringArray(v2Members as any[]);
   }
 
   // ---------- 管理员配置 ----------
