@@ -48,8 +48,8 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
     : isFooterSlot
       ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md  dark:border-gray-700 dark:bg-gray-800'
       : isPlayerRowSlot
-        ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white/76 shadow-md  dark:border-gray-700 dark:bg-gray-800'
-        : 'rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/75 shadow-md  dark:border-gray-700 dark:bg-gray-800';
+        ? 'rounded-xl border border-gray-200 dark:border-gray-700 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800'
+        : 'rounded-2xl border border-gray-200 dark:border-gray-700 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800';
   const imageContainerClass = isSidebarSlot
     ? 'mx-auto overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5'
     : 'overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 bg-black/5';
@@ -82,6 +82,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
             maxWidth > 0 && maxHeight > 0
               ? `${maxWidth} / ${maxHeight}`
               : undefined,
+          overflow: 'hidden',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -117,7 +118,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
                 .split('|')
                 .map((v) => v.trim());
               const node = (
-                <div className='w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 px-3 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100'>
+                <div className='w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white px-3 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100'>
                   <div className='text-sm font-medium'>
                     {(label || line).slice(0, maxTextLength)}
                   </div>

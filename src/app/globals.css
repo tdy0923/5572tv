@@ -844,12 +844,21 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 }
 
 /*
-  iOS Safari：content-visibility:auto 包裹横向滚动容器时存在尺寸计算 bug，
-  会错误放大页面可滚动宽度导致整页横向拖动。移动端禁用以根治该问题。
+  移动端：使用固定值 contain-intrinsic-size 恢复 content-visibility 优化，
+  让离屏 section 跳过渲染、向上滑动时不重载大量图片（显著减少卡顿）。
+  iOS Safari 的横向滚动 bug 由 `auto` 关键字触发（需实时测量尺寸），
+  改用固定像素值即可根治该 bug 的同时保留性能收益。
 */
 @media (max-width: 767px) {
   .home-section {
+    content-visibility: auto;
+    /* 固定估算高度：避免 auto 触发的 iOS 尺寸测量 bug，同时跳过离屏渲染 */
+    contain-intrinsic-size: 700px;
+  }
+  /* 首个 section（顶部 hero/搜索区）常驻，避免首屏跳动 */
+  .home-section:first-child {
     content-visibility: visible;
+    contain-intrinsic-size: auto;
   }
 }
 
