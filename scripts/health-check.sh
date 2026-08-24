@@ -125,10 +125,10 @@ else
   check "VAR Substitution" "fail" "Missing substituteVariables"
 fi
 
-if grep "filterInvalidSources.*length.*===.*0" src/app/play/page.tsx 2>/dev/null || grep "filterInvalidSources.*length.*===.*0" src/app/play/PlayPageClient.tsx 2>/dev/null; then
+if grep -q "filterInvalidSources" src/app/play/PlayPageClient.tsx 2>/dev/null && grep -q "MAX_SOURCE_ERRORS" src/app/play/PlayPageClient.tsx 2>/dev/null; then
   check "Source Loop Protection" "ok"
 else
-  check "Source Loop Protection" "fail" "Missing filterInvalidSources check"
+  check "Source Loop Protection" "fail" "Missing filterInvalidSources / MAX_SOURCE_ERRORS guard"
 fi
 
 if grep -q "ADULT_KEYWORDS" src/app/play/hooks/useSourceSearch.ts 2>/dev/null || grep -q "ADULT_KEYWORDS" src/app/play/page.tsx 2>/dev/null; then

@@ -29,10 +29,12 @@ export class ClientCache {
 
     // 3. Make HTTP request with deduplication
     const promise = (async () => {
+      let responseStatus = 0;
       try {
         const response = await fetch(
           `/api/cache?key=${encodeURIComponent(key)}`,
         );
+        responseStatus = response.status;
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -43,7 +45,11 @@ export class ClientCache {
         }
         return result.data;
       } catch (error) {
-        console.error('获取缓存失败:', error);
+        // 401/403 = 未登录/无权限读取服务端缓存，属于可预期的降级
+        //（数据仍会走公开接口兜底），静默处理避免控制台刷屏
+        if (responseStatus !== 401 && responseStatus !== 403) {
+          console.warn('缓存读取失败:', error);
+        }
         return null;
       } finally {
         pendingRequests.delete(key);
@@ -63,6 +69,7 @@ export class ClientCache {
     const ttlMs = (expireSeconds || 3600) * 1000;
     setMemCache(key, data, ttlMs);
 
+    let responseStatus = 0;
     try {
       const response = await fetch('/api/cache', {
         method: 'POST',
@@ -71,17 +78,22 @@ export class ClientCache {
         },
         body: JSON.stringify({ key, data, expireSeconds }),
       });
+      responseStatus = response.status;
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      console.error('设置缓存失败:', error);
+      // 401/403 静默：未登录用户不能写服务端缓存，内存缓存已足够
+      if (responseStatus !== 401 && responseStatus !== 403) {
+        console.warn('设置缓存失败:', error);
+      }
       // Don't throw - cache set failure shouldn't break the app
     }
   }
 
   static async delete(key: string): Promise<void> {
     memCache.delete(key);
+    let responseStatus = 0;
     try {
       const response = await fetch(
         `/api/cache?key=${encodeURIComponent(key)}`,
@@ -89,11 +101,14 @@ export class ClientCache {
           method: 'DELETE',
         },
       );
+      responseStatus = response.status;
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      console.error('删除缓存失败:', error);
+      if (responseStatus !== 401 && responseStatus !== 403) {
+        console.warn('删除缓存失败:', error);
+      }
     }
   }
 
