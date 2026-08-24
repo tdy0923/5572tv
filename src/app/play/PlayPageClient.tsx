@@ -5211,6 +5211,27 @@ function PlayPageClient() {
                         }}
                       ></div>
 
+                      {/* 🚫 画布层广告遮挡：四角/上下漂浮/跑马灯文字广告的 CSS 遮罩。
+                          淡渐变弱化广告文字，指针穿透不挡操作；去广告开关关闭时不显示。 */}
+                      {blockAdEnabled && (
+                        <div
+                          className='absolute inset-0 pointer-events-none rounded-xl'
+                          style={{
+                            background: `
+                              /* 四角遮罩：角标类文字广告 */
+                              radial-gradient(ellipse 70px 50px at 0% 0%, rgba(0,0,0,0.28) 0%, transparent 100%),
+                              radial-gradient(ellipse 70px 50px at 100% 0%, rgba(0,0,0,0.28) 0%, transparent 100%),
+                              radial-gradient(ellipse 70px 50px at 0% 100%, rgba(0,0,0,0.28) 0%, transparent 100%),
+                              radial-gradient(ellipse 70px 50px at 100% 100%, rgba(0,0,0,0.28) 0%, transparent 100%),
+                              /* 上边缘跑马灯遮罩 */
+                              linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, transparent 10%),
+                              /* 下边缘跑马灯遮罩 */
+                              linear-gradient(to top, rgba(0,0,0,0.18) 0%, transparent 10%)
+                            `,
+                          }}
+                        />
+                      )}
+
                       {/* WebSR 分屏对比分割线 */}
                       {websrEnabled && websrCompareEnabled && (
                         <div
