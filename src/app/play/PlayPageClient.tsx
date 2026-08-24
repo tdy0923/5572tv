@@ -5107,7 +5107,7 @@ function PlayPageClient() {
           Boolean(shortdramaId))
       ) && (
         <PageLayout activePath='/play'>
-          <div className='flex flex-col gap-3 py-4 px-4 sm:px-5 lg:px-[3rem] 2xl:px-20'>
+          <div className='flex flex-col gap-3 py-4 md:px-4 lg:px-[3rem] 2xl:px-20'>
             {/* 面包屑导航 */}
             <nav className='flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500'>
               <Link
@@ -5194,7 +5194,9 @@ function PlayPageClient() {
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
-                  <div className='relative w-full h-[46vh] sm:h-[52vh] md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
+                  {/* 移动端 16:9 全宽（aspect-video），桌面端固定高度自适应；
+                      短剧源保持 9/16 竖屏（外层 aspect-auto 时由内层约束） */}
+                  <div className='relative w-full aspect-video sm:aspect-video md:aspect-auto md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
                     <div
                       className={`relative ${
                         currentSourceRef.current === 'shortdrama'
