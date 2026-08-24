@@ -1125,7 +1125,9 @@ select:focus-visible,
 }
 
 .animate-on-mount {
-  animation: fluent2-fade-in 250ms cubic-bezier(0, 0, 0, 1) both;
+  /* 用 backwards 填充：动画结束后 transform 恢复 none，
+     避免残留 translateY(0) 的 transform 破坏 position:fixed 子元素（如底部导航）的视口定位 */
+  animation: fluent2-fade-in 250ms cubic-bezier(0, 0, 0, 1) backwards;
 }
 
 .animate-stagger > * {
