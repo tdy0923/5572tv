@@ -91,7 +91,6 @@ export default function ReleaseCalendarPage() {
   } = useQuery<ReleaseCalendarResult>({
     queryKey: ['releaseCalendar'],
     queryFn: async () => {
-      //       console.log('🌐 正在从API获取发布日历数据...');
       const response = await fetch('/api/release-calendar');
 
       if (!response.ok) {
@@ -99,7 +98,6 @@ export default function ReleaseCalendarPage() {
       }
 
       const result: ReleaseCalendarResult = await response.json();
-      //       console.log(`📊 获取到 ${result.items.length} 条上映数据`);
 
       // 清理遗留的localStorage缓存（兼容性清理）
       localStorage.removeItem('release_calendar_all_data');
@@ -174,8 +172,6 @@ export default function ReleaseCalendarPage() {
 
   // 处理刷新按钮点击
   const handleRefreshClick = async () => {
-    //     console.log('📅 刷新上映日程数据...');
-
     try {
       // 清除遗留的localStorage缓存（兼容性清理）
       localStorage.removeItem('release_calendar_all_data');
@@ -184,7 +180,6 @@ export default function ReleaseCalendarPage() {
       // 🔄 强制刷新（先fetch带refresh=true的API清除数据库缓存，再invalidate query）
       await fetch('/api/release-calendar?refresh=true');
       await queryClient.invalidateQueries({ queryKey: ['releaseCalendar'] });
-      //       console.log('🎉 上映日程数据刷新成功！');
     } catch (error) {
       console.error('❌ 刷新上映日程数据失败:', error);
     }

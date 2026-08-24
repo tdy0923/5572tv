@@ -94,8 +94,6 @@ export function SessionTracker() {
           now - parseInt(lastRecordedLogin) > sessionTimeout;
 
         if (shouldRecordLogin) {
-          //           // console.log('检测到新会话，记录登入时间');
-
           // 行为分析：记录一次登录会话
           sendTrack({ type: 'login' });
 
@@ -108,7 +106,6 @@ export function SessionTracker() {
 
           if (response.ok) {
             localStorage.setItem('lastRecordedLogin', now.toString());
-            //             // console.log('会话恢复登入时间记录成功');
           } else {
             console.warn('会话恢复登入时间记录失败:', response.status);
           }

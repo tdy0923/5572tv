@@ -139,8 +139,6 @@ async function clearRecommendsCache(): Promise<void> {
       }
       keysToRemove.forEach((key) => localStorage.removeItem(key));
     }
-
-    //     console.log('短剧推荐缓存已清除');
   } catch (e) {
     console.warn('清除短剧推荐缓存失败:', e);
   }

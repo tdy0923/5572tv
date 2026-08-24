@@ -55,8 +55,6 @@ export function initFetchInterceptor() {
         statusCode: response.status,
       });
 
-      //       console.log(`🌐 [External] ${options?.method || 'GET'} ${urlString} - ${response.status} - ${(responseSize / 1024).toFixed(2)} KB`);
-
       return response;
     } catch (error) {
       // 即使失败也记录
@@ -73,6 +71,4 @@ export function initFetchInterceptor() {
       throw error;
     }
   };
-
-  //   console.log('✅ 全局 Fetch 拦截器已启动，开始监控外部流量');
 }

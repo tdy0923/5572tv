@@ -10,16 +10,12 @@ import { DEFAULT_USER_AGENT, getRandomUserAgent } from './user-agent';
 if (typeof window !== 'undefined') {
   (window as any).enableDoubanDebug = () => {
     localStorage.setItem('DOUBAN_DEBUG', '1');
-    //     console.log('✅ 豆瓣调试模式已启用！页面将跳过缓存，直接获取最新数据。');
-    //     console.log('💡 刷新页面后生效。使用 disableDoubanDebug() 关闭。');
   };
   (window as any).disableDoubanDebug = () => {
     localStorage.removeItem('DOUBAN_DEBUG');
-    //     console.log('❌ 豆瓣调试模式已关闭，恢复缓存功能。');
   };
   (window as any).checkDoubanDebug = () => {
     const enabled = localStorage.getItem('DOUBAN_DEBUG') === '1';
-    //     console.log(`🔍 豆瓣调试模式: ${enabled ? '✅ 已启用' : '❌ 已关闭'}`);
     return enabled;
   };
   (window as any).clearDoubanTrailerCache = async () => {
@@ -35,7 +31,6 @@ if (typeof window !== 'undefined') {
     keysToRemove.forEach((key) => localStorage.removeItem(key));
     localStorage.removeItem('refreshed-trailer-urls');
     localStorage.removeItem('failed-trailer-refreshes');
-    //     console.log(
     //       `🧹 已清理 ${keysToRemove.length} 条本地豆瓣详情缓存与 trailer 缓存`,
     //     );
   };
@@ -159,7 +154,6 @@ async function cleanExpiredCache(): Promise<void> {
       });
 
       if (cleanedCount > 0) {
-        //         console.log(`LocalStorage 清理了 ${cleanedCount} 个过期的豆瓣缓存项`);
       }
     }
   } catch (e) {
@@ -208,7 +202,6 @@ export function clearDoubanCache(): void {
     (key) => key.startsWith('douban-') || key.startsWith('bangumi-'),
   );
   keys.forEach((key) => localStorage.removeItem(key));
-  //   console.log(`清理了 ${keys.length} 个缓存项（豆瓣+Bangumi）`);
 }
 
 // 初始化缓存系统（应该在应用启动时调用）
@@ -494,7 +487,6 @@ export async function getDoubanList(
   const cacheKey = getCacheKey('lists', { tag, type, pageLimit, pageStart });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`豆瓣列表缓存命中: ${type}/${tag}/${pageStart}`);
     return cached;
   }
 
@@ -529,7 +521,6 @@ export async function getDoubanList(
   // 保存到缓存
   if (result.code === 200) {
     await setCache(cacheKey, result, DOUBAN_CACHE_EXPIRE.lists);
-    //     console.log(`豆瓣列表已缓存: ${type}/${tag}/${pageStart}`);
   }
 
   return result;
@@ -650,7 +641,6 @@ export async function getDoubanRecommends(
   });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`豆瓣推荐缓存命中: ${kind}/${category || 'all'}`);
     return cached;
   }
 
@@ -691,7 +681,6 @@ export async function getDoubanRecommends(
   // 保存到缓存
   if (result.code === 200) {
     await setCache(cacheKey, result, DOUBAN_CACHE_EXPIRE.recommends);
-    //     console.log(`豆瓣推荐已缓存: ${kind}/${category || 'all'}`);
   }
 
   return result;
@@ -729,7 +718,6 @@ export async function getDoubanDetails(id: string): Promise<{
     localStorage.getItem('DOUBAN_DEBUG') === '1';
 
   if (isDebugMode) {
-    //     console.log(`[Debug Mode] 跳过缓存，直接请求: ${id}`);
   } else {
     // 检查缓存 - 如果缓存中没有plot_summary则重新获取
     const cacheKey = getCacheKey('details', { id });
@@ -848,7 +836,6 @@ async function fetchDoubanRecommends(
     reqParams.append('sort', sort);
   }
   const target = `${baseUrl}?${reqParams.toString()}`;
-  //   console.log(target);
   try {
     const response = await fetchWithTimeout(
       target,
@@ -910,7 +897,6 @@ export async function getDoubanActorMovies(
   });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`豆瓣演员搜索缓存命中: ${actorName}/${type}`);
     return cached;
   }
 
@@ -1006,7 +992,6 @@ export async function getDoubanActorMovies(
 
     // 保存到缓存
     await setCache(cacheKey, result, DOUBAN_CACHE_EXPIRE.lists);
-    //     console.log(
     //       `豆瓣演员搜索已缓存: ${actorName}/${type}，找到 ${list.length} 个结果`,
     //     );
 

@@ -131,13 +131,11 @@ export async function sendAIRecommendMessage(
               // 🎥 处理YouTube视频数据
               if (json.type === 'youtube_data' && json.youtubeVideos) {
                 youtubeVideos = json.youtubeVideos;
-                //                 console.log('✅ 收到YouTube视频数据:', youtubeVideos.length, '个视频');
               }
 
               // 🔗 处理视频链接数据
               if (json.type === 'video_links' && json.videoLinks) {
                 videoLinks = json.videoLinks;
-                //                 console.log('✅ 收到视频链接数据:', videoLinks.length, '个链接');
               }
             } catch (e) {
               console.error('解析SSE数据失败:', e);

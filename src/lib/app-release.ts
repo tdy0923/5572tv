@@ -5,10 +5,10 @@
  * 发布清单见 docs/RELEASE_CHECKLIST.md。
  */
 export const APP_RELEASE = {
-  version: '1.13.0',
+  version: '1.14.0',
   buildNumber: 2008,
   releaseNotes:
-    '5572 影视 v1.13.0 更新内容：\n\n' +
+    '5572 影视 v1.14.0 更新内容：\n\n' +
     '1. 修复播放失败黑屏/无限加载（增加错误提示与失败回调）\n' +
     '2. 修复 M3U8 代理失效问题\n' +
     '3. 修复分页卡死、返回键误退应用、主题不保存等体验问题\n' +
@@ -23,6 +23,6 @@ export const APP_RELEASE = {
 
 /** 下载页未请求到版本信息时的兜底展示（version 与 APP_RELEASE 保持一致） */
 export const DEFAULT_APK_INFO = {
-  version: 'v1.13.0',
+  version: 'v1.14.0',
   sizeMb: '18',
 };

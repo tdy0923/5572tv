@@ -154,7 +154,6 @@ async function fetchRemote(
         continue;
       }
 
-      //       console.log(
       //         `[SpiderJar] Successfully fetched ${url}: ${ab.byteLength} bytes`,
       //       );
       return Buffer.from(ab);
@@ -189,7 +188,6 @@ export async function getSpiderJar(
 
   // 🔑 如果指定了自定义 URL，优先尝试获取
   if (customUrl) {
-    //     console.log(`[SpiderJar] 尝试获取自定义 jar: ${customUrl}`);
     const buf = await fetchRemote(customUrl);
     if (buf) {
       const info: SpiderJarInfo = {

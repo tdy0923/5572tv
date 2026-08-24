@@ -62,8 +62,6 @@ export async function uploadSpiderJarToBlob(
       addRandomSuffix: false,
     });
 
-    //     console.log(`[Blob] ✅ Spider JAR uploaded to Blob: ${blob.url}`);
-    //     console.log(`[Blob] MD5: ${md5}, Source: ${source}`);
     return blob.url;
   } catch (error) {
     console.error('[Blob] Failed to upload Spider JAR:', error);

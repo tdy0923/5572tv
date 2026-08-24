@@ -64,7 +64,6 @@ async function initStorageBuckets(): Promise<void> {
     try {
       segmentsBucket = await navigator.storageBuckets!.open(SEGMENTS_BUCKET);
       supportsStorageBuckets = true;
-      //       console.log('✅ Storage Buckets enabled for video segments');
     } catch (error) {
       console.warn(
         'Storage Buckets not available, using default IndexedDB:',

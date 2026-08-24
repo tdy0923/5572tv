@@ -257,7 +257,6 @@ export default function SkipController({
         }
         // 🔥 设置冷却时间，防止新集数立即触发
         episodeSwitchCooldownRef.current = Date.now();
-        //         // console.log(
         //           `🚫 [SkipController] 设置集数切换冷却时间: ${episodeSwitchCooldownRef.current}`,
         //         );
 
@@ -291,14 +290,12 @@ export default function SkipController({
         episodeSwitchCooldownRef.current > 0 &&
         timeSinceSwitch < cooldownTime
       ) {
-        // console.log(`⏳ [SkipController] 冷却中，已过${timeSinceSwitch}ms，还需${cooldownTime - timeSinceSwitch}ms`);
         return;
       }
 
       // 🔑 使用 ref 中的 batchSettings，避免闭包问题
       const currentBatchSettings = batchSettingsRef.current;
 
-      //       // console.log(
       //         `🔍 [SkipController] 检查时间点 ${time.toFixed(2)}s, autoSkip=${currentBatchSettings.autoSkip}, autoNextEpisode=${currentBatchSettings.autoNextEpisode}`,
       //       );
 
@@ -328,11 +325,9 @@ export default function SkipController({
             end: Math.min(openingEnd, duration * 0.4), // 限制片头最多占视频40%
             autoSkip: currentBatchSettings.autoSkip,
           });
-          //           // console.log(
           //             `✅ [SkipController] 添加片头配置: ${openingStart}s-${Math.min(openingEnd, duration * 0.4)}s, autoSkip=${currentBatchSettings.autoSkip}`,
           //           );
         } else if (isShortVideo) {
-          //           // console.log(`⏭️ [SkipController] 短视频(${duration}s)，跳过片头检测`);
         }
 
         // 添加片尾配置（如果设置了）
@@ -364,18 +359,15 @@ export default function SkipController({
                   ? endingStartSeconds
                   : undefined,
             });
-            //             // console.log(
             //               `✅ [SkipController] 添加片尾配置: ${endingStart}s-${duration}s, autoSkip=${currentBatchSettings.autoSkip}, autoNextEpisode=${currentBatchSettings.autoNextEpisode}`,
             //             );
           } else {
-            //             // console.log(
             //               `⏭️ [SkipController] 片尾开始时间(${endingStart}s)太早(${(endingStartRatio * 100).toFixed(1)}%)，跳过片尾检测`,
             //             );
           }
         }
 
         segments = tempSegments;
-        //         // console.log(
         //           `📋 [SkipController] 使用临时配置，共${tempSegments.length}个片段`,
         //         );
       } else {
@@ -405,7 +397,6 @@ export default function SkipController({
         (segment) => time >= segment.start && time <= segment.end,
       );
 
-      //       // console.log(
       //         `🔎 [SkipController] 查找片段结果: currentSegment=${currentSegment ? `${currentSegment.type}(${currentSegment.start}s-${currentSegment.end}s)` : 'null'}, currentSkipSegment=${currentSkipSegment?.type || 'null'}`,
       //       );
 
@@ -415,10 +406,8 @@ export default function SkipController({
 
       // 比较片段类型而不是对象引用（避免临时对象导致的重复触发）
       if (currentSegment && currentSegment.type !== currentSkipSegment?.type) {
-        //         // console.log(
         //           `🎯 [SkipController] 检测到${currentSegment.type}片段: ${currentSegment.start}s-${currentSegment.end}s, autoSkip=${currentSegment.autoSkip}`,
         //         );
-        //         // console.log(
         //           `📌 [SkipController] 防重复检查: lastProcessed=${lastProcessed ? `${lastProcessed.type}@${lastProcessed.episodeId}` : 'null'}, currentEpisodeId=${currentEpisodeId}`,
         //         );
 
@@ -428,7 +417,6 @@ export default function SkipController({
           lastProcessed.type === currentSegment.type &&
           lastProcessed.episodeId === currentEpisodeId
         ) {
-          //           // console.log(
           //             `⚠️ [防重复] 已处理过 ${currentSegment.type} 片段，跳过重复触发`,
           //           );
           return;
@@ -438,7 +426,6 @@ export default function SkipController({
 
         // 检查当前片段是否开启自动跳过（默认为true）
         const shouldAutoSkip = currentSegment.autoSkip !== false;
-        //         // console.log(
         //           `🔧 [SkipController] shouldAutoSkip=${shouldAutoSkip}, currentSegment.autoSkip=${currentSegment.autoSkip}`,
         //         );
 
@@ -448,7 +435,6 @@ export default function SkipController({
             type: currentSegment.type,
             episodeId: currentEpisodeId,
           };
-          //           // console.log(
           //             `🚀 [SkipController] 执行自动跳过: ${currentSegment.type}`,
           //           );
 
@@ -456,7 +442,6 @@ export default function SkipController({
           handleAutoSkip(currentSegment);
           setShowSkipButton(false); // 自动跳过时不显示按钮
         } else {
-          //           // console.log(`👆 [SkipController] 显示手动跳过按钮`);
           // 手动模式：显示跳过按钮
           setShowSkipButton(true);
 
@@ -769,7 +754,6 @@ export default function SkipController({
         ? JSON.parse(savedEnableAutoNextEpisode)
         : true;
 
-    //     // console.log(
     //       `📖 [SkipController] 读取用户设置: autoSkip=${userAutoSkip}, autoNextEpisode=${userAutoNextEpisode}`,
     //     );
 
@@ -840,10 +824,8 @@ export default function SkipController({
 
   // 当 source 或 id 或 episodeIndex 变化时，清理所有状态（换集时）
   useEffect(() => {
-    //     // console.log(
     //       `🔄 [SkipController] 集数变化: source=${source}, id=${id}, episodeIndex=${episodeIndex}, 清理状态`,
     //     );
-    //     // console.log(
     //       `🧹 [SkipController] 清理前 lastProcessedSegmentRef:`,
     //       lastProcessedSegmentRef.current,
     //     );
@@ -854,7 +836,6 @@ export default function SkipController({
       lastProcessedSegmentRef.current = null;
       // 🔥 设置冷却时间，防止新集数立即触发自动跳过
       episodeSwitchCooldownRef.current = Date.now();
-      //       // console.log(
       //         `✅ [SkipController] 已清除 lastProcessedSegmentRef，设置冷却时间，允许新集数处理`,
       //       );
 

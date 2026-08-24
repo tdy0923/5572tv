@@ -297,7 +297,6 @@ export async function fetchTavilySearch(
       }
 
       const data = await response.json();
-      //       console.log(`✅ Tavily搜索成功，使用key: ${apiKey.slice(0, 8)}...`);
       return data;
     } catch (error) {
       console.error(
@@ -349,7 +348,6 @@ async function fetchDoubanData(doubanId: number): Promise<any | null> {
     const result = await scrapeDoubanDetails(doubanId.toString());
 
     if (result.code === 200 && result.data) {
-      //       console.log(`✅ 豆瓣数据: ${result.data.title} (${result.data.rate}分)`);
       return result.data;
     }
 
@@ -375,7 +373,6 @@ async function fetchTMDBData(
   // 🔥 如果没有TMDB ID，尝试通过标题和年份搜索
   if (!actualTmdbId && title) {
     try {
-      //       console.log(`🔍 没有TMDB ID，尝试搜索: ${title} (${year || '无年份'})`);
       const { searchTMDBMovie, searchTMDBTV } =
         await import('@/lib/tmdb.client');
 
@@ -386,9 +383,7 @@ async function fetchTMDBData(
 
       if (searchResult) {
         actualTmdbId = searchResult.id;
-        //         console.log(`✅ 通过标题搜索到TMDB ID: ${actualTmdbId}`);
       } else {
-        //         console.log(`⚠️ 未能通过标题搜索到TMDB ID`);
         return null;
       }
     } catch (error) {
@@ -413,7 +408,6 @@ async function fetchTMDBData(
 
     if (result) {
       const title = (result as any).title || (result as any).name || '';
-      //       console.log(
       //         `✅ TMDB数据: ${title} (keywords: ${result.keywords?.length || 0}, similar: ${result.similar?.length || 0})`,
       //       );
       return result;
@@ -468,7 +462,6 @@ export async function orchestrateDataSources(
   // 1. 意图分析（输入已清洗）
   const safeMessage = sanitizeForPrompt(userMessage);
   const intent = analyzeIntent(safeMessage, context);
-  //   console.log('📊 意图分析结果:', {
   //     type: intent.type,
   //     needWebSearch: intent.needWebSearch,
   //     confidence: intent.confidence,
@@ -494,7 +487,6 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
   // 3. 如果需要且启用了联网搜索，则获取实时数据
   let webSearchResults: TavilySearchResult | null = null;
   if (intent.needWebSearch && config?.enableWebSearch && config.tavilyApiKeys) {
-    //     console.log('🌐 开始联网搜索...');
     webSearchResults = await fetchTavilySearch(
       safeMessage,
       config.tavilyApiKeys,
@@ -507,11 +499,9 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
       systemPrompt += `\n**重要**: 在你的回复开头，必须添加以下提示（使用Markdown格式）：\n`;
       systemPrompt += `> 🌐 **已联网搜索最新资讯**\n\n`;
       systemPrompt += `然后再开始正式回答问题。\n`;
-      //       console.log(
       //         `✅ 联网搜索完成，获取到 ${webSearchResults.results.length} 条结果`,
       //       );
     } else {
-      //       console.log('⚠️ 联网搜索未返回结果');
     }
   }
 
@@ -521,7 +511,6 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
     context.title = sanitizeForPrompt(context.title, 200);
     // 🔥 如果有豆瓣ID，优先获取详细信息并自动修正类型
     if (context.douban_id) {
-      //       console.log(`🎬 开始获取豆瓣详情 (ID: ${context.douban_id})...`);
       const doubanData = await fetchDoubanData(context.douban_id);
 
       if (doubanData) {
@@ -540,12 +529,10 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
 
         // 使用检测到的类型自动修正前端传参错误
         if (detectedType && detectedType !== context.type) {
-          //           console.log(
           //             `🔧 类型自动修正: ${context.type} → ${detectedType} (集数:${doubanData.episodes}, 单集片长:${doubanData.episode_length}, 电影时长:${doubanData.movie_duration})`,
           //           );
           context.type = detectedType;
         } else if (detectedType) {
-          //           console.log(`✅ 类型验证通过: ${context.type}`);
         }
 
         // 🆕 方案3: 增强系统提示词 - 明确标注类型
@@ -616,11 +603,7 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
           systemPrompt += `5. **重要**: 这是一部【电影】，不是电视剧或剧集。回答时绝对不要提及"第X集"、"剧集"、"连续剧"等词汇\n`;
           systemPrompt += `6. 如果用户询问剧情，请回答电影的完整剧情，而不是某一集的内容\n`;
         }
-
-        //         console.log(`✅ 豆瓣详情已注入AI上下文 (类型: ${context.type})`);
       } else {
-        //         console.log(`⚠️ 豆瓣详情获取失败，继续使用基础上下文`);
-
         // 即使豆瓣数据获取失败，也要添加基础上下文
         systemPrompt += `\n## 【当前视频上下文】\n`;
         systemPrompt += `用户正在浏览: ${context.title}`;
@@ -654,7 +637,6 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
     // 🔥 如果有video context且有type，尝试获取TMDB数据
     // 优先使用tmdb_id，如果没有则通过标题搜索
     if (context.title && context.type) {
-      //       console.log(
       //         `🎬 开始获取TMDB详情 (title: ${context.title}, type: ${context.type})...`,
       //       );
       const tmdbData = await fetchTMDBData(
@@ -698,16 +680,12 @@ ${config?.enableWebSearch && intent.needWebSearch ? '- 搜索最新影视资讯�
         systemPrompt += `2. 推荐时必须说明是"基于TMDB算法的推荐"，不要说"我推荐"或凭记忆推荐\n`;
         systemPrompt += `3. 如果TMDB相似列表为空，可以说"暂无TMDB相似推荐数据"，不要编造\n`;
 
-        //         console.log(
         //           `✅ TMDB详情已注入AI上下文 (keywords: ${tmdbData.keywords?.length || 0}, similar: ${tmdbData.similar?.length || 0})`,
         //         );
       } else {
-        //         console.log(`⚠️ TMDB详情获取失败，继续使用基础上下文`);
       }
     }
   }
-
-  //   console.log('📝 生成的系统提示词长度:', systemPrompt.length);
 
   return {
     systemPrompt,

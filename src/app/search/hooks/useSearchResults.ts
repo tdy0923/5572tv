@@ -118,32 +118,24 @@ export function eventSourceIterable(
             case 'complete':
               try {
                 es.close();
-              } catch {
-                //                 // console.log('Search parse error:', e);
-              }
+              } catch {}
               close(payload.completedSources ?? 0);
               break;
           }
-        } catch {
-          //           // console.log('Search parse error:', e);
-        }
+        } catch {}
       };
 
       es.onerror = () => {
         try {
           es.close();
-        } catch {
-          //           // console.log('Search parse error:', e);
-        }
+        } catch {}
         close();
       };
 
       signal?.addEventListener('abort', () => {
         try {
           es.close();
-        } catch {
-          //           // console.log('Search parse error:', e);
-        }
+        } catch {}
         close();
       });
 

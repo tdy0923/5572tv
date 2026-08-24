@@ -163,7 +163,6 @@ function ShortDramaCard({
         // }
         //
         // // 备用API失败，fallback到主API解析方式
-        // console.log('备用API获取集数失败，尝试主API...');
 
         // 直接使用主API解析方式获取集数
 
@@ -315,7 +314,6 @@ function ShortDramaCard({
       const date = new Date(updateTime);
       return date.toLocaleDateString('zh-CN');
     } catch (e) {
-      //       // console.log('[ShortDrama]', e);
       return updateTime;
     }
   };

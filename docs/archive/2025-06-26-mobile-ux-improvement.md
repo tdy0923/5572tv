@@ -23,6 +23,7 @@
 ### Task 1: 修复GlobalErrorIndicator溢出
 
 **Files:**
+
 - Modify: `src/components/GlobalErrorIndicator.tsx:105`
 
 **问题:** `min-w-[300px]` 在320px屏幕溢出
@@ -47,6 +48,7 @@ git commit -m "fix: GlobalErrorIndicator 响应式宽度修复"
 ### Task 2: 修复PhoneLayout底部导航安全区域
 
 **Files:**
+
 - Modify: `src/components/layout/PhoneLayout.tsx:31-54`
 
 **问题:** 底部导航缺少 `safe-area-inset-bottom`
@@ -71,6 +73,7 @@ git commit -m "fix: PhoneLayout 添加底部安全区域"
 ### Task 3: 修复弹幕输入框安全区域冲突
 
 **Files:**
+
 - Modify: `src/app/play/page.tsx:4139`
 
 **问题:** `bottom:80px` 硬编码，与键盘/安全区域冲突
@@ -95,6 +98,7 @@ git commit -m "fix: 弹幕输入框安全区域修复"
 ### Task 4: 修复搜索页筛选按钮溢出
 
 **Files:**
+
 - Modify: `src/app/search/_content.tsx:1347,1368,1394`
 
 **问题:** `min-w-[110px]` 在320px屏幕溢出
@@ -119,6 +123,7 @@ git commit -m "fix: 搜索页筛选按钮响应式修复"
 ### Task 5: 修复播放器播放按钮在移动端不可见
 
 **Files:**
+
 - Modify: `src/components/VideoCard.tsx:1115`
 
 **问题:** `opacity-0 group-hover:opacity-100` 在触摸设备上永远不显示
@@ -145,6 +150,7 @@ git commit -m "fix: VideoCard 播放按钮移动端可见"
 ### Task 6: 修复CapsuleSwitch标签溢出
 
 **Files:**
+
 - Modify: `src/components/CapsuleSwitch.tsx:90`
 
 **问题:** `min-w-[72px]` 导致4个标签在320px溢出
@@ -169,6 +175,7 @@ git commit -m "fix: CapsuleSwitch 标签响应式"
 ### Task 7: 修复HeroBanner指示器触摸目标过小
 
 **Files:**
+
 - Modify: `src/components/HeroBanner.tsx:462-471`
 
 **问题:** 指示器圆点只有8px，无法可靠点击
@@ -193,6 +200,7 @@ git commit -m "fix: HeroBanner 指示器触摸目标修复"
 ### Task 8: 修复EpisodeSelector分类标签溢出
 
 **Files:**
+
 - Modify: `src/components/EpisodeSelector.tsx:412`
 
 **问题:** `min-w-[64px]` 在小屏幕导致滚动摩擦
@@ -217,6 +225,7 @@ git commit -m "fix: EpisodeSelector 标签宽度优化"
 ### Task 9: 修复首页网格间距过大
 
 **Files:**
+
 - Modify: `src/app/page.tsx:1002`
 
 **问题:** `gap-y-10` 在移动端浪费空间
@@ -241,6 +250,7 @@ git commit -m "fix: 首页网格间距响应式"
 ### Task 10: 修复ContinueWatching卡片标题裁剪
 
 **Files:**
+
 - Modify: `src/components/ContinueWatching.tsx:197,217`
 
 **问题:** `min-w-[96px]` 导致标题在窄卡片上不可读
@@ -265,6 +275,7 @@ git commit -m "fix: ContinueWatching 卡片宽度优化"
 ### Task 11: 修复MobileActionSheet关闭按钮过小
 
 **Files:**
+
 - Modify: `src/components/MobileActionSheet.tsx:262-268`
 
 **问题:** `p-2` 导致32px触摸目标
@@ -289,6 +300,7 @@ git commit -m "fix: MobileActionSheet 关闭按钮触摸目标"
 ### Task 12: 修复弹幕设置面板图标过小
 
 **Files:**
+
 - Modify: `src/components/play/DanmuSettingsPanel.tsx:952,975`
 
 **问题:** 16px图标触摸目标不足
@@ -313,6 +325,7 @@ git commit -m "fix: 弹幕设置面板图标触摸目标"
 ### Task 13: 修复ModernNav关闭按钮过小
 
 **Files:**
+
 - Modify: `src/components/ModernNav.tsx:284-289`
 
 **问题:** `p-2` 导致32px触摸目标
@@ -337,6 +350,7 @@ git commit -m "fix: ModernNav 关闭按钮触摸目标"
 ### Task 14: 修复HeroBanner无移动端滑动提示
 
 **Files:**
+
 - Modify: `src/components/HeroBanner.tsx:214-219,442`
 
 **问题:** 移动端无滑动提示，箭头导航被隐藏
@@ -361,6 +375,7 @@ git commit -m "fix: HeroBanner 添加移动端滑动提示"
 ### Task 15: 修复首页网格间距过大（提醒/收藏）
 
 **Files:**
+
 - Modify: `src/app/page.tsx:1002`
 
 **问题:** `gap-y-10` 在移动端浪费空间（与Task 9相同区域）
@@ -385,6 +400,7 @@ git commit -m "fix: 首页所有网格间距统一优化"
 ### Task 16: 修复ArtPlayer控制按钮触摸目标
 
 **Files:**
+
 - Modify: `src/styles/artplayer-mobile.css:61`
 
 **问题:** `min-width: 32px` 低于44px标准
@@ -409,6 +425,7 @@ git commit -m "fix: ArtPlayer 控制按钮触摸目标"
 ### Task 17: 修复VideoCard豆瓣链接在移动端不可见
 
 **Files:**
+
 - Modify: `src/components/VideoCard.tsx:1466-1514`
 
 **问题:** 豆瓣链接只在hover时显示，移动端永远不可见
@@ -435,6 +452,7 @@ git commit -m "fix: VideoCard 豆瓣链接移动端可见"
 ### Task 18: 修复VideoCard心形图标可视性
 
 **Files:**
+
 - Modify: `src/components/VideoCard.tsx:1278`
 
 **问题:** 18px图标在44px触摸区域内无视觉提示
@@ -459,6 +477,7 @@ git commit -m "fix: VideoCard 心形图标可视性"
 ### Task 19: 修复MobileActionSheet关闭按钮过小（与Task 12合并）
 
 **Files:**
+
 - 已在Task 12修复
 
 - [ ] **Step 1: 跳过**
@@ -470,6 +489,7 @@ git commit -m "fix: VideoCard 心形图标可视性"
 ### Task 20: 修复ModernNav关闭按钮过小（与Task 13合并）
 
 **Files:**
+
 - 已在Task 13修复
 
 - [ ] **Step 1: 跳过**
@@ -481,6 +501,7 @@ git commit -m "fix: VideoCard 心形图标可视性"
 ### Task 21: 修复首页内容与导航栏重叠
 
 **Files:**
+
 - Modify: `src/app/page.tsx:875`
 
 **问题:** `-mt-2` 导致内容上移与固定导航栏重叠
@@ -505,6 +526,7 @@ git commit -m "fix: 首页内容边距修复"
 ### Task 22: 修复VideoCard标题在窄卡片上过小
 
 **Files:**
+
 - Modify: `src/components/VideoCard.tsx:1689-1701`
 
 **问题:** `text-xs` 在窄卡片上不可读
@@ -529,6 +551,7 @@ git commit -m "fix: VideoCard 标题文字大小优化"
 ### Task 23: 修复MobileHeader标题溢出
 
 **Files:**
+
 - Modify: `src/components/MobileHeader.tsx:66`
 
 **问题:** `text-[1.35rem]` 固定大小在窄屏幕溢出
@@ -553,6 +576,7 @@ git commit -m "fix: MobileHeader 标题响应式"
 ### Task 24: 修复弹幕发送框颜色选择器触摸目标
 
 **Files:**
+
 - Modify: `src/components/DanmuSendBox.tsx:83`
 
 **问题:** `w-8 h-8` 触摸目标不足
@@ -577,6 +601,7 @@ git commit -m "fix: 弹幕颜色选择器触摸目标"
 ### Task 25: 修复PlaylistManager关闭按钮过小
 
 **Files:**
+
 - Modify: `src/components/PlaylistManager.tsx:199`
 
 **问题:** `p-1.5` 导致约28px触摸目标

@@ -103,7 +103,6 @@ export async function getDoubanCookie(
 ): Promise<string> {
   // 检查缓存
   if (!forceRefresh && isCookieCacheValid()) {
-    //     console.log('[Douban Anti-Crawler] Using cached douban cookie');
     return cookieCache!.cookie;
   }
 
@@ -134,8 +133,6 @@ export async function getDoubanCookie(
         throw new Error('Unexpected redirect location');
       }
 
-      //       console.log('[Douban Anti-Crawler] Detected anti-crawler verification, processing...');
-
       // 第二步：访问验证页面
       const verifyResponse = await fetch(location, {
         headers,
@@ -155,8 +152,6 @@ export async function getDoubanCookie(
         throw new Error('Failed to parse verification page');
       }
 
-      //       console.log('[Douban Anti-Crawler] Calculating proof of work...');
-
       // 第四步：计算工作量证明
       const startTime = Date.now();
       const sol = proofOfWork(formData.cha, 4);
@@ -166,8 +161,6 @@ export async function getDoubanCookie(
       if (sol === -1) {
         throw new Error('Proof of work failed: nonce limit exceeded');
       }
-
-      //       console.log(`[Douban Anti-Crawler] Proof of work calculated: ${sol} (${elapsed}ms)`);
 
       // 第五步：提交验证表单
       const formBody = new URLSearchParams({
@@ -192,8 +185,6 @@ export async function getDoubanCookie(
       if (!setCookieHeader) {
         throw new Error('No cookie received after verification');
       }
-
-      //       console.log('[Douban Anti-Crawler] Successfully obtained douban cookie');
 
       // 提取 cookie 值并缓存（有效期 300 秒 = 5 分钟）
       const cookieValue = extractCookieValue(setCookieHeader);
@@ -233,7 +224,6 @@ export async function fetchDoubanWithVerification(
   try {
     // 如果有缓存的 cookie，先尝试使用
     if (isCookieCacheValid()) {
-      //       console.log('[Douban Anti-Crawler] Trying with cached cookie...');
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -244,12 +234,10 @@ export async function fetchDoubanWithVerification(
 
       // 如果成功，直接返回
       if (response.ok) {
-        //         console.log('[Douban Anti-Crawler] Request succeeded with cached cookie');
         return response;
       }
 
       // 如果失败，清除缓存并继续
-      //       console.log('[Douban Anti-Crawler] Cached cookie failed, will obtain new one');
       cookieCache = null;
     }
 
@@ -264,8 +252,6 @@ export async function fetchDoubanWithVerification(
     if (response.status === 302) {
       const location = response.headers.get('location');
       if (location && location.includes('sec.douban.com')) {
-        //         console.log('[Douban Anti-Crawler] Anti-crawler detected, obtaining cookie...');
-
         // 获取验证 cookie（会自动缓存）
         const cookie = await getDoubanCookie(url);
 

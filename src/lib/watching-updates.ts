@@ -150,7 +150,6 @@ export async function checkWatchingUpdates(
 
       // 🔥 修复：即使没有播放记录，也要检查新上映的想看内容
       // if (records.length === 0) {
-      //   console.log('无播放记录，跳过更新检查');
       //   ...
       // }
       // 移除这个提前返回，让代码继续执行到检查新上映的部分

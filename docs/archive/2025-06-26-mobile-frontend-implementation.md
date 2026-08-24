@@ -23,6 +23,7 @@
 ### Task 1: 创建Core目录结构
 
 **Files:**
+
 - Create: `src/core/api/index.ts`
 - Create: `src/core/hooks/index.ts`
 - Create: `src/core/store/index.ts`
@@ -39,6 +40,7 @@ mkdir -p src/core/api src/core/hooks src/core/store src/core/utils
 - [ ] **Step 2: 创建Core API索引**
 
 Create `src/core/api/index.ts`:
+
 ```ts
 // Core API - 所有设备共享的API调用
 export { ApiService } from '@/lib/api-service';
@@ -48,6 +50,7 @@ export type { ApiResponse, FavoriteItem } from '@/lib/types';
 - [ ] **Step 3: 创建Core Hooks索引**
 
 Create `src/core/hooks/index.ts`:
+
 ```ts
 // Core Hooks - 所有设备共享的Hooks
 export { useDanmu } from '@/hooks/useDanmu';
@@ -57,6 +60,7 @@ export { useFavoritesMutations } from '@/hooks/useFavoritesMutations';
 - [ ] **Step 4: 创建Core Store索引**
 
 Create `src/core/store/index.ts`:
+
 ```ts
 // Core Store - 所有设备共享的状态管理
 export { ClientCache } from '@/lib/client-cache';
@@ -65,6 +69,7 @@ export { ClientCache } from '@/lib/client-cache';
 - [ ] **Step 5: 创建Core Utils索引**
 
 Create `src/core/utils/index.ts`:
+
 ```ts
 // Core Utils - 所有设备共享的工具函数
 export { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
@@ -87,6 +92,7 @@ git commit -m "chore: 创建Core层目录结构"
 ### Task 2: 创建设备检测Hook
 
 **Files:**
+
 - Create: `src/core/hooks/useDevice.ts`
 
 **Steps:**
@@ -94,6 +100,7 @@ git commit -m "chore: 创建Core层目录结构"
 - [ ] **Step 1: 创建useDevice Hook**
 
 Create `src/core/hooks/useDevice.ts`:
+
 ```ts
 'use client';
 
@@ -106,14 +113,14 @@ export function useDevice() {
   const device = useMemo(() => {
     const platform = detectPlatform();
     const width = typeof window !== 'undefined' ? window.innerWidth : 1024;
-    
+
     let type: DeviceType = 'desktop';
     if (platform === 'android' || platform === 'ios') {
       type = width < 768 ? 'phone' : 'tablet';
     } else if (platform === 'tv') {
       type = 'tv';
     }
-    
+
     return {
       type,
       isPhone: type === 'phone',
@@ -147,6 +154,7 @@ git commit -m "feat: 创建设备检测Hook"
 ### Task 3: 创建Mobile布局系统
 
 **Files:**
+
 - Create: `src/ui/mobile/layouts/MobileLayout.tsx`
 - Create: `src/ui/mobile/layouts/MobileNav.tsx`
 
@@ -155,6 +163,7 @@ git commit -m "feat: 创建设备检测Hook"
 - [ ] **Step 1: 创建MobileLayout**
 
 Create `src/ui/mobile/layouts/MobileLayout.tsx`:
+
 ```tsx
 'use client';
 
@@ -166,10 +175,16 @@ interface MobileLayoutProps {
   showNav?: boolean;
 }
 
-export default function MobileLayout({ children, showNav = true }: MobileLayoutProps) {
+export default function MobileLayout({
+  children,
+  showNav = true,
+}: MobileLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <main className="pb-20" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+    <div className='min-h-screen bg-[#0a0a0a] text-white'>
+      <main
+        className='pb-20'
+        style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+      >
         {children}
       </main>
       {showNav && <MobileNav />}
@@ -181,6 +196,7 @@ export default function MobileLayout({ children, showNav = true }: MobileLayoutP
 - [ ] **Step 2: 创建MobileNav**
 
 Create `src/ui/mobile/layouts/MobileNav.tsx`:
+
 ```tsx
 'use client';
 
@@ -200,13 +216,14 @@ export default function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#111] border-t border-white/10"
+    <nav
+      className='fixed bottom-0 left-0 right-0 z-50 bg-[#111] border-t border-white/10'
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex items-center justify-around px-2 py-1">
+      <div className='flex items-center justify-around px-2 py-1'>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || 
+          const isActive =
+            pathname === item.href ||
             (item.href !== '/' && pathname.startsWith(item.href));
           return (
             <Link
@@ -216,8 +233,8 @@ export default function MobileNav() {
                 isActive ? 'text-[#f4c24d]' : 'text-gray-500'
               }`}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px]">{item.label}</span>
+              <item.icon className='w-5 h-5' />
+              <span className='text-[10px]'>{item.label}</span>
             </Link>
           );
         })}
@@ -243,6 +260,7 @@ git commit -m "feat: 创建Mobile布局系统"
 ### Task 4: 创建Mobile核心组件
 
 **Files:**
+
 - Create: `src/ui/mobile/components/MobileVideoCard.tsx`
 - Create: `src/ui/mobile/components/MobileHeroBanner.tsx`
 - Create: `src/ui/mobile/components/MobileSearchBar.tsx`
@@ -252,6 +270,7 @@ git commit -m "feat: 创建Mobile布局系统"
 - [ ] **Step 1: 创建MobileVideoCard**
 
 Create `src/ui/mobile/components/MobileVideoCard.tsx`:
+
 ```tsx
 'use client';
 
@@ -278,36 +297,38 @@ export default function MobileVideoCard({
   priority = false,
 }: MobileVideoCardProps) {
   return (
-    <Link href={href} className="block">
-      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-800">
+    <Link href={href} className='block'>
+      <div className='relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-800'>
         <Image
           src={processImageUrl(poster)}
           alt={title}
           fill
-          sizes="50vw"
-          className="object-cover"
+          sizes='50vw'
+          className='object-cover'
           priority={priority}
         />
-        
+
         {/* 播放按钮 */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-          <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+        <div className='absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity'>
+          <div className='w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center'>
+            <Play className='w-5 h-5 text-white ml-0.5' fill='white' />
           </div>
         </div>
 
         {/* 徽章 */}
         {badge && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-medium bg-[#f4c24d] text-black">
+          <div className='absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-medium bg-[#f4c24d] text-black'>
             {badge}
           </div>
         )}
       </div>
-      
-      <div className="mt-2 px-0.5">
-        <h3 className="text-sm font-medium text-white line-clamp-1">{title}</h3>
+
+      <div className='mt-2 px-0.5'>
+        <h3 className='text-sm font-medium text-white line-clamp-1'>{title}</h3>
         {subtitle && (
-          <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">{subtitle}</p>
+          <p className='text-xs text-gray-400 line-clamp-1 mt-0.5'>
+            {subtitle}
+          </p>
         )}
       </div>
     </Link>
@@ -318,6 +339,7 @@ export default function MobileVideoCard({
 - [ ] **Step 2: 创建MobileHeroBanner**
 
 Create `src/ui/mobile/components/MobileHeroBanner.tsx`:
+
 ```tsx
 'use client';
 
@@ -330,9 +352,9 @@ interface MobileHeroBannerProps {
   autoPlayInterval?: number;
 }
 
-export default function MobileHeroBanner({ 
-  items, 
-  autoPlayInterval = 5000 
+export default function MobileHeroBanner({
+  items,
+  autoPlayInterval = 5000,
 }: MobileHeroBannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
@@ -348,24 +370,27 @@ export default function MobileHeroBanner({
     setTouchStart(e.touches[0].clientX);
   }, []);
 
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-    
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      } else {
-        setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const touchEnd = e.changedTouches[0].clientX;
+      const diff = touchStart - touchEnd;
+
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          setCurrentIndex((prev) => (prev + 1) % items.length);
+        } else {
+          setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+        }
       }
-    }
-  }, [touchStart, items.length]);
+    },
+    [touchStart, items.length],
+  );
 
   if (items.length === 0) return null;
 
   return (
-    <div 
-      className="relative w-full h-[50vh] overflow-hidden"
+    <div
+      className='relative w-full h-[50vh] overflow-hidden'
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -380,14 +405,14 @@ export default function MobileHeroBanner({
             src={processImageUrl(item.poster)}
             alt={item.title}
             fill
-            className="object-cover"
+            className='object-cover'
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className='absolute inset-0 bg-gradient-to-t from-black/80 to-transparent' />
         </div>
       ))}
-      
+
       {/* 指示器 */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className='absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2'>
         {items.map((_, index) => (
           <div
             key={index}
@@ -405,6 +430,7 @@ export default function MobileHeroBanner({
 - [ ] **Step 3: 创建MobileSearchBar**
 
 Create `src/ui/mobile/components/MobileSearchBar.tsx`:
+
 ```tsx
 'use client';
 
@@ -416,9 +442,9 @@ interface MobileSearchBarProps {
   placeholder?: string;
 }
 
-export default function MobileSearchBar({ 
-  onSearch, 
-  placeholder = '搜索影视内容' 
+export default function MobileSearchBar({
+  onSearch,
+  placeholder = '搜索影视内容',
 }: MobileSearchBarProps) {
   const [query, setQuery] = useState('');
 
@@ -430,22 +456,22 @@ export default function MobileSearchBar({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <form onSubmit={handleSubmit} className='relative'>
+      <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
       <input
-        type="text"
+        type='text'
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-12 pl-10 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f4c24d]/50"
+        className='w-full h-12 pl-10 pr-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f4c24d]/50'
       />
       {query && (
         <button
-          type="button"
+          type='button'
           onClick={() => setQuery('')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
+          className='absolute right-3 top-1/2 -translate-y-1/2 p-1'
         >
-          <X className="w-5 h-5 text-gray-400" />
+          <X className='w-5 h-5 text-gray-400' />
         </button>
       )}
     </form>
@@ -469,6 +495,7 @@ git commit -m "feat: 创建Mobile核心组件"
 ### Task 5: 创建Mobile页面模板
 
 **Files:**
+
 - Create: `src/ui/mobile/pages/MobileHomePage.tsx`
 - Create: `src/ui/mobile/pages/MobilePlayerPage.tsx`
 
@@ -477,6 +504,7 @@ git commit -m "feat: 创建Mobile核心组件"
 - [ ] **Step 1: 创建MobileHomePage**
 
 Create `src/ui/mobile/pages/MobileHomePage.tsx`:
+
 ```tsx
 'use client';
 
@@ -486,10 +514,16 @@ import MobileVideoCard from '../components/MobileVideoCard';
 
 interface MobileHomePageProps {
   heroItems: { poster: string; title: string; href: string }[];
-  sections: { title: string; items: { poster: string; title: string; href: string; subtitle?: string }[] }[];
+  sections: {
+    title: string;
+    items: { poster: string; title: string; href: string; subtitle?: string }[];
+  }[];
 }
 
-export default function MobileHomePage({ heroItems, sections }: MobileHomePageProps) {
+export default function MobileHomePage({
+  heroItems,
+  sections,
+}: MobileHomePageProps) {
   return (
     <MobileLayout>
       {/* Hero Banner */}
@@ -497,15 +531,15 @@ export default function MobileHomePage({ heroItems, sections }: MobileHomePagePr
 
       {/* 内容区块 */}
       {sections.map((section, sIndex) => (
-        <section key={sIndex} className="py-4">
-          <div className="flex items-center justify-between px-4 mb-3">
-            <h2 className="text-lg font-bold text-white">{section.title}</h2>
-            <button className="text-sm text-[#f4c24d]">更多</button>
+        <section key={sIndex} className='py-4'>
+          <div className='flex items-center justify-between px-4 mb-3'>
+            <h2 className='text-lg font-bold text-white'>{section.title}</h2>
+            <button className='text-sm text-[#f4c24d]'>更多</button>
           </div>
-          
-          <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory">
+
+          <div className='flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory'>
             {section.items.map((item, iIndex) => (
-              <div key={iIndex} className="flex-shrink-0 w-[45vw] snap-start">
+              <div key={iIndex} className='flex-shrink-0 w-[45vw] snap-start'>
                 <MobileVideoCard
                   title={item.title}
                   poster={item.poster}
@@ -526,6 +560,7 @@ export default function MobileHomePage({ heroItems, sections }: MobileHomePagePr
 - [ ] **Step 2: 创建MobilePlayerPage**
 
 Create `src/ui/mobile/pages/MobilePlayerPage.tsx`:
+
 ```tsx
 'use client';
 
@@ -552,26 +587,26 @@ export default function MobilePlayerPage({
   return (
     <MobileLayout showNav={false}>
       {/* 视频播放器区域 */}
-      <div className="relative w-full aspect-video bg-black">
+      <div className='relative w-full aspect-video bg-black'>
         {/* 播放器将在这里渲染 */}
-        <div className="absolute inset-0 flex items-center justify-center text-white/50">
+        <div className='absolute inset-0 flex items-center justify-center text-white/50'>
           视频播放器
         </div>
       </div>
 
       {/* 视频信息 */}
-      <div className="p-4">
-        <h1 className="text-xl font-bold text-white mb-2">{title}</h1>
-        <p className="text-sm text-gray-400">
+      <div className='p-4'>
+        <h1 className='text-xl font-bold text-white mb-2'>{title}</h1>
+        <p className='text-sm text-gray-400'>
           第 {currentEpisode + 1} 集 / 共 {episodes.length} 集
         </p>
       </div>
 
       {/* 选集按钮 */}
-      <div className="px-4">
+      <div className='px-4'>
         <button
           onClick={() => setShowEpisodes(!showEpisodes)}
-          className="w-full py-3 bg-white/5 rounded-xl text-white font-medium"
+          className='w-full py-3 bg-white/5 rounded-xl text-white font-medium'
         >
           选集 ({episodes.length}集)
         </button>
@@ -579,8 +614,8 @@ export default function MobilePlayerPage({
 
       {/* 选集面板 */}
       {showEpisodes && (
-        <div className="p-4">
-          <div className="grid grid-cols-6 gap-2">
+        <div className='p-4'>
+          <div className='grid grid-cols-6 gap-2'>
             {episodes.map((ep, index) => (
               <button
                 key={index}
@@ -620,6 +655,7 @@ git commit -m "feat: 创建Mobile页面模板"
 ### Task 6: 更新路由加载逻辑
 
 **Files:**
+
 - Modify: `src/app/layout.tsx`
 - Modify: `src/app/page.tsx`
 
@@ -634,10 +670,8 @@ import { DeviceProvider } from '@/core/hooks/useDevice';
 
 // 在body标签内添加DeviceProvider
 <body>
-  <DeviceProvider>
-    {children}
-  </DeviceProvider>
-</body>
+  <DeviceProvider>{children}</DeviceProvider>
+</body>;
 ```
 
 - [ ] **Step 2: 更新首页**
@@ -652,12 +686,12 @@ import MobileHomePage from '@/ui/mobile/pages/MobileHomePage';
 
 export default function HomePage() {
   const { isMobile } = useDevice();
-  
+
   // 移动端使用独立UI
   if (isMobile) {
     return <MobileHomePage heroItems={[]} sections={[]} />;
   }
-  
+
   // 桌面端使用原有UI
   return <DesktopHomePage />;
 }
@@ -693,6 +727,7 @@ Run: `npm run build`
 - [ ] **Step 3: 移动端测试**
 
 在手机浏览器访问：
+
 - 首页: 检查MobileHeroBanner、MobileVideoCard
 - 搜索页: 检查MobileSearchBar
 - 底部导航: 检查MobileNav
@@ -700,6 +735,7 @@ Run: `npm run build`
 - [ ] **Step 4: 桌面端测试**
 
 在桌面浏览器访问：
+
 - 首页: 确保桌面端UI不受影响
 - 播放页: 确保桌面端播放正常
 

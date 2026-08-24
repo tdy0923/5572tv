@@ -263,7 +263,6 @@ export async function GET(request: NextRequest) {
         totalWatchTime += userWatchTime;
         totalPlays += records.length;
       } catch (error) {
-        // console.error(`获取用户 ${user.username} 播放记录失败:`, error);
         // 出错的用户显示为空统计
         // 设置项目开始时间，2025年9月14日
         const PROJECT_START_DATE = new Date('2025-09-14').getTime();
@@ -399,7 +398,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    // console.error('获取播放统计失败:', error);
     return NextResponse.json(
       {
         error: '获取播放统计失败',

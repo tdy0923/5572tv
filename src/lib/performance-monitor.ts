@@ -533,8 +533,6 @@ let collectionInterval: NodeJS.Timeout | null = null;
 export function startAutoCollection(): void {
   if (collectionInterval) return; // 已经启动
 
-  //   console.log('🚀 启动性能监控自动数据收集...');
-
   // 每 1 小时收集一次系统指标
   collectionInterval = setInterval(
     () => {
@@ -551,6 +549,5 @@ export function stopAutoCollection(): void {
   if (collectionInterval) {
     clearInterval(collectionInterval);
     collectionInterval = null;
-    //     console.log('⏹️ 停止性能监控自动数据收集');
   }
 }

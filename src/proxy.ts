@@ -323,7 +323,6 @@ async function handleAuthentication(
     const clientIP = getClientIP(request);
 
     if (isIPTrusted(clientIP, trustedNetworkConfig.trustedIPs)) {
-      //       console.log(
       //         `[Middleware] Trusted network auto-login for IP: ${clientIP}`,
       //       );
 

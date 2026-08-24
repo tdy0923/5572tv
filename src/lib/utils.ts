@@ -307,7 +307,6 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
 
     if (isIPad) {
       // iPad使用最简单的ping测试，不创建任何video或HLS实例
-      //       console.log('iPad检测，使用简化测速避免崩溃');
 
       const startTime = performance.now();
       try {
@@ -554,7 +553,6 @@ export async function getVideoResolutionFromM3u8(m3u8Url: string): Promise<{
           data.err.message &&
           data.err.message.includes('timestamp')
         ) {
-          //           console.log('测速中遇到时间戳错误，v1.6.13已修复，继续测速');
           return;
         }
 

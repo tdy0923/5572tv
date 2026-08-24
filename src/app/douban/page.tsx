@@ -367,7 +367,6 @@ function DoubanPageClient() {
 
     // 🛡️ 防止同一 cacheKey 的并发请求
     if (pendingCacheKeyRef.current === cacheKey) {
-      //       console.log('[Douban] 跳过并发请求:', cacheKey);
       return;
     }
     pendingCacheKeyRef.current = cacheKey;
@@ -490,7 +489,6 @@ function DoubanPageClient() {
             setLoading(false);
           });
         } else {
-          //           console.log('关键参数不一致，不执行任何操作，避免设置过期数据');
         }
         // 如果参数不一致，不执行任何操作，避免设置过期数据
       } else {
@@ -541,11 +539,9 @@ function DoubanPageClient() {
 
     if (shouldExecuteImmediately) {
       // 🚀 首次挂载或 Tab 切换：立即执行（利用缓存实现 0 延迟体验）
-      //       console.log('[SmartDebounce] 首次挂载/Tab切换，立即执行');
       loadInitialData();
     } else {
       // 🚀 筛选条件变化：100ms 防抖，防止快速点击
-      //       console.log('[SmartDebounce] 筛选条件变化，100ms 防抖');
       debounceTimeoutRef.current = setTimeout(() => {
         loadInitialData();
       }, 100);
@@ -699,7 +695,6 @@ function DoubanPageClient() {
                     }
                   }
 
-                  //                   console.log(
                   //                     `📊 Batch: ${data.list.length}, Added: ${uniqueNewItems.length}, Duplicates removed: ${data.list.length - uniqueNewItems.length}`
                   //                   );
 
@@ -709,7 +704,6 @@ function DoubanPageClient() {
                 setHasMore(data.list.length !== 0);
               });
             } else {
-              //               console.log('关键参数不一致，不执行任何操作，避免设置过期数据');
             }
           } else {
             throw new Error(data.message || '获取数据失败');

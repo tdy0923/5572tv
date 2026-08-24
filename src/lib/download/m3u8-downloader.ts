@@ -468,11 +468,7 @@ export async function downloadTsSegment(
   byteRange?: { offset: number; length: number } | null,
   timeout = 45000,
 ): Promise<ArrayBuffer> {
-  //   console.log('[downloadTsSegment] 开始下载片段:', url);
-  //   console.log('[downloadTsSegment] 请求头:', requestHeaders);
-
   const headers = buildRequestHeaders(requestHeaders);
-  //   console.log('[downloadTsSegment] 构建的 headers:', headers);
 
   // 添加 Range 头支持 BYTERANGE
   if (byteRange) {
@@ -497,18 +493,14 @@ export async function downloadTsSegment(
     : controller.signal;
 
   try {
-    //     console.log('[downloadTsSegment] 发起 fetch 请求...');
     const response = await fetch(url, { signal: combinedSignal, headers });
     clearTimeout(timeoutId);
-    //     console.log('[downloadTsSegment] 收到响应:', response.status, response.statusText);
 
     if (!response.ok) {
       throw new Error(`下载失败: ${response.status}`);
     }
 
-    //     console.log('[downloadTsSegment] 开始读取 arrayBuffer...');
     const buffer = await response.arrayBuffer();
-    //     console.log('[downloadTsSegment] 片段下载成功，大小:', buffer.byteLength, 'bytes');
     return buffer;
   } catch (error) {
     clearTimeout(timeoutId);
@@ -645,15 +637,12 @@ export async function downloadM3U8Video(
         // 使用 Service Worker 模式
         const { createWriteStream } = await import('./stream-saver');
         stream = createWriteStream(filename);
-
-        //         console.log('✅ 使用 Service Worker 流式下载');
       } else if (streamMode === 'file-system') {
         // 使用 File System Access API
         const { createFileSystemWriteStream } =
           await import('./stream-saver-fallback');
         stream = await createFileSystemWriteStream(filename, estimatedSize);
         if (stream) {
-          //           console.log('✅ 使用文件系统直写');
         } else {
           throw new Error('用户取消了文件选择');
         }
@@ -671,13 +660,9 @@ export async function downloadM3U8Video(
                 writer,
                 rangeDuration,
               );
-
-              //               console.log('✅ 启用 MP4 流式转码（含 MAP 段）');
             } else {
               // TS 模式下，直接写入 MAP 段
               await writer.write(new Uint8Array(mapSegmentData));
-
-              //               console.log('✅ MAP 段已写入');
             }
           } catch (error) {
             console.error('MAP 段写入失败:', error);
@@ -686,8 +671,6 @@ export async function downloadM3U8Video(
         } else if (task.type === 'MP4') {
           // 没有 MAP 段但是 MP4 格式
           streamingTransmuxer = new StreamingTransmuxer(writer, rangeDuration);
-
-          //           console.log('✅ 启用 MP4 流式转码');
         }
       }
     } catch (error) {

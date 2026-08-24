@@ -203,7 +203,6 @@ async function _fetchPageWithPuppeteerOnce(
       });
 
       if (isLoaded) {
-        //         console.log(`[Puppeteer] ✅ 页面加载完成 (等待 ${retries + 1} 秒)`);
         break;
       }
 
@@ -244,11 +243,7 @@ export async function fetchPageWithPuppeteer(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      //       console.log(`[Puppeteer] 尝试 ${attempt + 1}/${maxRetries + 1}: ${url}`);
-
       const result = await _fetchPageWithPuppeteerOnce(url, options);
-
-      //       console.log(`[Puppeteer] ✅ 成功获取页面 (尝试 ${attempt + 1}/${maxRetries + 1}), HTML 长度: ${result.html.length}`);
 
       return result;
     } catch (error) {
@@ -262,7 +257,6 @@ export async function fetchPageWithPuppeteer(
       // 如果还有重试机会
       if (attempt < maxRetries) {
         const delay = calculateBackoffDelay(attempt);
-        //         console.log(`[Puppeteer] 等待 ${delay}ms 后重试...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
@@ -284,15 +278,11 @@ export async function bypassDoubanChallenge(
   html: string;
   cookies: any[];
 }> {
-  //   console.log(`[Puppeteer] 开始绕过豆瓣 Challenge: ${url}`);
-
   const result = await fetchPageWithPuppeteer(url, {
     waitUntil: 'networkidle2',
     timeout: 30000,
     maxRetries,
   });
-
-  //   console.log(`[Puppeteer] ✅ 成功绕过Challenge，HTML 长度: ${result.html.length}`);
 
   return result;
 }

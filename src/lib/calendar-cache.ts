@@ -32,7 +32,6 @@ export class CalendarCacheManager {
 
     // 如果是localStorage模式，跳过数据库缓存
     if (storageType === 'localstorage') {
-      //       console.log('⚠️ localStorage模式，跳过数据库缓存');
       return false;
     }
 
@@ -46,8 +45,6 @@ export class CalendarCacheManager {
       const dataStr = JSON.stringify(data);
       const timestamp = Date.now().toString();
       const sizeKB = Math.round(dataStr.length / 1024);
-
-      //       console.log(`💾 保存日历数据到数据库缓存，大小: ${sizeKB} KB`);
 
       if (storageType === 'upstash') {
         // Upstash Redis
@@ -79,7 +76,6 @@ export class CalendarCacheManager {
         throw new Error(`不支持的存储类型: ${storageType}`);
       }
 
-      //       console.log('✅ 日历数据已成功保存到数据库缓存');
       return true;
     } catch (error) {
       console.error('❌ 保存日历数据到数据库缓存失败:', error);
@@ -137,14 +133,12 @@ export class CalendarCacheManager {
       }
 
       if (!dataStr || !timeStr) {
-        //         console.log('📭 数据库中无日历缓存数据');
         return null;
       }
 
       // 检查缓存是否过期
       const age = Date.now() - parseInt(timeStr);
       if (age >= CACHE_DURATION) {
-        //         console.log(`⏰ 数据库中的日历缓存已过期，年龄: ${Math.round(age / 1000 / 60 / 60)} 小时`);
         await this.clearCalendarData(); // 清理过期数据
         return null;
       }
@@ -167,7 +161,6 @@ export class CalendarCacheManager {
         data = JSON.parse(dataStr);
       }
 
-      //       console.log(`✅ 从数据库读取日历缓存，缓存年龄: ${Math.round(age / 1000 / 60)} 分钟`);
       return data;
     } catch (error) {
       console.error('❌ 从数据库读取日历缓存失败:', error);
@@ -180,7 +173,6 @@ export class CalendarCacheManager {
     const storageType = getStorageType();
 
     if (storageType === 'localstorage') {
-      //       console.log('localStorage模式，跳过数据库缓存清理');
       return;
     }
 
@@ -208,8 +200,6 @@ export class CalendarCacheManager {
           await storage.client.del(CALENDAR_TIME_KEY);
         }
       }
-
-      //       console.log('✅ 已清除数据库中的日历缓存');
     } catch (error) {
       console.error('❌ 清除数据库日历缓存失败:', error);
     }

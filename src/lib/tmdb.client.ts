@@ -154,7 +154,6 @@ export async function searchTMDBMovie(
     });
     const cached = await getCache(cacheKey);
     if (cached) {
-      //       console.log(`TMDB电影搜索缓存命中: ${title}`);
       return cached;
     }
 
@@ -178,12 +177,10 @@ export async function searchTMDBMovie(
 
       // 保存到缓存
       await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.actor_search);
-      //       console.log(`TMDB电影搜索成功: ${title} -> ID ${result.id}`);
 
       return result;
     }
 
-    //     console.log(`TMDB电影搜索无结果: ${title}`);
     return null;
   } catch (error) {
     console.error(`搜索TMDB电影失败 (${title}):`, error);
@@ -211,7 +208,6 @@ export async function searchTMDBTV(
     });
     const cached = await getCache(cacheKey);
     if (cached) {
-      //       console.log(`TMDB电视剧搜索缓存命中: ${title}`);
       return cached;
     }
 
@@ -235,12 +231,10 @@ export async function searchTMDBTV(
 
       // 保存到缓存
       await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.actor_search);
-      //       console.log(`TMDB电视剧搜索成功: ${title} -> ID ${result.id}`);
 
       return result;
     }
 
-    //     console.log(`TMDB电视剧搜索无结果: ${title}`);
     return null;
   } catch (error) {
     console.error(`搜索TMDB电视剧失败 (${title}):`, error);
@@ -273,8 +267,6 @@ async function fetchTMDB<T>(
     url.searchParams.append(key, value);
   });
 
-  //   console.log(`[TMDB API] 请求: ${endpoint}`);
-
   const response = await fetch(url.toString(), {
     headers: {
       Accept: 'application/json',
@@ -300,7 +292,6 @@ export async function searchTMDBPerson(
   const cacheKey = getCacheKey('person_search', { query: query.trim(), page });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`TMDB演员搜索缓存命中: ${query}`);
     return cached;
   }
 
@@ -311,7 +302,6 @@ export async function searchTMDBPerson(
 
   // 保存到缓存
   await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.actor_search);
-  //   console.log(`TMDB演员搜索已缓存: ${query}`);
 
   return result;
 }
@@ -326,7 +316,6 @@ export async function getTMDBPersonMovies(
   const cacheKey = getCacheKey('movie_credits', { personId });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`TMDB演员电影作品缓存命中: ${personId}`);
     return cached;
   }
 
@@ -336,7 +325,6 @@ export async function getTMDBPersonMovies(
 
   // 保存到缓存
   await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.movie_credits);
-  //   console.log(`TMDB演员电影作品已缓存: ${personId}`);
 
   return result;
 }
@@ -351,7 +339,6 @@ export async function getTMDBPersonTVShows(
   const cacheKey = getCacheKey('tv_credits', { personId });
   const cached = await getCache(cacheKey);
   if (cached) {
-    //     console.log(`TMDB演员电视剧作品缓存命中: ${personId}`);
     return cached;
   }
 
@@ -361,7 +348,6 @@ export async function getTMDBPersonTVShows(
 
   // 保存到缓存
   await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.tv_credits);
-  //   console.log(`TMDB演员电视剧作品已缓存: ${personId}`);
 
   return result;
 }
@@ -390,7 +376,6 @@ export async function getTMDBMovieDetails(movieId: number): Promise<{
     const cacheKey = getCacheKey('movie_details', { movieId });
     const cached = await getCache(cacheKey);
     if (cached) {
-      //       console.log(`TMDB电影详情缓存命中: ${movieId}`);
       return cached;
     }
 
@@ -409,7 +394,6 @@ export async function getTMDBMovieDetails(movieId: number): Promise<{
 
     // 保存到缓存
     await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.movie_details);
-    //     console.log(`TMDB电影详情已缓存: ${movieId}`);
 
     return result;
   } catch (error) {
@@ -442,7 +426,6 @@ export async function getTMDBTVDetails(tvId: number): Promise<{
     const cacheKey = getCacheKey('tv_details', { tvId });
     const cached = await getCache(cacheKey);
     if (cached) {
-      //       console.log(`TMDB电视剧详情缓存命中: ${tvId}`);
       return cached;
     }
 
@@ -461,7 +444,6 @@ export async function getTMDBTVDetails(tvId: number): Promise<{
 
     // 保存到缓存
     await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.tv_details);
-    //     console.log(`TMDB电视剧详情已缓存: ${tvId}`);
 
     return result;
   } catch (error) {
@@ -478,15 +460,12 @@ export async function searchTMDBActorWorks(
   type: 'movie' | 'tv' = 'movie',
   filterOptions: TMDBFilterOptions = {},
 ): Promise<TMDBResult> {
-  //   console.log(
   //     `🚀 [TMDB] searchTMDBActorWorks 开始执行: ${actorName}, type=${type}`,
   //   );
 
   try {
-    //     console.log(`🔍 [TMDB] 检查是否启用...`);
     // 检查是否启用
     if (!(await isTMDBEnabled())) {
-      //       console.log(`❌ [TMDB] TMDB功能未启用`);
       return {
         code: 500,
         message: 'TMDB演员搜索功能未启用或API Key未配置',
@@ -495,23 +474,17 @@ export async function searchTMDBActorWorks(
       } as TMDBResult;
     }
 
-    //     console.log(`✅ [TMDB] TMDB功能已启用`);
     // 检查缓存 - 为整个搜索结果缓存
     const cacheKey = getCacheKey('actor_works', {
       actorName,
       type,
       ...filterOptions,
     });
-    //     console.log(`🔑 [TMDB] 缓存Key: ${cacheKey}`);
 
     const cached = await getCache(cacheKey);
     if (cached) {
-      //       console.log(`✅ [TMDB] 缓存命中: ${actorName}/${type}`);
       return cached;
     }
-    //     console.log(`❌ [TMDB] 缓存未命中，开始搜索...`);
-
-    //     console.log(`[TMDB演员搜索] 搜索演员: ${actorName}, 类型: ${type}`);
 
     // 1. 先搜索演员
     const personSearch = await searchTMDBPerson(actorName);
@@ -533,7 +506,6 @@ export async function searchTMDBActorWorks(
     const person = personSearch.results.sort(
       (a, b) => (b.popularity || 0) - (a.popularity || 0),
     )[0];
-    //     console.log(`[TMDB演员搜索] 找到演员: ${person.name} (ID: ${person.id})`);
 
     // 3. 获取该演员的作品
     let works: any[] = [];
@@ -705,7 +677,6 @@ export async function searchTMDBActorWorks(
       })
       .filter((work) => work.title); // 过滤掉没有标题的
 
-    //     console.log(
     //       `[TMDB演员搜索] 筛选后找到 ${list.length} 个${type === 'movie' ? '电影' : '电视剧'}作品（原始: ${works.length}）`,
     //     );
 
@@ -719,7 +690,6 @@ export async function searchTMDBActorWorks(
 
     // 保存到缓存
     await setCache(cacheKey, result, TMDB_CACHE_EXPIRE.actor_search);
-    //     console.log(`TMDB演员作品搜索已缓存: ${actorName}/${type}`);
 
     return result;
   } catch (error) {

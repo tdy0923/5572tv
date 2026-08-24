@@ -43,7 +43,6 @@ export function useLiveSync({
       channelUrl: currentSourceKey, // channelUrl 存储直播源 key
     };
 
-    //     // console.log('[LiveSync] Broadcasting channel change:', state);
     watchRoom.changeLiveChannel(state);
   }, [
     isOwner,
@@ -61,7 +60,6 @@ export function useLiveSync({
     const handleLiveChange = (state: LiveState) => {
       if (syncingRef.current) return;
 
-      //       // console.log('[LiveSync] Received channel change:', state);
       syncingRef.current = true;
 
       try {

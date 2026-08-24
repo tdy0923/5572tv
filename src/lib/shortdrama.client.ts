@@ -235,7 +235,6 @@ async function parseWithAlternativeApi(
 
     // 检查是否提供了备用API地址
     if (!alternativeApiBase) {
-      //       console.log('备用API地址未配置');
       return {
         code: -1,
         msg: '备用API未启用',
@@ -244,7 +243,6 @@ async function parseWithAlternativeApi(
 
     // Step 1: Search for the drama by name to get drama ID
     const searchUrl = `${alternativeApiBase}/api/v1/drama/dl?dramaName=${encodeURIComponent(dramaName)}`;
-    //     console.log('[Alternative API] Step 1 - Search URL:', searchUrl);
 
     const searchResponse = await fetch(searchUrl, {
       headers: {
@@ -253,8 +251,6 @@ async function parseWithAlternativeApi(
       },
       signal: AbortSignal.timeout(15000), // 15秒超时
     });
-
-    //     console.log('[Alternative API] Step 1 - Response status:', searchResponse.status);
 
     if (!searchResponse.ok) {
       const errorText = await searchResponse.text();
@@ -373,7 +369,6 @@ async function parseWithAlternativeApi(
 
       const targetEpisode = episodesData.data[currentIndex];
       if (!targetEpisode || !targetEpisode.id) {
-        //         console.log(`[Alternative API] 第${episode + retry}集数据不完整，尝试下一集`);
         continue;
       }
 
@@ -390,7 +385,6 @@ async function parseWithAlternativeApi(
         });
 
         if (!directResponse.ok) {
-          //           console.log(`[Alternative API] 第${episode + retry}集HTTP错误: ${directResponse.status}，尝试下一集`);
           continue;
         }
 
@@ -398,13 +392,11 @@ async function parseWithAlternativeApi(
 
         // 检查是否返回 "未查询到该剧集" 错误
         if (typeof data === 'string' && data.includes('未查询到该剧集')) {
-          //           console.log(`[Alternative API] 第${episode + retry}集视频源缺失，尝试下一集`);
           continue;
         }
 
         // 验证播放链接数据
         if (!data || !data.url) {
-          //           console.log(`[Alternative API] 第${episode + retry}集无播放链接，尝试下一集`);
           continue;
         }
 
@@ -413,11 +405,9 @@ async function parseWithAlternativeApi(
         actualEpisodeIndex = currentIndex;
 
         if (retry > 0) {
-          //           console.log(`[Alternative API] ✅ 第${episode}集不可用，已自动跳转到第${episode + retry}集`);
         }
         break;
       } catch (error) {
-        //         console.log(`[Alternative API] 第${episode + retry}集请求失败:`, error);
         continue;
       }
     }
@@ -487,7 +477,6 @@ export async function parseShortDramaEpisode(
 ): Promise<ShortDramaParseResult> {
   // 如果提供了剧名和备用API，优先尝试备用API（因为主API链接经常失效）
   if (dramaName && alternativeApiUrl) {
-    //     console.log('优先尝试备用API...');
     try {
       const alternativeResult = await parseWithAlternativeApi(
         dramaName,
@@ -495,13 +484,9 @@ export async function parseShortDramaEpisode(
         alternativeApiUrl,
       );
       if (alternativeResult.code === 0) {
-        //         console.log('备用API成功！');
         return alternativeResult;
       }
-      //       console.log('备用API失败，fallback到主API:', alternativeResult.msg);
-    } catch (altError) {
-      //       console.log('备用API错误，fallback到主API:', altError);
-    }
+    } catch (altError) {}
   }
 
   try {
@@ -543,7 +528,6 @@ export async function parseShortDramaEpisode(
     if (data.code === 1) {
       // 如果主API失败且提供了剧名和备用API地址，尝试使用备用API
       if (dramaName && alternativeApiUrl) {
-        //         console.log('主API失败，尝试使用备用API...');
         return await parseWithAlternativeApi(
           dramaName,
           episode,
@@ -561,7 +545,6 @@ export async function parseShortDramaEpisode(
 
     // 如果主API返回成功但没有有效链接，尝试备用API
     if (!parsedUrl && dramaName && alternativeApiUrl) {
-      //       console.log('主API未返回有效链接，尝试使用备用API...');
       return await parseWithAlternativeApi(
         dramaName,
         episode,
@@ -588,7 +571,6 @@ export async function parseShortDramaEpisode(
     console.error('解析短剧集数失败:', error);
     // 如果主API网络请求失败且提供了剧名和备用API地址，尝试使用备用API
     if (dramaName && alternativeApiUrl) {
-      //       console.log('主API网络错误，尝试使用备用API...');
       return await parseWithAlternativeApi(
         dramaName,
         episode,

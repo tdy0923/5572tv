@@ -119,8 +119,6 @@ export async function refreshLiveChannels(liveInfo: {
   channelNumber?: number;
   disabled?: boolean;
 }): Promise<number> {
-  //   console.log(`[Live] Starting refresh for source: ${liveInfo.name} (${liveInfo.url})`);
-
   if (cachedLiveChannels.has(liveInfo.key)) {
     cachedLiveChannels.delete(liveInfo.key);
   }
@@ -136,13 +134,11 @@ export async function refreshLiveChannels(liveInfo: {
   // 如果用户手动指定了 isTvBox，则优先使用
   let isTvBox =
     liveInfo.isTvBox || liveInfo.url.toLowerCase().endsWith('.json');
-  //   console.log(`[Live] Initial detection for ${liveInfo.url}: isTvBox=${isTvBox} (Manual: ${liveInfo.isTvBox})`);
 
   let content = '';
 
   try {
     // 第一次 Fetch - 使用超时控制
-    //     console.log(`[Live] Fetching URL: ${liveInfo.url} with UA: ${isTvBox ? TVBOX_UA : ua}`);
     const response = await fetchWithTimeout(
       liveInfo.url,
       {
@@ -161,13 +157,11 @@ export async function refreshLiveChannels(liveInfo: {
     }
 
     content = await response.text();
-    //     console.log(`[Live] Content received. Length: ${content.length}. Start: ${content.substring(0, 50)}...`);
 
     // 0. 尝试解密内容（针对 饭太硬/肥猫 等加密源）
     const decryptedContent = tryDecrypt(content);
     const effectiveContent = decryptedContent || content; // 如果解密失败或无加密，使用原内容
     if (decryptedContent !== content) {
-      //         console.log(`[Live] Content decrypted. New Length: ${effectiveContent.length}. Start: ${effectiveContent.substring(0, 50)}...`);
     }
 
     // 尝试从内容判断是否为 TVBox
@@ -178,7 +172,6 @@ export async function refreshLiveChannels(liveInfo: {
           const json = tryParseJson(effectiveContent);
           if (json.lives && Array.isArray(json.lives)) {
             isTvBox = true;
-            //                     console.log(`[Live] Content detected as TVBox JSON Config`);
           }
         } catch (e) {
           // Ignore JSON parse error
@@ -193,7 +186,6 @@ export async function refreshLiveChannels(liveInfo: {
             !effectiveContent.trim().startsWith('<'))
         ) {
           isTvBox = true;
-          //                 console.log(`[Live] Content detected as TVBox TXT`);
         }
       }
     }
@@ -211,13 +203,11 @@ export async function refreshLiveChannels(liveInfo: {
     };
 
     if (isTvBox) {
-      //         console.log(`[Live] Processing as TVBox source...`);
       // 使用 TVBox 处理器 - 传递已解密的内容
       const tvBoxResult = await processTvBoxContent(
         effectiveContent,
         liveInfo.key,
       );
-      //         console.log(`[Live] TVBox processing result type: ${tvBoxResult.type}`);
 
       if (tvBoxResult.type === 'txt') {
         result = {
@@ -284,7 +274,6 @@ function tryDecrypt(content: string): string {
       const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
       // 简单验证解码后是否像 JSON
       if (decoded.trim().startsWith('{') || decoded.trim().startsWith('[')) {
-        //            console.log('[Live] Successfully decrypted TVBox config (Base64)');
         return decoded;
       }
     } catch (e) {
@@ -514,7 +503,6 @@ async function parseEpg(
   // 🚀 优化：检查缓存
   const cached = epgCache.get(epgUrl);
   if (cached && Date.now() - cached.timestamp < EPG_CACHE_TTL) {
-    //     console.log(`[Live] Using cached EPG for ${epgUrl} (age: ${Math.round((Date.now() - cached.timestamp) / 1000 / 60)}min)`);
     return { epgs: cached.epgs, logos: cached.logos };
   }
 
@@ -534,7 +522,6 @@ async function parseEpg(
 
   try {
     // 🚀 优化：使用超时控制
-    //     console.log(`[Live] Fetching EPG from ${epgUrl} with ${FETCH_TIMEOUT}ms timeout...`);
     const response = await fetchWithTimeout(
       epgUrl,
       {
@@ -710,7 +697,6 @@ async function parseEpg(
     logos,
     timestamp: Date.now(),
   });
-  //   console.log(`[Live] EPG cached for ${epgUrl} (TTL: 24h)`);
 
   return { epgs: result, logos };
 }

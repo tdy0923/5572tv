@@ -50,7 +50,6 @@ export function useVoiceChat({
         },
       });
       localStreamRef.current = stream;
-      //       // console.log('[VoiceChat] Got local stream');
       return stream;
     } catch (err) {
       console.error('[VoiceChat] Failed to get local stream:', err);
@@ -64,7 +63,6 @@ export function useVoiceChat({
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
-      //       // console.log('[VoiceChat] Stopped local stream');
     }
   }, []);
 
@@ -85,7 +83,6 @@ export function useVoiceChat({
 
       // 接收远程音频流
       pc.ontrack = (event) => {
-        //         // console.log('[VoiceChat] Received remote track from', peerId);
         const remoteStream = event.streams[0];
 
         // 创建或更新音频元素播放远程流
@@ -102,7 +99,6 @@ export function useVoiceChat({
 
       // 连接状态变化
       pc.oniceconnectionstatechange = () => {
-        //         // console.log(
         //           '[VoiceChat] ICE state with',
         //           peerId,
         //           ':',
@@ -132,7 +128,6 @@ export function useVoiceChat({
     async (peerId: string) => {
       if (!socket || !localStreamRef.current) return;
 
-      //       // console.log('[VoiceChat] Calling peer:', peerId);
       const pc = createPeerConnection(peerId);
 
       // 添加本地流到连接
@@ -166,8 +161,6 @@ export function useVoiceChat({
       audioElement.srcObject = null;
       remoteAudioElementsRef.current.delete(peerId);
     }
-
-    //     // console.log('[VoiceChat] Closed connection with', peerId);
   }, []);
 
   // 清理所有连接
@@ -179,8 +172,6 @@ export function useVoiceChat({
       audio.srcObject = null;
     });
     remoteAudioElementsRef.current.clear();
-
-    //     // console.log('[VoiceChat] Closed all connections');
   }, []);
 
   // 监听socket事件
@@ -194,7 +185,6 @@ export function useVoiceChat({
     }) => {
       if (!localStreamRef.current) return;
 
-      //       // console.log('[VoiceChat] Received offer from', data.userId);
       const pc = createPeerConnection(data.userId);
 
       // 添加本地流
@@ -221,7 +211,6 @@ export function useVoiceChat({
       userId: string;
       answer: RTCSessionDescriptionInit;
     }) => {
-      //       // console.log('[VoiceChat] Received answer from', data.userId);
       const pc = peerConnectionsRef.current.get(data.userId);
       if (pc) {
         await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
@@ -233,7 +222,6 @@ export function useVoiceChat({
       userId: string;
       candidate: RTCIceCandidateInit;
     }) => {
-      //       // console.log('[VoiceChat] Received ICE from', data.userId);
       const pc = peerConnectionsRef.current.get(data.userId);
       if (pc) {
         await pc.addIceCandidate(new RTCIceCandidate(data.candidate));

@@ -59,7 +59,6 @@ export function useWebSR(artPlayerRef: React.RefObject<ArtPlayer | null>) {
     const checkWebGPUSupport = async () => {
       if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
         setWebGPUSupported(false);
-        // // console.log('WebGPU不支持：浏览器不支持WebGPU API');
         return;
       }
 
@@ -67,12 +66,10 @@ export function useWebSR(artPlayerRef: React.RefObject<ArtPlayer | null>) {
         const adapter = await (navigator as any).gpu.requestAdapter();
         if (!adapter) {
           setWebGPUSupported(false);
-          // // console.log('WebGPU不支持：无法获取GPU适配器');
           return;
         }
 
         setWebGPUSupported(true);
-        // // console.log('WebGPU支持检测：✅ 支持');
       } catch {
         setWebGPUSupported(false);
       }
@@ -228,7 +225,6 @@ export function useWebSR(artPlayerRef: React.RefObject<ArtPlayer | null>) {
         websrContentTypeRef.current
       ];
 
-      // // console.log(`WebSR已启用: ${modeText} | ${sizeText} | ${typeText}`);
       if (artPlayerRef.current) {
         artPlayerRef.current.notice.show = `超分已启用 (${modeText}, ${sizeText}, ${typeText})`;
       }
@@ -274,8 +270,6 @@ export function useWebSR(artPlayerRef: React.RefObject<ArtPlayer | null>) {
         artPlayerRef.current.video.style.opacity = '1';
         artPlayerRef.current.video.style.position = '';
       }
-
-      // // console.log('WebSR已清理');
     } catch (err) {
       console.warn('清理WebSR时出错:', err);
     }

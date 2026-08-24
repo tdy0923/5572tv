@@ -75,7 +75,6 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
 
       // 防止重复请求
       if (fetchingRef.current.has(cacheKey)) {
-        //         console.log('[GlobalCache] 首页数据请求正在进行中，跳过');
         return;
       }
 
@@ -84,13 +83,11 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
       const isStale = now - homeLastFetch > STALE_TIME;
 
       if (!forceRefresh && homeData && !isStale) {
-        //         console.log('[GlobalCache] 首页数据新鲜，无需刷新');
         return; // 数据新鲜，无需刷新
       }
 
       // 如果有缓存数据且非强制刷新，先返回缓存（SWR 策略）
       if (homeData && !forceRefresh) {
-        //         console.log('[GlobalCache] 首页数据过期，后台静默更新...');
         // 数据过期，后台静默更新（不显示 loading）
         fetchingRef.current.add(cacheKey);
 
@@ -101,7 +98,6 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
             setHomeData(freshData);
             setHomeLastFetch(Date.now());
           });
-          //           console.log('[GlobalCache] 首页数据后台更新完成');
         } catch (error) {
           console.error('[GlobalCache] 后台更新首页数据失败:', error);
         } finally {
@@ -111,7 +107,6 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
       }
 
       // 无缓存或强制刷新，显示 loading
-      //       console.log('[GlobalCache] 首页数据加载中...');
       fetchingRef.current.add(cacheKey);
       setHomeLoading(true);
       setHomeError(null);
@@ -123,7 +118,6 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
           setHomeData(freshData);
           setHomeLastFetch(Date.now());
         });
-        //         console.log('[GlobalCache] 首页数据加载完成');
       } catch (error) {
         setHomeError(error instanceof Error ? error.message : '加载失败');
         console.error('[GlobalCache] 首页数据加载失败:', error);
@@ -151,7 +145,6 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
     setHomeData(null);
     setHomeLastFetch(0);
     setHomeError(null);
-    //     console.log('[GlobalCache] 所有缓存已清除');
   }, []);
 
   // === Context Value ===

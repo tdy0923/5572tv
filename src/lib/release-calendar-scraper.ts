@@ -294,7 +294,6 @@ export async function scrapeMovieReleases(
     const html = await response.text();
     const items = parseMovieHTML(html);
 
-    //     console.log(`✅ 电影数据抓取成功: ${items.length} 部`);
     return items;
   } catch (error) {
     console.error(
@@ -363,7 +362,6 @@ export async function scrapeTVReleases(
     const html = await response.text();
     const items = parseTVHTML(html);
 
-    //     console.log(`✅ 电视剧数据抓取成功: ${items.length} 部`);
     return items;
   } catch (error) {
     console.error(
@@ -688,7 +686,6 @@ export async function scrapeMovieHomepage(
     const html = await response.text();
     const items = parseHomepageHTML(html, 'movie');
 
-    //     console.log(`✅ 电影首页数据抓取成功: ${items.length} 部`);
     return items;
   } catch (error) {
     console.error(
@@ -753,7 +750,6 @@ export async function scrapeTVHomepage(
     const html = await response.text();
     const items = parseHomepageHTML(html, 'tv');
 
-    //     console.log(`✅ 电视剧首页数据抓取成功: ${items.length} 部`);
     return items;
   } catch (error) {
     console.error(
@@ -779,36 +775,26 @@ export async function scrapeTVHomepage(
  */
 export async function scrapeAllReleases(): Promise<ReleaseCalendarItem[]> {
   try {
-    //     console.log('📅 开始抓取发布日历数据...');
-
     // 抓取电影时间表数据
-    //     console.log('🎬 抓取电影时间表数据...');
     const movies = await scrapeMovieReleases();
-    //     console.log(`✅ 电影时间表数据抓取完成: ${movies.length} 部`);
 
     // 添加随机延迟
     await randomDelay(2000, 4000);
 
     // 抓取电影首页数据（包含2026年1月）
-    //     console.log('🎬 抓取电影首页数据（2026年）...');
     const moviesHomepage = await scrapeMovieHomepage();
-    //     console.log(`✅ 电影首页数据抓取完成: ${moviesHomepage.length} 部`);
 
     // 添加随机延迟
     await randomDelay(2000, 4000);
 
     // 抓取电视剧时间表数据
-    //     console.log('📺 抓取电视剧时间表数据...');
     const tvShows = await scrapeTVReleases();
-    //     console.log(`✅ 电视剧时间表数据抓取完成: ${tvShows.length} 部`);
 
     // 添加随机延迟
     await randomDelay(2000, 4000);
 
     // 抓取电视剧首页数据（包含2026年1月）
-    //     console.log('📺 抓取电视剧首页数据（2026年）...');
     const tvHomepage = await scrapeTVHomepage();
-    //     console.log(`✅ 电视剧首页数据抓取完成: ${tvHomepage.length} 部`);
 
     // 合并所有数据，去重（按title和releaseDate去重）
     const allItems = [...movies, ...moviesHomepage, ...tvShows, ...tvHomepage];
@@ -819,8 +805,6 @@ export async function scrapeAllReleases(): Promise<ReleaseCalendarItem[]> {
           (t) => t.title === item.title && t.releaseDate === item.releaseDate,
         ),
     );
-
-    //     console.log(`🎉 总共抓取到 ${allItems.length} 条发布数据（去重后 ${uniqueItems.length} 条）`);
 
     return uniqueItems;
   } catch (error) {

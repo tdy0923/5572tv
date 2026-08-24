@@ -61,7 +61,6 @@ export async function createFileSystemWriteStream(
     });
   } catch (err: any) {
     if (err.name === 'AbortError') {
-      //       console.log('用户取消了文件保存');
       return null;
     }
     console.error('File System Access API 错误:', err);
@@ -132,7 +131,6 @@ export async function createAdaptiveWriteStream(
 ): Promise<WritableStream<Uint8Array>> {
   // 1. 优先尝试 File System Access API（Chrome/Edge）
   if (supportsFileSystemAccess()) {
-    //     console.log('使用 File System Access API');
     const stream = await createFileSystemWriteStream(filename, estimatedSize);
     if (stream) return stream;
   }
@@ -143,7 +141,6 @@ export async function createAdaptiveWriteStream(
     navigator.serviceWorker.controller &&
     window.isSecureContext
   ) {
-    //     console.log('Service Worker 可用，尝试使用流式下载');
     // 这里返回 null，让调用方使用原始的 stream-saver 实现
     throw new Error('USE_SERVICE_WORKER');
   }

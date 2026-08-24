@@ -102,7 +102,6 @@ export async function createInviteCode(
   // 添加到创建者的邀请码列表
   await client.sAdd(`admin:${createdBy}:invites`, code);
 
-  //   console.log(
   //     `[InviteCode] 创建邀请码: ${code}, 创建者: ${createdBy}, 最大使用次数: ${maxUses}`,
   //   );
 
@@ -186,14 +185,12 @@ export async function consumeInviteCode(
   const currentUses = Number(inviteData.currentUses);
   const maxUses = Number(inviteData.maxUses);
 
-  //   console.log(
   //     `[InviteCode] 使用邀请码: ${code}, 用户: ${username}, 当前使用次数: ${currentUses + 1}/${maxUses}`,
   //   );
 
   // 如果达到最大使用次数，从活跃集合中移除
   if (currentUses + 1 >= maxUses) {
     await client.sRem('invites:active', code);
-    //     console.log(`[InviteCode] 邀请码已达到最大使用次数: ${code}`);
   }
 
   return true;
@@ -310,7 +307,6 @@ export async function toggleInviteCode(
   // 如果禁用，从活跃集合中移除；如果启用且未用完未过期，添加到活跃集合
   if (disabled) {
     await client.sRem('invites:active', code);
-    //     console.log(`[InviteCode] 禁用邀请码: ${code}`);
   } else {
     const now = Date.now();
     const expiresAt = Number(inviteData.expiresAt);
@@ -319,7 +315,6 @@ export async function toggleInviteCode(
 
     if (now <= expiresAt && currentUses < maxUses) {
       await client.sAdd('invites:active', code);
-      //       console.log(`[InviteCode] 启用邀请码: ${code}`);
     }
   }
 
@@ -353,8 +348,6 @@ export async function removeInviteCode(code: string): Promise<boolean> {
 
   // 删除使用者列表
   await client.del(`invite:${code}:users`);
-
-  //   console.log(`[InviteCode] 删除邀请码: ${code}`);
 
   return true;
 }
@@ -426,6 +419,5 @@ export async function cleanupOldInviteCodes(): Promise<number> {
     }
   }
 
-  //   console.log(`[InviteCode] 清理了 ${deletedCount} 个超过30天的旧邀请码`);
   return deletedCount;
 }

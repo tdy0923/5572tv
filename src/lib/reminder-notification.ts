@@ -21,9 +21,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   const result = await Notification.requestPermission();
   try {
     localStorage.setItem(PERMISSION_ASKED_KEY, '1');
-  } catch (e) {
-    //     console.log('[Notification] Storage error:', e);
-  }
+  } catch (e) {}
   return result;
 }
 
@@ -33,9 +31,7 @@ export function shouldAskPermission(): boolean {
   if (Notification.permission !== 'default') return false;
   try {
     return !localStorage.getItem(PERMISSION_ASKED_KEY);
-  } catch (e) {
-    //     console.log('[Notification] Storage error:', e);
-  }
+  } catch (e) {}
   return true;
 }
 
@@ -45,7 +41,6 @@ function getNotifiedSet(): Set<string> {
     if (!raw) return new Set();
     return new Set(JSON.parse(raw) as string[]);
   } catch (e) {
-    //     console.log('[Notification] Storage error:', e);
     return new Set();
   }
 }
@@ -57,9 +52,7 @@ function markNotified(key: string) {
     const arr = Array.from(set);
     if (arr.length > 200) arr.splice(0, arr.length - 200);
     localStorage.setItem(NOTIFIED_KEY, JSON.stringify(arr));
-  } catch (e) {
-    //     console.log('[Notification] Storage error:', e);
-  }
+  } catch (e) {}
 }
 
 export function showReminderNotification(
@@ -96,13 +89,9 @@ export function showReminderNotification(
     setTimeout(() => {
       try {
         notification.close();
-      } catch (e) {
-        //         console.log('[Notification] Storage error:', e);
-      }
+      } catch (e) {}
     }, 15000);
-  } catch (e) {
-    //     console.log('[Notification] Storage error:', e);
-  }
+  } catch (e) {}
 }
 
 export function sendNewReleaseNotifications(
