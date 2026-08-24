@@ -35,7 +35,8 @@ const getApiBase = () => {
 
 // 获取短剧分类列表
 export async function getShortDramaCategories(): Promise<ShortDramaCategory[]> {
-  const cacheKey = getCacheKey('categories', {});
+  // v2：分类体系重构后强制旧缓存失效；缩短缓存到10分钟，及时反映分类变更
+  const cacheKey = getCacheKey('categories-v2', {});
 
   try {
     // 检查缓存

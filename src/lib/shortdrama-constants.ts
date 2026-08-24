@@ -92,7 +92,7 @@ export const EXCLUDE_KEYWORDS = [
 
 // 缓存时间配置（秒）- 单一数据源，服务端和客户端统一使用
 export const SHORTDRAMA_CACHE_SECONDS = {
-  categories: 4 * 60 * 60, // 分类4小时（很少变化）
+  categories: 10 * 60, // 分类10分钟（及时反映分类调整）
   lists: 2 * 60 * 60, // 列表2小时（更新频繁）
   search: 1 * 60 * 60, // 搜索1小时
   recommend: 1 * 60 * 60, // 推荐1小时（经常更新）
