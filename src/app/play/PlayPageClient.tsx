@@ -1205,13 +1205,29 @@ function PlayPageClient() {
               ? source.episodes[1]
               : source.episodes[0];
 
+          // 已是内部代理 URL（预告片 /api/video-proxy、或其他 proxy 包装）不再二次包 m3u8 代理，
+          // 否则会形成 /api/proxy/m3u8?url=/api/video-proxy?... 的双重代理死链（400）
+          const isInternalProxyUrl =
+            episodeUrl.startsWith('/api/video-proxy') ||
+            episodeUrl.startsWith('/api/proxy');
+
           // 仅测试连通性和响应时间
           const startTime = performance.now();
-          // 经代理测速：与真实播放路径一致，且能正确识别 404/403 死链
-          await fetch(`/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`, {
-            method: 'HEAD',
-            signal: AbortSignal.timeout(3000), // 3秒超时
-          });
+          if (isInternalProxyUrl) {
+            // 直接探测内部代理（GET 拉取头部字节，验证可达）
+            await fetch(episodeUrl, {
+              signal: AbortSignal.timeout(3000),
+            });
+          } else {
+            // 经代理测速：与真实播放路径一致，且能正确识别 404/403 死链
+            await fetch(
+              `/api/proxy/m3u8?url=${encodeURIComponent(episodeUrl)}`,
+              {
+                method: 'HEAD',
+                signal: AbortSignal.timeout(3000), // 3秒超时
+              },
+            );
+          }
           const pingTime = performance.now() - startTime;
 
           return {
