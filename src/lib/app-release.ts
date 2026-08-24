@@ -6,7 +6,7 @@
  */
 export const APP_RELEASE = {
   version: '1.14.0',
-  buildNumber: 2008,
+  buildNumber: 2009,
   releaseNotes:
     '5572 影视 v1.14.0 更新内容：\n\n' +
     '1. 修复播放失败黑屏/无限加载（增加错误提示与失败回调）\n' +
