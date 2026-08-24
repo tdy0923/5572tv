@@ -23,6 +23,7 @@ export function NavActionCluster({
   compact = false,
 }: NavActionClusterProps) {
   const actionHeight = compact ? 'h-10' : 'h-10';
+  // 图标用 strokeWidth 2.5 提升小尺寸清晰度，避免线条过细看不清楚
   const iconClass = 'h-7 w-7';
   const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
 
@@ -33,9 +34,11 @@ export function NavActionCluster({
           onClick={onAIButtonClick}
           className={`relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] transition-all duration-200 hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95`}
           aria-label='AI 推荐'
+          title='AI 推荐'
         >
           <Sparkles
             className={`${iconClass} transition-transform duration-300`}
+            strokeWidth={2.5}
           />
         </button>
       )}
@@ -48,6 +51,7 @@ export function NavActionCluster({
         >
           <Bell
             className={`${iconClass} ${hasUnreadAnnouncement ? 'text-amber-500' : 'text-gray-500 dark:text-gray-300'}`}
+            strokeWidth={2.5}
           />
           {hasUnreadAnnouncement && (
             <span className='absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#0c0f14]' />
