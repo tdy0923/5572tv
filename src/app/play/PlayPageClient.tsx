@@ -251,6 +251,8 @@ function PlayPageClient() {
   const streamSearchRef = useRef<
     import('@/app/play/hooks/useSourceSearch').StreamSearchHandle | null
   >(null);
+  // 首命中已开播标记：防止后续优选流程覆盖正在播放的流（反复重启根因）
+  const earlyStartedRef = useRef(false);
 
   // 获取服务器配置（下载功能开关）
 
@@ -1669,6 +1671,7 @@ function PlayPageClient() {
       }
       // 切换视频时重置源重试状态，避免上一部视频的失败标记影响当前播放
       resetSourceState();
+      earlyStartedRef.current = false;
       setLoadingStage(
         currentSource && currentId ? 'fetching' : 'searching',
         currentSource && currentId
@@ -1842,6 +1845,7 @@ function PlayPageClient() {
         if (first && first.episodes?.length && !currentSource && !detailData) {
           // 立即开播首个命中；prefer 跳过（后续失败路径已有重试机制）
           detailData = first;
+          earlyStartedRef.current = true; // 🔒 更优线路只进候选列表，不覆盖当前播放
           needPreferRef.current = false;
           setNeedPrefer(false);
           sourcesInfo = collected.slice();
@@ -1925,8 +1929,11 @@ function PlayPageClient() {
         }
       }
 
-      // 未指定源和 id 或需要优选，且开启优选开关
+      // 未指定源和 id 或需要优选，且开启优选开关。
+      // 🔒 流式首命中已开播时跳过优选：更优线路只进候选列表（换源面板可见），
+      // 绝不覆盖正在播放的流——这是"连续重启几次才稳定"问题的根因
       if (
+        !earlyStartedRef.current &&
         (!currentSource || !currentId || needPreferRef.current) &&
         optimizationEnabled
       ) {

@@ -129,6 +129,9 @@ export default function ShortDramaVerticalPlayer({
 
   // 已预热过的下一集URL集合（防重复预热）
   const warmedUrlsRef = useRef<Set<string>>(new Set());
+
+  // 当前集下标镜像：区分"用户切集"与"候选数组重排噪声"
+  const lastEpIdxRef = useRef<number>(-1);
   const touchStartRef = useRef({ x: 0, y: 0, time: 0 });
   const lastTapRef = useRef(0);
   const controlsTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -367,20 +370,27 @@ export default function ShortDramaVerticalPlayer({
         : url;
     const effectiveUrl = resolvePlaybackUrl(activeUrl);
 
-    // 双保险：同一 URL 已在播（父组件重渲染导致 effect 重跑）→ 不销毁重建。
-    // 健康播放中且目标地址未变时，忽略候选链数组身份变化带来的重建，
-    // 防止后台 otherSources 更新把正在播的流打断
+    // 🛡️ 健康播放保护：
+    // - 用户切集（currentIndex 变化）→ 正常放行换源加载
+    // - 轮转/优选跳转（rotatingRef）→ 正常放行
+    // - 其余情况（父组件重渲染、候选数组按权重重排导致下标漂移）→
+    //   一律忽略，绝不因后台数据更新打断正在播放的流
+    const isEpisodeChange = currentIndex !== lastEpIdxRef.current;
     if (
       healthyLockedRef.current &&
-      hlsRef.current &&
-      lastLoadedUrlRef.current === effectiveUrl &&
-      !rotatingRef.current
+      !isEpisodeChange &&
+      !rotatingRef.current &&
+      hlsRef.current
     ) {
       return;
     }
-    if (!(hlsRef.current && lastLoadedUrlRef.current === effectiveUrl)) {
-      healthyLockedRef.current = false;
+    if (!isEpisodeChange) {
+      // 非切集路径进入新加载（首播/轮转）→ 重置健康锁由本次加载重新确立
+      if (!(hlsRef.current && lastLoadedUrlRef.current === effectiveUrl)) {
+        healthyLockedRef.current = false;
+      }
     }
+    lastEpIdxRef.current = currentIndex;
     lastLoadedUrlRef.current = effectiveUrl;
 
     // 异步标记加载态，避免 effect 内同步 setState 触发级联渲染
