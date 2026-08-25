@@ -461,7 +461,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
           </div>
 
           {/* 集数网格 */}
-          <div className='flex flex-wrap gap-2 sm:gap-3 overflow-y-auto flex-1 content-start pb-4'>
+          <div className='flex flex-wrap gap-2 sm:gap-3 overflow-y-auto flex-1 min-h-0 content-start pb-4'>
             {(() => {
               const len = currentEnd - currentStart + 1;
               const episodes = Array.from({ length: len }, (_, i) =>
@@ -530,7 +530,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
 
       {/* 换源 Tab 内容 */}
       {activeTab === 'sources' && (
-        <div className='flex flex-col h-full mt-4'>
+        <div className='flex flex-col h-full min-h-0 mt-4'>
           {sourceSearchLoading && (
             <div className='flex items-center justify-center py-8'>
               <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-green-500'></div>
