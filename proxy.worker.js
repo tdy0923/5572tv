@@ -114,16 +114,17 @@ async function handleM3U8Proxy(request, url) {
           });
         } catch {}
       }
-      // 仍403 → 公益中继池接力（独立出口IP池，轮换放大穿透率）
-      if (response.status === 403) {
-        try {
-          await response.body?.cancel();
-        } catch {}
-        const relayed = await fetchViaRelays(targetUrl, buildHeaders(source));
-        if (relayed) {
-          response = relayed;
-          relayUsed = true;
-        }
+    }
+
+    // 仍 403 → 公益中继池接力（独立出口IP池，轮换放大穿透率，不论是否名单内）
+    if (response.status === 403) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      const relayed = await fetchViaRelays(targetUrl, buildHeaders(source));
+      if (relayed) {
+        response = relayed;
+        relayUsed = true;
       }
     }
 
@@ -381,20 +382,23 @@ async function handleSegmentProxy(request, url) {
       signal: AbortSignal.timeout(10000),
     });
 
-    // 地域封锁CDN：403时重试（出口IP池概率穿透）→ 公益中继池兜底
-    if (response.status === 403 && isGeoBlockedTarget(targetUrl)) {
+    // 403 时统一重试 + 公益中继池兜底（不论是否在 geo-blocked 名单内）
+    if (response.status === 403) {
       try {
         await response.body?.cancel();
       } catch {}
-      for (let i = 0; i < 3 && response.status === 403; i++) {
-        await new Promise((r) => setTimeout(r, 120 * (i + 1)));
-        try {
-          response = await fetch(targetUrl, {
-            headers: buildHeaders(source || targetOrigin),
-            redirect: 'follow',
-            signal: AbortSignal.timeout(15000),
-          });
-        } catch {}
+      // 名单内的域名额外加重试（出口IP池概率穿透）
+      if (isGeoBlockedTarget(targetUrl)) {
+        for (let i = 0; i < 3 && response.status === 403; i++) {
+          await new Promise((r) => setTimeout(r, 120 * (i + 1)));
+          try {
+            response = await fetch(targetUrl, {
+              headers: buildHeaders(source || targetOrigin),
+              redirect: 'follow',
+              signal: AbortSignal.timeout(15000),
+            });
+          } catch {}
+        }
       }
       if (response.status === 403) {
         try {
@@ -774,7 +778,9 @@ const GEO_BLOCKED_CDNS = [
   'vvvip-plays',
   'high20-playback',
   'high23-playback',
+  'high26-playback',
   'yzzy32-play',
+  'yzzy28-play',
   'power34play',
   'ijycnd.com',
 ];

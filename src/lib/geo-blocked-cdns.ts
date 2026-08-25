@@ -10,7 +10,9 @@ export const GEO_BLOCKED_CDNS = [
   'vvvip-plays',
   'high20-playback',
   'high23-playback',
+  'high26-playback',
   'yzzy32-play',
+  'yzzy28-play',
   'power34play',
   'ijycnd.com',
 ];
