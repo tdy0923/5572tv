@@ -5300,7 +5300,7 @@ function PlayPageClient() {
 
                 {/* 选集和换源 - 移动端可折叠以腾出播放器空间 */}
                 <div
-                  className={`md:overflow-hidden transition-all duration-300 ease-in-out ${
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     isEpisodeSelectorCollapsed
                       ? 'max-h-0 opacity-0 md:max-h-0 lg:hidden lg:opacity-0 lg:scale-95 md:col-span-1'
                       : 'max-h-[50vh] min-h-0 md:max-h-none lg:max-h-none lg:h-full lg:opacity-100 lg:scale-100 md:col-span-1'
