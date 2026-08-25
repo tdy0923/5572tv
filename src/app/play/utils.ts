@@ -53,6 +53,37 @@ export function sanitizePlaybackRate(value: unknown): number {
   return allowedRates.includes(value) ? value : 1.0;
 }
 
+// ---------------------------------------------------------------------------
+// Volume persistence
+// ---------------------------------------------------------------------------
+const PLAYER_VOLUME_KEY = '5572tv_player_volume';
+
+export function sanitizeVolume(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0.7;
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
+}
+
+export function loadPlayerVolume(): number {
+  if (typeof window === 'undefined') return 0.7;
+  try {
+    const raw = localStorage.getItem(PLAYER_VOLUME_KEY);
+    if (!raw) return 0.7;
+    return sanitizeVolume(Number(raw));
+  } catch {
+    return 0.7;
+  }
+}
+
+export function savePlayerVolume(value: number): void {
+  try {
+    localStorage.setItem(PLAYER_VOLUME_KEY, sanitizeVolume(value).toString());
+  } catch {
+    // ignore
+  }
+}
+
 export function loadPlaybackRate(): number {
   if (typeof window === 'undefined') return 1.0;
   try {

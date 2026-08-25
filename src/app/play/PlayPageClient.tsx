@@ -49,11 +49,13 @@ import {
   escapeAudioTrackHtml,
   getHlsModule,
   loadPlaybackRate,
+  loadPlayerVolume,
   loadPreferredAudioLang,
   normalizeAudioLang,
   replacePlaybackUrlParams,
   resolveAudioTrackName,
   sanitizePlaybackRate,
+  savePlayerVolume,
   savePreferredAudioLang,
 } from './utils';
 
@@ -833,8 +835,8 @@ function PlayPageClient() {
     artPlayerRef,
     detail,
   });
-  // 上次使用的音量，默认 0.7
-  const lastVolumeRef = useRef<number>(0.7);
+  // 上次使用的音量，默认 0.7（已记忆用户上次调节的音量）
+  const lastVolumeRef = useRef<number>(loadPlayerVolume());
   // 用于清理 autoplay 首次交互的 document click 监听器
   const firstInteractionHandlerRef = useRef<(() => void) | null>(null);
   // 上次使用的播放速率，从 localStorage 恢复
@@ -2654,14 +2656,24 @@ function PlayPageClient() {
           container: artRef.current,
           url: videoUrl,
           poster: videoCover,
-          volume: 0.7,
+          volume: loadPlayerVolume(),
           isLive: false,
           // iOS设备需要静音才能自动播放，参考ArtPlayer源码处理
           muted: isIOS || isSafari,
           autoplay: true,
           pip: true,
           autoSize: false,
-          autoMini: false,
+          // 悬浮小窗播放：页面往下滚动时播放器缩成小窗跟随，可继续观看
+          autoMini: true,
+          autoMiniConfig: {
+            width: 400,
+            height: 240,
+            position: 'top right',
+            top: 70, // 避开顶部固定导航（64px）
+            right: 20,
+            playInMini: true,
+            dragging: true,
+          },
           screenshot: !isMobile, // 桌面端启用截图功能
           setting: true,
           loop: false,
@@ -4485,6 +4497,7 @@ function PlayPageClient() {
         });
         artPlayerRef.current.on('video:volumechange', () => {
           lastVolumeRef.current = artPlayerRef.current.volume;
+          savePlayerVolume(artPlayerRef.current.volume);
         });
         artPlayerRef.current.on('video:ratechange', () => {
           lastPlaybackRateRef.current = sanitizePlaybackRate(
