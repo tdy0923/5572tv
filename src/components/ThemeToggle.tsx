@@ -69,12 +69,12 @@ export function ThemeToggle() {
 
       {resolvedTheme === 'dark' ? (
         <Sun
-          className='relative z-10 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
+          className='relative z-10 shrink-0 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
           strokeWidth={2.5}
         />
       ) : (
         <Moon
-          className='relative z-10 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
+          className='relative z-10 shrink-0 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
           strokeWidth={2.5}
         />
       )}

@@ -361,6 +361,11 @@
     border-color: var(--color-stroke);
     box-shadow: var(--shadow-2);
   }
+  /* 修复：inline-flex 容器内 SVG 图标被 flex-shrink 压缩成细条（如月亮/用户图标仅 10px 宽），
+     子元素禁止收缩，保证图标按 w-* 尺寸完整渲染 */
+  .ui-control-icon > svg {
+    flex-shrink: 0;
+  }
   .dark .ui-control-icon {
     background: var(--color-background-subtle);
     color: var(--color-foreground);
