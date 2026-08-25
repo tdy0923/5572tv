@@ -314,7 +314,7 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
     >
       {/* 💎 边缘光晕效果 */}
       <div
-        className='absolute inset-0 rounded-[20px] pointer-events-none'
+        className='absolute inset-0 rounded-2xl pointer-events-none'
         style={{
           background:
             'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 50%)',
@@ -808,7 +808,7 @@ export const DanmuSettingsPanel = memo(function DanmuSettingsPanel({
                     <button
                       key={color}
                       onClick={() => handleUpdate('color', color)}
-                      className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 ${
+                      className={`w-6 h-6 rounded-full transition-all duration-200 active:scale-95 ${
                         (settings.color || '#ffffff') === color
                           ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent scale-110'
                           : 'opacity-70 hover:opacity-100'

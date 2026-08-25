@@ -975,7 +975,7 @@ function VideoCard({
   return (
     <>
       <div
-        className='@container group relative w-full overflow-hidden rounded-[12px] bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 hover:scale-[1.03]'
+        className='@container group relative w-full overflow-hidden rounded-xl bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 '
         role='button'
         tabIndex={0}
         onClick={handleClick}
@@ -1032,7 +1032,7 @@ function VideoCard({
       >
         {/* 海报容器 */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative aspect-[2/3] overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
           style={
             {
               WebkitUserSelect: 'none',
@@ -1348,12 +1348,12 @@ function VideoCard({
                 return shouldShowBell ? (
                   <BellRing
                     size={18}
-                    className='fill-orange-500 stroke-orange-500 transition-all duration-300 hover:scale-110 hover:fill-orange-600 hover:stroke-orange-600'
+                    className='fill-orange-500 stroke-orange-500 transition-all duration-300 active:scale-95 hover:fill-orange-600 hover:stroke-orange-600'
                   />
                 ) : (
                   <Heart
                     size={18}
-                    className='fill-red-500 stroke-red-500 transition-all duration-300 hover:scale-110 hover:fill-red-600 hover:stroke-red-600'
+                    className='fill-red-500 stroke-red-500 transition-all duration-300 active:scale-95 hover:fill-red-600 hover:stroke-red-600'
                   />
                 );
               })()}
@@ -1368,7 +1368,7 @@ function VideoCard({
             !isUpcoming &&
             !(from === 'favorite' && actualEpisodes === 99) && (
               <div
-                className='absolute top-2 left-2 z-30 flex items-stretch overflow-hidden rounded-md transition-all duration-300 ease-out group-hover:scale-105'
+                className='absolute top-2 left-2 z-30 flex items-stretch overflow-hidden rounded-md transition-all duration-300 ease-out group-'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1407,7 +1407,7 @@ function VideoCard({
             actualYear !== 'unknown' &&
             actualYear.trim() !== '' && (
               <div
-                className={`absolute left-2 z-30 flex items-center rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-hover:scale-105 ${
+                className={`absolute left-2 z-30 flex items-center rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group- ${
                   actualEpisodes &&
                   actualEpisodes > 1 &&
                   !isUpcoming &&
@@ -1434,7 +1434,7 @@ function VideoCard({
           {/* 已完结徽章 - Netflix 风格 - 底部左侧 */}
           {remarks && isSeriesCompleted(remarks) && (
             <div
-              className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-hover:scale-105'
+              className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1467,7 +1467,7 @@ function VideoCard({
 
               return (
                 <div
-                  className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium transition-all duration-300 ease-out group-hover:scale-105'
+                  className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium transition-all duration-300 ease-out group-'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1489,7 +1489,7 @@ function VideoCard({
           {/* 评分徽章 - 动态颜色 - 🎯 使用容器查询替代媒体查询 */}
           {config.showRating && rate && ratingBadgeStyle && (
             <div
-              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-hover:scale-110 @[140px]:top-1 @[140px]:right-1 @[140px]:h-8 @[140px]:w-8`}
+              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-active:scale-95 @[140px]:top-1 @[140px]:right-1 @[140px]:h-8 @[140px]:w-8`}
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1534,7 +1534,7 @@ function VideoCard({
               }}
             >
               <div
-                className='flex h-7 w-7 items-center justify-center rounded-full bg-black/62 text-white transition-all duration-300 ease-out hover:scale-[1.05] hover:bg-black/78'
+                className='flex h-7 w-7 items-center justify-center rounded-full bg-black/62 text-white transition-all duration-300 ease-out  hover:bg-black/78'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1597,7 +1597,7 @@ function VideoCard({
                   >
                     {/* 源数量徽章 */}
                     <div
-                      className='flex cursor-pointer items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white transition-all duration-300 hover:scale-105'
+                      className='flex cursor-pointer items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white transition-all duration-300 '
                       style={
                         {
                           WebkitUserSelect: 'none',
@@ -1655,7 +1655,7 @@ function VideoCard({
                 className='flex items-center gap-1.5 px-3 py-1.5 rounded-md
                   bg-black/70 backdrop-blur-sm
                   shadow-lg text-white/90
-                  hover:bg-black/80 hover:scale-105 hover:shadow-md
+                  hover:bg-black/80  hover:shadow-md
                   transition-all duration-300 ease-out
                   border border-white/10'
                 aria-label='AI问片'
@@ -1952,7 +1952,7 @@ const PosterSpotlight = memo(function PosterSpotlight() {
   return (
     <div
       ref={rootRef}
-      className='pointer-events-none absolute inset-0 overflow-hidden rounded-[12px]'
+      className='pointer-events-none absolute inset-0 overflow-hidden rounded-xl'
     >
       <div
         ref={blobRef}

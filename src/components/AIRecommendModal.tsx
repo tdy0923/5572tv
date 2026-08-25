@@ -1025,7 +1025,7 @@ export default function AIRecommendModal({
                           message: '这部影片讲了什么故事？请详细介绍一下剧情',
                         })
                       }
-                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg hover:scale-105 transition-all group'
+                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-lg  transition-all group'
                       disabled={isPending}
                     >
                       <div className='text-3xl mb-2'>📖</div>
@@ -1045,7 +1045,7 @@ export default function AIRecommendModal({
                             '这部影片评分怎么样？豆瓣和TMDB评分是多少？演员阵容如何？',
                         })
                       }
-                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-yellow-500 dark:hover:border-yellow-400 hover:shadow-lg hover:scale-105 transition-all group'
+                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-yellow-500 dark:hover:border-yellow-400 hover:shadow-lg  transition-all group'
                       disabled={isPending}
                     >
                       <div className='text-3xl mb-2'>⭐</div>
@@ -1065,7 +1065,7 @@ export default function AIRecommendModal({
                             '有没有类似的影片推荐？请推荐5部相似的电影或电视剧',
                         })
                       }
-                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 hover:shadow-lg hover:scale-105 transition-all group'
+                      className='p-4 text-center bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 hover:shadow-lg  transition-all group'
                       disabled={isPending}
                     >
                       <Clapperboard className='w-8 h-8 mx-auto mb-2' />

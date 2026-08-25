@@ -34,7 +34,7 @@ const LoadingScreen = memo(function LoadingScreen({
         <div className='text-center max-w-md mx-auto px-6'>
           {/* 动画影院图标 */}
           <div className='relative mb-8'>
-            <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
+            <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform  transition-transform duration-300'>
               <div className='text-white text-4xl'>
                 {loadingStage === 'searching' && '🔍'}
                 {loadingStage === 'preferring' && '⚡'}

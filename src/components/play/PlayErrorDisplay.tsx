@@ -50,7 +50,7 @@ export default function PlayErrorDisplay({
       <div className='text-center max-w-md mx-auto px-6'>
         {/* 错误图标 */}
         <div className='relative mb-8'>
-          <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
+          <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform  transition-transform duration-300'>
             <Frown className='w-12 h-12 text-white' />
             {/* 脉冲效果 */}
             <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
@@ -93,7 +93,7 @@ export default function PlayErrorDisplay({
                 ? router.push(`/search?q=${encodeURIComponent(videoTitle)}`)
                 : router.back()
             }
-            className='w-full px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl'
+            className='w-full px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transform  transition-all duration-200 shadow-lg hover:shadow-xl'
           >
             {videoTitle ? '🔍 返回搜索' : '← 返回上页'}
           </button>

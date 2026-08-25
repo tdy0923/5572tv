@@ -184,7 +184,7 @@ export default function HomeInlineSearch({
                 onClick={() => goPlay(item)}
                 className='group block text-left focus:outline-none'
               >
-                <div className='mb-1.5 aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 transition-transform duration-200 group-hover:scale-105 dark:bg-gray-800'>
+                <div className='mb-1.5 aspect-[2/3] overflow-hidden rounded-lg bg-gray-100 transition-transform duration-200 group- dark:bg-gray-800'>
                   {item.poster && (
                     <img
                       src={resolveCardPosterUrl(item.poster)}

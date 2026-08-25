@@ -35,7 +35,7 @@ const BackToTopButton = memo(function BackToTopButton({
       {/* 脉冲光环 */}
       <div className='absolute inset-0 rounded-full border-2 border-white/30 animate-ping group-hover:opacity-0 transition-opacity duration-300'></div>
 
-      <ChevronUp className='w-6 h-6 text-white relative z-10 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-1' />
+      <ChevronUp className='w-6 h-6 text-white relative z-10 transition-all duration-300 group-active:scale-95 group-hover:-translate-y-1' />
     </button>
   );
 });

@@ -348,13 +348,13 @@ function ShortDramaCard({
         }}
       >
         {/* 封面图片 - 代理图片不能用next/image */}
-        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40'>
+        <div className='relative aspect-[2/3] w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40'>
           <img
             src={posterUrl}
             alt={drama.name}
             className={`h-full w-full object-cover transition-all duration-700 ease-out ${
               imageLoaded
-                ? 'opacity-100 blur-0 scale-100 group-hover:scale-105'
+                ? 'opacity-100 blur-0 scale-100 group-'
                 : 'opacity-0 blur-md scale-105'
             }`}
             referrerPolicy='no-referrer'
@@ -374,7 +374,7 @@ function ShortDramaCard({
           />
 
           <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/72 via-black/14 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100'>
-            <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/22 bg-white/88 text-black shadow-lg transition-transform duration-300 group-hover:scale-105'>
+            <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/22 bg-white/88 text-black shadow-lg transition-transform duration-300 group-'>
               <Play className='h-5 w-5 ml-0.5' fill='currentColor' />
             </div>
           </div>
@@ -383,7 +383,7 @@ function ShortDramaCard({
           <div className='absolute top-2 left-2 flex flex-col gap-1.5 z-10'>
             {/* 集数标识 - Netflix 统一风格 - 只在集数>1时显示 */}
             {showEpisodeCount && (
-              <div className='flex items-center overflow-hidden rounded-md shadow-lg transition-all duration-300 ease-out group-hover:scale-105 bg-black/70 backdrop-blur-sm px-2 py-0.5'>
+              <div className='flex items-center overflow-hidden rounded-md shadow-lg transition-all duration-300 ease-out group- bg-black/70 backdrop-blur-sm px-2 py-0.5'>
                 <span className='flex items-center text-[10px] font-medium text-white/80'>
                   {realEpisodeCount} 集
                 </span>
@@ -392,7 +392,7 @@ function ShortDramaCard({
 
             {/* 评分 - 只在评分大于0时显示 */}
             {drama.vote_average != null && Number(drama.vote_average) > 0 && (
-              <div className='flex items-center rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-hover:scale-105'>
+              <div className='flex items-center rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white shadow-lg backdrop-blur-sm transition-all duration-300 group-'>
                 <Star className='h-3 w-3 mr-0.5 fill-current' />
                 {Number(drama.vote_average).toFixed(1)}
               </div>
@@ -409,7 +409,7 @@ function ShortDramaCard({
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleToggleFavorite}
-            className='absolute bottom-1 right-1 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm sm:opacity-0 transition-all duration-300 group-hover:opacity-100 hover:scale-105 hover:bg-black/70 pointer-coarse:opacity-100'
+            className='absolute bottom-1 right-1 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/50 backdrop-blur-sm sm:opacity-0 transition-all duration-300 group-hover:opacity-100  hover:bg-black/70 pointer-coarse:opacity-100'
             aria-label={favorited ? '取消收藏' : '添加收藏'}
           >
             <Heart
@@ -441,7 +441,7 @@ function ShortDramaCard({
                 className='
                   flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                   bg-black/60 backdrop-blur-md
-                  hover:bg-black/80 hover:scale-105 hover:shadow-md
+                  hover:bg-black/80  hover:shadow-md
                   transition-all duration-300 ease-out
                   border border-white/10'
                 aria-label='AI问片'

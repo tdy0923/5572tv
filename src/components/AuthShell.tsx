@@ -86,7 +86,7 @@ export function AuthShell({
             <div className='max-w-md'>
               <div className='flex items-center gap-4'>
                 <div className='relative'>
-                  <div className='absolute -inset-3 rounded-3xl bg-[#f4c24d]/25 blur-2xl auth-logo-pulse dark:bg-[#f4c24d]/15' />
+                  <div className='absolute -inset-3 rounded-3xl bg-primary-500/25 blur-2xl auth-logo-pulse dark:bg-primary-500/15' />
                   <LogoMark size='lg'>{icon}</LogoMark>
                 </div>
                 <h2 className='text-4xl font-black tracking-tight text-gray-900 dark:text-white'>
@@ -105,7 +105,7 @@ export function AuthShell({
                     key={f.title}
                     className='group flex items-start gap-3 rounded-xl border border-gray-200/70 bg-white/50 p-3.5 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#f4c24d]/50 hover:shadow-[0_10px_30px_-12px_rgba(244,194,77,0.4)] dark:border-white/10 dark:bg-white/[0.04]'
                   >
-                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f4c24d]/15 text-[#d89c18] transition-transform duration-300 group-hover:scale-110 dark:text-[#f4c24d]'>
+                    <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-500/15 text-[#d89c18] transition-transform duration-300 group-active:scale-95 dark:text-[#f4c24d]'>
                       <f.icon className='h-5 w-5' />
                     </div>
                     <div>
@@ -133,7 +133,7 @@ export function AuthShell({
             <FluentFadeIn className='mb-6 lg:hidden'>
               <div className='flex flex-col items-center text-center'>
                 <div className='relative'>
-                  <div className='absolute -inset-3 rounded-3xl bg-[#f4c24d]/20 blur-2xl auth-logo-pulse dark:bg-[#f4c24d]/15' />
+                  <div className='absolute -inset-3 rounded-3xl bg-primary-500/20 blur-2xl auth-logo-pulse dark:bg-primary-500/15' />
                   <LogoMark size='md'>{icon}</LogoMark>
                 </div>
                 <h2 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white'>

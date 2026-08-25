@@ -59,7 +59,7 @@ export default function RemindersView({
   requireClearConfirmation,
 }: RemindersViewProps) {
   return (
-    <section className='mb-8 rounded-xl sm:rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
+    <section className='mb-8 rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
       <div className='mb-6 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>

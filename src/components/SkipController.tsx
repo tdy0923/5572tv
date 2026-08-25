@@ -1072,7 +1072,7 @@ export default function SkipController({
                   />
                   <button
                     onClick={markCurrentAsOpeningEnd}
-                    className='w-full px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 backdrop-blur-sm'
+                    className='w-full px-4 py-2 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg  backdrop-blur-sm'
                     title='标记当前播放时间为片头结束时间'
                   >
                     📍 标记当前时间
@@ -1160,7 +1160,7 @@ export default function SkipController({
                   />
                   <button
                     onClick={markCurrentAsEndingStart}
-                    className='w-full px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg hover:scale-105 backdrop-blur-sm'
+                    className='w-full px-4 py-2 bg-linear-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg  backdrop-blur-sm'
                     title='标记当前播放时间为片尾开始时间'
                   >
                     📍 标记当前时间
@@ -1237,13 +1237,13 @@ export default function SkipController({
             <div className='flex space-x-3 mt-6'>
               <button
                 onClick={handleSaveBatchSettings}
-                className='flex-1 px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-sm'
+                className='flex-1 px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl  backdrop-blur-sm'
               >
                 💾 保存智能配置
               </button>
               <button
                 onClick={handleCloseDialog}
-                className='flex-1 px-6 py-3 bg-linear-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-105 backdrop-blur-sm'
+                className='flex-1 px-6 py-3 bg-linear-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl  backdrop-blur-sm'
               >
                 <XCircle className='w-5 h-5' /> 取消
               </button>
@@ -1315,7 +1315,7 @@ export default function SkipController({
                 />
                 <button
                   onClick={handleCreatePreset}
-                  className='px-4 py-2.5 rounded-lg bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium transition-all shadow-md hover:shadow-lg hover:scale-105'
+                  className='px-4 py-2.5 rounded-lg bg-linear-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-medium transition-all shadow-md hover:shadow-lg '
                 >
                   以当前配置新建
                 </button>
@@ -1649,7 +1649,7 @@ export function SkipSettingsButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className='group flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/90 hover:bg-white/20 rounded-xl border border-white/30 hover:border-white/50 shadow-lg hover:shadow-md hover:scale-105 transition-all duration-300 ease-out'
+      className='group flex items-center gap-2 px-4 py-2 bg-white/10 dark:bg-gray-800/90 hover:bg-white/20 rounded-xl border border-white/30 hover:border-white/50 shadow-lg hover:shadow-md  transition-all duration-300 ease-out'
       title='跳过设置'
       style={{
         backdropFilter: 'blur(20px) saturate(180%)',

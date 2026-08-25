@@ -12,7 +12,7 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
   const entries = Object.entries(historyTimeline);
 
   return (
-    <section className='mb-8 overflow-hidden rounded-xl sm:rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md sm:p-5'>
+    <section className='mb-8 overflow-hidden rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md sm:p-5'>
       <div className='px-4 sm:px-0 pt-4 sm:pt-0 pb-1 flex items-center justify-between'>
         <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
           观看历史
@@ -33,7 +33,7 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
           {entries.map(([date, items]) => (
             <div key={date}>
               <div className='flex items-center gap-2 mb-2 px-1'>
-                <div className='w-2 h-2 rounded-full bg-[#f4c24d]' />
+                <div className='w-2 h-2 rounded-full bg-primary-500' />
                 <h3 className='text-sm font-medium text-gray-500 dark:text-gray-400'>
                   {date}
                 </h3>
@@ -51,7 +51,7 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
                           src={item.cover}
                           alt={item.title}
                           loading='lazy'
-                          className='w-full h-full object-cover group-hover:scale-105 transition-transform'
+                          className='w-full h-full object-cover group- transition-transform'
                         />
                       ) : (
                         <div className='w-full h-full flex items-center justify-center text-gray-400'>

@@ -171,7 +171,7 @@ export const WebSRSettingsPanel = memo(function WebSRSettingsPanel({
     >
       {/* 💎 边缘光晕效果 */}
       <div
-        className='absolute inset-0 rounded-[20px] pointer-events-none'
+        className='absolute inset-0 rounded-2xl pointer-events-none'
         style={{
           background:
             'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 50%)',

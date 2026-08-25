@@ -240,7 +240,7 @@ const DownloadEpisodeSelector: React.FC<DownloadEpisodeSelectorProps> = ({
                     ${
                       isSelected
                         ? 'bg-green-500 text-white shadow-lg shadow-green-500/25 dark:bg-green-600'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300 hover:scale-105 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300  dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                     }
                   `.trim()}
                   >

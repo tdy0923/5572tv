@@ -131,7 +131,7 @@ export default function FavoritesView({
     }
   };
   return (
-    <section className='mb-8 rounded-xl sm:rounded-[24px] border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
+    <section className='mb-8 rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
       <div className='mb-6 flex items-center justify-between'>
         <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
           我的收藏
@@ -253,7 +253,7 @@ export default function FavoritesView({
               />
               <button
                 onClick={handleCreateGroup}
-                className='px-3 py-2 text-sm font-medium rounded-lg bg-[#f4c24d] text-[#171717] hover:bg-[#dba52b] transition-colors'
+                className='px-3 py-2 text-sm font-medium rounded-lg bg-primary-500 text-[#171717] hover:bg-primary-600 transition-colors'
               >
                 创建
               </button>

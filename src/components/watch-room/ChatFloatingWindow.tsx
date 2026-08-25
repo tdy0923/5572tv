@@ -185,7 +185,7 @@ export default function ChatFloatingWindow() {
         {/* 房间信息按钮 */}
         <button
           onClick={() => setShowRoomInfo(true)}
-          className='group relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-indigo-500 text-white shadow-2xl transition-all hover:scale-110 hover:bg-indigo-600 active:scale-95'
+          className='group relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-indigo-500 text-white shadow-2xl transition-all active:scale-95 hover:bg-indigo-600 active:scale-95'
           aria-label='房间信息'
           title='房间信息'
         >
@@ -195,7 +195,7 @@ export default function ChatFloatingWindow() {
         {/* 聊天按钮 */}
         <button
           onClick={() => setIsOpen(true)}
-          className='group relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-2xl transition-all hover:scale-110 hover:bg-green-600 active:scale-95'
+          className='group relative flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-2xl transition-all active:scale-95 hover:bg-green-600 active:scale-95'
           aria-label='打开聊天'
           title='聊天'
         >

@@ -38,7 +38,7 @@ export default function VideoCoverDisplay({
     <div className='md:block md:order-first md:col-span-1'>
       <div className='md:py-4 md:pr-6'>
         {/* 移动端：顶部通栏海报（水平居中，宽高比 2/3 但限宽），点击可放大；桌面端保持左侧列 */}
-        <div className='mx-auto max-w-[220px] md:mx-0 md:max-w-none md:w-auto group relative flex aspect-[2/3] w-full md:w-auto items-center justify-center overflow-hidden rounded-[12px] border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 to-gray-200 shadow-md dark:border-gray-700 dark:from-gray-800 dark:to-gray-700'>
+        <div className='mx-auto max-w-[220px] md:mx-0 md:max-w-none md:w-auto group relative flex aspect-[2/3] w-full md:w-auto items-center justify-center overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-linear-to-br from-gray-100 to-gray-200 shadow-md dark:border-gray-700 dark:from-gray-800 dark:to-gray-700'>
           {coverSrc ? (
             <>
               <button

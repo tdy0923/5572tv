@@ -185,7 +185,7 @@ export default function ModernNav({
                             active
                               ? 'text-[#171717] dark:text-[#fff6de]'
                               : 'text-gray-600 dark:text-gray-400 group-hover:text-[#171717] dark:group-hover:text-gray-100'
-                          } ${active ? 'scale-110' : 'group-hover:scale-110'}`}
+                          } ${active ? 'scale-110' : 'group-active:scale-95'}`}
                         />
                       </div>
 
