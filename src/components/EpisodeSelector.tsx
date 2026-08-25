@@ -567,7 +567,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
           {!sourceSearchLoading &&
             !sourceSearchError &&
             availableSources.length > 0 && (
-              <div className='flex-1 overflow-y-auto space-y-2 sm:space-y-3 pb-20'>
+              <div className='flex-1 overflow-y-auto min-h-0 space-y-2 sm:space-y-3 pb-20'>
                 {availableSources
                   .sort((a, b) => {
                     const aIsCurrent =
