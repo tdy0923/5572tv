@@ -49,6 +49,8 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
           if (categories.isNotEmpty) {
             _selectedCategoryId = categories.first['type_id'] as int?;
             _loadDramas(_selectedCategoryId);
+          } else {
+            _error = '暂无短剧分类，请稍后重试';
           }
         });
       }
@@ -144,7 +146,6 @@ class _ShortDramaScreenState extends State<ShortDramaScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    _buildCategoryChip('全部', null, isDark),
                     ..._categories.map((cat) => _buildCategoryChip(
                           cat['type_name'] ?? '',
                           cat['type_id'] as int?,

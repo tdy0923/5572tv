@@ -35,7 +35,7 @@ class SearchResult {
   /// 从JSON创建SearchResult
   factory SearchResult.fromJson(Map<String, dynamic> json) {
     return SearchResult(
-      id: json['id'] ?? '',
+      id: '${json['id'] ?? ''}',
       title: json['title'] ?? '',
       poster: json['poster'] ?? '',
       episodes: json['episodes'] != null 
@@ -47,7 +47,7 @@ class SearchResult {
       source: json['source'] ?? '',
       sourceName: json['source_name'] ?? '',
       class_: json['class'],
-      year: json['year'] ?? '',
+      year: '${json['year'] ?? ''}',
       desc: json['desc'],
       typeName: json['type_name'],
       doubanId: json['douban_id'],
