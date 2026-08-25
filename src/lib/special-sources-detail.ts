@@ -1,7 +1,5 @@
 /* eslint-disable no-console */
 
-/* eslint-disable unused-imports/no-unused-vars */
-
 import { getConfig } from '@/lib/config';
 import { SearchResult } from '@/lib/types';
 
@@ -52,6 +50,7 @@ export async function getEmbyDetail(
       desc: item.Overview || '',
       episodes: [await client.getStreamUrl(item.Id)],
       episodes_titles: [item.Name],
+      subtitles,
     };
   } else if (item.Type === 'Series') {
     // 剧集 - 获取所有季和集

@@ -260,6 +260,12 @@ export interface SearchResult {
     codec?: string;
     is_default: boolean;
   }>;
+  // 字幕轨信息（源自带字幕，自动加载）
+  subtitles?: Array<{
+    url: string;
+    language?: string;
+    label?: string;
+  }>;
 }
 
 // 豆瓣数据结构

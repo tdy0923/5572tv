@@ -39,6 +39,7 @@ import { useLoadingState } from './hooks/useLoadingState';
 import { useNetdiskSearch } from './hooks/useNetdiskSearch';
 import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
+import { useSubtitles } from './hooks/useSubtitles';
 import { useWebSR } from './hooks/useWebSR';
 import type { WakeLockSentinel } from './utils';
 import {
@@ -827,6 +828,10 @@ function PlayPageClient() {
     videoUrl,
     setVideoUrl,
     resumeTimeRef,
+  });
+  const { setHlsSubtitleTracks, buildSubtitleControl } = useSubtitles({
+    artPlayerRef,
+    detail,
   });
   // 上次使用的音量，默认 0.7
   const lastVolumeRef = useRef<number>(0.7);
@@ -2953,6 +2958,54 @@ function PlayPageClient() {
                 },
               );
 
+              // HLS 内嵌字幕轨事件（流内嵌 WebVTT 字幕，自动暴露给字幕控制按钮）
+              hls.on(
+                HlsModule.Events.SUBTITLE_TRACKS_UPDATED,
+                (_event: any, data: any) => {
+                  const rawTracks: Array<{
+                    id?: number;
+                    name?: string;
+                    lang?: string;
+                    default?: boolean;
+                  }> = Array.isArray(data?.subtitleTracks)
+                    ? data.subtitleTracks
+                    : Array.isArray(hls.subtitleTracks)
+                      ? hls.subtitleTracks
+                      : [];
+
+                  if (rawTracks.length === 0) return;
+
+                  const mapped = rawTracks.map((track, index) => ({
+                    index:
+                      typeof track.id === 'number' && Number.isFinite(track.id)
+                        ? track.id
+                        : index,
+                    name: track.name || track.lang || `字幕 ${index + 1}`,
+                    language: track.lang,
+                    type: 'hls' as const,
+                    default: Boolean(track.default),
+                  }));
+
+                  setHlsSubtitleTracks(mapped);
+
+                  // 自动启用首选字幕轨（中文优先，否则默认轨）
+                  const chinese = mapped.findIndex(
+                    (t) =>
+                      /chi|zh|中文|zho/i.test(t.language || '') ||
+                      /chi|zh|中文|zho/i.test(t.name || ''),
+                  );
+                  const prefer =
+                    chinese >= 0 ? chinese : mapped.findIndex((t) => t.default);
+                  const targetIdx =
+                    prefer >= 0 ? mapped[prefer].index : mapped[0].index;
+                  try {
+                    hls.subtitleTrack = targetIdx;
+                  } catch {
+                    // 部分流字幕轨不可立即启用，忽略
+                  }
+                },
+              );
+
               hls.on(HlsModule.Events.ERROR, function (event: any, data: any) {
                 console.error('HLS Error:', event, data);
 
@@ -3258,6 +3311,8 @@ function PlayPageClient() {
               : []),
             // 音轨切换按钮
             buildAudioTrackControl(),
+            // 字幕切换按钮（源自带字幕自动显示，无需用户配置）
+            buildSubtitleControl(),
           ],
           // 🚀 性能优化的弹幕插件配置 - 保持弹幕数量，优化渲染性能
           plugins: [
