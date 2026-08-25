@@ -131,7 +131,7 @@ export default function DownloadPage() {
               </span>
             </h1>
 
-            <p className='mx-auto mb-8 max-w-xl text-base text-gray-400'>
+            <p className='mx-auto mb-8 max-w-xl text-base text-gray-300'>
               海量影视资源聚合，AI 智能搜索推荐。
               <br className='hidden sm:block' />
               支持手机、平板、电视全平台。
@@ -144,7 +144,7 @@ export default function DownloadPage() {
                   <div className='text-lg font-bold text-primary-400 sm:text-xl'>
                     {s.v}
                   </div>
-                  <div className='text-xs text-gray-500'>{s.l}</div>
+                  <div className='text-xs text-gray-400'>{s.l}</div>
                 </div>
               ))}
             </div>
@@ -210,7 +210,7 @@ export default function DownloadPage() {
                 <a
                   href='/static/download/5572tv-android-armv7a.apk'
                   download
-                  className='inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-gray-400 transition-all duration-200 hover:border-primary-400/40 hover:text-white'
+                  className='inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-gray-300 transition-all duration-200 hover:border-primary-400/40 hover:text-white'
                 >
                   armeabi-v7a 兼容版
                 </a>
@@ -236,7 +236,7 @@ export default function DownloadPage() {
               </div>
               <div className='text-left'>
                 <p className='text-sm font-medium text-white'>扫码下载</p>
-                <p className='mt-1 text-xs text-gray-500'>
+                <p className='mt-1 text-xs text-gray-400'>
                   {selectedPlatform === 'ios'
                     ? '访问网站安装 PWA'
                     : `${apkInfo.version} · ${apkInfo.sizeMb}MB · arm64-v8a`}

@@ -323,12 +323,12 @@ export default function PosterWall() {
       {/* 底部压暗：保证页面下部与特性区衔接 */}
       <div className='absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-gray-950 via-gray-950/50 to-transparent' />
 
-      {/* 中心聚光：四周亮、中央暗，保证内容清晰 */}
+      {/* 中心聚光：四周亮、中央暗，保证内容清晰（移动端海报墙易透出亮色，加强压暗保证文字可读） */}
       <div
         className='pointer-events-none absolute inset-0'
         style={{
           background:
-            'radial-gradient(closest-side, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.78) 30%, rgba(10,10,10,0.4) 55%, rgba(10,10,10,0.05) 78%, transparent 100%)',
+            'radial-gradient(closest-side, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.92) 35%, rgba(10,10,10,0.72) 60%, rgba(10,10,10,0.35) 80%, transparent 100%)',
         }}
       />
 

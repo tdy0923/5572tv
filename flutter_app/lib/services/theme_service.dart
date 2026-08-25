@@ -56,13 +56,15 @@ class ThemeService extends ChangeNotifier {
     // macOS window appearance is handled by the system theme
   }
 
+  /// 三态循环：亮色 → 暗色 → 跟随系统 → 亮色
+  /// 保证用户手动切换后仍能回到"跟随系统"，手机系统明暗变化时 UI 自动适配
   void toggleTheme(BuildContext context) {
     switch (_themeMode) {
       case ThemeMode.light:
         setThemeMode(ThemeMode.dark);
         break;
       case ThemeMode.dark:
-        setThemeMode(ThemeMode.light);
+        setThemeMode(ThemeMode.system);
         break;
       case ThemeMode.system:
         final brightness = MediaQuery.of(context).platformBrightness;

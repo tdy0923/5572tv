@@ -1640,14 +1640,14 @@ export const UserMenu: React.FC = () => {
       <div className='relative'>
         <button
           onClick={handleMenuClick}
-          className='ui-control ui-control-icon relative text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-300 group'
+          className='nav-cluster-btn group text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-300'
           aria-label='User Menu'
         >
           {/* 微光背景效果 */}
-          <div className='absolute inset-0 rounded-2xl bg-linear-to-br from-blue-400/0 to-purple-600/0 group-hover:from-blue-400/18 group-hover:to-purple-600/12 dark:group-hover:from-blue-300/18 dark:group-hover:to-purple-500/10 transition-all duration-300'></div>
+          <div className='absolute inset-0 rounded-full bg-linear-to-br from-blue-400/0 to-purple-600/0 group-hover:from-blue-400/18 group-hover:to-purple-600/12 dark:group-hover:from-blue-300/18 dark:group-hover:to-purple-500/10 transition-all duration-300'></div>
 
           <User
-            className='relative z-10 shrink-0 h-8 w-8 group-active:scale-95 transition-transform duration-300'
+            className='relative z-10 shrink-0 group-active:scale-95 transition-transform duration-300'
             strokeWidth={2.5}
           />
         </button>
