@@ -80,6 +80,17 @@
     padding: 18px 0 !important;
     background-clip: content-box !important;
   }
+
+  /* 设置/选集面板：限制在播放器内，溢出时滚动，避免顶部被裁、底部压住控制栏 */
+  .artplayer-plugin-liquid-glass.art-control-show .art-settings {
+    max-height: calc(100% - 120px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .art-video-player .art-settings {
+    max-height: calc(100% - 110px) !important;
+    overflow-y: auto !important;
+  }
 }
 
 /* ===== Tablet & Large Phone Landscape ===== */
