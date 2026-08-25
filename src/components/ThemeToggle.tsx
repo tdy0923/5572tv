@@ -41,7 +41,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     // 渲染一个占位符以避免布局偏移
-    return <div className='h-10 w-10' />;
+    return <div className='h-11 w-11' />;
   }
 
   const toggleTheme = () => {
@@ -69,12 +69,12 @@ export function ThemeToggle() {
 
       {resolvedTheme === 'dark' ? (
         <Sun
-          className='relative z-10 h-7 w-7 group-hover:rotate-180 transition-transform duration-500'
+          className='relative z-10 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
           strokeWidth={2.5}
         />
       ) : (
         <Moon
-          className='relative z-10 h-7 w-7 group-hover:rotate-180 transition-transform duration-500'
+          className='relative z-10 h-8 w-8 group-hover:rotate-180 transition-transform duration-500'
           strokeWidth={2.5}
         />
       )}

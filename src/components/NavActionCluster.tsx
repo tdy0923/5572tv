@@ -20,19 +20,18 @@ export function NavActionCluster({
   onAnnouncementClick,
   hasUnreadAnnouncement = false,
   announcementLabel = '公告',
-  compact = false,
 }: NavActionClusterProps) {
-  const actionHeight = compact ? 'h-10' : 'h-10';
+  const actionHeight = 'h-11';
   // 图标用 strokeWidth 2.5 提升小尺寸清晰度，避免线条过细看不清楚
-  const iconClass = 'h-7 w-7';
-  const actionButtonClass = `relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
+  const iconClass = 'h-8 w-8';
+  const actionButtonClass = `relative flex ${actionHeight} w-11 items-center justify-center rounded-full bg-transparent text-gray-700 transition-all duration-200 hover:bg-black/[0.05] active:scale-95 dark:text-gray-100 dark:hover:bg-white/[0.08]`;
 
   return (
     <div className='flex items-center gap-1'>
       {showAIButton && onAIButtonClick && (
         <button
           onClick={onAIButtonClick}
-          className={`relative flex ${actionHeight} w-10 items-center justify-center rounded-full bg-linear-to-br from-[#f4c24d] to-[#dba52b] text-[#171717] transition-all duration-200 hover:from-[#ffd56f] hover:to-[#d39b1f] active:scale-95`}
+          className={`relative flex ${actionHeight} w-11 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20 transition-all duration-200 hover:from-blue-600 hover:to-purple-700 hover:shadow-blue-500/30 active:scale-95`}
           aria-label='AI 推荐'
           title='AI 推荐'
         >
