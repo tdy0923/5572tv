@@ -375,7 +375,7 @@
     background: var(--color-background-muted);
   }
 
-  /* 导航栏右侧操作按钮：统一 pill 形状 + 响应式缩放 + 跨浏览器图标完整渲染 */
+  /* 导航栏右侧操作按钮：统一 pill 形状 + 微软 Fluent 2 标准尺寸（40px 容器 / 24px 图标） */
   .nav-cluster-btn {
     position: relative;
     display: inline-flex;
@@ -383,36 +383,16 @@
     justify-content: center;
     border-radius: 9999px;
     transition: all 0.2s;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   .nav-cluster-btn:active {
     scale: 0.95;
   }
   .nav-cluster-btn > svg {
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
-  }
-  @media (min-width: 1280px) {
-    .nav-cluster-btn {
-      width: 3rem;
-      height: 3rem;
-    }
-    .nav-cluster-btn > svg {
-      width: 2.125rem;
-      height: 2.125rem;
-    }
-  }
-  @media (min-width: 1536px) {
-    .nav-cluster-btn {
-      width: 3.25rem;
-      height: 3.25rem;
-    }
-    .nav-cluster-btn > svg {
-      width: 2.375rem;
-      height: 2.375rem;
-    }
+    width: 1.5rem;
+    height: 1.5rem;
   }
 
   .ui-surface {

@@ -29,7 +29,7 @@ export function NavActionCluster({
       {showAIButton && onAIButtonClick && (
         <button
           onClick={onAIButtonClick}
-          className='nav-cluster-btn bg-linear-to-br from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-600 hover:to-purple-700 hover:shadow-blue-500/30'
+          className='nav-cluster-btn group text-gray-700 hover:bg-purple-500/10 hover:text-purple-600 dark:text-gray-200 dark:hover:bg-purple-500/15 dark:hover:text-purple-400'
           aria-label='AI 推荐'
           title='AI 推荐'
         >
