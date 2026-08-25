@@ -556,9 +556,10 @@ async function probeDenoReachable(hostname, targetUrl, denoBase, denoToken) {
 
   let ok = false;
   try {
-    // 用当前目标URL做HEAD探测：检验"Deno→该CDN"完整链路
-    // 收到任何HTTP状态（含404死链/403防盗链）都证明网络可达；
-    // 仅超时、连接失败、5xx视为不可达
+    // 用当前目标URL做HEAD探测：检验"Deno→该CDN"完整链路。
+    // 关键：403 = Deno 出口也被该 CDN 封锁，分片走 Deno 会失败，
+    // 必须视为不可达并走 Worker 中继兜底（否则播放 403 失败）。
+    // 仅 200/206/404 等证明链路通的才标记可达。
     const probeUrl = `${denoBase}/segment?url=${encodeURIComponent(
       targetUrl,
     )}&token=${encodeURIComponent(denoToken)}`;
@@ -566,7 +567,9 @@ async function probeDenoReachable(hostname, targetUrl, denoBase, denoToken) {
     const t = setTimeout(() => ctrl.abort(), 3000);
     const res = await fetch(probeUrl, { method: 'HEAD', signal: ctrl.signal });
     clearTimeout(t);
-    ok = res.status > 0 && res.status < 500;
+    ok =
+      (res.status === 200 || res.status === 206 || res.status === 404) &&
+      res.status !== 403;
   } catch {
     ok = false;
   }
