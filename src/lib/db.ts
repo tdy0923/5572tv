@@ -635,6 +635,15 @@ export class DbManager {
     }
   }
 
+  // 按前缀获取缓存 key（供评分排行榜等全局聚合使用）
+  async getCacheKeysByPrefix(prefix: string): Promise<string[]> {
+    incrementDbQuery();
+    if (typeof (this.storage as any).getCacheKeysByPrefix === 'function') {
+      return await (this.storage as any).getCacheKeysByPrefix(prefix);
+    }
+    return [];
+  }
+
   // ---------- 播放统计相关 ----------
   async getPlayStats(): Promise<PlayStatsResult> {
     incrementDbQuery();

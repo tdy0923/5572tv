@@ -15,6 +15,8 @@ interface Review {
   comment: string;
   createdAt: number;
   likes: number;
+  videoTitle?: string;
+  videoPoster?: string;
 }
 
 // 获取视频评论
@@ -63,7 +65,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { videoId, videoSource, rating, comment } = body;
+    const { videoId, videoSource, rating, comment, videoTitle, videoPoster } =
+      body;
 
     if (!videoId || !videoSource) {
       return NextResponse.json({ error: '缺少视频信息' }, { status: 400 });
@@ -86,6 +89,10 @@ export async function POST(request: NextRequest) {
       comment: comment || '',
       createdAt: Date.now(),
       likes: 0,
+      videoTitle:
+        typeof videoTitle === 'string' ? videoTitle.slice(0, 200) : undefined,
+      videoPoster:
+        typeof videoPoster === 'string' ? videoPoster.slice(0, 500) : undefined,
     };
 
     // 保存评论
@@ -104,6 +111,9 @@ export async function POST(request: NextRequest) {
     }
 
     await db.setCache(cacheKey, reviews, 365 * 24 * 60 * 60); // 1年缓存
+
+    // 使排行榜缓存失效，下次请求重新聚合
+    await db.deleteCache('rating:leaderboard').catch(() => {});
 
     return NextResponse.json({
       success: true,

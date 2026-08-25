@@ -13,6 +13,7 @@ export const BASE_NAV_ITEMS: NavItemConfig[] = [
   { label: '短剧', href: '/shortdrama', iconName: 'PlaySquare' },
   { label: '动漫', href: '/douban?type=anime', iconName: 'Cat' },
   { label: '综艺', href: '/douban?type=show', iconName: 'Clover' },
+  { label: '评分榜', href: '/ratings', iconName: 'Star' },
   { label: '下载App', href: '/download', iconName: 'Download' },
 ];
 

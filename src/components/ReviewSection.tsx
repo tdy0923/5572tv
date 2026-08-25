@@ -14,11 +14,15 @@ interface Review {
 interface ReviewSectionProps {
   videoId: string;
   videoSource: string;
+  videoTitle?: string;
+  videoPoster?: string;
 }
 
 export default function ReviewSection({
   videoId,
   videoSource,
+  videoTitle,
+  videoPoster,
 }: ReviewSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState(0);
@@ -58,6 +62,8 @@ export default function ReviewSection({
           videoSource,
           rating: userRating,
           comment: userComment,
+          videoTitle,
+          videoPoster,
         }),
       });
 
@@ -79,7 +85,15 @@ export default function ReviewSection({
         setUserComment('');
       }
     } catch {}
-  }, [videoId, videoSource, userRating, userComment, reviews]);
+  }, [
+    videoId,
+    videoSource,
+    videoTitle,
+    videoPoster,
+    userRating,
+    userComment,
+    reviews,
+  ]);
 
   return (
     <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-white/[0.04] sm:p-5'>

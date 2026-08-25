@@ -5529,6 +5529,8 @@ function PlayPageClient() {
                 <ReviewSection
                   videoId={currentId}
                   videoSource={currentSource}
+                  videoTitle={videoTitle}
+                  videoPoster={videoCover || undefined}
                 />
               </div>
             )}

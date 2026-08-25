@@ -1041,6 +1041,12 @@ export abstract class BaseRedisStorage implements IStorage {
     }
   }
 
+  // 按前缀获取缓存 key（返回不含 cache: 前缀的逻辑 key），供全局聚合（如评分排行榜）使用
+  async getCacheKeysByPrefix(prefix: string): Promise<string[]> {
+    const keys = await this.scanKeys(`cache:${prefix}*`);
+    return keys.map((k) => k.replace(/^cache:/, ''));
+  }
+
   // ---------- 数据迁移：旧扁平 key → Hash 结构 ----------
   private migrationKey() {
     return 'sys:migration:hash_v2';
