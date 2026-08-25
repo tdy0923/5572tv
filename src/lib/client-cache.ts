@@ -17,6 +17,49 @@ function setMemCache(key: string, data: any, ttlMs: number): void {
   memCache.set(key, { data, expiresAt: Date.now() + ttlMs });
 }
 
+// 读取 user_info cookie 中的角色（纯浏览器实现，避免引入 next/server 依赖）
+// 服务端写/删 /api/cache 仅允许 owner/admin，客户端据此门控，避免必 401 的无效请求
+function getClientRole(): string | null {
+  if (typeof document === 'undefined') return null;
+  try {
+    const cookies = document.cookie.split(';').reduce(
+      (acc, cookie) => {
+        const trimmed = cookie.trim();
+        const idx = trimmed.indexOf('=');
+        if (idx > 0) {
+          acc[trimmed.slice(0, idx)] = trimmed.slice(idx + 1);
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+    const info = cookies['user_info'];
+    if (!info) return null;
+    return (
+      (JSON.parse(decodeURIComponent(info)) as { role?: string })?.role ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function isLoggedIn(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('user_auth=') ||
+      document.cookie.includes('auth=')
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isOwnerOrAdmin(): boolean {
+  const role = getClientRole();
+  return role === 'owner' || role === 'admin';
+}
+
 export class ClientCache {
   static async get(key: string): Promise<any | null> {
     // 1. Check in-memory cache first (~0ms)
@@ -27,7 +70,10 @@ export class ClientCache {
     const existing = pendingRequests.get(key);
     if (existing) return existing;
 
-    // 3. Make HTTP request with deduplication
+    // 3. 服务端 GET 仅登录用户可读，未登录直接走公开接口兜底，跳过无效请求
+    if (!isLoggedIn()) return null;
+
+    // 4. Make HTTP request with deduplication
     const promise = (async () => {
       let responseStatus = 0;
       try {
@@ -69,6 +115,9 @@ export class ClientCache {
     const ttlMs = (expireSeconds || 3600) * 1000;
     setMemCache(key, data, ttlMs);
 
+    // 服务端 POST 仅 owner/admin 可写，其余角色仅维护内存缓存即可
+    if (!isOwnerOrAdmin()) return;
+
     let responseStatus = 0;
     try {
       const response = await fetch('/api/cache', {
@@ -93,6 +142,10 @@ export class ClientCache {
 
   static async delete(key: string): Promise<void> {
     memCache.delete(key);
+
+    // 服务端 DELETE 仅 owner/admin 可操作
+    if (!isOwnerOrAdmin()) return;
+
     let responseStatus = 0;
     try {
       const response = await fetch(
@@ -113,6 +166,8 @@ export class ClientCache {
   }
 
   static async clearExpired(prefix?: string): Promise<void> {
+    // 服务端 DELETE 仅 owner/admin 可操作，其余用户跳过，避免必 401 的无效请求
+    if (!isOwnerOrAdmin()) return;
     try {
       const url = prefix
         ? `/api/cache?prefix=${encodeURIComponent(prefix)}`

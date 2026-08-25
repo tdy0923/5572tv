@@ -70,9 +70,10 @@ jobs:
               -e AI_API_KEY_3='${{ secrets.AI_API_KEY_3 }}' \
               -e AI_API_KEY_4='${{ secrets.AI_API_KEY_4 }}' \
               -e AI_API_KEY_5='${{ secrets.AI_API_KEY_5 }}' \
-              -e AI_API_KEY_6='${{ secrets.AI_API_KEY_6 }}' \
-              -v /app/video-cache:/app/video-cache \
-              -v /app/static/download:/app/static/download \
+               -e AI_API_KEY_6='${{ secrets.AI_API_KEY_6 }}' \
+               -e AUTH_SECRET='${{ secrets.AUTH_SECRET }}' \
+               -v /app/video-cache:/app/video-cache \
+               -v /app/static/download:/app/static/download \
               -v /app/poster-cache:/app/public/poster-cache \
               --restart unless-stopped \
               ghcr.io/${{ github.repository_owner }}/5572tv:latest

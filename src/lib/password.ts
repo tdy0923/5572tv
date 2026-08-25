@@ -1,4 +1,4 @@
-import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
+import { createHash, randomBytes, scrypt, timingSafeEqual } from 'crypto';
 
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 64;
@@ -6,17 +6,40 @@ const SCRYPT_COST = 16384; // N
 const BLOCK_SIZE = 8; // r
 const PARALLELIZATION = 1; // p
 
+interface ScryptOptions {
+  N?: number;
+  r?: number;
+  p?: number;
+  maxmem?: number;
+}
+
+// 异步 scrypt 包装（避免 scryptSync 阻塞事件循环）
+function scryptAsync(
+  password: string,
+  salt: string | Buffer,
+  keylen: number,
+  options: ScryptOptions,
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scrypt(password, salt, keylen, options, (err, derivedKey) => {
+      if (err) reject(err);
+      else resolve(derivedKey);
+    });
+  });
+}
+
 /**
  * 对密码进行加盐哈希，返回格式: `salt:hash`
+ * 使用异步 scrypt，避免阻塞事件循环（scryptSync 可被多请求 DoS）
  */
-export function hashPassword(password: string): string {
+export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(SALT_LENGTH).toString('hex');
-  const hash = scryptSync(password, salt, KEY_LENGTH, {
+  const hash = await scryptAsync(password, salt, KEY_LENGTH, {
     N: SCRYPT_COST,
     r: BLOCK_SIZE,
     p: PARALLELIZATION,
-  }).toString('hex');
-  return `${salt}:${hash}`;
+  });
+  return `${salt}:${hash.toString('hex')}`;
 }
 
 /**
@@ -33,7 +56,10 @@ export function isSha256Hash(value: string): boolean {
  * - SHA-256 哈希: 64位十六进制 (旧 V2 格式)
  * - 明文密码 (最旧格式，兼容迁移期)
  */
-export function verifyPassword(password: string, storedValue: string): boolean {
+export async function verifyPassword(
+  password: string,
+  storedValue: string,
+): Promise<boolean> {
   const parts = storedValue.split(':');
   if (
     parts.length === 2 &&
@@ -41,7 +67,7 @@ export function verifyPassword(password: string, storedValue: string): boolean {
     parts[1].length === KEY_LENGTH * 2
   ) {
     const [salt, storedHash] = parts;
-    const hash = scryptSync(password, salt, KEY_LENGTH, {
+    const hash = await scryptAsync(password, salt, KEY_LENGTH, {
       N: SCRYPT_COST,
       r: BLOCK_SIZE,
       p: PARALLELIZATION,

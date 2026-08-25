@@ -56,11 +56,12 @@
 
 ### 必填变量
 
-| 变量                       | 说明     | 示例值                          |
-| -------------------------- | -------- | ------------------------------- |
-| `USERNAME`                 | 站长账号 | `admin`                         |
-| `PASSWORD`                 | 站长密码 | `your_secure_password`          |
-| `NEXT_PUBLIC_STORAGE_TYPE` | 存储类型 | `kvrocks` / `redis` / `upstash` |
+| 变量                       | 说明                                                                                                             | 示例值                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `USERNAME`                 | 站长账号                                                                                                         | `admin`                         |
+| `PASSWORD`                 | 站长密码                                                                                                         | `your_secure_password`          |
+| `AUTH_SECRET`              | 独立签名密钥（强烈建议设置随机长字符串；未配置时回退用 `PASSWORD` 做 cookie 签名，弱密码下存在 cookie 伪造风险） | `openssl rand -hex 32` 的输出   |
+| `NEXT_PUBLIC_STORAGE_TYPE` | 存储类型                                                                                                         | `kvrocks` / `redis` / `upstash` |
 
 ### 存储配置
 

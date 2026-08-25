@@ -259,7 +259,7 @@ export class UpstashRedisStorage implements IStorage {
   }
 
   async registerUser(userName: string, password: string): Promise<void> {
-    const hashed = hashPwd(password);
+    const hashed = await hashPwd(password);
     await withRetry(() => this.client.set(this.userPwdKey(userName), hashed));
   }
 
@@ -269,10 +269,10 @@ export class UpstashRedisStorage implements IStorage {
     );
     if (stored === null) return false;
     const storedStr = ensureString(stored as any);
-    const ok = verifyPassword(password, storedStr);
+    const ok = await verifyPassword(password, storedStr);
     // 平滑迁移：明文验证通过时自动升级为加盐哈希
     if (ok && !isHashed(storedStr)) {
-      const hashed = hashPwd(password);
+      const hashed = await hashPwd(password);
       await withRetry(() => this.client.set(this.userPwdKey(userName), hashed));
     }
     return ok;
@@ -294,7 +294,7 @@ export class UpstashRedisStorage implements IStorage {
     );
 
     if (userInfo && Object.keys(userInfo).length > 0) {
-      const hashedPassword = hashPwd(newPassword);
+      const hashedPassword = await hashPwd(newPassword);
       await withRetry(() =>
         this.client.hset(this.userInfoKey(userName), {
           password: hashedPassword,
@@ -303,7 +303,7 @@ export class UpstashRedisStorage implements IStorage {
       return;
     }
 
-    const hashed = hashPwd(newPassword);
+    const hashed = await hashPwd(newPassword);
     await withRetry(() => this.client.set(this.userPwdKey(userName), hashed));
   }
 
@@ -370,8 +370,21 @@ export class UpstashRedisStorage implements IStorage {
     oidcSub?: string,
     enabledApis?: string[],
   ): Promise<void> {
-    const hashedPassword = hashPwd(password);
+    const hashedPassword = await hashPwd(password);
     const createdAt = Date.now();
+
+    // 原子守卫：仅当 password 字段不存在时写入（HSETNX），
+    // 防止并发注册同名用户时后者覆盖前者的密码哈希（TOCTOU）
+    const claimed = await withRetry(() =>
+      this.client.hsetnx(
+        this.userInfoKey(userName),
+        'password',
+        hashedPassword,
+      ),
+    );
+    if (!claimed) {
+      throw new Error(`用户已存在: ${userName}`);
+    }
 
     // 存储用户信息到Hash
     const userInfo: Record<string, string> = {
@@ -421,9 +434,9 @@ export class UpstashRedisStorage implements IStorage {
     }
 
     const stored = String(userInfo.password);
-    const ok = verifyPassword(password, stored);
+    const ok = await verifyPassword(password, stored);
     if (ok && isSha256Hash(stored)) {
-      const hashed = hashPwd(password);
+      const hashed = await hashPwd(password);
       await withRetry(() =>
         this.client.hset(this.userInfoKey(userName), { password: hashed }),
       ).catch(() => {});
@@ -933,7 +946,7 @@ export class UpstashRedisStorage implements IStorage {
         if (stored === null) continue;
         const storedStr = ensureString(stored as any);
         if (isHashed(storedStr)) continue;
-        const hashed = hashPwd(storedStr);
+        const hashed = await hashPwd(storedStr);
         await withRetry(() => this.client.set(key, hashed));
         count++;
       }
