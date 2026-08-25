@@ -3665,7 +3665,7 @@ function PlayPageClient() {
             html: '<div class="resolution-badge"></div>',
             style: {
               position: 'absolute',
-              bottom: '60px',
+              bottom: '90px',
               left: '20px',
               padding: '5px 12px',
               borderRadius: '6px',
