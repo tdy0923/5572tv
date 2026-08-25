@@ -123,6 +123,67 @@ export function useSubtitles(params: {
     selectSubtitle(tracks[prefer].index);
   }, [detail, selectSubtitle]);
 
+  // 自动按片名搜索预设字幕源（如 OpenSubtitles），命中后自动加载最佳中文轨
+  const searchAndLoadSubtitles = useCallback(
+    async (title: string, year?: string) => {
+      if (!title || subtitleTracksRef.current.length > 0) return; // 已有字幕轨则跳过
+
+      try {
+        const res = await fetch(
+          `/api/subtitle/search?title=${encodeURIComponent(title)}${year ? `&year=${encodeURIComponent(year)}` : ''}`,
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        const list: any[] = Array.isArray(data.list) ? data.list : [];
+        if (list.length === 0) return;
+
+        // 优先中文 → 第一个
+        const chineseIdx = list.findIndex(
+          (s) => s.language && /chi|zh|中文|zho|zht/i.test(s.language),
+        );
+        const best = chineseIdx >= 0 ? list[chineseIdx] : list[0];
+
+        // 尝试获取下载链接
+        const dl = await fetch('/api/subtitle/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            provider: best.provider,
+            fileId: best.fileId,
+            pageUrl: best.pageUrl,
+          }),
+        });
+        if (!dl.ok) {
+          // 无下载链接时至少展示搜索结果，允许用户点击跳转到字幕源页面
+          const searchTracks: SubtitleTrack[] = list.map((s, i) => ({
+            index: i,
+            name: s.title || s.language || '字幕',
+            language: s.language,
+            type: 'emby' as const,
+            url: s.pageUrl,
+          }));
+          setSubtitleTracks(searchTracks);
+          return;
+        }
+        const dlData = await dl.json();
+        if (!dlData.url) return;
+
+        const track: SubtitleTrack = {
+          index: 0,
+          name: best.title || best.language || '在线字幕',
+          language: best.language,
+          type: 'emby' as const,
+          url: dlData.url,
+        };
+        setSubtitleTracks([track]);
+        selectSubtitle(0);
+      } catch {
+        // 静默失败
+      }
+    },
+    [selectSubtitle],
+  );
+
   const resetSubtitleTracks = useCallback(() => {
     setSubtitleTracks([]);
     setCurrentSubtitleTrack(-1);
@@ -173,6 +234,7 @@ export function useSubtitles(params: {
   return {
     subtitleTracks,
     setHlsSubtitleTracks,
+    searchAndLoadSubtitles,
     selectSubtitle,
     disableSubtitles,
     resetSubtitleTracks,

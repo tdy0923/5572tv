@@ -831,16 +831,27 @@ function PlayPageClient() {
     setVideoUrl,
     resumeTimeRef,
   });
-  const { setHlsSubtitleTracks, buildSubtitleControl } = useSubtitles({
-    artPlayerRef,
-    detail,
-  });
+  const { setHlsSubtitleTracks, searchAndLoadSubtitles, buildSubtitleControl } =
+    useSubtitles({
+      artPlayerRef,
+      detail,
+    });
   // 上次使用的音量，默认 0.7（已记忆用户上次调节的音量）
   const lastVolumeRef = useRef<number>(loadPlayerVolume());
   // 用于清理 autoplay 首次交互的 document click 监听器
   const firstInteractionHandlerRef = useRef<(() => void) | null>(null);
   // 上次使用的播放速率，从 localStorage 恢复
   const lastPlaybackRateRef = useRef<number>(loadPlaybackRate());
+
+  // 自动搜索在线字幕：视频开始播放后按片名查找预设字幕源（无源自带字幕时触发）
+  useEffect(() => {
+    if (!videoTitle) return;
+    const timer = window.setTimeout(() => {
+      void searchAndLoadSubtitles(videoTitle, videoYear);
+    }, 6000); // 延迟到播放开始后，避免与源自带字幕判断冲突
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在片名变化时触发一次
+  }, [videoTitle]);
 
   const [sourceSearchLoading, setSourceSearchLoading] = useState(false);
   const [sourceSearchError, setSourceSearchError] = useState<string | null>(
