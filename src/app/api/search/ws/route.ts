@@ -16,9 +16,8 @@ function getSearchCacheKey(username: string, query: string) {
 
 export async function GET(request: NextRequest) {
   const authInfo = await getAuthInfoFromCookie(request);
-  if (!authInfo || !authInfo.username) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // 未登录用户也允许搜索（使用默认源），限流见下
+  const username = authInfo?.username;
 
   // 搜索限流：每IP每分钟最多10次
   const ip =
@@ -48,9 +47,9 @@ export async function GET(request: NextRequest) {
   }
 
   const config = await getConfig();
-  const apiSites = await getAvailableApiSites(authInfo.username);
+  const apiSites = await getAvailableApiSites(username);
   const searchVariants = generateSearchVariants(query);
-  const searchCacheKey = getSearchCacheKey(authInfo.username, query);
+  const searchCacheKey = getSearchCacheKey(username || 'anonymous', query);
   const cacheTime = Math.max(15, Math.min(await getCacheTime(), 120));
 
   try {
