@@ -66,6 +66,11 @@ function RatingCard({
   index: number;
   showRank?: boolean;
 }) {
+  // 老数据无标题时显示为裸 ID，UI 优雅降级
+  const displayTitle = /^\d+$/.test(item.title)
+    ? `影片 #${item.title}`
+    : item.title;
+
   // 用户评分 → 播放页（带 source+id）；豆瓣精选 → 播放页（带 douban_id+stype）
   const href =
     item.videoSource === 'douban'
@@ -103,7 +108,7 @@ function RatingCard({
         ) : (
           <div className='flex h-full w-full items-center justify-center p-3 text-center'>
             <span className='text-xs text-gray-500 line-clamp-3'>
-              {item.title}
+              {displayTitle}
             </span>
           </div>
         )}
@@ -111,7 +116,7 @@ function RatingCard({
 
       <div className='mt-2'>
         <p className='truncate text-sm font-medium text-gray-800 dark:text-gray-200'>
-          {item.title}
+          {displayTitle}
         </p>
         <div className='mt-0.5 flex items-center gap-1'>
           <Star className='h-3.5 w-3.5 fill-primary-500 text-primary-500' />
