@@ -82,14 +82,14 @@ async function getInitialData(): Promise<HomePageData> {
       ),
       SSR_FETCH_TIMEOUT,
     ),
-    // 短剧聚合上游耗时 1-2s，给独立更长超时；失败仍由客户端查询兜底
+    // 短剧聚合上游耗时 1-2s；限制 2s 内，失败由客户端查询兜底，避免阻塞首屏
     raceTimeout(
       fetch(`${BASE_URL}/api/shortdrama/recommend?size=20`, {
         cache: 'no-store',
       }).then((res) =>
         res.ok ? res.json() : Promise.reject(new Error('shortdrama failed')),
       ),
-      4000,
+      2000,
     ),
   ]);
 
