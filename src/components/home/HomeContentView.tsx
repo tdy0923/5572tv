@@ -149,7 +149,7 @@ export default function HomeContentView({
             />
             <Link
               href='/release-calendar'
-              className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
             >
               更多内容
               <ChevronRight className='w-4 h-4 ml-1' />
@@ -286,7 +286,7 @@ export default function HomeContentView({
           />
           <Link
             href='/douban?type=movie'
-            className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+            className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
           >
             更多内容
             <ChevronRight className='w-4 h-4 ml-1' />
@@ -330,7 +330,7 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=tv'
-              className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
             >
               更多内容
               <ChevronRight className='w-4 h-4 ml-1' />
@@ -375,7 +375,7 @@ export default function HomeContentView({
             />
             <Link
               href='/shortdrama'
-              className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
             >
               更多内容
               <ChevronRight className='w-4 h-4 ml-1' />
@@ -410,7 +410,7 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=show'
-              className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
             >
               更多内容
               <ChevronRight className='w-4 h-4 ml-1' />
@@ -455,7 +455,7 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=anime'
-              className='flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
             >
               更多内容
               <ChevronRight className='w-4 h-4 ml-1' />

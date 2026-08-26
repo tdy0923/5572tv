@@ -1651,7 +1651,7 @@ function VideoCard({
                   e.preventDefault();
                   setShowAIChat(true);
                 }}
-                className='flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                className='flex items-center gap-1.5 px-3 py-2 rounded-md
                   bg-black/70 backdrop-blur-sm
                   shadow-lg text-white/90
                   hover:bg-black/80  hover:shadow-md
