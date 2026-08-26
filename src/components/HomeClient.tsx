@@ -139,26 +139,29 @@ const homeReducer = (state: HomeState, action: HomeAction): HomeState => {
 };
 
 // Query Options 工厂函数
-const allFavoritesOptions = () =>
+const allFavoritesOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['favorites'],
     queryFn: () => getAllFavorites(),
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-const allPlayRecordsOptions = () =>
+const allPlayRecordsOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['playRecords'],
     queryFn: () => getAllPlayRecords(),
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
-const allRemindersOptions = () =>
+const allRemindersOptions = (enabled: boolean) =>
   queryOptions({
     queryKey: ['reminders'],
     queryFn: () => getAllReminders(),
+    enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -304,6 +307,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     return cached;
   }, [homeData?.hotShortDramas, state.hotShortDramas]);
 
+  // 🚀 登录状态：门控用户专属查询（收藏/播放记录/提醒），匿名不请求避免 401
+  const isLoggedIn = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return !!getAuthInfoFromBrowserCookie()?.username;
+  }, []);
+
   // 🚀 计算 loading 状态：首次加载时显示 loading
   const loading = homeLoading;
 
@@ -367,14 +376,16 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
   // 🚀 TanStack Query - 使用 useQuery 获取收藏数据（自动缓存，跨页面持久化）
   const { data: allFavorites = {}, isLoading: favoritesLoading } = useQuery(
-    allFavoritesOptions(),
+    allFavoritesOptions(isLoggedIn),
   );
 
   // 🚀 TanStack Query - 使用 useQuery 获取播放记录（自动缓存，跨页面持久化）
-  const { data: allPlayRecords = {} } = useQuery(allPlayRecordsOptions());
+  const { data: allPlayRecords = {} } = useQuery(
+    allPlayRecordsOptions(isLoggedIn),
+  );
 
   // 🚀 TanStack Query - 使用 useQuery 获取提醒数据（自动缓存，跨页面持久化）
-  const { data: allReminders = {} } = useQuery(allRemindersOptions());
+  const { data: allReminders = {} } = useQuery(allRemindersOptions(isLoggedIn));
 
   // 收藏夹数据
   type FavoriteItem = {
@@ -530,10 +541,10 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
   // 收藏分组和更新数（TanStack Query）
   const { data: favoriteGroups = ['默认'] } = useQuery(
-    favoriteGroupsOptions(activeTab === 'favorites'),
+    favoriteGroupsOptions(isLoggedIn && activeTab === 'favorites'),
   );
   const { data: updateCount = 0 } = useQuery(
-    favoriteUpdatesOptions(activeTab === 'favorites'),
+    favoriteUpdatesOptions(isLoggedIn && activeTab === 'favorites'),
   );
 
   // 首页数据加载失败时弹出非阻塞错误提示（每次失败仅提示一次，成功后重置）
