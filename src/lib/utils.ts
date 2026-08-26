@@ -215,45 +215,23 @@ export function processImageUrl(originalUrl: string): string {
 
   const isRemoteHttpUrl = /^https?:\/\//i.test(normalizedUrl);
 
-  // Only proxy images that need Referer bypass
-  // All other CDNs load directly for better performance
+  // 代理图片统一走 /api/poster-cache（磁盘缓存 + 7天缓存头）
+  // 相比 /api/image-proxy 的透传回源，poster-cache 首次回源后直接读本地磁盘，
+  // 避免每次请求都等待源站（豆瓣回源可达 5s+）
   if (
     normalizedUrl.includes('doubanio.com') ||
-    normalizedUrl.includes('manmankan.com')
+    normalizedUrl.includes('manmankan.com') ||
+    normalizedUrl.includes('hongniuzyimage.com')
   ) {
-    // These CDNs have Referer restrictions, need proxy
-  } else if (
-    isRemoteHttpUrl &&
-    // 短剧图床走边缘缓存代理（CF 全球节点共享热缓存，与豆瓣海报同等待遇）
-    !normalizedUrl.includes('hongniuzyimage.com')
-  ) {
+    return `/api/poster-cache?url=${encodeURIComponent(normalizedUrl)}`;
+  }
+
+  // 其余 CDN 直连（无防盗链限制时直连最快）
+  if (isRemoteHttpUrl) {
     return normalizedUrl;
   }
 
-  // Only process doubanio.com images through proxy config
-  if (!normalizedUrl.includes('doubanio.com')) {
-    // For manmankan, use server proxy directly
-    return `/api/image-proxy?url=${encodeURIComponent(normalizedUrl)}`;
-  }
-
-  const { proxyType } = getDoubanImageProxyConfig();
-  // 豆瓣图片始终通过代理，确保浏览器能正常加载
-  let targetHost: string | null = null;
-  switch (proxyType) {
-    case 'img3':
-      targetHost = DOUBAN_CDN_MIRRORS.img3;
-      break;
-    case 'cmliussss-cdn-tencent':
-      targetHost = DOUBAN_CDN_MIRRORS.cmliussssNet;
-      break;
-    case 'cmliussss-cdn-ali':
-      targetHost = DOUBAN_CDN_MIRRORS.cmliussssCom;
-      break;
-  }
-  const proxiedUrl = targetHost
-    ? normalizedUrl.replace(/img\d+\.doubanio\.com/g, targetHost)
-    : normalizedUrl;
-  return `/api/image-proxy?url=${encodeURIComponent(proxiedUrl)}`;
+  return originalUrl;
 }
 
 export function resolvePosterUrl(

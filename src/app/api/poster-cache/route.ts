@@ -64,7 +64,7 @@ function getReferer(url: string): string {
  * 豆瓣图片源对高并发断连敏感，这里控制全局并发不超过 MAX_CONCURRENT_DOWNLOADS，
  * 相同 URL 的并发请求共享同一次下载，避免海报墙双列重复下载。
  */
-const MAX_CONCURRENT_DOWNLOADS = 4;
+const MAX_CONCURRENT_DOWNLOADS = 8;
 const DOWNLOAD_TIMEOUT_MS = 20000;
 const RETRY_DELAY_MS = 500;
 
