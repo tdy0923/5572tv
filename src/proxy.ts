@@ -501,6 +501,8 @@ function shouldSkipAuth(pathname: string): boolean {
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
     '/ratings', // 评分排行榜页面（公共访问）
+    '/search', // 搜索页（公共访问，聚合搜索使用默认源）
+    '/api/search', // 聚合搜索 API（匿名可用默认源，接口内限流）
     '/favorites', // 收藏页面（客户端重定向）
     '/history', // 历史页面（客户端重定向）
     '/profile', // 个人中心（客户端重定向）

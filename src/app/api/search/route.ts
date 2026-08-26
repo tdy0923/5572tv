@@ -45,24 +45,8 @@ export async function GET(request: NextRequest) {
   resetDbQueryCount();
 
   const authInfo = await getAuthInfoFromCookie(request);
-  if (!authInfo || !authInfo.username) {
-    const errorResponse = { error: 'Unauthorized' };
-    const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
-
-    recordRequest({
-      timestamp: startTime,
-      method: 'GET',
-      path: '/api/search',
-      statusCode: 401,
-      duration: Date.now() - startTime,
-      memoryUsed: (process.memoryUsage().heapUsed - startMemory) / 1024 / 1024,
-      dbQueries: getDbQueryCount(),
-      requestSize: 0,
-      responseSize: errorSize,
-    });
-
-    return NextResponse.json(errorResponse, { status: 401 });
-  }
+  // 未登录用户也允许搜索（使用默认源），便于公开浏览；限流见下方
+  const username = authInfo?.username;
 
   // 搜索限流：每IP每分钟最多10次
   // 与 proxy.ts 一致：优先使用 Cloudflare 不可伪造的头，避免客户端伪造 X-Forwarded-For 绕过限流
@@ -116,10 +100,10 @@ export async function GET(request: NextRequest) {
   }
 
   const config = await getConfig();
-  const apiSites = await getAvailableApiSites(authInfo.username);
+  const apiSites = await getAvailableApiSites(username);
   const cacheTime = await getCacheTime();
   const searchCacheTtl = Math.max(15, Math.min(cacheTime, 120));
-  const searchCacheKey = getSearchCacheKey(authInfo.username, query);
+  const searchCacheKey = getSearchCacheKey(username || 'anonymous', query);
 
   // 先查共享缓存（须按当前用户的源权限过滤，防止跨用户越权）
   const sharedResults = getSharedCache(query);
