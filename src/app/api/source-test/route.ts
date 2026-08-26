@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminRoleFromRequest } from '@/lib/admin-auth';
@@ -97,8 +96,6 @@ export async function GET(request: NextRequest) {
         ...sourceFromConfig,
         api: proxiedApi,
       };
-
-      console.log(`[Source Test] Applied proxy to ${sourceFromConfig.name}`);
     }
 
     // 构建搜索URL（使用 videolist 更符合多数源的搜索接口）

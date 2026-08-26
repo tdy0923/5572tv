@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Custom Ad Filter API
  * Allows users to define custom ad filtering rules

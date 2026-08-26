@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
@@ -154,16 +153,6 @@ export async function GET(request: NextRequest) {
     const size = searchParams.get('size');
 
     // 详细日志记录
-    console.log('🚀 [SHORTDRAMA API] 收到请求:', {
-      timestamp: new Date().toISOString(),
-      categoryId,
-      categoryName,
-      page,
-      size,
-      userAgent: request.headers.get('user-agent'),
-      referer: request.headers.get('referer'),
-      url: request.url,
-    });
 
     if (!categoryId && !categoryName) {
       const errorResponse = {
@@ -229,18 +218,6 @@ export async function GET(request: NextRequest) {
     );
 
     // 记录返回的数据
-    console.log('✅ [SHORTDRAMA API] 返回数据:', {
-      timestamp: new Date().toISOString(),
-      count: result.list?.length || 0,
-      firstItem: result.list?.[0]
-        ? {
-            id: result.list[0].id,
-            name: result.list[0].name,
-            update_time: result.list[0].update_time,
-          }
-        : null,
-      hasMore: result.hasMore,
-    });
 
     // 设置与网页端一致的缓存策略
     const response = NextResponse.json(result);

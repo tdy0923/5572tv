@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -29,11 +28,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 });
     }
 
-    console.log(`🔍 API缓存请求: ${key}`);
-
     // 现在可以安全地调用 db.getCache，Upstash 的 getCache 已经修复
     const data = await db.getCache(key);
-    console.log(`✅ API缓存结果: ${data ? '命中' : '未命中'}`);
     return NextResponse.json({ data });
   } catch (error) {
     console.error(
@@ -56,11 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Key is required' }, { status: 400 });
     }
 
-    console.log(`📝 API缓存写入: ${key}, 过期时间: ${expireSeconds}秒`);
-
     await db.setCache(key, data, expireSeconds);
-
-    console.log(`✅ API缓存写入成功: ${key}`);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('❌ API缓存写入失败:', error);

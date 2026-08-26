@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * CMS Proxy - Proxies CMS API responses and rewrites m3u8 URLs
  * Based on MoonTVPlus implementation

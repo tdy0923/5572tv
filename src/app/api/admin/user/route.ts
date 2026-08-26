@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -515,9 +513,6 @@ export async function POST(request: NextRequest) {
             adminConfig.UserConfig.Tags.splice(groupIndex, 1);
 
             // 记录删除操作的影响
-            console.log(
-              `删除用户组 "${groupName}"，影响用户: ${affectedUsers.length > 0 ? affectedUsers.join(', ') : '无'}`,
-            );
 
             break;
           }

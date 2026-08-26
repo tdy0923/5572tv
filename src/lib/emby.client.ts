@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 interface EmbyConfig {
   ServerURL: string;
   ApiKey?: string;
@@ -579,7 +577,7 @@ export class EmbyClient {
       const mediaSourceId = data.MediaSources?.[0]?.Id;
 
       return { MediaSourceId: mediaSourceId };
-    } catch (error) {
+    } catch {
       return {};
     }
   }
@@ -751,7 +749,7 @@ export class EmbyClient {
             if (playbackInfo.MediaSourceId) {
               query.set('MediaSourceId', playbackInfo.MediaSourceId);
             }
-          } catch (error) {
+          } catch {
             // 继续使用不带 MediaSourceId 的 URL
           }
         }

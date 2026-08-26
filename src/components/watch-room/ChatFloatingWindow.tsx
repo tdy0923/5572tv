@@ -59,7 +59,7 @@ export default function ChatFloatingWindow() {
   const [isSpeakerEnabled, setIsSpeakerEnabled] = useState(true);
 
   // 使用语音聊天hook
-  const voiceChat = useVoiceChat({
+  const _voiceChat = useVoiceChat({
     socket: watchRoom?.socket || null,
     roomId: watchRoom?.currentRoom?.id || null,
     isMicEnabled,

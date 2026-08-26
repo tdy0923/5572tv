@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * M3U8 视频下载工具
  * 基于 get-m3u8 项目的核心功能改编

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Douban API Endpoint
  * Based on MoonTVPlus/DecoTV implementation
@@ -53,14 +51,12 @@ async function getCachedDoubanData(url: string): Promise<any> {
     pruneDoubanCache();
   }
 
-  const { data, provider, durationMs } = await fetchDoubanWithProxy<any>(url);
+  const { data, _provider, _durationMs } = await fetchDoubanWithProxy<any>(url);
 
   cache.set(url, { data, timestamp: Date.now() });
   if (cache.size > CACHE_MAX) {
     pruneDoubanCache();
   }
-
-  console.log(`Douban fetch: ${provider} (${durationMs}ms)`);
 
   return data;
 }

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextResponse } from 'next/server';
 
 import { isUrlSafeDeep as isUrlSafe } from '@/lib/ssrf-protection';

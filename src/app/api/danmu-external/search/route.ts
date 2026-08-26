@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -136,7 +135,6 @@ export async function GET(request: Request) {
 
   try {
     const searchUrl = `${config.apiUrl}/${config.token}/api/v2/search/anime?keyword=${encodeURIComponent(keyword)}`;
-    console.log(`[danmu-search] Searching: ${searchUrl}`);
 
     const response = await fetch(searchUrl, {
       headers: { 'User-Agent': DEFAULT_USER_AGENT },
@@ -199,10 +197,6 @@ export async function GET(request: Request) {
         animesWithEpisodes.push(anime);
       }
     }
-
-    console.log(
-      `[danmu-search] Found ${animesWithEpisodes.length} animes for "${keyword}"`,
-    );
 
     return NextResponse.json(
       {

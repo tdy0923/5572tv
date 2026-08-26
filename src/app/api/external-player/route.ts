@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * External Player API
  * Launches videos in external players

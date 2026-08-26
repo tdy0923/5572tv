@@ -12,7 +12,7 @@ import { join } from 'path';
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'poster-cache');
-const MAX_CACHE_SIZE_MB = 1500;
+const _MAX_CACHE_SIZE_MB = 1500;
 const MAX_CACHE_FILES = 30000;
 
 async function ensureCacheDir() {

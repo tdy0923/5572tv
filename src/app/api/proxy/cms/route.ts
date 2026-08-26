@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * CMS 代理接口 - 解决 Mixed Content 和 CORS 问题
  */
@@ -156,7 +155,6 @@ export async function GET(request: NextRequest) {
         });
 
         if (isAdultSource) {
-          console.log(`[CMS Proxy] 🛡️ Blocked adult source: ${requestOrigin}`);
           // 静默返回空数据，避免客户端报错
           return NextResponse.json(
             {
@@ -184,8 +182,6 @@ export async function GET(request: NextRequest) {
     const timeoutId = setTimeout(() => controller.abort(), 20000); // 20秒超时
 
     try {
-      console.log(`[CMS Proxy] Fetching: ${targetUrl}`);
-
       // 设置 Referer/Origin 为目标站点的 origin（某些 CMS 会校验）
       const requestHeaders: Record<string, string> = { ...BROWSER_HEADERS };
       requestHeaders['Referer'] = `${parsedUrl.origin}/`;
@@ -228,7 +224,6 @@ export async function GET(request: NextRequest) {
         jsonData = JSON.parse(responseText);
       } catch {
         // 非 JSON 响应（可能是 XML 或其他格式）
-        console.log('[CMS Proxy] Non-JSON response, returning as text');
         return new NextResponse(responseText, {
           status: 200,
           headers: {

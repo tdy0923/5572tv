@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * AI数据源协调器（简化版）
  * 负责意图分析和可选的联网搜索增强
@@ -407,7 +406,7 @@ async function fetchTMDBData(
         : await getTMDBTVDetails(actualTmdbId);
 
     if (result) {
-      const title = (result as any).title || (result as any).name || '';
+      const _title = (result as any).title || (result as any).name || '';
       //         `✅ TMDB数据: ${title} (keywords: ${result.keywords?.length || 0}, similar: ${result.similar?.length || 0})`,
       //       );
       return result;

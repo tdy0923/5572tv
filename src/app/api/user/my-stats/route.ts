@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -99,16 +97,6 @@ export async function GET(request: NextRequest) {
     const loginDays =
       firstLoginTime > 0 ? calculateRegistrationDays(firstLoginTime) : 0;
 
-    console.log('注册天数计算:', {
-      userCreatedAt,
-      userCreatedAtDate: new Date(userCreatedAt),
-      registrationDays,
-      firstLoginTime: firstLoginTime,
-      firstLoginTimeDate: firstLoginTime ? new Date(firstLoginTime) : null,
-      loginDays,
-      calculationSource: firstLoginTime > 0 ? '基于登入时间' : '无登入记录',
-    });
-
     const enhancedStats = {
       ...userStats,
       // 确保新字段有默认值
@@ -141,8 +129,6 @@ export async function GET(request: NextRequest) {
 // POST 方法：更新用户统计数据（用于智能观看时间统计）
 export async function POST(request: NextRequest) {
   try {
-    console.log('POST /api/user/my-stats - 开始处理请求');
-
     // 从 cookie 获取用户信息
     const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
@@ -233,8 +219,6 @@ export async function POST(request: NextRequest) {
 // PUT 方法：记录用户登入时间
 export async function PUT(request: NextRequest) {
   try {
-    console.log('PUT /api/user/my-stats - 记录用户登入时间');
-
     // 从 cookie 获取用户信息
     const authInfo = await getAuthInfoFromCookie(request);
     if (!authInfo || !authInfo.username) {
@@ -302,11 +286,6 @@ export async function PUT(request: NextRequest) {
         loginTime,
         updatedStats.loginCount === 1,
       );
-      console.log('用户登入统计已保存到数据库:', {
-        username: authInfo.username,
-        loginTime,
-        isFirstLogin: updatedStats.loginCount === 1,
-      });
     } catch (saveError) {
       console.error('保存登入统计失败:', saveError);
       // 即使保存失败也返回成功，因为登录本身是成功的

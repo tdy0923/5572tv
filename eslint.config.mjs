@@ -15,7 +15,7 @@ export default [
     },
     rules: {
       'no-unused-vars': 'off',
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'react/no-unescaped-entities': 'off',
       'react/display-name': 'off',
       'react/jsx-curly-brace-presence': [

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import type { NextResponse as NextResponseType } from 'next/server';
 import { NextRequest } from 'next/server';
 

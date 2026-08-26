@@ -185,7 +185,6 @@ export class StreamingTransmuxer {
 
         this.segmentCount++;
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('写入 MP4 数据失败:', error);
         this.writeError =
           error instanceof Error ? error : new Error(String(error));
@@ -233,7 +232,6 @@ export class StreamingTransmuxer {
       try {
         await this.writer.close();
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('关闭写入流失败:', error);
       }
     }
@@ -273,7 +271,6 @@ export class StreamingTransmuxer {
 
         this.segmentCount++;
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('写入 MP4 数据失败:', error);
         throw error;
       }

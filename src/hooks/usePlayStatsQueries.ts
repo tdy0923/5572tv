@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { PlayStatsResult } from '@/lib/types';

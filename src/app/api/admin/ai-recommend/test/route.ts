@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -53,8 +53,6 @@ export async function POST(request: NextRequest) {
     const testUrl = apiUrl.endsWith('/chat/completions')
       ? apiUrl
       : `${apiUrl.replace(/\/$/, '')}/chat/completions`;
-
-    console.log('Testing AI API:', testUrl);
 
     const response = await fetch(testUrl, {
       method: 'POST',

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Bilibili WBI Signature - Anti-crawler bypass
  * Based on LunaTV implementation

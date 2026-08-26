@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextResponse } from 'next/server';
 
 import { fetchWithRetry, getSourceUserAgent } from '@/lib/proxy';
@@ -69,7 +67,6 @@ function cleanupExpiredCache() {
   }
 
   if (cleanedCount > 0 && process.env.NODE_ENV === 'development') {
-    console.log(`Cleaned ${cleanedCount} expired key cache entries`);
   }
 }
 
@@ -127,7 +124,6 @@ export async function GET(request: Request) {
 
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`Fetching key: ${decodedUrl}`);
     }
 
     const isHttps = decodedUrl.startsWith('https:');
@@ -270,10 +266,7 @@ export async function GET(request: Request) {
       keyStats.requests % 100 === 0 &&
       process.env.NODE_ENV === 'development'
     ) {
-      const hitRate = (keyStats.cacheHits / keyStats.requests) * 100;
-      console.log(
-        `Key Proxy Stats - Requests: ${keyStats.requests}, Cache Hits: ${keyStats.cacheHits} (${hitRate.toFixed(1)}%), Errors: ${keyStats.errors}, Avg Time: ${keyStats.avgResponseTime.toFixed(2)}ms, Cache Size: ${keyCache.size}, Total: ${(keyStats.totalBytes / 1024).toFixed(2)}KB`,
-      );
+      const _hitRate = (keyStats.cacheHits / keyStats.requests) * 100;
     }
   }
 }

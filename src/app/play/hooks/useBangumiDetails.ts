@@ -28,7 +28,7 @@ const getBangumiCache = async (id: number) => {
     }
 
     return null;
-  } catch (_e) {
+  } catch {
     return null;
   }
 };
@@ -48,11 +48,11 @@ const setBangumiCache = async (id: number, data: any) => {
           created: Date.now(),
         };
         localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-      } catch (e) {
+      } catch {
         // localStorage may be full
       }
     }
-  } catch (_e) {
+  } catch {
     // cache write failed
   }
 };

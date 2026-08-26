@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * TVBox Compatibility Export API（别名端点，逻辑复用 /api/tvbox 共享模块）
  */

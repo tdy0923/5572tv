@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { getConfig } from '@/lib/config';
 import { SearchResult } from '@/lib/types';
 

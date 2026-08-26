@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 // In-memory cache for client-side to avoid redundant HTTP requests
 const memCache = new Map<string, { data: any; expiresAt: number }>();
 const pendingRequests = new Map<string, Promise<any>>();

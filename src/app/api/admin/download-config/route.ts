@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ensureAdmin } from '@/lib/admin-auth';
@@ -15,7 +13,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : '无权限' },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -37,8 +35,6 @@ export async function POST(request: NextRequest) {
     // 清除配置缓存
     clearConfigCache();
 
-    console.log('下载配置已更新:', config.DownloadConfig);
-
     return NextResponse.json({
       success: true,
       message: '下载配置保存成功',
@@ -50,7 +46,7 @@ export async function POST(request: NextRequest) {
       {
         error: error instanceof Error ? error.message : '保存失败',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

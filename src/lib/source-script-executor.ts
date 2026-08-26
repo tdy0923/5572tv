@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NodeVM } from 'vm2';
 
 import { db } from '@/lib/db';

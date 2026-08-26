@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use client';
 
 import type { MutableRefObject, RefObject } from 'react';

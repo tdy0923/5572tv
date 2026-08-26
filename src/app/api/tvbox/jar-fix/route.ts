@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getUserRegion } from '@/lib/networkDetection';
@@ -205,8 +204,6 @@ export async function GET(request: NextRequest) {
     // 检测用户网络环境
     const userRegion = getUserRegion(request);
 
-    console.log(`[JAR-FIX] 开始测试JAR源，检测到用户区域：${userRegion}`);
-
     // 根据用户区域排序测试源
     const sortedSources = [...VERIFIED_JAR_SOURCES].sort((a, b) => {
       if (userRegion === 'domestic') {
@@ -282,10 +279,6 @@ export async function GET(request: NextRequest) {
         needs_troubleshooting: testResults.filter((r) => r.success).length < 2,
       },
     };
-
-    console.log(
-      `[JAR-FIX] 测试完成，成功源：${bestSources.length}/${testResults.length}`,
-    );
 
     return NextResponse.json(response);
   } catch (error) {

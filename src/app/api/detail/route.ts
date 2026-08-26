@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -121,7 +120,7 @@ export async function GET(request: NextRequest) {
       let audioStreams: any[] = [];
       try {
         audioStreams = await client.getAudioStreams(id);
-      } catch (error) {
+      } catch {
         // 音轨获取失败不影响播放
       }
 
@@ -145,10 +144,6 @@ export async function GET(request: NextRequest) {
       };
 
       const compatibleAudioIndex = findCompatibleAudioTrack(audioStreams);
-      console.log(
-        '========== [/api/detail] 选择的兼容音轨索引:',
-        compatibleAudioIndex,
-      );
 
       let result: any;
 

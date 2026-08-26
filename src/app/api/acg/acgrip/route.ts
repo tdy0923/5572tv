@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { parseStringPromise } from 'xml2js';
 
@@ -51,15 +49,10 @@ export async function POST(req: NextRequest) {
     const ACG_CACHE_TIME = 30 * 60; // 30分钟（秒）
     const cacheKey = `acg-acgrip-${trimmedKeyword}-page${pageNum}`;
 
-    console.log(`🔍 检查 ACG.RIP 搜索缓存: ${cacheKey}`);
-
     // 尝试从缓存获取
     try {
       const cached = await db.getCache(cacheKey);
       if (cached) {
-        console.log(
-          `✅ ACG.RIP 搜索缓存命中: "${trimmedKeyword}" 第${pageNum}页`,
-        );
         return NextResponse.json({
           ...cached,
           fromCache: true,
@@ -67,10 +60,6 @@ export async function POST(req: NextRequest) {
           cacheTimestamp: new Date().toISOString(),
         });
       }
-
-      console.log(
-        `❌ ACG.RIP 搜索缓存未命中: "${trimmedKeyword}" 第${pageNum}页`,
-      );
     } catch (cacheError) {
       console.warn('ACG.RIP 搜索缓存读取失败:', cacheError);
       // 缓存失败不影响主流程，继续执行
@@ -151,9 +140,6 @@ export async function POST(req: NextRequest) {
     // 保存到缓存
     try {
       await db.setCache(cacheKey, responseData, ACG_CACHE_TIME);
-      console.log(
-        `💾 ACG.RIP 搜索结果已缓存: "${trimmedKeyword}" 第${pageNum}页 - ${results.length} 个结果, TTL: ${ACG_CACHE_TIME}s`,
-      );
     } catch (cacheError) {
       console.warn('ACG.RIP 搜索缓存保存失败:', cacheError);
     }

@@ -29,7 +29,7 @@ try {
   if (isSecureContext && !('serviceWorker' in navigator)) {
     useBlobFallback = true;
   }
-} catch (err) {
+} catch {
   useBlobFallback = true;
 }
 
@@ -42,7 +42,7 @@ try {
   mc.port1.close();
   mc.port2.close();
   supportsTransformStream = true;
-} catch (err) {
+} catch {
   // TransformStream 不支持，使用降级方案
   supportsTransformStream = false;
 }

@@ -11,8 +11,8 @@ import { join } from 'path';
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'video-cache');
-const MAX_CACHE_SIZE_MB = 500; // 视频缩略图 500MB
-const MAX_CACHE_FILES = 10000;
+const _MAX_CACHE_SIZE_MB = 500; // 视频缩略图 500MB
+const _MAX_CACHE_FILES = 10000;
 
 async function ensureCacheDir() {
   if (!existsSync(CACHE_DIR)) {

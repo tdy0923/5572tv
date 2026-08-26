@@ -177,7 +177,7 @@ export function rankSearchResults(
 /**
  * 为搜索结果分组（按相关性分级）
  */
-function groupSearchResultsByRelevance(
+function _groupSearchResultsByRelevance(
   results: SearchResult[],
   query: string,
 ): {

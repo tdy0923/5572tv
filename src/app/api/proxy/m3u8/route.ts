@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextResponse } from 'next/server';
 
 import { isGeoBlockedCdn } from '@/lib/geo-blocked-cdns';
@@ -94,10 +92,10 @@ export async function GET(request: Request) {
     'vv.jisuzyv',
   ];
 
-  let isBlockedCdn = false;
+  let _isBlockedCdn = false;
   try {
     const checkUrl = new URL(decodedUrl);
-    isBlockedCdn = BLOCKED_CDNS.some((cdn) => checkUrl.hostname.includes(cdn));
+    _isBlockedCdn = BLOCKED_CDNS.some((cdn) => checkUrl.hostname.includes(cdn));
   } catch {}
 
   let response: Response | null = null;
@@ -255,9 +253,6 @@ export async function GET(request: Request) {
       if (filterAds) {
         adFilterResult = filterAdsFromM3U8(m3u8Content);
         if (adFilterResult.removedCount > 0) {
-          console.log(
-            `🎯 广告过滤: 移除 ${adFilterResult.removedCount} 个广告片段, 原因: ${adFilterResult.reasons.join(', ')}`,
-          );
         }
         finalContent = adFilterResult.filtered;
       }
@@ -356,7 +351,7 @@ export async function GET(request: Request) {
         'CDN-Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
       },
     });
-  } catch (error: any) {
+  } catch {
     stats.errors++;
     clearTimeout(timeoutId);
 
@@ -389,9 +384,6 @@ export async function GET(request: Request) {
 
     // 定期打印统计信息
     if (stats.requests % 100 === 0 && process.env.NODE_ENV === 'development') {
-      console.log(
-        `M3U8 Proxy Stats - Requests: ${stats.requests}, Errors: ${stats.errors}, Avg Response Time: ${stats.avgResponseTime.toFixed(2)}ms, Total Bytes: ${(stats.totalBytes / 1024 / 1024).toFixed(2)}MB`,
-      );
     }
   }
 }

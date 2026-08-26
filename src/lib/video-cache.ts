@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * 视频缓存管理模块
  *

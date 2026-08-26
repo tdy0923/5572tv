@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -57,8 +56,6 @@ export async function POST(request: NextRequest) {
     // 保存配置
     await db.saveAdminConfig(config);
 
-    console.log(`[Custom JAR] Saved custom JAR URL: ${jarUrl}`);
-
     return NextResponse.json({
       success: true,
       jarUrl: jarUrl,
@@ -116,8 +113,6 @@ export async function DELETE(request: NextRequest) {
     const config = await getConfig();
     delete config.CustomSpiderJar;
     await db.saveAdminConfig(config);
-
-    console.log('[Custom JAR] Deleted custom JAR configuration');
 
     return NextResponse.json({
       success: true,

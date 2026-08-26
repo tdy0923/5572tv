@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { validateInviteCode } from '@/lib/invite-code';
@@ -25,7 +24,7 @@ export async function POST(req: NextRequest) {
           valid: false,
           error: result.error,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { unstable_cache } from 'next/cache';
 import { NextResponse } from 'next/server';
 
@@ -56,8 +56,6 @@ async function fetchFromMobileAPI(id: string): Promise<{
     // 先尝试 movie 端点
     let mobileApiUrl = `https://m.douban.com/rexxar/api/v2/movie/${id}`;
 
-    console.log(`[Douban Mobile API] 开始请求: ${mobileApiUrl}`);
-
     // 获取随机浏览器指纹
     const { ua, browser, platform } = getRandomUserAgentWithInfo();
     const secChHeaders = getSecChUaHeaders(browser, platform);
@@ -84,11 +82,8 @@ async function fetchFromMobileAPI(id: string): Promise<{
 
     clearTimeout(timeoutId);
 
-    console.log(`[Douban Mobile API] 响应状态: ${response.status}`);
-
     // 如果是 3xx 重定向，说明可能是电视剧，尝试 tv 端点
     if (response.status >= 300 && response.status < 400) {
-      console.log(`[Douban Mobile API] 检测到重定向，尝试 TV 端点: ${id}`);
       mobileApiUrl = `https://m.douban.com/rexxar/api/v2/tv/${id}`;
 
       const tvController = new AbortController();
@@ -111,7 +106,6 @@ async function fetchFromMobileAPI(id: string): Promise<{
       });
 
       clearTimeout(tvTimeoutId);
-      console.log(`[Douban Mobile API] TV 端点响应状态: ${response.status}`);
     }
 
     if (!response.ok) {
@@ -119,9 +113,6 @@ async function fetchFromMobileAPI(id: string): Promise<{
     }
 
     const data = await response.json();
-    console.log(
-      `[Douban Mobile API] ✅ 成功获取数据，标题: ${data.title}, 类型: ${data.is_tv ? 'TV' : 'Movie'}, episodes_count: ${data.episodes_count || 0}`,
-    );
 
     // 转换 celebrities 数据
     const celebrities = (data.actors || [])
@@ -247,7 +238,6 @@ async function _fetchMobileApiData(id: string): Promise<{
 
     // 如果是 3xx 重定向，说明可能是电视剧，尝试 tv 端点
     if (response.status >= 300 && response.status < 400) {
-      console.log(`[details] 检测到重定向，尝试 TV 端点: ${id}`);
       mobileApiUrl = `https://m.douban.com/rexxar/api/v2/tv/${id}`;
 
       const tvController = new AbortController();
@@ -359,19 +349,14 @@ async function tryFetchWithAntiCrawler(
   url: string,
 ): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
-    console.log('[Douban] 🔐 尝试使用反爬验证...');
     const response = await fetchDoubanWithVerification(url);
 
     if (response.ok) {
       const html = await response.text();
-      console.log(`[Douban] ✅ 反爬验证成功，页面长度: ${html.length}`);
       return { success: true, html };
     }
-
-    console.log(`[Douban] ⚠️ 反爬验证返回状态: ${response.status}`);
     return { success: false, error: `Status ${response.status}` };
   } catch (error) {
-    console.log('[Douban] ❌ 反爬验证失败:', error);
     return {
       success: false,
       error: '反爬验证失败，请稍后重试',
@@ -419,13 +404,10 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
     if (antiCrawlerResult.success && antiCrawlerResult.html) {
       // 检查是否为 challenge 页面
       if (!isDoubanChallengePage(antiCrawlerResult.html)) {
-        console.log('[Douban] ✅ 反爬验证成功，直接使用返回的页面');
         html = antiCrawlerResult.html;
       } else {
-        console.log('[Douban] ⚠️ 反爬验证返回了 challenge 页面，尝试其他方式');
       }
     } else {
-      console.log('[Douban] ⚠️ 反爬验证失败，尝试 Cookie 方式');
     }
 
     // 🍪 优先级 2: 如果反爬验证失败，使用 Cookie 方式（原有逻辑）
@@ -459,27 +441,19 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
 
       // 如果使用了 Cookies，记录日志
       if (doubanCookies) {
-        console.log(`[Douban] 使用配置的 Cookies 请求: ${id}`);
       }
 
       const response = await fetch(target, fetchOptions);
       clearTimeout(timeoutId);
 
-      console.log(`[Douban] 响应状态: ${response.status}`);
-
       // 先检查状态码
       if (!response.ok) {
-        console.log(`[Douban] HTTP 错误: ${response.status}`);
-
         // 302/301 重定向 或 429 速率限制 - 直接用 Mobile API
         if (
           response.status === 429 ||
           response.status === 302 ||
           response.status === 301
         ) {
-          console.log(
-            `[Douban] 状态码 ${response.status}，使用 Mobile API fallback...`,
-          );
           try {
             return await fetchFromMobileAPI(id);
           } catch (mobileError) {
@@ -508,12 +482,9 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
 
       // 获取HTML内容
       html = await response.text();
-      console.log(`[Douban] 页面长度: ${html.length}`);
 
       // 检测 challenge 页面
       if (isDoubanChallengePage(html)) {
-        console.log(`[Douban] 检测到 challenge 页面`);
-
         // 🍪 如果使用了 Cookies 但仍然遇到 challenge，说明 cookies 可能失效
         if (doubanCookies) {
           console.warn(
@@ -526,7 +497,6 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
         const enablePuppeteer = config.DoubanConfig?.enablePuppeteer ?? false;
 
         if (enablePuppeteer) {
-          console.log(`[Douban] Puppeteer 已启用，尝试绕过 Challenge...`);
           try {
             // 尝试使用 Puppeteer 绕过 Challenge
             const puppeteerResult = await bypassDoubanChallenge(target);
@@ -534,17 +504,11 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
 
             // 再次检测是否成功绕过
             if (isDoubanChallengePage(html)) {
-              console.log(
-                `[Douban] Puppeteer 绕过失败，使用 Mobile API fallback...`,
-              );
               return await fetchFromMobileAPI(id);
             }
-
-            console.log(`[Douban] ✅ Puppeteer 成功绕过 Challenge`);
             // 继续使用 Puppeteer 获取的 HTML 进行解析
           } catch (puppeteerError) {
             console.error(`[Douban] Puppeteer 执行失败:`, puppeteerError);
-            console.log(`[Douban] 使用 Mobile API fallback...`);
             try {
               return await fetchFromMobileAPI(id);
             } catch (mobileError) {
@@ -557,20 +521,14 @@ async function _scrapeDoubanDetails(id: string, retryCount = 0): Promise<any> {
           }
         } else {
           // Puppeteer 未启用，直接使用 Mobile API
-          console.log(
-            `[Douban] Puppeteer 未启用，直接使用 Mobile API fallback...`,
-          );
           return await fetchFromMobileAPI(id);
         }
       }
 
       // 🍪 如果使用了 Cookies 且成功获取页面，记录成功日志
       if (doubanCookies) {
-        console.log(`[Douban] ✅ 使用 Cookies 成功获取页面: ${id}`);
       }
     } // 结束 if (!html) 块
-
-    console.log(`[Douban] 开始解析页面内容...`);
 
     // 解析详细信息
     const parsed = await parseDoubanDetails(html, id);

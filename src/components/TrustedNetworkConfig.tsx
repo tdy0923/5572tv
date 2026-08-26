@@ -206,7 +206,7 @@ const TrustedNetworkConfig = ({
               配置了信任网络，优先级高于数据库配置。
             </p>
             <div className='space-y-1'>
-              {envConfig.trustedIPs.map((ip, index) => (
+              {envConfig.trustedIPs.map((ip, _index) => (
                 <div
                   key={ip}
                   className='text-xs text-blue-700 dark:text-blue-400 font-mono'

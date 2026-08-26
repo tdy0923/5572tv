@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -43,9 +41,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { config } = body;
 
-    console.log('📝 保存 Emby 配置 - 用户:', username);
-    console.log('📝 接收到的配置:', JSON.stringify(config, null, 2));
-
     if (!config || !config.sources || !Array.isArray(config.sources)) {
       return NextResponse.json({ error: '配置格式错误' }, { status: 400 });
     }
@@ -64,11 +59,9 @@ export async function POST(request: NextRequest) {
 
     // 清除用户的 EmbyClient 缓存，使新配置立即生效
     embyManager.clearUserCache(username);
-    console.log('🔄 已清除用户 Emby 客户端缓存');
 
     // 验证保存结果
-    const savedConfig = await dbManager.getUserEmbyConfig(username);
-    console.log('✅ 保存后读取的配置:', JSON.stringify(savedConfig, null, 2));
+    const _savedConfig = await dbManager.getUserEmbyConfig(username);
 
     return NextResponse.json({
       success: true,
@@ -95,7 +88,6 @@ export async function DELETE(request: NextRequest) {
 
     // 清除用户的 EmbyClient 缓存
     embyManager.clearUserCache(username);
-    console.log('🔄 已清除用户 Emby 客户端缓存');
 
     return NextResponse.json({
       success: true,

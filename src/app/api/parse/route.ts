@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
@@ -136,8 +135,7 @@ async function updateParsersHealth() {
     return { name: parser.name, status: parser.status, isHealthy };
   });
 
-  const results = await Promise.allSettled(healthChecks);
-  console.log('解析器健康检查结果:', results);
+  const _results = await Promise.allSettled(healthChecks);
 }
 
 export async function GET(request: NextRequest) {
@@ -263,7 +261,7 @@ export async function GET(request: NextRequest) {
           },
         );
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,

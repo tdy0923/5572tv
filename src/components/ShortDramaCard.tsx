@@ -313,7 +313,7 @@ function ShortDramaCard({
     try {
       const date = new Date(updateTime);
       return date.toLocaleDateString('zh-CN');
-    } catch (e) {
+    } catch {
       return updateTime;
     }
   };

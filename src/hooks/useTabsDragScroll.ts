@@ -71,7 +71,7 @@ export function useTabsDragScroll() {
   );
 
   const handlePointerUp = useCallback(
-    (event: React.PointerEvent<HTMLDivElement>) => {
+    (_event: React.PointerEvent<HTMLDivElement>) => {
       // No need to release pointer capture since we don't capture it
       dragStateRef.current.isActive = false;
       setIsDragging(false);

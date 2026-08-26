@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
@@ -128,7 +127,7 @@ export function useSourceSwitching(params: {
     async (
       url: string,
       timeout = 2000,
-      source?: string,
+      _source?: string,
     ): Promise<'ok' | 'slow' | 'fail'> => {
       try {
         // 经代理探测：直连 no-cors 拿不到真实状态码（opaque 恒为 ok），

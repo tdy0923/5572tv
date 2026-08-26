@@ -175,7 +175,6 @@ export function usePlayStatsData() {
     try {
       await invalidatePlayStats();
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('刷新数据失败:', error);
     }
   };

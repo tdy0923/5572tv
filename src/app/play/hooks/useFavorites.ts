@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use client';
 
 import type { UseMutationResult } from '@tanstack/react-query';

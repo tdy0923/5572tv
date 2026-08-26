@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { promisify } from 'util';
 import { gunzip } from 'zlib';
@@ -106,7 +104,6 @@ export async function POST(req: NextRequest) {
 
       // 优先使用 V2 用户信息创建用户
       if (user.userInfoV2) {
-        console.log(`创建 V2 用户: ${username}`, user.userInfoV2);
         await db.createUserV2(
           username,
           user.userInfoV2.password || user.password || '', // 优先使用V2加密密码
@@ -117,7 +114,6 @@ export async function POST(req: NextRequest) {
         );
       } else if (user.password) {
         // 兼容旧版本备份（V1用户）
-        console.log(`创建 V1 用户: ${username}`);
         await db.registerUser(username, user.password);
       }
     }
@@ -174,7 +170,6 @@ export async function POST(req: NextRequest) {
             const loginStatsKey = `user_login_stats:${username}`;
             const statsData = JSON.stringify(user.loginStats);
             await storage.client.set(loginStatsKey, statsData);
-            console.log(`已恢复用户 ${username} 的登录统计:`, user.loginStats);
           }
         } catch (error) {
           console.error(`恢复用户 ${username} 登录统计失败:`, error);

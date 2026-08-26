@@ -29,7 +29,7 @@ export default function SourceTestPage() {
         if (!cancelled) {
           setAccessStatus('authorized');
         }
-      } catch (error) {
+      } catch {
         if (!cancelled) {
           setAccessStatus('unauthorized');
         }

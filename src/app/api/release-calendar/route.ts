@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -49,8 +48,6 @@ export async function GET(request: NextRequest) {
     if (!refresh) {
       const cachedData = await CalendarCacheManager.getCalendarData();
       if (cachedData) {
-        console.log('✅ 使用数据库缓存的发布日历数据');
-
         // 从缓存中应用过滤和分页
         let filteredItems = cachedData.items;
 
@@ -99,8 +96,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log('🌐 获取新的发布日历数据...');
-
     // 获取数据和过滤器
     const [calendarData, filters] = await Promise.all([
       getReleaseCalendar({
@@ -124,7 +119,6 @@ export async function GET(request: NextRequest) {
 
     // 💾 更新数据库缓存（仅在获取完整数据时）
     if (!type && !region && !genre && !dateFrom && !dateTo && offset === 0) {
-      console.log('📊 获取完整数据，更新数据库缓存...');
       const allData = await getReleaseCalendar({});
       const cacheData = {
         items: allData.items,
@@ -136,9 +130,6 @@ export async function GET(request: NextRequest) {
       const saveSuccess =
         await CalendarCacheManager.saveCalendarData(cacheData);
       if (saveSuccess) {
-        console.log(
-          `✅ 发布日历数据库缓存已更新，包含 ${allData.items.length} 项`,
-        );
       } else {
         console.warn('⚠️ 数据库缓存更新失败，但不影响API响应');
       }
@@ -170,8 +161,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log('🔄 手动刷新发布日历数据库缓存...');
-
     // 清除数据库缓存
     await CalendarCacheManager.clearCalendarData();
 
@@ -192,9 +181,6 @@ export async function POST(request: NextRequest) {
     const saveSuccess = await CalendarCacheManager.saveCalendarData(cacheData);
 
     if (saveSuccess) {
-      console.log(
-        `✅ 发布日历数据库缓存刷新完成，包含 ${calendarData.items.length} 项`,
-      );
     } else {
       console.warn('⚠️ 数据库缓存刷新失败');
     }

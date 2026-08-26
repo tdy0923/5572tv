@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Bilibili Search API
  * Based on LunaTV implementation

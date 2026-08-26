@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -18,10 +17,6 @@ export async function GET(request: NextRequest) {
 
     const config = await getConfig();
 
-    console.log('[OIDC Login] Provider ID requested:', providerId);
-    console.log('[OIDC Login] OIDCProviders config:', config.OIDCProviders);
-    console.log('[OIDC Login] OIDCAuthConfig config:', config.OIDCAuthConfig);
-
     // 优先使用新的多 Provider 配置
     let oidcConfig = null;
 
@@ -36,23 +31,13 @@ export async function GET(request: NextRequest) {
           (p) => p.id === providerId && p.enabled,
         );
       }
-      console.log(
-        '[OIDC Login] Found provider from OIDCProviders:',
-        oidcConfig,
-      );
     } else if (config.OIDCAuthConfig) {
       // 向后兼容：使用旧的单 Provider 配置
       oidcConfig = config.OIDCAuthConfig;
-      console.log('[OIDC Login] Using legacy OIDCAuthConfig:', oidcConfig);
     }
 
     // 检查是否启用OIDC登录
     if (!oidcConfig || !oidcConfig.enabled) {
-      console.log(
-        '[OIDC Login] ERROR: Provider not found or not enabled. oidcConfig:',
-        oidcConfig,
-      );
-
       return NextResponse.json(
         { error: 'OIDC登录未启用或找不到指定的 Provider' },
         { status: 403 },

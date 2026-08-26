@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
@@ -48,16 +47,8 @@ async function fetchFromShortDramaSource(api: string, size: number) {
   );
 
   if (shortDramaCategories.length === 0) {
-    console.log(`该源没有短剧分类`);
     return [];
   }
-
-  console.log(
-    `找到 ${shortDramaCategories.length} 个短剧分类:`,
-    shortDramaCategories
-      .map((c: any) => `${c.type_name}(${c.type_id})`)
-      .join(', '),
-  );
 
   // Step 2: 从所有短剧分类获取数据
   const allItems: any[] = [];
@@ -156,20 +147,14 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
       }
     }
 
-    console.log(`📺 找到 ${sourcesWithShortDrama.length} 个短剧源`);
-
     // 如果没有找到有短剧内容的源，使用默认源
     if (sourcesWithShortDrama.length === 0) {
-      console.log('📺 使用默认短剧源');
       return await fetchFromShortDramaSource(DEFAULT_SHORT_DRAMA_API, size);
     }
 
     // 聚合所有源的数据
     const results = await Promise.allSettled(
       sourcesWithShortDrama.map((source) => {
-        console.log(
-          `🔄 请求短剧源: ${source.name} (分类ID: ${source.categoryId})`,
-        );
         if (source.categoryId > 0) {
           return fetchFromShortDramaCategory(
             source.api,
@@ -185,9 +170,6 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     const allItems: any[] = [];
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {
-        console.log(
-          `✅ ${sourcesWithShortDrama[index].name}: 获取到 ${result.value.length} 条数据`,
-        );
         allItems.push(...result.value);
       } else {
         console.error(
@@ -210,14 +192,12 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
 
     // 返回指定数量
     const finalItems = uniqueItems.slice(0, size);
-    console.log(`📊 最终返回 ${finalItems.length} 条短剧数据`);
 
     return finalItems;
   } catch (error) {
     console.error('获取短剧推荐失败:', error);
     // 出错时fallback到默认源
     try {
-      console.log('⚠️ 出错，fallback到默认源');
       return await fetchFromShortDramaSource(DEFAULT_SHORT_DRAMA_API, size);
     } catch (fallbackError) {
       console.error('默认源也失败:', fallbackError);
@@ -306,8 +286,6 @@ export async function GET(request: NextRequest) {
 
     // 测试1小时HTTP缓存策略
     const response = NextResponse.json(orderedResult);
-
-    console.log('🕐 [RECOMMEND] 设置1小时HTTP缓存 - 测试自动过期刷新');
 
     // 1小时 = 3600秒
     const cacheTime = 3600;

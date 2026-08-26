@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { db } from './db';
 
 // 格式化字节大小

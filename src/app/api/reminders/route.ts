@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -154,13 +152,9 @@ export async function GET(request: NextRequest) {
 
     // 查询全部提醒
     const reminders = await db.getAllReminders(authInfo.username);
-    const count = Object.keys(reminders).length;
+    const _count = Object.keys(reminders).length;
     const responseSize = Buffer.byteLength(JSON.stringify(reminders), 'utf8');
     const duration = Date.now() - startTime;
-
-    console.log(
-      `[提醒性能] 用户: ${authInfo.username} | 提醒数: ${count} | 耗时: ${(duration / 1000).toFixed(2)}s`,
-    );
 
     recordRequest({
       timestamp: startTime,
@@ -526,9 +520,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       // 清空全部
       const all = await db.getAllReminders(username);
-      const count = Object.keys(all).length;
-
-      console.log(`[提醒性能-删除] 用户: ${username} | 待删除提醒数: ${count}`);
+      const _count = Object.keys(all).length;
 
       await db.deleteAllReminders(username);
     }

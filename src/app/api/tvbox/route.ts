@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * TVBox Compatibility Export
  *

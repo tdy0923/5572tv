@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -24,39 +24,23 @@ export async function GET(request: NextRequest) {
 
   try {
     // 添加调试信息
-    console.log('🔍 开始获取缓存统计...');
 
     // 检查存储类型
     const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
-    console.log('🔍 存储类型:', storageType);
 
     // 如果是 Upstash，直接测试连接
     if (storageType === 'upstash') {
       const storage = (db as any).storage;
-      console.log('🔍 存储实例存在:', !!storage);
-      console.log('🔍 存储实例类型:', storage?.constructor?.name);
-      console.log('🔍 withRetry方法:', typeof storage?.withRetry);
-      console.log('🔍 client存在:', !!storage?.client);
-      console.log('🔍 client.keys方法:', typeof storage?.client?.keys);
-      console.log('🔍 client.mget方法:', typeof storage?.client?.mget);
 
       if (storage && storage.client) {
         try {
-          console.log('🔍 测试获取所有cache:*键...');
           const allKeys = await storage.withRetry(() =>
             storage.client.keys('cache:*'),
           );
-          console.log('🔍 找到的键:', allKeys.length, allKeys.slice(0, 5));
 
           if (allKeys.length > 0) {
-            console.log('🔍 测试获取第一个键的值...');
             const firstValue = await storage.withRetry(() =>
               storage.client.get(allKeys[0]),
-            );
-            console.log('🔍 第一个值的类型:', typeof firstValue);
-            console.log(
-              '🔍 第一个值的长度:',
-              typeof firstValue === 'string' ? firstValue.length : 'N/A',
             );
           }
         } catch (debugError) {
@@ -180,8 +164,6 @@ export async function DELETE(request: NextRequest) {
 
 // 获取缓存统计信息
 async function getCacheStats() {
-  console.log('📊 开始获取缓存统计信息...');
-
   // 直接使用数据库统计（支持KVRocks/Upstash/Redis）
   const dbStats = await DatabaseCacheManager.getSimpleCacheStats();
 
@@ -211,8 +193,6 @@ async function getCacheStats() {
       },
     };
   }
-
-  console.log(`✅ 缓存统计获取完成: 总计 ${dbStats.total.count} 项`);
   return dbStats;
 }
 
@@ -233,7 +213,6 @@ async function clearDoubanCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个豆瓣缓存项`);
   }
 
   return clearedCount;
@@ -256,7 +235,6 @@ async function clearShortdramaCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个短剧缓存项`);
   }
 
   return clearedCount;
@@ -279,7 +257,6 @@ async function clearTmdbCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个TMDB缓存项`);
   }
 
   return clearedCount;
@@ -305,7 +282,6 @@ async function clearDanmuCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个弹幕缓存项`);
   }
 
   return clearedCount;
@@ -328,7 +304,6 @@ async function clearNetdiskCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个网盘搜索缓存项`);
   }
 
   return clearedCount;
@@ -342,7 +317,6 @@ async function clearSearchCache(): Promise<number> {
     // 直接清理数据库中的search-和cache-前缀缓存
     await db.clearExpiredCache('search-');
     await db.clearExpiredCache('cache-');
-    console.log('🗑️ 搜索缓存清理完成');
     clearedCount = 1; // 标记操作已执行
   } catch (error) {
     console.error('清理搜索缓存失败:', error);
@@ -357,7 +331,6 @@ async function clearSearchCache(): Promise<number> {
       localStorage.removeItem(key);
       clearedCount++;
     });
-    console.log(`🗑️ localStorage中清理了 ${keys.length} 个搜索缓存项`);
   }
 
   return clearedCount;
@@ -400,10 +373,6 @@ async function clearExpiredCache(): Promise<number> {
         clearedCount++;
       }
     });
-
-    console.log(
-      `🗑️ localStorage中清理了 ${clearedCount - dbCleared} 个过期缓存项`,
-    );
   }
 
   return clearedCount;

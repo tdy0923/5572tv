@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * 性能监控模块
  * 收集和聚合应用性能数据

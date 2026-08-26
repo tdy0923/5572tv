@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
 import { getSourceUserAgent } from '@/lib/proxy';
@@ -68,7 +67,6 @@ function cleanupExpiredCache() {
   }
 
   if (cleanedCount > 0 && process.env.NODE_ENV === 'development') {
-    console.log(`Cleaned ${cleanedCount} expired logo cache entries`);
   }
 }
 
@@ -330,10 +328,7 @@ export async function GET(request: Request) {
       logoStats.requests % 200 === 0 &&
       process.env.NODE_ENV === 'development'
     ) {
-      const hitRate = (logoStats.cacheHits / logoStats.requests) * 100;
-      console.log(
-        `Logo Proxy Stats - Requests: ${logoStats.requests}, Cache Hits: ${logoStats.cacheHits} (${hitRate.toFixed(1)}%), Errors: ${logoStats.errors}, Avg Time: ${logoStats.avgResponseTime.toFixed(2)}ms, Cache Size: ${logoCache.size}, Total: ${(logoStats.totalBytes / 1024 / 1024).toFixed(2)}MB`,
-      );
+      const _hitRate = (logoStats.cacheHits / logoStats.requests) * 100;
     }
   }
 }

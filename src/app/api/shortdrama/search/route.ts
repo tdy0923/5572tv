@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
@@ -49,7 +49,6 @@ async function searchFromSource(
   );
 
   if (!shortDramaCategory) {
-    console.log(`该源没有短剧分类`);
     return { list: [], hasMore: false };
   }
 
@@ -225,8 +224,6 @@ export async function GET(request: NextRequest) {
 
     // 设置与网页端一致的缓存策略（搜索结果: 1小时）
     const response = NextResponse.json(result);
-
-    console.log('🕐 [SEARCH] 设置1小时HTTP缓存 - 与网页端搜索缓存一致');
 
     // 1小时 = 3600秒（搜索结果更新频繁，短期缓存）
     const cacheTime = 3600;

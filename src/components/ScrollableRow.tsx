@@ -10,8 +10,8 @@ interface ScrollableRowProps {
 function ScrollableRow({
   children,
   scrollDistance = 1000,
-  enableAnimation,
-  enableVirtualization,
+  enableAnimation: _enableAnimation,
+  enableVirtualization: _enableVirtualization,
 }: ScrollableRowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);

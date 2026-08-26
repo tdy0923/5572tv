@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -29,8 +27,6 @@ export async function GET(request: NextRequest) {
         { status: 403 },
       );
     }
-
-    console.log('[收藏统计] 开始统计所有用户的收藏数据...');
     const overallStartTime = Date.now();
 
     // 获取所有用户列表
@@ -42,8 +38,6 @@ export async function GET(request: NextRequest) {
       ),
     ];
 
-    console.log(`[收藏统计] 找到 ${allUsers.length} 个活跃用户`);
-
     // 统计每个用户的收藏数
     const stats = await Promise.all(
       allUsers.map(async (username) => {
@@ -52,10 +46,6 @@ export async function GET(request: NextRequest) {
           const favorites = await db.getAllFavorites(username);
           const count = Object.keys(favorites).length;
           const duration = Date.now() - startTime;
-
-          console.log(
-            `[收藏统计] ${username}: ${count} 个收藏, 查询耗时: ${(duration / 1000).toFixed(2)}s`,
-          );
 
           return {
             username,
@@ -117,9 +107,6 @@ export async function GET(request: NextRequest) {
       }));
 
     const overallDuration = Date.now() - overallStartTime;
-    console.log(
-      `[收藏统计] 统计完成，总耗时: ${(overallDuration / 1000).toFixed(2)}s`,
-    );
 
     // 性能预警
     const warnings: string[] = [];

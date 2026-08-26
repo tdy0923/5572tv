@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
 import {
@@ -76,13 +75,10 @@ export async function GET() {
   try {
     // 从多源配置获取所有分类（含主源自动发现）
     const allCategories = await getAllCategoriesWithSource();
-    console.log(`📋 [CATEGORIES] 从 ${allCategories.length} 个分类`);
 
     // 并行验证分类是否有内容
     const validatedCategories =
       await validateCategoriesHasContent(allCategories);
-
-    console.log(`📋 [CATEGORIES] 验证后 ${validatedCategories.length} 个分类`);
 
     const response = NextResponse.json(validatedCategories);
     return applyShortDramaCacheHeaders(

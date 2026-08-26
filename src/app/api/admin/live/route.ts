@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -25,9 +23,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { action, key, name, url, ua, epg, isTvBox } = body;
-    console.log(
-      `[Admin API] Action: ${action}, Key: ${key}, isTvBox: ${isTvBox}`,
-    );
 
     if (!config) {
       return NextResponse.json({ error: '配置不存在' }, { status: 404 });

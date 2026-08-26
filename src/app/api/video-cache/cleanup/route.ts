@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { ensureAdmin } from '@/lib/admin-auth';
@@ -20,8 +19,6 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-
-    console.log('[VideoCache] 开始清理过期缓存...');
     await cleanupExpiredCache();
 
     const stats = await getCacheStats();

@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { AdminConfig } from './admin.types';
 import { KvrocksStorage } from './kvrocks.db';
 import { incrementDbQuery } from './performance-monitor';

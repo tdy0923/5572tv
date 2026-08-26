@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*
  * Robust spider.jar provider
  * - Sequentially tries remote candidates

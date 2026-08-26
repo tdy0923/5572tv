@@ -21,7 +21,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   const result = await Notification.requestPermission();
   try {
     localStorage.setItem(PERMISSION_ASKED_KEY, '1');
-  } catch (e) {}
+  } catch {}
   return result;
 }
 
@@ -31,7 +31,7 @@ export function shouldAskPermission(): boolean {
   if (Notification.permission !== 'default') return false;
   try {
     return !localStorage.getItem(PERMISSION_ASKED_KEY);
-  } catch (e) {}
+  } catch {}
   return true;
 }
 
@@ -40,7 +40,7 @@ function getNotifiedSet(): Set<string> {
     const raw = localStorage.getItem(NOTIFIED_KEY);
     if (!raw) return new Set();
     return new Set(JSON.parse(raw) as string[]);
-  } catch (e) {
+  } catch {
     return new Set();
   }
 }
@@ -52,7 +52,7 @@ function markNotified(key: string) {
     const arr = Array.from(set);
     if (arr.length > 200) arr.splice(0, arr.length - 200);
     localStorage.setItem(NOTIFIED_KEY, JSON.stringify(arr));
-  } catch (e) {}
+  } catch {}
 }
 
 export function showReminderNotification(
@@ -89,9 +89,9 @@ export function showReminderNotification(
     setTimeout(() => {
       try {
         notification.close();
-      } catch (e) {}
+      } catch {}
     }, 15000);
-  } catch (e) {}
+  } catch {}
 }
 
 export function sendNewReleaseNotifications(

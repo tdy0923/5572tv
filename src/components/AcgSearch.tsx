@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 'use client';
 
 import { AlertCircle, Check, Copy, ExternalLink, Loader2 } from 'lucide-react';

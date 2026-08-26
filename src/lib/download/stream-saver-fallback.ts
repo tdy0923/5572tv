@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * StreamSaver 降级方案
  * 在不支持 Service Worker 的环境中使用

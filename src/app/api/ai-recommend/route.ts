@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { orchestrateDataSources } from '@/lib/ai-orchestrator';
@@ -69,15 +69,6 @@ export async function POST(request: NextRequest) {
       aiConfig.tavilyApiKeys.length > 0
     );
 
-    console.log('🔍 配置模式检测:', {
-      hasAIModel,
-      hasTavilySearch,
-      apiKeyLength: aiConfig.apiKey?.length || 0,
-      apiUrlLength: aiConfig.apiUrl?.length || 0,
-      modelLength: aiConfig.model?.length || 0,
-      tavilyKeysCount: aiConfig.tavilyApiKeys?.length || 0,
-    });
-
     // 至少需要一种模式可用
     if (!hasAIModel && !hasTavilySearch) {
       return NextResponse.json(
@@ -98,8 +89,6 @@ export async function POST(request: NextRequest) {
       context,
       stream,
     } = body as ChatRequest & { context?: any };
-
-    console.log('🔍 请求参数:', { stream, hasAIModel, hasTavilySearch });
 
     // 验证请求格式
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -139,7 +128,6 @@ export async function POST(request: NextRequest) {
     let orchestrationResult;
 
     if (aiConfig.enableOrchestrator) {
-      console.log('🤖 Orchestrator 已启用，开始意图分析...');
       orchestrationResult = await orchestrateDataSources(
         userMessage,
         context, // 🔥 传入视频上下文（从VideoCard传入）
@@ -149,11 +137,6 @@ export async function POST(request: NextRequest) {
           siteName: adminConfig.SiteConfig?.SiteName || '5572影视',
         },
       );
-      console.log('📊 意图分析完成:', {
-        type: orchestrationResult.intent.type,
-        needWebSearch: orchestrationResult.intent.needWebSearch,
-        hasSearchResults: !!orchestrationResult.webSearchResults,
-      });
     }
 
     // 结合当前日期的结构化推荐系统提示词
@@ -268,7 +251,6 @@ export async function POST(request: NextRequest) {
     // 🎥 如果检测到视频链接，先解析视频信息并加入系统提示词
     if (hasVideoLinks) {
       try {
-        console.log('🔍 检测到视频链接，开始预解析视频信息...');
         const parsedVideos = await handleVideoLinkParsing(videoLinks);
 
         if (parsedVideos.length > 0) {
@@ -280,9 +262,6 @@ export async function POST(request: NextRequest) {
             systemPrompt += `- 链接: ${video.originalUrl}\n`;
           });
           systemPrompt += `\n**重要**: 请根据上述真实的视频标题和频道信息回复用户，不要猜测或编造视频内容。\n`;
-          console.log(
-            `✅ 已将 ${parsedVideos.length} 个视频信息加入系统提示词`,
-          );
         }
       } catch (error) {
         console.error('预解析视频失败:', error);
@@ -291,8 +270,6 @@ export async function POST(request: NextRequest) {
 
     // 🔥 纯搜索模式：如果没有AI模型，直接返回格式化的搜索结果
     if (!hasAIModel && orchestrationResult?.webSearchResults) {
-      console.log('📋 纯搜索模式：直接返回Tavily搜索结果');
-
       const searchResults = orchestrationResult.webSearchResults;
       let formattedContent = `🌐 **搜索结果**（来自 Tavily）\n\n`;
 
@@ -321,7 +298,6 @@ export async function POST(request: NextRequest) {
 
       // 🔥 如果是流式请求，返回SSE流
       if (stream) {
-        console.log('📡 返回SSE流式搜索结果');
         const encoder = new TextEncoder();
         const readableStream = new ReadableStream({
           start(controller) {
@@ -374,8 +350,6 @@ export async function POST(request: NextRequest) {
 
     // 🔥 如果没有AI模型且没有搜索结果，返回友好提示
     if (!hasAIModel) {
-      console.log('💡 返回友好使用提示（纯搜索模式）');
-
       // 构建友好的提示内容
       const friendlyMessage = `> 💡 **提示**：当前系统仅支持**实时搜索功能**（未配置AI对话模型）
 
@@ -424,7 +398,6 @@ ${
 
       // 🔥 如果是流式请求，返回SSE流
       if (stream) {
-        console.log('📡 返回SSE流式友好提示');
         const encoder = new TextEncoder();
         const readableStream = new ReadableStream({
           start(controller) {
@@ -530,14 +503,8 @@ ${
     if (useMaxCompletionTokens) {
       requestBody.max_completion_tokens = tokenLimit;
       // 推理模型不支持这些参数
-      console.log(
-        `使用推理模型 ${requestModel}，max_completion_tokens: ${tokenLimit}，stream: ${stream}`,
-      );
     } else {
       requestBody.max_tokens = tokenLimit;
-      console.log(
-        `使用标准模型 ${requestModel}，max_tokens: ${tokenLimit}，stream: ${stream}`,
-      );
     }
 
     // 调用AI API
@@ -595,8 +562,6 @@ ${
 
     // 🔥 流式响应处理
     if (stream) {
-      console.log('📡 返回SSE流式响应');
-
       // 累积完整内容用于后处理
       let fullContent = '';
       let thinkBuffer = ''; // 累积 <think> 块
@@ -613,8 +578,6 @@ ${
               const data = line.slice(6);
 
               if (data === '[DONE]') {
-                console.log('📡 流式响应完成，处理视频链接相关功能');
-
                 try {
                   // 检测视频链接解析
                   if (hasVideoLinks) {

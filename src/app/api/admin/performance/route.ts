@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * 性能监控 API
  * 提供性能数据查询接口

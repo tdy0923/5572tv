@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * 外部流量监控模块
  * 统计应用调用外部 API 的流量

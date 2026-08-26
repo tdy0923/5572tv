@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * 文件存储版用户行为分析
  *

@@ -215,7 +215,7 @@ export function textContainsAdKeyword(text: string): boolean {
 export function isFloatAdElement(
   className: string,
   id: string,
-  text: string,
+  _text: string,
 ): boolean {
   if (AD_FLOAT_IDS.some((fid) => id === fid)) return true;
   if (AD_FLOAT_CLASS_PATTERNS.some((p) => p.test(className))) return true;

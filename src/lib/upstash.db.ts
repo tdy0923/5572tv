@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /* eslint-disable unused-imports/no-unused-vars */
 
 import { Redis } from '@upstash/redis';

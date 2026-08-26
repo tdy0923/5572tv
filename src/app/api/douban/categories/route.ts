@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextResponse } from 'next/server';
 
 import { getCacheTime } from '@/lib/config';
@@ -138,7 +137,6 @@ export async function GET(request: Request) {
     // 依次尝试每个API端点
     for (const targetUrl of targets) {
       try {
-        console.log(`[豆瓣分类] 尝试请求: ${targetUrl}`);
         const result = await fetchDoubanData<any>(targetUrl, doubanCookie);
 
         // 桌面端API返回格式不同，需要适配
@@ -165,17 +163,11 @@ export async function GET(request: Request) {
                 },
               })),
             };
-            console.log(
-              `[豆瓣分类] 备用API成功，获取 ${doubanData.items.length} 条数据`,
-            );
             break;
           }
         } else {
           if (result.items && Array.isArray(result.items)) {
             doubanData = result as DoubanCategoryApiResponse;
-            console.log(
-              `[豆瓣分类] 主API成功，获取 ${doubanData.items.length} 条数据`,
-            );
             break;
           }
         }
@@ -188,10 +180,6 @@ export async function GET(request: Request) {
     if (!doubanData) {
       throw lastError || new Error('所有豆瓣API端点均失败');
     }
-
-    console.log(
-      `[豆瓣分类] 成功获取数据，项目数: ${doubanData.items?.length || 0}`,
-    );
 
     // 转换数据格式
     const list: DoubanItem[] = doubanData.items.map((item) => ({

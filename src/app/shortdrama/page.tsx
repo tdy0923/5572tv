@@ -134,7 +134,7 @@ export default function ShortDramaPage() {
           });
         }
         setHasMore(result.hasMore);
-      } catch (error) {
+      } catch {
         console.error('加载短剧失败:', error);
       } finally {
         setLoading(false);
@@ -204,7 +204,7 @@ export default function ShortDramaPage() {
         top: 0,
         behavior: 'smooth',
       });
-    } catch (error) {
+    } catch {
       // 如果平滑滚动完全失败，使用立即滚动
       document.body.scrollTop = 0;
     }
@@ -285,7 +285,7 @@ export default function ShortDramaPage() {
                       </button>
                     </div>
                     <div className='flex flex-wrap gap-2'>
-                      {searchHistory.map((item, index) => (
+                      {searchHistory.map((item, _index) => (
                         <button
                           key={item}
                           onClick={() => {

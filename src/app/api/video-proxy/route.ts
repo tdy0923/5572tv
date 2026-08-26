@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { promises as fs } from 'fs';
 import { createReadStream } from 'fs';
 import { NextResponse } from 'next/server';

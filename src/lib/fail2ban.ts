@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 interface Fail2BanEntry {
   attempts: number;
   firstAttempt: number;
@@ -67,9 +65,6 @@ export function recordFailedAttempt(ip: string): void {
       if (entry.banLevel < i + 1) {
         entry.banLevel = i + 1;
         entry.banUntil = now + banDuration;
-        console.log(
-          `[Fail2Ban] IP ${ip} banned for ${banDuration / 1000}s (level ${i + 1}) after ${entry.attempts} attempts`,
-        );
       }
       return;
     }

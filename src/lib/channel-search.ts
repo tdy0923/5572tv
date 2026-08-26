@@ -356,7 +356,7 @@ export async function getAllChannelsAcrossSources(
           }));
         allChannels.push(...channelsWithSource);
       }
-    } catch (error) {
+    } catch {
       // 忽略错误，继续处理其他源
     }
   }

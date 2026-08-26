@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * IPTV/EPG API
  * Supports M3U/M3U8 playlist parsing and EPG data

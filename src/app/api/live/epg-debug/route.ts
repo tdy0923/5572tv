@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * EPG 诊断 API
  * 用于在浏览器中查看 EPG 匹配情况

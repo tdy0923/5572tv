@@ -18,18 +18,21 @@ export async function GET(request: NextRequest) {
     const posters: string[] = [];
 
     // 返回URL列表供下载脚本使用
-    return NextResponse.json({
-      source,
-      limit,
-      count: posters.length,
-      urls: posters,
-      message: '请使用下载脚本 ./scripts/download-posters.sh',
-    }, {
-      headers: {
-        'Cache-Control': 'public, max-age=3600',
+    return NextResponse.json(
+      {
+        source,
+        limit,
+        count: posters.length,
+        urls: posters,
+        message: '请使用下载脚本 ./scripts/download-posters.sh',
       },
-    });
-  } catch (error) {
+      {
+        headers: {
+          'Cache-Control': 'public, max-age=3600',
+        },
+      },
+    );
+  } catch {
     return NextResponse.json({ error: 'Error' }, { status: 500 });
   }
 }

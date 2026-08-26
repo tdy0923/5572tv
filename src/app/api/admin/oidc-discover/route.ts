@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -55,8 +54,6 @@ export async function POST(request: NextRequest) {
 
     // 构建well-known URL
     const wellKnownUrl = `${issuerUrl.replace(/\/$/, '')}/.well-known/openid-configuration`;
-
-    console.log('正在获取OIDC配置:', wellKnownUrl);
 
     // 通过后端获取配置，避免CORS问题
     const response = await fetch(wellKnownUrl, {

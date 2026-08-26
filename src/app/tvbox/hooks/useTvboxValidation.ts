@@ -188,7 +188,6 @@ export function useTvboxValidation({
         }
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('获取自定义 JAR 配置失败:', error);
     }
   }, []);

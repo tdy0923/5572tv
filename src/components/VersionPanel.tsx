@@ -1,4 +1,4 @@
-/* eslint-disable no-console,react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 'use client';
 
@@ -229,7 +229,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                 新增功能
               </h5>
               <ul className='space-y-1'>
-                {entry.added.map((item, index) => (
+                {entry.added.map((item, _index) => (
                   <li
                     key={`${entry.version}-added-${index}`}
                     className='text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2'
@@ -483,7 +483,7 @@ export const VersionPanel: React.FC<VersionPanelProps> = ({
                         );
                         return !localVersions.includes(entry.version);
                       })
-                      .map((entry, index) => (
+                      .map((entry, _index) => (
                         <div
                           key={entry.version}
                           className={`rounded-3xl border p-4 ${

@@ -10,7 +10,7 @@ export const runtime = 'nodejs';
  * 用于检查 Cloudflare Worker 代理是否正常工作
  * 返回当前代理配置状态和健康状况
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const config = await getConfig();
 

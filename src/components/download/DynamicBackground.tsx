@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 
 export default function DynamicBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,7 +57,10 @@ export default function DynamicBackground() {
     const init = () => {
       resize();
       particles = [];
-      const count = Math.min(60, Math.floor((canvas.width * canvas.height) / 20000));
+      const count = Math.min(
+        60,
+        Math.floor((canvas.width * canvas.height) / 20000),
+      );
       for (let i = 0; i < count; i++) {
         particles.push(new Particle());
       }
@@ -108,19 +111,19 @@ export default function DynamicBackground() {
   return (
     <>
       {/* AI生成的背景图 */}
-      <div className="absolute inset-0">
+      <div className='absolute inset-0'>
         <Image
-          src="/images/agnes/hero-bg.png"
-          alt=""
+          src='/images/agnes/hero-bg.png'
+          alt=''
           fill
-          className="object-cover opacity-30"
+          className='object-cover opacity-30'
           priority
         />
       </div>
       {/* 粒子动画叠加 */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
+        className='absolute inset-0 pointer-events-none'
         style={{ opacity: 0.6 }}
       />
     </>

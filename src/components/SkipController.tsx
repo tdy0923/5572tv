@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use client';
 
 import { Clapperboard, Film, Lightbulb, Settings, XCircle } from 'lucide-react';

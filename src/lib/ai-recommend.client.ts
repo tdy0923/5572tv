@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -218,7 +216,7 @@ export async function checkAIRecommendAvailable(): Promise<boolean> {
     }
 
     return response.ok;
-  } catch (error) {
+  } catch {
     // 静默处理错误
     return false;
   }

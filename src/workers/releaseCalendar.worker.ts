@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // 🚀 Web Worker for processing release calendar data
 // Offloads CPU-intensive operations from main thread
 

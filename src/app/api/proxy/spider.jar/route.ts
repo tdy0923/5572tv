@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getSpiderJar } from '@/lib/spiderJar';
@@ -20,15 +19,12 @@ export async function GET(req: NextRequest) {
 
     const jarInfo = await getSpiderJar(forceRefresh, customUrl || undefined);
 
-    console.log(
-      `[Spider Proxy] 提供 ${jarInfo.success ? '真实' : '降级'} jar: ${jarInfo.source}, 大小: ${jarInfo.size} bytes, 缓存: ${jarInfo.cached}`,
-    );
-
     return new NextResponse(new Uint8Array(jarInfo.buffer), {
       headers: {
         'Content-Type': 'application/java-archive',
         'Content-Length': jarInfo.size.toString(),
-        'Cache-Control': 'public, max-age=14400, s-maxage=14400, stale-while-revalidate=3600',
+        'Cache-Control':
+          'public, max-age=14400, s-maxage=14400, stale-while-revalidate=3600',
         'Access-Control-Allow-Origin': '*',
         'X-Spider-Source': jarInfo.source,
         'X-Spider-Success': jarInfo.success.toString(),

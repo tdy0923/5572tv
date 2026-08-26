@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import ipaddr from 'ipaddr.js';
 import { NextRequest, NextResponse } from 'next/server';
 

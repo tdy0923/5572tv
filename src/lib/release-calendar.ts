@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Release Calendar Scraper
  * Based on LunaTV implementation

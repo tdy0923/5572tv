@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 
@@ -11,10 +10,6 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const { telegramUsername } = await request.json();
-    console.log(
-      '[Magic Link] Received request for username:',
-      telegramUsername,
-    );
 
     // 用户名可留空：新的一键登录方案下，
     // 真实 Telegram 用户名会在用户按下 /start 后由 webhook 回填。
@@ -22,13 +17,8 @@ export async function POST(request: Request) {
     // 获取管理员配置
     const config = await db.getAdminConfig();
     const telegramConfig = config?.TelegramAuthConfig;
-    console.log(
-      '[Magic Link] Config loaded, enabled:',
-      telegramConfig?.enabled,
-    );
 
     if (!telegramConfig?.enabled) {
-      console.log('[Magic Link] Telegram login not enabled');
       return NextResponse.json(
         { error: 'Telegram 登录未启用' },
         { status: 403 },
@@ -36,7 +26,6 @@ export async function POST(request: Request) {
     }
 
     if (!telegramConfig.botToken) {
-      console.log('[Magic Link] Bot token not configured');
       return NextResponse.json({ error: 'Bot Token 未配置' }, { status: 500 });
     }
 
@@ -60,18 +49,7 @@ export async function POST(request: Request) {
       baseUrl, // 保存请求的域名
       confirmed: false, // 尚未在 Telegram 中确认
     };
-
-    console.log(
-      '[Magic Link] Storing token:',
-      token.slice(0, 4) + '...',
-      'Data:',
-      {
-        telegramUsername: tokenData.telegramUsername,
-        expiresAt: tokenData.expiresAt,
-      },
-    );
     await setTelegramToken(token, tokenData);
-    console.log('[Magic Link] Token saved successfully');
 
     // 自动设置 webhook 到当前域名（如果还未设置）
     try {
@@ -82,7 +60,6 @@ export async function POST(request: Request) {
       const info = await infoResponse.json();
 
       if (info.ok && info.result.url !== webhookUrl) {
-        console.log('[Magic Link] Auto-setting webhook to:', webhookUrl);
         await fetch(
           `https://api.telegram.org/bot${telegramConfig.botToken}/setWebhook`,
           {
@@ -94,7 +71,6 @@ export async function POST(request: Request) {
             }),
           },
         );
-        console.log('[Magic Link] Webhook set successfully');
       }
     } catch (error) {
       console.error('[Magic Link] Failed to set webhook:', error);
@@ -104,8 +80,6 @@ export async function POST(request: Request) {
     // 生成 Telegram 深度链接
     const botUsername = telegramConfig.botUsername;
     const deepLink = `https://t.me/${botUsername}?start=${token}`;
-
-    console.log('[Magic Link] Deep link generated:', deepLink);
 
     return NextResponse.json({
       success: true,

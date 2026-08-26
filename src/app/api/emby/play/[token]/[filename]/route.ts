@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -79,7 +77,6 @@ export async function GET(
 
     // 如果返回 401，尝试重新认证并重试
     if (videoResponse.status === 401) {
-      console.log('[Emby Play] 收到 401 错误，尝试重新认证');
       const { embyManager } = await import('@/lib/emby-manager');
       embyManager.clearCache();
       client = await getEmbyClient(embyKey, authInfo?.username);

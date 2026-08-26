@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 'use client';
 
 import { AlertCircle, AlertTriangle, CheckCircle } from 'lucide-react';

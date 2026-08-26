@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
@@ -36,7 +34,7 @@ export async function GET(request: NextRequest) {
     let audioStreams: any[] = [];
     try {
       audioStreams = await client.getAudioStreams(itemId);
-    } catch (error) {
+    } catch {
       // 音轨获取失败不影响播放
     }
 

@@ -276,7 +276,6 @@ function PlayPageClient() {
     s.onload = () => {
       try {
         new (window as any).VConsole();
-        console.log('[debug] vConsole 已启用');
       } catch {}
     };
     document.head.appendChild(s);

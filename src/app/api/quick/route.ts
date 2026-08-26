@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 /**
  * Quick Access API
  * Provides quick access to common operations

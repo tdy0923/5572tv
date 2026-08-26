@@ -58,7 +58,7 @@ export function useCorsDetection({
             return supports;
           }
         }
-      } catch (error) {
+      } catch {
         // 缓存读取失败，继续检测
       }
     }
@@ -91,7 +91,7 @@ export function useCorsDetection({
               url: url.substring(0, 100),
             }),
           );
-        } catch (error) {
+        } catch {
           // localStorage 满了或其他错误，忽略
         }
       }
@@ -109,7 +109,7 @@ export function useCorsDetection({
       });
 
       return supports;
-    } catch (error) {
+    } catch {
       const supports = false;
 
       corsSupportRef.current.set(url, supports);
@@ -126,7 +126,7 @@ export function useCorsDetection({
               url: url.substring(0, 100),
             }),
           );
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
