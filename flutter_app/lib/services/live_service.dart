@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import "dart:async" show unawaited;
 import 'dart:convert';
 
@@ -64,7 +65,7 @@ class LiveService {
       _liveSourcesCache = _CacheItem(sources, DateTime.now());
       return sources;
     } catch (e) {
-      print('获取直播源失败: $e');
+      debugPrint('获取直播源失败: $e');
       return _liveSourcesCache?.data ?? [];
     }
   }
@@ -129,7 +130,7 @@ class LiveService {
       _channelsCache[sourceKey] = _CacheItem(m3uContent, DateTime.now());
       return m3uContent.channels;
     } catch (e) {
-      print('获取直播频道失败: $e');
+      debugPrint('获取直播频道失败: $e');
       return _channelsCache[sourceKey]?.data.channels ?? [];
     }
   }
@@ -297,7 +298,7 @@ class LiveService {
           liveSource.epg.isNotEmpty ? liveSource.epg : m3uContent.tvgUrl;
 
       if (epgUrl.isEmpty) {
-        print('EPG URL 为空: $sourceKey');
+        debugPrint('EPG URL 为空: $sourceKey');
         return;
       }
 
@@ -313,7 +314,7 @@ class LiveService {
           .toList();
 
       if (tvgIds.isEmpty) {
-        print('没有需要获取 EPG 的频道: $sourceKey');
+        debugPrint('没有需要获取 EPG 的频道: $sourceKey');
         return;
       }
 
@@ -344,7 +345,7 @@ class LiveService {
       // 更新缓存
       _epgCache[sourceKey] = _CacheItem(epgDataMap, DateTime.now());
     } catch (e) {
-      print('获取 EPG 节目单失败: $e');
+      debugPrint('获取 EPG 节目单失败: $e');
     }
   }
 
@@ -443,7 +444,7 @@ class LiveService {
         }
       }
     } catch (e) {
-      print('解析 EPG 失败: $e');
+      debugPrint('解析 EPG 失败: $e');
     }
 
     return result;

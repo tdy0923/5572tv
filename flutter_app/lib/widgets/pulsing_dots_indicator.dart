@@ -5,7 +5,7 @@ class PulsingDotsIndicator extends StatefulWidget {
   const PulsingDotsIndicator({super.key});
 
   @override
-  _PulsingDotsIndicatorState createState() => _PulsingDotsIndicatorState();
+  State<PulsingDotsIndicator> createState() => _PulsingDotsIndicatorState();
 }
 
 class _PulsingDotsIndicatorState extends State<PulsingDotsIndicator>

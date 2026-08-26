@@ -1,40 +1,65 @@
-// 字幕源抽象层：支持多个预设字幕源，统一搜索/下载接口
-// 内置：
-//  - OpenSubtitles（官方 API，需配置 OPENSUBTITLES_API_KEY，中文覆盖较弱）
-//  - subhd（中文源，普通 HTTP + 浏览器 UA/cookie 即可，无依赖）
+// 字幕源抽象层：可扩展预设字幕源，统一搜索/下载接口
+// 当前内置：subhd（中文，普通 HTTP）、OpenSubtitles（英文兜底）
+// 设计：Provider Registry + 结果缓存 + 统一错误处理
 
 export interface SubtitleSearchResult {
   title: string;
   language?: string;
   format?: string;
   fileId?: number;
-  downloadUrl?: string; // 可直接加载的字幕文件 URL
+  downloadUrl?: string;
   provider: string;
-  pageUrl?: string; // 字幕源页面（供跳转）
+  pageUrl?: string;
 }
 
 export interface SubtitleContent {
   content: string;
-  format: string; // srt / ass / vtt
+  format: string;
   title: string;
   language?: string;
 }
 
+interface Provider {
+  id: string;
+  search(title: string, year?: string): Promise<SubtitleSearchResult[]>;
+  resolve?(result: SubtitleSearchResult): Promise<SubtitleContent | null>;
+  downloadUrl?(result: SubtitleSearchResult): Promise<string | null>;
+}
+
+// ── 通用 ──────────────────────────────────────────────────────────
+const TIMEOUT = { search: 15000, download: 15000, page: 15000 } as const;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 搜索结果缓存 10 分钟
+
+class TtlCache<K, V> {
+  private map = new Map<K, { v: V; exp: number }>();
+  get(k: K): V | undefined {
+    const e = this.map.get(k);
+    if (!e) return undefined;
+    if (Date.now() > e.exp) {
+      this.map.delete(k);
+      return undefined;
+    }
+    return e.v;
+  }
+  set(k: K, v: V, ttl = CACHE_TTL_MS) {
+    this.map.set(k, { v, exp: Date.now() + ttl });
+    if (this.map.size > 200) {
+      const first = this.map.keys().next().value as K;
+      this.map.delete(first);
+    }
+  }
+}
+
+const searchCache = new TtlCache<string, SubtitleSearchResult[]>();
+
+// ── subhd：中文字幕源（镜像回退，无需 Puppeteer） ─────────────────
 const SUBHD_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
-
 const SUBHD_BASES = [
   'https://subhd.tv',
   'https://subhd.me',
   'https://subhdtw.com',
-];
-
-// ──────────────────────────────── subhd ────────────────────────────────
-// 中文字幕源。支持多镜像回退（subhd.tv / subhd.me / subhdtw.com），自动容错。
-// 流程（全程普通 HTTP，无需 Puppeteer/Chromium）：
-//   1. /search/{title} → 字幕附件链接 /a/{token}（含 简体/繁体 + SRT/ASS 标记）
-//   2. /a/{token}      → 提取 data-preview-url = /api/sub/preview/{token}
-//   3. 预览 API（带 cookie + Referer）→ 字幕内容
+] as const;
 
 async function subhdFetch(
   url: string,
@@ -48,17 +73,20 @@ async function subhdFetch(
       ...(cookie ? { Cookie: cookie } : {}),
     },
     redirect: 'follow',
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(TIMEOUT.page),
   });
-  const setCookie = (res.headers.get('set-cookie') || '').split(';')[0];
-  return { text: await res.text(), setCookie };
+  if (!res.ok) throw new Error(`subhd fetch ${res.status}`);
+  return {
+    text: await res.text(),
+    setCookie: (res.headers.get('set-cookie') || '').split(';')[0],
+  };
 }
 
 async function subhdApiFetch(
   url: string,
   cookie: string,
   referer: string,
-): Promise<{ json: any; setCookie: string }> {
+): Promise<{ json: any }> {
   const res = await fetch(url, {
     headers: {
       'User-Agent': SUBHD_UA,
@@ -67,275 +95,249 @@ async function subhdApiFetch(
       Referer: referer,
       ...(cookie ? { Cookie: cookie } : {}),
     },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(TIMEOUT.page),
   });
-  const setCookie = (res.headers.get('set-cookie') || '').split(';')[0];
+  if (!res.ok) throw new Error(`subhd api ${res.status}`);
   const text = await res.text();
-  let json: any = {};
   try {
-    json = JSON.parse(text);
+    return { json: JSON.parse(text) };
   } catch {
-    json = { raw: text };
+    return { json: { raw: text } };
   }
-  return { json, setCookie };
 }
 
-// 搜索 subhd：搜索结果页直接含字幕附件链接 /a/{token}（含语言/格式标记）
 async function searchSubhdSubtitle(
   title: string,
 ): Promise<SubtitleSearchResult[]> {
-  try {
-    // 多镜像回退：任一镜像返回结果即用
-    // 多镜像回退：任一镜像返回内容即用
-    let text = '';
-    for (const base of SUBHD_BASES) {
-      try {
-        const r = await subhdFetch(
-          `${base}/search/${encodeURIComponent(title)}`,
-        );
-        if (r.text && r.text.length > 500) {
-          text = r.text;
-          break;
-        }
-      } catch {
-        continue;
+  let html = '';
+  for (const base of SUBHD_BASES) {
+    try {
+      const r = await subhdFetch(`${base}/search/${encodeURIComponent(title)}`);
+      if (r.text.length > 500) {
+        html = r.text;
+        break;
       }
+    } catch {
+      continue;
     }
-    if (!text) return [];
-
-    const results: SubtitleSearchResult[] = [];
-    // 每个搜索结果是一个 .bg-white.shadow-sm.rounded-3 块，含 /a/ 附件链接、标题、语言、格式
-    const blockRe =
-      /class="bg-white shadow-sm rounded-3 mb-4"[\s\S]*?(?=class="bg-white shadow-sm rounded-3 mb-4"|$)/g;
-    let bm: RegExpExecArray | null;
-    while ((bm = blockRe.exec(text)) !== null) {
-      const block = bm[0];
-      const attMatch = block.match(/href='(\/a\/[A-Za-z0-9]+)'/);
-      if (!attMatch) continue;
-      const token = attMatch[1].replace('/a/', '');
-      // 标题：link-dark align-middle 链接文本
-      const titleMatch = block.match(/link-dark align-middle"[^>]*>([^<]+)/);
-      const descMatch = block.match(
-        /view-text[^>]*>[\s\S]*?href='\/a\/[^']+'[^>]*>([^<]+)/,
-      );
-      // 语言：简体 / 繁体 / 中文
-      const langMatch = block.match(
-        /<span class="p-1 fw-bold">([^<]+)<\/span>/,
-      );
-      // 格式：SRT / ASS / VTT
-      const fmtMatch = block.match(
-        /<span class="p-1 text-secondary">([^<]+)<\/span>/,
-      );
-
-      const language = langMatch ? langMatch[1].trim() : undefined;
-      const format = fmtMatch ? fmtMatch[1].trim().toLowerCase() : undefined;
-
-      results.push({
-        title: titleMatch?.[1]?.trim() || descMatch?.[1]?.trim() || title,
-        language: language || (title ? 'zh' : undefined),
-        format:
-          format && ['srt', 'ass', 'vtt'].includes(format) ? format : 'srt',
-        provider: 'subhd',
-        fileId: -1, // 用 token 代替
-        pageUrl: `${SUBHD_BASES[0]}/a/${token}`,
-      });
-      if (results.length >= 20) break;
-    }
-
-    return results;
-  } catch {
-    return [];
   }
+  if (!html) return [];
+
+  const results: SubtitleSearchResult[] = [];
+  const blockRe =
+    /class="bg-white shadow-sm rounded-3 mb-4"[\s\S]*?(?=class="bg-white shadow-sm rounded-3 mb-4"|$)/g;
+  let m: RegExpExecArray | null;
+  while ((m = blockRe.exec(html)) !== null) {
+    const block = m[0];
+    const att = block.match(/href='(\/a\/[A-Za-z0-9]+)'/);
+    if (!att) continue;
+    const token = att[1].replace('/a/', '');
+    const t1 = block.match(/link-dark align-middle"[^>]*>([^<]+)/)?.[1]?.trim();
+    const t2 = block
+      .match(/view-text[^>]*>[\s\S]*?href='\/a\/[^']+'[^>]*>([^<]+)/)?.[1]
+      ?.trim();
+    const lang = block
+      .match(/<span class="p-1 fw-bold">([^<]+)<\/span>/)?.[1]
+      ?.trim();
+    const fmt = block
+      .match(/<span class="p-1 text-secondary">([^<]+)<\/span>/)?.[1]
+      ?.trim()
+      .toLowerCase();
+
+    results.push({
+      title: t1 || t2 || title,
+      language: lang || 'zh',
+      format: fmt && ['srt', 'ass', 'vtt'].includes(fmt) ? fmt : 'srt',
+      provider: 'subhd',
+      fileId: -1,
+      pageUrl: `${SUBHD_BASES[0]}/a/${token}`,
+    });
+    if (results.length >= 20) break;
+  }
+  return results;
 }
 
-// 从 subhd 附件页获取字幕内容
 async function resolveSubhdSubtitleContent(
   pageUrl: string,
 ): Promise<SubtitleContent | null> {
-  try {
-    // pageUrl 形如 https://subhd.tv/a/{token}；提取 token 以便在镜像间回退
-    const token = pageUrl.split('/a/')[1] || pageUrl.split('/').pop();
-    let attach: { text: string; setCookie: string } | null = null;
-    for (const base of SUBHD_BASES) {
-      try {
-        const r = await subhdFetch(`${base}/a/${token}`);
-        if (r.text && r.text.includes('data-preview-url')) {
-          attach = r;
-          break;
-        }
-      } catch {
-        continue;
+  const token =
+    pageUrl.split('/a/')[1]?.split('?')[0] || pageUrl.split('/').pop()!;
+  let attach: { text: string; setCookie: string } | null = null;
+  let attachUrl = pageUrl;
+
+  for (const base of SUBHD_BASES) {
+    try {
+      const r = await subhdFetch(`${base}/a/${token}`);
+      if (r.text.includes('data-preview-url')) {
+        attach = r;
+        attachUrl = `${base}/a/${token}`;
+        break;
       }
+    } catch {
+      continue;
     }
-    if (!attach) return null;
-    const attachUrl = pageUrl.includes('/a/')
-      ? `https://subhd.tv/a/${token}`
-      : pageUrl;
-    const prevMatch = attach.text.match(/data-preview-url="([^"]+)"/);
-    if (!prevMatch) return null;
-    const previewPath = prevMatch[1];
-
-    // 预览 API → 字幕内容（带 cookie + Referer）
-    const apiRes = await subhdApiFetch(
-      `https://subhd.tv${previewPath}?file=0`,
-      attach.setCookie,
-      attachUrl,
-    );
-    const file = apiRes.json?.file;
-    if (!file || typeof file.content !== 'string' || !file.content) return null;
-
-    const format = (file.filename || '').toLowerCase().endsWith('.ass')
-      ? 'ass'
-      : 'srt';
-
-    const desc = file.filename || '';
-    return {
-      content: file.content,
-      format,
-      title: desc,
-      language: desc.includes('繁') ? 'zh-TW' : 'zh-CN',
-    };
-  } catch {
-    return null;
   }
+  if (!attach) return null;
+
+  const previewPath = attach.text.match(/data-preview-url="([^"]+)"/)?.[1];
+  if (!previewPath) return null;
+
+  const baseHost = new URL(attachUrl).origin;
+  const apiRes = await subhdApiFetch(
+    `${baseHost}${previewPath}?file=0`,
+    attach.setCookie,
+    attachUrl,
+  );
+  const file = apiRes.json?.file;
+  if (!file || typeof file.content !== 'string' || !file.content) return null;
+
+  const isAss = (file.filename || '').toLowerCase().endsWith('.ass');
+  return {
+    content: file.content,
+    format: isAss ? 'ass' : 'srt',
+    title: file.filename || '',
+    language: (file.filename || '').includes('繁') ? 'zh-TW' : 'zh-CN',
+  };
 }
 
-const OPENSUBTITLES_BASE = 'https://api.opensubtitles.com/api/v1';
+const subhdProvider: Provider = {
+  id: 'subhd',
+  search: searchSubhdSubtitle,
+  resolve: (r) => resolveSubhdSubtitleContent(r.pageUrl || ''),
+};
 
-async function openSubtitlesLogin(): Promise<string | null> {
-  const username = process.env.OPENSUBTITLES_USERNAME;
-  const password = process.env.OPENSUBTITLES_PASSWORD;
-  if (!username || !password) return null;
+// ── OpenSubtitles ───────────────────────────────────────────────
+const OS_BASE = 'https://api.opensubtitles.com/api/v1';
+
+async function osLogin(): Promise<string | null> {
+  const u = process.env.OPENSUBTITLES_USERNAME;
+  const p = process.env.OPENSUBTITLES_PASSWORD;
+  if (!u || !p) return null;
   try {
-    const res = await fetch(`${OPENSUBTITLES_BASE}/login`, {
+    const res = await fetch(`${OS_BASE}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Api-Key': process.env.OPENSUBTITLES_API_KEY || '',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username: u, password: p }),
       signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) return null;
-    const data = await res.json();
-    return typeof data.token === 'string' ? data.token : null;
+    const j = await res.json();
+    return typeof j.token === 'string' ? j.token : null;
   } catch {
     return null;
   }
 }
 
-// 从 OpenSubtitles 搜索中文字幕
 async function searchOpenSubtitles(
   title: string,
   year?: string,
 ): Promise<SubtitleSearchResult[]> {
-  const apiKey = process.env.OPENSUBTITLES_API_KEY;
-  if (!apiKey) return [];
-
-  const params = new URLSearchParams();
-  params.set('query', title);
-  params.set('languages', 'chi,zho,zht,zh,cmn,yue');
-  if (year) params.set('year', year);
-
+  const key = process.env.OPENSUBTITLES_API_KEY;
+  if (!key) return [];
+  const qs = new URLSearchParams({
+    query: title,
+    languages: 'chi,zho,zht,zh,cmn,yue',
+    ...(year ? { year } : {}),
+  });
   try {
-    const res = await fetch(
-      `${OPENSUBTITLES_BASE}/subtitles?${params.toString()}`,
-      {
-        headers: { 'Api-Key': apiKey, 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(15000),
-      },
-    );
+    const res = await fetch(`${OS_BASE}/subtitles?${qs}`, {
+      headers: { 'Api-Key': key, 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(TIMEOUT.search),
+    });
     if (!res.ok) return [];
-
-    const data = await res.json();
-    const items: any[] = Array.isArray(data.data) ? data.data : [];
-
-    const results: SubtitleSearchResult[] = [];
-    for (const item of items) {
-      const attr = item.attributes;
-      if (!attr) continue;
-      const fileId = item.id;
-      const language = attr.language || attr.language_original || '';
-      const release = attr.release || '';
-      const files = Array.isArray(attr.files) ? attr.files : [];
-      results.push({
-        title: release || title,
-        language,
-        format: 'srt',
-        fileId,
-        provider: 'opensubtitles',
-        pageUrl: `https://www.opensubtitles.com/en/subtitles/${fileId}`,
-      });
-      // 每个条目可能有多个文件，取第一个
-      void files;
-    }
-    return results;
+    const j = await res.json();
+    const items: any[] = Array.isArray(j.data) ? j.data : [];
+    return items.map((it) => ({
+      title: it.attributes?.release || title,
+      language: it.attributes?.language || '',
+      format: 'srt',
+      fileId: it.id,
+      provider: 'opensubtitles',
+      pageUrl: `https://www.opensubtitles.com/en/subtitles/${it.id}`,
+    }));
   } catch {
     return [];
   }
 }
 
-// 获取 OpenSubtitles 字幕文件下载链接（需登录 token）
-async function getOpenSubtitlesDownloadUrl(
-  fileId: number,
-): Promise<string | null> {
-  const apiKey = process.env.OPENSUBTITLES_API_KEY;
-  if (!apiKey) return null;
-  const token = await openSubtitlesLogin();
+async function downloadOpenSubtitles(fileId: number): Promise<string | null> {
+  const key = process.env.OPENSUBTITLES_API_KEY;
+  if (!key) return null;
+  const token = await osLogin();
   try {
-    const res = await fetch(`${OPENSUBTITLES_BASE}/download`, {
+    const res = await fetch(`${OS_BASE}/download`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Api-Key': apiKey,
+        'Api-Key': key,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ file_id: fileId }),
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(TIMEOUT.download),
     });
     if (!res.ok) return null;
-    const data = await res.json();
-    return typeof data.link === 'string' ? data.link : null;
+    const j = await res.json();
+    return typeof j.link === 'string' ? j.link : null;
   } catch {
     return null;
   }
 }
 
-// 统一搜索入口：subhd（中文源）→ OpenSubtitles（英文兜底）
+const osProvider: Provider = {
+  id: 'opensubtitles',
+  search: searchOpenSubtitles,
+  downloadUrl: (r) =>
+    typeof r.fileId === 'number' ? downloadOpenSubtitles(r.fileId) : null,
+};
+
+// ── Registry & Public API ───────────────────────────────────────
+const providers: Provider[] = [subhdProvider, osProvider];
+
 export async function searchSubtitles(
   title: string,
   year?: string,
 ): Promise<SubtitleSearchResult[]> {
-  const results: SubtitleSearchResult[] = [];
-  // subhd 中文源
-  const sh = await searchSubhdSubtitle(title);
-  results.push(...sh);
-  // OpenSubtitles 英文源
-  const os = await searchOpenSubtitles(title, year);
-  results.push(...os);
-  return results;
+  const cacheKey = `${title}:${year || ''}`;
+  const cached = searchCache.get(cacheKey);
+  if (cached) return cached;
+
+  const settled = await Promise.allSettled(
+    providers.map((p) =>
+      p
+        .search(title, year)
+        .catch(() => [] as SubtitleSearchResult[])
+        .then((r) => ({ provider: p.id, results: r })),
+    ),
+  );
+
+  const merged: SubtitleSearchResult[] = [];
+  for (const s of settled) {
+    if (s.status === 'fulfilled' && s.value.results.length) {
+      merged.push(...s.value.results);
+    }
+  }
+  if (merged.length) searchCache.set(cacheKey, merged);
+  return merged;
 }
 
-// 统一下载入口：为结果补充可直接加载的 downloadUrl
 export async function resolveSubtitleDownloadUrl(
   result: SubtitleSearchResult,
 ): Promise<string | null> {
   if (result.downloadUrl) return result.downloadUrl;
-  if (
-    result.provider === 'opensubtitles' &&
-    typeof result.fileId === 'number'
-  ) {
-    return await getOpenSubtitlesDownloadUrl(result.fileId);
+  const p = providers.find((x) => x.id === result.provider);
+  if (p?.downloadUrl && typeof result.fileId === 'number') {
+    return p.downloadUrl(result);
   }
   return null;
 }
 
-// 解析字幕内容（用于 subhd 等多步获取的内容源）
 export async function resolveSubtitleContent(
   result: SubtitleSearchResult,
 ): Promise<SubtitleContent | null> {
-  if (result.provider === 'subhd' && result.pageUrl) {
-    return await resolveSubhdSubtitleContent(result.pageUrl);
-  }
+  const p = providers.find((x) => x.id === result.provider);
+  if (p?.resolve) return p.resolve(result);
   return null;
 }

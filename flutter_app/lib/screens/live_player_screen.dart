@@ -1760,7 +1760,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen>
                     Container(
                       width: 4,
                       height: 4,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: AppTheme.success,
                         shape: BoxShape.circle,
                       ),

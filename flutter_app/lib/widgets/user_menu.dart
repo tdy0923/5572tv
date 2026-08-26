@@ -59,7 +59,7 @@ class _UserMenuState extends State<UserMenu> {
   }
 
   Future<void> _loadUserInfo() async {
-    final isLocalMode = false;
+    const isLocalMode = false;
     final username = await UserDataService.getUsername();
     final cookies = await UserDataService.getCookies();
     final doubanDataSource =
@@ -805,7 +805,7 @@ class _UserMenuState extends State<UserMenu> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 LucideIcons.trash2,
                                 size: 20,
                                 color: AppTheme.warning,
@@ -843,7 +843,7 @@ class _UserMenuState extends State<UserMenu> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 LucideIcons.download,
                                 size: 20,
                                 color: AppTheme.info,

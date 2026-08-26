@@ -164,7 +164,7 @@ class _SearchResultAggGridState extends State<SearchResultAggGrid>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.search_off,
             size: 80,
             color: AppTheme.stroke,

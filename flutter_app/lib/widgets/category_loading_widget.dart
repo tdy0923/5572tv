@@ -52,9 +52,9 @@ class _CategoryLoadingWidgetState extends State<CategoryLoadingWidget>
               child: Container(
                 width: 100,
                 height: 100,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: SweepGradient(
-                    colors: const [
+                    colors: [
                       Color(0xFFf4c24d),
                       Color(0xFFe88d30),
                       Color(0xFFf4c24d),

@@ -194,10 +194,15 @@ export default function RatingsPage() {
           {isLoading ? (
             <PosterGridSkeleton count={10} />
           ) : filtered.length === 0 ? (
-            <div className='ui-surface py-10 text-center text-sm text-gray-500 dark:text-gray-400'>
-              <p>暂无用户评分</p>
-              <p className='mt-1 text-xs text-gray-400'>
-                播放影片后即可点亮你的评分
+            <div className='ui-surface py-10 text-center'>
+              <div className='mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/20'>
+                <Star className='h-6 w-6 text-primary-500' />
+              </div>
+              <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                暂无用户评分
+              </p>
+              <p className='mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500 dark:text-gray-400'>
+                成为第一个评分的人吧 — 播放影片后在详情页为喜欢的作品点亮星星
               </p>
             </div>
           ) : (

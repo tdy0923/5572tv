@@ -144,7 +144,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       ValueNotifier<double>(16 / 9);
   bool _playerDisposed = false;
   VoidCallback? _exitWebFullscreenCallback;
-  bool _isPipMode = false;
+  final bool _isPipMode = false;
   StreamSubscription<int?>? _widthSubscription;
   StreamSubscription<int?>? _heightSubscription;
   StreamSubscription<String>? _errorSubscription;

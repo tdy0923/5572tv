@@ -102,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ],
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         '5',
                         style: TextStyle(
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                   position: _slideUp,
                   child: Column(
                     children: [
-                      Text(
+                      const Text(
                         '5572 影视',
                         style: TextStyle(
                           fontSize: 24,

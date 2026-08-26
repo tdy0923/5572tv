@@ -88,8 +88,8 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   int _remainingSeconds = 0;
   final ScreenshotController _screenshotController = ScreenshotController();
   bool _isCapturing = false;
-  bool _showSeekForward = false;
-  bool _showSeekBackward = false;
+  final bool _showSeekForward = false;
+  final bool _showSeekBackward = false;
   Timer? _seekIndicatorTimer;
   final ValueNotifier<Duration> _positionNotifier = ValueNotifier(Duration.zero);
   final ValueNotifier<Duration> _durationNotifier = ValueNotifier(Duration.zero);
@@ -267,8 +267,9 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
   }
 
   void _onSwipeUpdate(DragUpdateDetails details) {
-    if (_isLocked || !_isSeekingViaSwipe || widget.live || _screenSize == null)
+    if (_isLocked || !_isSeekingViaSwipe || widget.live || _screenSize == null) {
       return;
+    }
     final screenWidth = _screenSize!.width;
     final swipeDistance = details.globalPosition.dx - _swipeStartX;
     final swipeRatio = swipeDistance / (screenWidth * 0.5);
@@ -868,7 +869,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
             behavior: HitTestBehavior.opaque,
             child: Container(
               padding: const EdgeInsets.all(8),
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_back,
                 color: Colors.white,
                 size: 24,
@@ -900,7 +901,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
             behavior: HitTestBehavior.opaque,
             child: Container(
               padding: const EdgeInsets.all(8),
-              child: Icon(
+              child: const Icon(
                 Icons.cast,
                 color: Colors.white,
                 size: 24,
@@ -1069,7 +1070,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                   behavior: HitTestBehavior.opaque,
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    child: Icon(
+                    child: const Icon(
                       Icons.screen_rotation,
                       color: Colors.white,
                       size: 22,
@@ -1086,7 +1087,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                     behavior: HitTestBehavior.opaque,
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      child: Icon(
+                      child: const Icon(
                         Icons.skip_next,
                         color: Colors.white,
                         size: 28,
@@ -1220,7 +1221,7 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.timer_outlined,
                     color: Colors.white,
                     size: 22,
@@ -1272,9 +1273,9 @@ class _MobilePlayerControlsState extends State<MobilePlayerControls> {
                   size: 28,
                 ),
                 const SizedBox(height: 2),
-                Text(
+                const Text(
                   '10s',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w500,

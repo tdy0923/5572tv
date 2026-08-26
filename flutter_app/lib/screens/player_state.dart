@@ -38,11 +38,7 @@ class PlayerState extends ChangeNotifier {
   void markMounted() => _mounted = true;
   void markUnmounted() => _mounted = false;
 
-  SystemUiOverlayStyle _originalStyle = const SystemUiOverlayStyle();
-  SystemUiOverlayStyle get originalStyle => _originalStyle;
-  set originalStyle(SystemUiOverlayStyle value) {
-    _originalStyle = value;
-  }
+  SystemUiOverlayStyle originalStyle = const SystemUiOverlayStyle();
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -65,17 +61,9 @@ class PlayerState extends ChangeNotifier {
     notifyListeners();
   }
 
-  late bool _isTablet;
-  bool get isTablet => _isTablet;
-  set isTablet(bool value) {
-    _isTablet = value;
-  }
+  late bool isTablet;
 
-  late bool _isPortraitTablet;
-  bool get isPortraitTablet => _isPortraitTablet;
-  set isPortraitTablet(bool value) {
-    _isPortraitTablet = value;
-  }
+  late bool isPortraitTablet;
 
   bool _isLoading = true;
   bool get isLoading => _isLoading;
@@ -213,12 +201,7 @@ class PlayerState extends ChangeNotifier {
   Map<String, SourceSpeed> _allSourcesSpeed = {};
   Map<String, SourceSpeed> get allSourcesSpeed => _allSourcesSpeed;
 
-  VideoPlayerWidgetController? _videoPlayerController;
-  VideoPlayerWidgetController? get videoPlayerController =>
-      _videoPlayerController;
-  set videoPlayerController(VideoPlayerWidgetController? value) {
-    _videoPlayerController = value;
-  }
+  VideoPlayerWidgetController? videoPlayerController;
 
   bool _isFavorite = false;
   bool get isFavorite => _isFavorite;
@@ -245,11 +228,7 @@ class PlayerState extends ChangeNotifier {
   AnimationController get switchLoadingAnimationController =>
       _switchLoadingAnimationController;
 
-  bool _isAutoSwitching = false;
-  bool get isAutoSwitching => _isAutoSwitching;
-  set isAutoSwitching(bool value) {
-    _isAutoSwitching = value;
-  }
+  bool isAutoSwitching = false;
 
   bool _isCasting = false;
   bool get isCasting => _isCasting;
@@ -258,17 +237,9 @@ class PlayerState extends ChangeNotifier {
     notifyListeners();
   }
 
-  dynamic _dlnaDevice;
-  dynamic get dlnaDevice => _dlnaDevice;
-  set dlnaDevice(dynamic value) {
-    _dlnaDevice = value;
-  }
+  dynamic dlnaDevice;
 
-  Duration? _castStartPosition;
-  Duration? get castStartPosition => _castStartPosition;
-  set castStartPosition(Duration? value) {
-    _castStartPosition = value;
-  }
+  Duration? castStartPosition;
 
   Duration? _dlnaCurrentPosition;
   Duration? get dlnaCurrentPosition => _dlnaCurrentPosition;
@@ -308,25 +279,13 @@ class PlayerState extends ChangeNotifier {
   AnimationController get refreshAnimationController =>
       _refreshAnimationController;
 
-  DateTime? _lastSaveTime;
-  DateTime? get lastSaveTime => _lastSaveTime;
-  set lastSaveTime(DateTime? value) {
-    _lastSaveTime = value;
-  }
+  DateTime? lastSaveTime;
 
-  int? _lastSavePosition;
-  int? get lastSavePosition => _lastSavePosition;
-  set lastSavePosition(int? value) {
-    _lastSavePosition = value;
-  }
+  int? lastSavePosition;
 
   static const Duration _saveProgressInterval = Duration(seconds: 10);
 
-  Duration? _resumeStartAt;
-  Duration? get resumeStartAt => _resumeStartAt;
-  set resumeStartAt(Duration? value) {
-    _resumeStartAt = value;
-  }
+  Duration? resumeStartAt;
 
   bool _isWebFullscreen = false;
   bool get isWebFullscreen => _isWebFullscreen;
@@ -335,11 +294,7 @@ class PlayerState extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isLandscapeLocked = false;
-  bool get isLandscapeLocked => _isLandscapeLocked;
-  set isLandscapeLocked(bool value) {
-    _isLandscapeLocked = value;
-  }
+  bool isLandscapeLocked = false;
 
   final GlobalKey _playerKey = GlobalKey();
   GlobalKey get playerKey => _playerKey;
@@ -354,7 +309,7 @@ class PlayerState extends ChangeNotifier {
     if (_isCasting) {
       return _dlnaCurrentPosition;
     } else {
-      return _videoPlayerController?.currentPosition;
+      return videoPlayerController?.currentPosition;
     }
   }
 
@@ -405,7 +360,7 @@ class PlayerState extends ChangeNotifier {
   }
 
   void toggleOrientationLock() {
-    if (_isLandscapeLocked) {
+    if (isLandscapeLocked) {
       restoreOrientation();
     } else {
       SystemChrome.setPreferredOrientations([
@@ -413,7 +368,7 @@ class PlayerState extends ChangeNotifier {
         DeviceOrientation.landscapeRight,
       ]);
     }
-    _isLandscapeLocked = !_isLandscapeLocked;
+    isLandscapeLocked = !isLandscapeLocked;
     notifyListeners();
   }
 
@@ -450,6 +405,7 @@ class PlayerState extends ChangeNotifier {
       updateLoadingState(message: '正在获取短剧详情...', progress: 0.5, emoji: '🎬');
       final detail = await ApiService.getShortDramaDetail(id!, sourceApi: sourceApi);
       if (!isActiveLoad(loadGeneration)) return;
+      if (!context.mounted) return;
       if (detail == null) {
         setError('未找到短剧详情');
         return;
@@ -463,8 +419,10 @@ class PlayerState extends ChangeNotifier {
       int playEpisodeIndex = 0;
       int playTime = 0;
       if (mounted) {
+        if (!context.mounted) return;
         final allPlayRecords = await PageCacheService().getPlayRecords(context);
         if (!isActiveLoad(loadGeneration)) return;
+        if (!context.mounted) return;
         if (allPlayRecords.success && allPlayRecords.data != null) {
           final matchingRecords = allPlayRecords.data!.where(
               (r) => r.id == id && r.source == 'shortdrama');
@@ -522,6 +480,7 @@ class PlayerState extends ChangeNotifier {
         return;
       }
     }
+    if (!context.mounted) return;
     setInfosByDetail(_currentDetail!, context);
 
     checkFavoriteStatus();
@@ -529,8 +488,10 @@ class PlayerState extends ChangeNotifier {
     int playEpisodeIndex = 0;
     int playTime = 0;
     if (mounted) {
+      if (!context.mounted) return;
       final allPlayRecords = await PageCacheService().getPlayRecords(context);
       if (!isActiveLoad(loadGeneration)) return;
+      if (!context.mounted) return;
       if (allPlayRecords.success && allPlayRecords.data != null) {
         final matchingRecords = allPlayRecords.data!.where((record) =>
             record.id == _currentID && record.source == _currentSource);
@@ -576,9 +537,9 @@ class PlayerState extends ChangeNotifier {
       _currentEpisodeIndex = targetIndex;
       notifyListeners();
     }
-    _lastSavePosition = null;
+    lastSavePosition = null;
     final startAt = playTime > 0 ? Duration(seconds: playTime) : null;
-    _resumeStartAt = startAt;
+    resumeStartAt = startAt;
     updateVideoUrl(_currentDetail!.episodes[targetIndex], startAt: startAt);
     scrollToCurrentEpisode(context);
   }
@@ -678,9 +639,9 @@ class PlayerState extends ChangeNotifier {
         currentPositionVal = _dlnaCurrentPosition;
         duration = _dlnaCurrentDuration;
       } else {
-        if (_videoPlayerController == null) return;
-        currentPositionVal = _videoPlayerController!.currentPosition;
-        duration = _videoPlayerController!.duration;
+        if (videoPlayerController == null) return;
+        currentPositionVal = videoPlayerController!.currentPosition;
+        duration = videoPlayerController!.duration;
       }
 
       if (currentPositionVal == null || duration == null) return;
@@ -693,17 +654,17 @@ class PlayerState extends ChangeNotifier {
       final totalTime = duration.inSeconds;
       if (!force) {
         final now = DateTime.now();
-        if (_lastSaveTime != null &&
-            now.difference(_lastSaveTime!) < _saveProgressInterval) {
+        if (lastSaveTime != null &&
+            now.difference(lastSaveTime!) < _saveProgressInterval) {
           return;
         }
-        if (_lastSavePosition != null && playTime == _lastSavePosition!) {
+        if (lastSavePosition != null && playTime == lastSavePosition!) {
           return;
         }
       }
 
-      _lastSaveTime = DateTime.now();
-      _lastSavePosition = playTime;
+      lastSaveTime = DateTime.now();
+      lastSavePosition = playTime;
 
       final currentIDSnapshot = _currentID;
       final currentSourceSnapshot = _currentSource;
@@ -732,7 +693,7 @@ class PlayerState extends ChangeNotifier {
 
       PageCacheService().savePlayRecord(playRecord, context).then((_) {
         debugPrint(
-            '保存播放进度 [场景: $scene]: source: $currentSourceSnapshot, id: $currentIDSnapshot, 第${currentEpisodeIndexSnapshot + 1}集, 时间: ${playTime}秒');
+            '保存播放进度 [场景: $scene]: source: $currentSourceSnapshot, id: $currentIDSnapshot, 第${currentEpisodeIndexSnapshot + 1}集, 时间: $playTime秒');
       }).catchError((e) {
         debugPrint('保存播放进度失败 [场景: $scene]: $e');
       });
@@ -817,7 +778,7 @@ class PlayerState extends ChangeNotifier {
       if (_isCasting) {
         return;
       } else {
-        await _videoPlayerController?.updateDataSource(finalUrl,
+        await videoPlayerController?.updateDataSource(finalUrl,
             startAt: startAt);
       }
     } catch (e) {
@@ -832,8 +793,9 @@ class PlayerState extends ChangeNotifier {
 
   Future<void> seekToProgress(Duration position) async {
     try {
-      await _videoPlayerController?.seekTo(position);
+      await videoPlayerController?.seekTo(position);
     } catch (e) {
+      debugPrint('seekToProgress failed: $e');
     }
   }
 
@@ -846,10 +808,10 @@ class PlayerState extends ChangeNotifier {
     debugPrint('Video player is ready!');
     _showSwitchLoadingOverlay = false;
     notifyListeners();
-    _lastSaveTime = null;
-    if (_resumeStartAt != null) {
-      final tmpStartAt = _resumeStartAt;
-      _resumeStartAt = null;
+    lastSaveTime = null;
+    if (resumeStartAt != null) {
+      final tmpStartAt = resumeStartAt;
+      resumeStartAt = null;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && tmpStartAt != null) {
           seekToProgress(tmpStartAt);
@@ -932,12 +894,15 @@ class PlayerState extends ChangeNotifier {
       try {
         await PageCacheService().deletePlayRecord(oldSource, oldID, context);
         if (!mounted) return;
+        if (!context.mounted) return;
         debugPrint('删除旧源播放记录: $oldSource+$oldID');
       } catch (e) {
         debugPrint('删除旧源播放记录失败: $e');
         if (!mounted) return;
+        if (!context.mounted) return;
       }
     }
+    if (!context.mounted) return;
 
     setInfosByDetail(newSource, context);
     checkFavoriteStatus();
@@ -965,7 +930,7 @@ class PlayerState extends ChangeNotifier {
     if (context == null) return false;
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final effectiveWidth = (_isTablet && !_isPortraitTablet)
+    final effectiveWidth = (isTablet && !isPortraitTablet)
         ? screenWidth * 0.65
         : screenWidth;
 
@@ -973,7 +938,7 @@ class PlayerState extends ChangeNotifier {
     const itemMargin = 6.0;
     final availableWidth =
         effectiveWidth - (listViewPadding * 2);
-    final cardsPerView = _isTablet ? 6.2 : 3.2;
+    final cardsPerView = isTablet ? 6.2 : 3.2;
     final buttonWidth = (availableWidth / cardsPerView) - itemMargin;
 
     final targetIndex = _isEpisodesReversed
@@ -1016,7 +981,7 @@ class PlayerState extends ChangeNotifier {
     if (currentSourceIndex == -1) return false;
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final effectiveWidth = (_isTablet && !_isPortraitTablet)
+    final effectiveWidth = (isTablet && !isPortraitTablet)
         ? screenWidth * 0.65
         : screenWidth;
 
@@ -1024,7 +989,7 @@ class PlayerState extends ChangeNotifier {
     const itemMargin = 6.0;
     final availableWidth =
         effectiveWidth - (listViewPadding * 2);
-    final cardsPerView = _isTablet ? 6.2 : 3.2;
+    final cardsPerView = isTablet ? 6.2 : 3.2;
     final cardWidth = (availableWidth / cardsPerView) - itemMargin;
 
     final visibleAreaWidth = effectiveWidth - (listViewPadding * 2);
@@ -1073,7 +1038,6 @@ class PlayerState extends ChangeNotifier {
         },
         timeout: const Duration(seconds: 10),
       );
-    } catch (e) {
     } finally {
       if (onUpdate == null) {
         _isRefreshing = false;

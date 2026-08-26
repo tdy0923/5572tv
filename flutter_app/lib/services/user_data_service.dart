@@ -12,10 +12,7 @@ class UserDataService {
   static const String _localSearchKey = 'local_search';
 
   // 敏感信息（密码、Cookie）使用 Keystore/Keychain 加密存储，不再落盘明文
-  static final FlutterSecureStorage _secure =
-      const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  static const FlutterSecureStorage _secure = FlutterSecureStorage();
 
   // 旧版本把密码/Cookie 明文存在 SharedPreferences，这里做一次性迁移
   static Future<String?> _readSecure(String key) async {

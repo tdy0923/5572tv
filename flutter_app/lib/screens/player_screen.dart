@@ -389,7 +389,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return Container(
+            return SizedBox(
               height: panelHeight,
               width: double.infinity,
               child: PlayerEpisodesPanel(
@@ -484,7 +484,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return Container(
+            return SizedBox(
               height: panelHeight,
               width: double.infinity,
               child: PlayerDetailsPanel(
@@ -582,7 +582,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
-            return Container(
+            return SizedBox(
               height: panelHeight,
               width: double.infinity,
               child: PlayerSourcesPanel(
@@ -991,12 +991,12 @@ class _PlayerScreenState extends State<PlayerScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final double screenWidth = constraints.maxWidth;
-        final double padding = 16.0;
-        final double spacing = 12.0;
+        const double padding = 16.0;
+        const double spacing = 12.0;
         final crossAxisCount = _state.isTablet ? 6 : 3;
         final double availableWidth =
             screenWidth - (padding * 2) - (spacing * (crossAxisCount - 1));
-        final double minItemWidth = 80.0;
+        const double minItemWidth = 80.0;
         final double calculatedItemWidth = availableWidth / crossAxisCount;
         final double itemWidth = math.max(calculatedItemWidth, minItemWidth);
         final double itemHeight = itemWidth * 2.0;
@@ -1181,7 +1181,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         LayoutBuilder(
           builder: (context, constraints) {
             final screenWidth = constraints.maxWidth;
-            final horizontalPadding = 32.0;
+            const horizontalPadding = 32.0;
             final availableWidth = screenWidth - horizontalPadding;
             final cardsPerView = _state.isTablet ? 6.2 : 3.2;
             final buttonWidth = (availableWidth / cardsPerView) - 6;
@@ -1358,7 +1358,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     return LayoutBuilder(
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
-        final horizontalPadding = 32.0;
+        const horizontalPadding = 32.0;
         final availableWidth = screenWidth - horizontalPadding;
         final cardsPerView = _state.isTablet ? 6.2 : 3.2;
         final cardWidth = (availableWidth / cardsPerView) - 6;
@@ -1502,7 +1502,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                 ),
                 const SizedBox(height: 32),
 
-                Text(
+                const Text(
                   '哎呀, 出现了一些问题',
                   style: TextStyle(
                     fontSize: 22,
@@ -1527,7 +1527,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                   ),
                   child: Text(
                     _state.errorMessage!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppTheme.foregroundMuted,
                       fontWeight: FontWeight.w500,

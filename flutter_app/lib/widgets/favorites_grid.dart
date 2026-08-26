@@ -288,7 +288,7 @@ class _FavoritesGridState extends State<FavoritesGrid>
   }
 
   Widget _buildEmptyState() {
-    return GridEmptyState(
+    return const GridEmptyState(
       icon: Icons.favorite_border,
       message: '暂无收藏内容',
       subtitle: '您收藏的视频将显示在这里',

@@ -118,10 +118,11 @@ class _PlayerSourcesPanelState extends State<PlayerSourcesPanel>
     try {
       await widget.onRefresh();
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isRefreshing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
       _stopRefreshAnimation();
     }
   }

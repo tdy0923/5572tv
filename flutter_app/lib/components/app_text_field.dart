@@ -33,7 +33,7 @@ class AppTextField extends StatelessWidget {
         final fillColor =
             isDark ? AppTheme.darkBackgroundSubtle : AppTheme.background;
         final borderColor = isDark ? AppTheme.darkStroke : AppTheme.stroke;
-        final focusedBorderColor = AppTheme.primary;
+        const focusedBorderColor = AppTheme.primary;
         final textColor =
             isDark ? AppTheme.darkForeground : AppTheme.foreground;
         final hintColor =
@@ -94,7 +94,7 @@ class AppTextField extends StatelessWidget {
                   borderRadius:
                       BorderRadius.circular(AppTheme.radiusLg),
                   borderSide:
-                      BorderSide(color: focusedBorderColor, width: 2),
+                      const BorderSide(color: focusedBorderColor, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius:

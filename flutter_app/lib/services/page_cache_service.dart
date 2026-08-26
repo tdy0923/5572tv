@@ -60,6 +60,7 @@ class PageCacheService
       return DataOperationResult.success(cachedData);
     }
 
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
     // 缓存未命中，直接走接口并保存到缓存
     return await getPlayRecordsDirect(context);
   }
@@ -72,6 +73,7 @@ class PageCacheService
       return DataOperationResult.success(
           await LocalModeStorageService.getPlayRecords());
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
 
     const cacheKey = 'play_records';
 
@@ -112,6 +114,7 @@ class PageCacheService
     if (isLocalMode) {
       return;
     }
+    if (!context.mounted) return;
     const cacheKey = 'play_records';
 
     try {
@@ -150,6 +153,7 @@ class PageCacheService
       await LocalModeStorageService.savePlayRecord(playRecord);
       return DataOperationResult.success(null);
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
 
     // 优先操作缓存
     _addPlayRecordToCache(playRecord);
@@ -174,6 +178,7 @@ class PageCacheService
       await LocalModeStorageService.deletePlayRecord(source, id);
       return DataOperationResult.success(null);
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
 
     // 优先操作缓存
     _removePlayRecordFromCache(source, id);
@@ -197,6 +202,7 @@ class PageCacheService
       await LocalModeStorageService.clearPlayRecords();
       return DataOperationResult.success(null);
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
 
     // 优先操作缓存
     clearCache('play_records');
@@ -263,6 +269,7 @@ class PageCacheService
       return DataOperationResult.success(
           await LocalModeStorageService.getFavorites());
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
     const cacheKey = 'favorites';
 
     // 先检查缓存
@@ -287,6 +294,7 @@ class PageCacheService
       return DataOperationResult.success(
           await LocalModeStorageService.getFavorites());
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
     const cacheKey = 'favorites';
 
     try {
@@ -313,6 +321,7 @@ class PageCacheService
     if (isLocalMode) {
       return;
     }
+    if (!context.mounted) return;
     const cacheKey = 'favorites';
 
     try {
@@ -347,6 +356,7 @@ class PageCacheService
           origin: ''));
       return DataOperationResult.success(null);
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
 
     // 优先操作缓存
     _addFavoriteToCache(source, id, favoriteData);
@@ -372,6 +382,7 @@ class PageCacheService
       await LocalModeStorageService.deleteFavorite(source, id);
       return DataOperationResult.success(null);
     }
+    if (!context.mounted) return DataOperationResult.error('Context not mounted');
     // 优先操作缓存
     _removeFavoriteFromCache(source, id);
 
@@ -528,7 +539,7 @@ class PageCacheService
         final existingItem = cachedData[existingIndex];
         final updatedHistory = [
           existingItem,
-          ...cachedData.where((item) => item != query).toList()
+          ...cachedData.where((item) => item != query)
         ];
         setCache(cacheKey, updatedHistory);
       }

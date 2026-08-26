@@ -153,7 +153,7 @@ class _LoadingPlaceholder extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 32,
                 height: 32,
                 child: CircularProgressIndicator(

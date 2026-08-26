@@ -207,6 +207,7 @@ class ApiService {
           )
           .timeout(_timeout);
 
+      if (context != null && !context.mounted) return ApiResponse.error('Context not mounted');
       return await _handleResponse(response, fromJson, context);
     } catch (e) {
       return ApiResponse.error('网络请求异常: ${e.toString()}');
@@ -233,6 +234,7 @@ class ApiService {
           )
           .timeout(_timeout);
 
+      if (context != null && !context.mounted) return ApiResponse.error('Context not mounted');
       return await _handleResponse(response, fromJson, context);
     } catch (e) {
       return ApiResponse.error('网络请求异常: ${e.toString()}');
@@ -259,6 +261,7 @@ class ApiService {
           )
           .timeout(_timeout);
 
+      if (context != null && !context.mounted) return ApiResponse.error('Context not mounted');
       return await _handleResponse(response, fromJson, context);
     } catch (e) {
       return ApiResponse.error('网络请求异常: ${e.toString()}');
@@ -283,6 +286,7 @@ class ApiService {
           )
           .timeout(_timeout);
 
+      if (context != null && !context.mounted) return ApiResponse.error('Context not mounted');
       return await _handleResponse(response, fromJson, context);
     } catch (e) {
       return ApiResponse.error('网络请求异常: ${e.toString()}');
@@ -322,6 +326,7 @@ class ApiService {
       final streamedResponse = await request.send().timeout(_timeout);
       final response = await http.Response.fromStream(streamedResponse);
 
+      if (context != null && !context.mounted) return ApiResponse.error('Context not mounted');
       return await _handleResponse(response, fromJson, context);
     } catch (e) {
       return ApiResponse.error('文件上传异常: ${e.toString()}');

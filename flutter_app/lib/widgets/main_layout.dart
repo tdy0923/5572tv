@@ -1,6 +1,5 @@
 import 'package:media_5572/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../services/search_service.dart';
@@ -114,7 +113,7 @@ class _MainLayoutState extends State<MainLayout> {
     }
 
     final currentQuery = query;
-    final isLocalMode = false;
+    const isLocalMode = false;
     final isLocalSearch = await UserDataService.getLocalSearch();
 
     List<String> suggestionResults;
@@ -912,7 +911,7 @@ class _MainLayoutState extends State<MainLayout> {
     ];
 
     final isTablet = DeviceUtils.isTablet(context);
-    final isActive = (int index) =>
+    isActive(int index) =>
         !widget.isSearchMode && widget.currentBottomNavIndex == index;
 
     return Container(

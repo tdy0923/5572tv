@@ -361,7 +361,8 @@ class _UpdateDialogState extends State<UpdateDialog> {
                                 onPressed: () async {
                                   await VersionService.dismissVersion(
                                       widget.versionInfo.latestVersion);
-                                  if (mounted) Navigator.of(context).pop();
+                                  if (!context.mounted) return;
+                                  Navigator.of(context).pop();
                                 },
                                 variant: AppButtonVariant.text,
                                 color: themeService.isDarkMode

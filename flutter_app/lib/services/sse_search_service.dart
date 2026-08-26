@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/search_result.dart';
 import '../models/search_resource.dart';
@@ -260,7 +261,7 @@ class SSESearchService {
     _buffer = '';
 
     // 使用流式 UTF-8 解码器，自动处理跨 chunk 的多字节字符
-    final utf8Decoder = const Utf8Decoder(allowMalformed: false);
+    const utf8Decoder = Utf8Decoder(allowMalformed: false);
 
     // 流式处理 SSE 数据
     await for (final chunk in response.stream.transform(utf8Decoder)) {
@@ -433,7 +434,7 @@ class SSESearchService {
         errorString.contains('clientexception') ||
         errorString.contains('connection terminated')) {
       // 连接被关闭，这是正常情况，不显示错误
-      print('搜索连接已关闭: ${error.toString()}');
+      debugPrint('搜索连接已关闭: ${error.toString()}');
       return;
     }
 

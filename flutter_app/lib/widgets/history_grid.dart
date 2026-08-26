@@ -167,7 +167,7 @@ class _HistoryGridState extends State<HistoryGrid>
   }
 
   Widget _buildEmptyState() {
-    return GridEmptyState(
+    return const GridEmptyState(
       icon: Icons.history,
       message: '暂无播放历史',
       subtitle: '您观看过的视频将显示在这里',
