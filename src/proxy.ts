@@ -506,7 +506,6 @@ function shouldSkipAuth(pathname: string): boolean {
     '/release-calendar', // 即将上映（公共内容页）
     '/live', // 直播页（公共访问）
     '/tvbox', // TVBox 配置页（接口自行处理 token/认证）
-    '/source-browser', // 源浏览器（公共访问）
     '/api/search', // 聚合搜索 API（匿名可用默认源，接口内限流）
     '/favorites', // 收藏页面（客户端重定向）
     '/history', // 历史页面（客户端重定向）
