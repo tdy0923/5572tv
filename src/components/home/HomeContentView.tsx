@@ -11,6 +11,7 @@ import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 
 import HeroBanner from '@/components/HeroBanner';
 const ContinueWatching = dynamic(() => import('@/components/ContinueWatching'));
+import PersonalRecommend from '@/components/home/PersonalRecommend';
 import LazySection from '@/components/LazySection';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
@@ -132,6 +133,9 @@ export default function HomeContentView({
       <div className='mb-8 md:mb-10'>
         <ContinueWatching />
       </div>
+
+      {/* 猜你喜欢：基于播放历史的主流类型推荐（未登录/无记录自动隐藏） */}
+      <PersonalRecommend />
 
       <LazySection fallbackHeight={280}>
         <section className='mb-8 md:mb-10'>
