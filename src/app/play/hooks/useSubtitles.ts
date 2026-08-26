@@ -7,6 +7,71 @@ import type { SearchResult } from '@/lib/types';
 
 import { escapeAudioTrackHtml } from '../utils';
 
+// 将 subhd 预览格式（[HH:MM:SS] + 文本行）或标准 SRT 转换为 WebVTT
+function toVtt(content: string): string {
+  // 已经是 WebVTT
+  if (/^WEBVTT/i.test(content.trim())) return content;
+
+  const lines = content.replace(/\r/g, '').split('\n');
+
+  // 标准 SRT：检测 "HH:MM:SS,mmm --> HH:MM:SS,mmm"
+  if (lines.some((l) => l.includes('-->'))) {
+    return (
+      'WEBVTT\n\n' +
+      content
+        .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2')
+        .replace(/\n{3,}/g, '\n\n')
+    );
+  }
+
+  // subhd 简化格式：连续 [HH:MM:SS] 块
+  const blocks: { start: string; text: string[] }[] = [];
+  let currentTime = '';
+  let currentText: string[] = [];
+  const timeRe = /^\[(\d{2}:\d{2}:\d{2})\]$/;
+
+  for (const line of lines) {
+    const t = line.trim().match(timeRe);
+    if (t) {
+      if (currentTime && currentText.length > 0) {
+        blocks.push({ start: currentTime, text: currentText });
+      }
+      currentTime = t[1];
+      currentText = [];
+    } else if (line.trim()) {
+      currentText.push(line.trim());
+    }
+  }
+  if (currentTime && currentText.length > 0) {
+    blocks.push({ start: currentTime, text: currentText });
+  }
+
+  if (blocks.length === 0) return content;
+
+  const output: string[] = ['WEBVTT\n'];
+  for (let i = 0; i < blocks.length; i++) {
+    const start = `${blocks[i].start}.000`;
+    const end =
+      i + 1 < blocks.length
+        ? `${blocks[i + 1].start}.000`
+        : addSeconds(blocks[i].start, 2);
+    output.push(`${start} --> ${end}`);
+    output.push(blocks[i].text.join('\n'));
+    output.push('');
+  }
+  return output.join('\n');
+}
+
+function addSeconds(time: string, sec: number): string {
+  const parts = time.split('.').length > 1 ? time.split('.')[0] : time;
+  const [h, m, s] = parts.split(':').map(Number);
+  const total = h * 3600 + m * 60 + s + sec;
+  const hh = String(Math.floor(total / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const ss = String(Math.floor(total % 60)).padStart(2, '0');
+  return `${hh}:${mm}:${ss}.000`;
+}
+
 export interface SubtitleTrack {
   index: number;
   name: string;
@@ -143,8 +208,8 @@ export function useSubtitles(params: {
         );
         const best = chineseIdx >= 0 ? list[chineseIdx] : list[0];
 
-        // 尝试获取下载链接
-        const dl = await fetch('/api/subtitle/download', {
+        // 尝试获取下载链接或内容
+        const dl = await fetch('/api/subtitle/load', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -154,7 +219,7 @@ export function useSubtitles(params: {
           }),
         });
         if (!dl.ok) {
-          // 无下载链接时至少展示搜索结果，允许用户点击跳转到字幕源页面
+          // 无下载时展示搜索结果，允许用户点击跳转
           const searchTracks: SubtitleTrack[] = list.map((s, i) => ({
             index: i,
             name: s.title || s.language || '字幕',
@@ -166,17 +231,36 @@ export function useSubtitles(params: {
           return;
         }
         const dlData = await dl.json();
-        if (!dlData.url) return;
 
-        const track: SubtitleTrack = {
-          index: 0,
-          name: best.title || best.language || '在线字幕',
-          language: best.language,
-          type: 'emby' as const,
-          url: dlData.url,
-        };
-        setSubtitleTracks([track]);
-        selectSubtitle(0);
+        // subhd 内容：content 字段包含字幕文本
+        if (dlData.content && dlData.content.content) {
+          const vtt = toVtt(dlData.content.content);
+          const blob = new Blob([vtt], { type: 'text/vtt' });
+          const blobUrl = URL.createObjectURL(blob);
+          const track: SubtitleTrack = {
+            index: 0,
+            name: dlData.content.title || best.language || '在线字幕',
+            language: dlData.content.language || best.language,
+            type: 'emby' as const,
+            url: blobUrl,
+          };
+          setSubtitleTracks([track]);
+          selectSubtitle(0);
+          return;
+        }
+
+        // opensubtitles：直接 URL
+        if (dlData.url) {
+          const track: SubtitleTrack = {
+            index: 0,
+            name: best.title || best.language || '在线字幕',
+            language: best.language,
+            type: 'emby' as const,
+            url: dlData.url,
+          };
+          setSubtitleTracks([track]);
+          selectSubtitle(0);
+        }
       } catch {
         // 静默失败
       }
