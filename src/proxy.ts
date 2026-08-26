@@ -498,8 +498,11 @@ function shouldSkipAuth(pathname: string): boolean {
     '/api/analytics', // 行为分析上报（匿名采集，路由内自带限流与机器人过滤）
     '/api/danmu-external', // 弹幕 API（公共数据，无需认证）
     '/api/tvbox', // TVBox 配置端点（自身处理 token/cookie/开放认证）
+    '/api/reviews/leaderboard', // 评分排行榜（公共数据，无需认证）
+    '/api/subtitle', // 字幕搜索/加载（公共数据，无需认证）
     '/shortdrama', // 短剧页面（公共访问）
     '/download', // 下载页面（公共访问）
+    '/ratings', // 评分排行榜页面（公共访问）
     '/favorites', // 收藏页面（客户端重定向）
     '/history', // 历史页面（客户端重定向）
     '/profile', // 个人中心（客户端重定向）
