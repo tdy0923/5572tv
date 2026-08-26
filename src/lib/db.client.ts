@@ -603,7 +603,7 @@ function fetchWithTimeout(
 }
 
 /**
- * 通用的 fetch 函数，处理 401 状态码自动跳转登录
+ * 通用的 fetch 函数，处理 401 状态码
  */
 async function fetchWithAuth(
   url: string,
@@ -611,22 +611,18 @@ async function fetchWithAuth(
 ): Promise<Response> {
   const res = await fetchWithTimeout(url, options);
   if (!res.ok) {
-    // 如果是 401 未授权，跳转到登录页面
+    // 401 未授权：清理登录态，但不跳转登录页。
+    // 跳转会在公开页面（如首页）触发后台数据请求 → 401 → 跳转的无限循环。
     if (res.status === 401) {
-      // 调用 logout 接口
       try {
         await fetch('/api/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
       } catch (error) {
-        console.error('注销请求失败:', error);
+        console.warn('注销请求失败:', error);
       }
-      const currentUrl = window.location.pathname + window.location.search;
-      const loginUrl = new URL('/login', window.location.origin);
-      loginUrl.searchParams.set('redirect', currentUrl);
-      window.location.href = loginUrl.toString();
-      throw new Error('用户未授权，已跳转到登录页面');
+      throw new Error('未授权');
     }
     throw new Error(`请求 ${url} 失败: ${res.status}`);
   }
