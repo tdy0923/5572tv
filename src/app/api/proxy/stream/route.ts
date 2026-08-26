@@ -112,7 +112,7 @@ export async function GET(request: Request) {
       status: response.status,
       headers,
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Failed to fetch stream' },
       { status: 500 },

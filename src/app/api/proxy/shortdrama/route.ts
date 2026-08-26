@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     try {
       const targetUrlObj = new URL(decodedUrl);
       targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
-    } catch {}
+    } catch (error) {}
 
     const headers: Record<string, string> = {
       'User-Agent': DEFAULT_USER_AGENT,

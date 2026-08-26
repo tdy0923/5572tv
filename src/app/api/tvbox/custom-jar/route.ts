@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     // 验证 URL 格式
     try {
       new URL(jarUrl);
-    } catch {
+    } catch (error) {
       return NextResponse.json(
         { error: 'Invalid URL format' },
         { status: 400 },

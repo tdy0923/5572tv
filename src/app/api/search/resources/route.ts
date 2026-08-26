@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300');
     response.headers.set('CDN-Cache-Control', 'public, s-maxage=300');
     return response;
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: '获取资源失败' }, { status: 500 });
   }
 }

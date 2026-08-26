@@ -261,7 +261,7 @@ export async function GET(request: NextRequest) {
           },
         );
     }
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       {
         success: false,

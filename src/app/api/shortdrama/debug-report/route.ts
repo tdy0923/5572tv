@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 });
   }
 }

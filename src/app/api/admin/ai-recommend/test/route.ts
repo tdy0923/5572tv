@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     let result: any;
     try {
       result = JSON.parse(rawText);
-    } catch {
+    } catch (error) {
       // SSE streaming response — extract first data line
       const match = rawText.match(/^data:\s*(\{.*\})/m);
       if (match) {

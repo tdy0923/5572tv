@@ -133,7 +133,7 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
       if (settings.useCustomApi && settings.customApiUrl) {
         try {
           new URL(settings.customApiUrl);
-        } catch {
+        } catch (error) {
           showMessage('error', '请输入有效的 API 地址');
           return;
         }

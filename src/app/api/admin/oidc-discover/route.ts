@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(issuerUrl);
-    } catch {
+    } catch (error) {
       return NextResponse.json(
         { error: 'Issuer URL格式不正确' },
         { status: 400 },

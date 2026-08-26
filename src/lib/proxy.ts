@@ -228,7 +228,7 @@ export async function fetchWithRetry(
               if (domain) reportCdnResult(domain, true, a.via);
               return retryResp;
             }
-          } catch {
+          } catch (error) {
             /* URL parse or fetch error — safe to skip */
           }
         }
@@ -236,7 +236,7 @@ export async function fetchWithRetry(
         // Continue to next attempt
         try {
           response.body?.cancel();
-        } catch {
+        } catch (error) {
           /* URL parse or fetch error — safe to skip */
         }
         continue;

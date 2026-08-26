@@ -75,7 +75,7 @@ export function DeviceList() {
         setDevices(data.devices);
         setCurrentDeviceId(data.currentDeviceId);
       }
-    } catch {
+    } catch (error) {
       // silently handle error
     } finally {
       setLoading(false);

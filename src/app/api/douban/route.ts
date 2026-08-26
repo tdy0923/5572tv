@@ -51,7 +51,7 @@ async function getCachedDoubanData(url: string): Promise<any> {
     pruneDoubanCache();
   }
 
-  const { data, _provider, _durationMs } = await fetchDoubanWithProxy<any>(url);
+  const { data } = await fetchDoubanWithProxy<any>(url);
 
   cache.set(url, { data, timestamp: Date.now() });
   if (cache.size > CACHE_MAX) {

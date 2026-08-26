@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         },
       },
     );
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'Error' }, { status: 500 });
   }
 }

@@ -1,5 +1,3 @@
-/* eslint-disable no-console*/
-
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie, revokeToken } from '@/lib/auth';
@@ -54,7 +52,7 @@ export async function POST(request: NextRequest) {
     let isOldPasswordValid = false;
     try {
       isOldPasswordValid = await db.verifyUserV2(username, oldPassword);
-    } catch {}
+    } catch (error) {}
     if (!isOldPasswordValid) {
       try {
         isOldPasswordValid = await db.verifyUser(username, oldPassword);

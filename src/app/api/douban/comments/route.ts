@@ -53,7 +53,7 @@ async function tryFetchWithAntiCrawler(
       return { success: true, html };
     }
     return { success: false, error: `Status ${response.status}` };
-  } catch {
+  } catch (error) {
     return {
       success: false,
       error: '反爬验证失败，请稍后重试',
@@ -283,7 +283,7 @@ export async function GET(request: Request) {
         'Netlify-Vary': 'query',
       },
     });
-  } catch {
+  } catch (error) {
     const errorResponse = {
       comments: [],
       total: 0,

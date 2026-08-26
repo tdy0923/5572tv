@@ -131,7 +131,7 @@ export const UserEmbyConfig = memo(({ initialConfig }: UserEmbyConfigProps) => {
       });
       toast.success('删除成功');
       queryClient.invalidateQueries({ queryKey: ['user', 'emby-config'] });
-    } catch {
+    } catch (error) {
       toast.error('删除失败');
     }
   };
@@ -151,7 +151,7 @@ export const UserEmbyConfig = memo(({ initialConfig }: UserEmbyConfigProps) => {
       } else {
         toast.error(`连接失败: ${data.error}`);
       }
-    } catch {
+    } catch (error) {
       toast.error('测试连接失败');
     } finally {
       setTestingIndex(null);
@@ -216,7 +216,7 @@ export const UserEmbyConfig = memo(({ initialConfig }: UserEmbyConfigProps) => {
       } else {
         toast.error(`保存失败: ${data.error}`);
       }
-    } catch {
+    } catch (error) {
       toast.error('保存失败，请重试');
     } finally {
       setIsLoading(false);

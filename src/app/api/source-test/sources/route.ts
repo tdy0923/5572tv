@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         headers: { 'Cache-Control': 'no-store' },
       },
     );
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: '获取源列表失败' }, { status: 500 });
   }
 }

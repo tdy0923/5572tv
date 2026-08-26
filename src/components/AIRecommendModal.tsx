@@ -870,7 +870,7 @@ export default function AIRecommendModal({
 
         // Replace thinking message with actual response
         setMessages([...updatedMessages, assistantMessage]);
-      } catch (error) {
+      } catch (error: any) {
         console.error('AI推荐请求失败:', error);
 
         if (error instanceof Error) {
@@ -880,7 +880,7 @@ export default function AIRecommendModal({
               message: errorResponse.error || error.message,
               details: errorResponse.details,
             });
-          } catch {
+          } catch (error: any) {
             setError({
               message: error.message,
               details: '如果问题持续，请联系管理员检查AI配置',

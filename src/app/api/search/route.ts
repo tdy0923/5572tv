@@ -428,7 +428,7 @@ export async function GET(request: NextRequest) {
         'Netlify-Vary': 'query',
       },
     });
-  } catch {
+  } catch (error) {
     const errorResponse = { error: '搜索失败' };
     const errorSize = Buffer.byteLength(JSON.stringify(errorResponse), 'utf8');
 

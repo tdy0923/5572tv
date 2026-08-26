@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
       }
       oidcSession = JSON.parse(verifiedPayload);
-    } catch {
+    } catch (error) {
       return NextResponse.json({ error: 'OIDC会话无效' }, { status: 400 });
     }
 

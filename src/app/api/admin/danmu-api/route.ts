@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     if (danmuApiConfig.useCustomApi && danmuApiConfig.customApiUrl) {
       try {
         new URL(danmuApiConfig.customApiUrl);
-      } catch {
+      } catch (error) {
         return NextResponse.json(
           { error: '无效的API地址格式' },
           { status: 400 },

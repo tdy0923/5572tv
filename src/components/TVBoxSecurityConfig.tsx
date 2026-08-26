@@ -123,7 +123,7 @@ const TVBoxSecurityConfig = ({
       if (proxySettings.enabled && proxySettings.proxyUrl) {
         try {
           new URL(proxySettings.proxyUrl);
-        } catch {
+        } catch (error) {
           showMessage('error', '代理URL格式不正确');
           return;
         }
@@ -133,7 +133,7 @@ const TVBoxSecurityConfig = ({
       if (customJarUrl) {
         try {
           new URL(customJarUrl);
-        } catch {
+        } catch (error) {
           showMessage('error', '自定义 JAR URL 格式不正确');
           return;
         }

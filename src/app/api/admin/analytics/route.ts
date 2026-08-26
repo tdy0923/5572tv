@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         if (!userEntry || userEntry.role !== 'admin' || userEntry.banned) {
           return NextResponse.json({ error: '权限不足' }, { status: 401 });
         }
-      } catch {
+      } catch (error) {
         return NextResponse.json({ error: '权限不足' }, { status: 401 });
       }
     }

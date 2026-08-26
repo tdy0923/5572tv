@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(targetUrl);
-    } catch {
+    } catch (error) {
       return NextResponse.json(
         { error: 'Invalid URL format' },
         { status: 400, headers: getCorsHeaders() },

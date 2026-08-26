@@ -134,7 +134,7 @@ export default function ShortDramaPage() {
           });
         }
         setHasMore(result.hasMore);
-      } catch {
+      } catch (error) {
         console.error('加载短剧失败:', error);
       } finally {
         setLoading(false);

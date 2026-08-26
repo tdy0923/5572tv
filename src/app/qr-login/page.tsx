@@ -96,7 +96,7 @@ function QRLoginClient() {
 
       // Start polling
       startPollingRef.current(data.sessionId);
-    } catch {
+    } catch (error) {
       setError('网络错误，请重试');
       setStatus('error');
     }

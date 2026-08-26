@@ -96,7 +96,7 @@ export async function GET(request: Request) {
   try {
     const checkUrl = new URL(decodedUrl);
     _isBlockedCdn = BLOCKED_CDNS.some((cdn) => checkUrl.hostname.includes(cdn));
-  } catch {}
+  } catch (error) {}
 
   let response: Response | null = null;
   let responseUsed = false;
@@ -351,7 +351,7 @@ export async function GET(request: Request) {
         'CDN-Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
       },
     });
-  } catch {
+  } catch (error) {
     stats.errors++;
     clearTimeout(timeoutId);
 

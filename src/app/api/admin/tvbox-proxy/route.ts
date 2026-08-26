@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       // 验证URL格式
       try {
         new URL(tvboxProxyConfig.proxyUrl);
-      } catch {
+      } catch (error) {
         return NextResponse.json(
           { error: '代理URL格式不正确' },
           { status: 400 },

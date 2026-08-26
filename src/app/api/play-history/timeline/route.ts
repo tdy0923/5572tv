@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       timeline,
       total: Object.keys(records).length,
     });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: '获取时间线失败' }, { status: 500 });
   }
 }

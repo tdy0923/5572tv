@@ -611,7 +611,7 @@ async function extractPlatformUrls(
         } else {
         }
       }
-    } catch {}
+    } catch (error) {}
 
     // 优先级 2: 带完整浏览器指纹的请求（与 douban/details 一致）
     if (!html) {

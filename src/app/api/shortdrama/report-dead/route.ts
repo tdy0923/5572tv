@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     const isNew = reportDeadDrama(name);
     return NextResponse.json({ ok: true, isNew });
-  } catch {
+  } catch (error) {
     return NextResponse.json({ error: 'bad request' }, { status: 400 });
   }
 }

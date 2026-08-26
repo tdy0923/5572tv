@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
     let targetUrl: URL;
     try {
       targetUrl = new URL(apiUrl);
-    } catch {
+    } catch (error) {
       return NextResponse.json({ error: 'Invalid API URL' }, { status: 400 });
     }
 

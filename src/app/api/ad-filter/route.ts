@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         },
       });
       await vm.run(`module.exports = async () => { ${code} };`, __dirname);
-    } catch {
+    } catch (error) {
       return NextResponse.json(
         { error: 'Invalid or unsafe JavaScript code' },
         { status: 400 },

@@ -164,7 +164,7 @@ export async function GET(request: Request) {
     try {
       const targetUrlObj = new URL(decodedUrl);
       targetOrigin = `${targetUrlObj.protocol}//${targetUrlObj.host}`;
-    } catch {}
+    } catch (error) {}
 
     const imageResponse = await fetch(decodedUrl, {
       cache: 'no-cache',

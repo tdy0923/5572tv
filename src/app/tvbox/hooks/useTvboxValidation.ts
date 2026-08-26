@@ -51,7 +51,7 @@ export function useTvboxValidation({
       const data = await response.json();
       setDiagnosisResult(data);
       onDiagnoseComplete?.(data);
-    } catch {
+    } catch (error) {
       setDiagnosisResult({ error: '诊断失败，请稍后重试' });
     } finally {
       setDiagnosing(false);
@@ -92,7 +92,7 @@ export function useTvboxValidation({
       const response = await fetch('/api/tvbox/smart-health');
       const data = await response.json();
       setSmartHealthResult(data);
-    } catch {
+    } catch (error) {
       setSmartHealthResult({
         success: false,
         error: '智能健康检查失败，请稍后重试',
@@ -109,7 +109,7 @@ export function useTvboxValidation({
       const response = await fetch('/api/tvbox/jar-fix');
       const data = await response.json();
       setJarFixResult(data);
-    } catch {
+    } catch (error) {
       setJarFixResult({
         success: false,
         error: 'JAR源修复诊断失败，请稍后重试',
@@ -126,7 +126,7 @@ export function useTvboxValidation({
       const response = await fetch('/api/tvbox/jar-diagnostic');
       const data = await response.json();
       setDeepDiagnosticResult(data);
-    } catch {
+    } catch (error) {
       setDeepDiagnosticResult({
         error: '深度诊断失败，请稍后重试',
       });
