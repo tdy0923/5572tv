@@ -2791,6 +2791,14 @@ export async function deleteReminder(
  * 数据库存储模式下使用混合缓存策略：优先返回缓存数据，后台异步同步最新数据。
  */
 export async function isReminded(source: string, id: string): Promise<boolean> {
+  // 未登录用户直接返回 false，避免发起 401 请求
+  if (
+    typeof window !== 'undefined' &&
+    !document.cookie.includes('user_info=')
+  ) {
+    return false;
+  }
+
   const key = generateStorageKey(source, id);
 
   // 数据库存储模式：使用混合缓存策略（包括 redis 和 upstash）
