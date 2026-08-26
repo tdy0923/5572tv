@@ -23,12 +23,18 @@ export interface SubtitleContent {
 const SUBHD_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
+const SUBHD_BASES = [
+  'https://subhd.tv',
+  'https://subhd.me',
+  'https://subhdtw.com',
+];
+
 // ──────────────────────────────── subhd ────────────────────────────────
-// 中文字幕源。流程（全程普通 HTTP，无需 Puppeteer/Chromium）：
-//   1. /search/{title} → 电影链接 /d/{id}
-//   2. /d/{id}         → 字幕附件链接 /a/{token}（含 简体/繁体 描述）
-//   3. /a/{token}      → 提取 data-preview-url = /api/sub/preview/{token}
-//   4. /api/sub/preview/{token}?file=0（带 cookie + Referer）→ 字幕内容
+// 中文字幕源。支持多镜像回退（subhd.tv / subhd.me / subhdtw.com），自动容错。
+// 流程（全程普通 HTTP，无需 Puppeteer/Chromium）：
+//   1. /search/{title} → 字幕附件链接 /a/{token}（含 简体/繁体 + SRT/ASS 标记）
+//   2. /a/{token}      → 提取 data-preview-url = /api/sub/preview/{token}
+//   3. 预览 API（带 cookie + Referer）→ 字幕内容
 
 async function subhdFetch(
   url: string,
@@ -79,9 +85,22 @@ async function searchSubhdSubtitle(
   title: string,
 ): Promise<SubtitleSearchResult[]> {
   try {
-    const { text } = await subhdFetch(
-      `https://subhd.tv/search/${encodeURIComponent(title)}`,
-    );
+    // 多镜像回退：任一镜像返回结果即用
+    // 多镜像回退：任一镜像返回内容即用
+    let text = '';
+    for (const base of SUBHD_BASES) {
+      try {
+        const r = await subhdFetch(
+          `${base}/search/${encodeURIComponent(title)}`,
+        );
+        if (r.text && r.text.length > 500) {
+          text = r.text;
+          break;
+        }
+      } catch {
+        continue;
+      }
+    }
     if (!text) return [];
 
     const results: SubtitleSearchResult[] = [];
@@ -118,7 +137,7 @@ async function searchSubhdSubtitle(
           format && ['srt', 'ass', 'vtt'].includes(format) ? format : 'srt',
         provider: 'subhd',
         fileId: -1, // 用 token 代替
-        pageUrl: `https://subhd.tv/a/${token}`,
+        pageUrl: `${SUBHD_BASES[0]}/a/${token}`,
       });
       if (results.length >= 20) break;
     }
@@ -134,9 +153,24 @@ async function resolveSubhdSubtitleContent(
   pageUrl: string,
 ): Promise<SubtitleContent | null> {
   try {
-    // pageUrl 形如 https://subhd.tv/a/{token}
-    const attachUrl = pageUrl;
-    const attach = await subhdFetch(attachUrl);
+    // pageUrl 形如 https://subhd.tv/a/{token}；提取 token 以便在镜像间回退
+    const token = pageUrl.split('/a/')[1] || pageUrl.split('/').pop();
+    let attach: { text: string; setCookie: string } | null = null;
+    for (const base of SUBHD_BASES) {
+      try {
+        const r = await subhdFetch(`${base}/a/${token}`);
+        if (r.text && r.text.includes('data-preview-url')) {
+          attach = r;
+          break;
+        }
+      } catch {
+        continue;
+      }
+    }
+    if (!attach) return null;
+    const attachUrl = pageUrl.includes('/a/')
+      ? `https://subhd.tv/a/${token}`
+      : pageUrl;
     const prevMatch = attach.text.match(/data-preview-url="([^"]+)"/);
     if (!prevMatch) return null;
     const previewPath = prevMatch[1];
