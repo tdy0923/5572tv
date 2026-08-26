@@ -783,6 +783,10 @@ export async function getAllPlayRecords(
   if (typeof window === 'undefined') {
     return {};
   }
+  // 未登录用户直接返回空，避免发起 401 请求
+  if (!document.cookie.includes('user_info=')) {
+    return {};
+  }
 
   // 数据库存储模式：使用混合缓存策略（包括 redis 和 upstash）
   if (STORAGE_TYPE !== 'localstorage') {
@@ -1316,6 +1320,10 @@ export async function getAllFavorites(): Promise<Record<string, Favorite>> {
   if (typeof window === 'undefined') {
     return {};
   }
+  // 未登录用户直接返回空，避免发起 401 请求
+  if (!document.cookie.includes('user_info=')) {
+    return {};
+  }
 
   // 数据库存储模式：使用混合缓存策略（包括 redis 和 upstash）
   if (STORAGE_TYPE !== 'localstorage') {
@@ -1502,6 +1510,14 @@ export async function isFavorited(
   source: string,
   id: string,
 ): Promise<boolean> {
+  // 未登录用户直接返回 false，避免发起 401 请求
+  if (
+    typeof window !== 'undefined' &&
+    !document.cookie.includes('user_info=')
+  ) {
+    return false;
+  }
+
   const key = generateStorageKey(source, id);
 
   // 数据库存储模式：使用混合缓存策略（包括 redis 和 upstash）
@@ -2586,6 +2602,10 @@ export async function clearUserStats(): Promise<void> {
 export async function getAllReminders(): Promise<Record<string, Reminder>> {
   // 服务器端渲染阶段直接返回空
   if (typeof window === 'undefined') {
+    return {};
+  }
+  // 未登录用户直接返回空，避免发起 401 请求
+  if (!document.cookie.includes('user_info=')) {
     return {};
   }
 
