@@ -2886,8 +2886,15 @@ function PlayPageClient() {
 
               ensureVideoSource(video, effectiveUrl);
 
-              // 🛟 Layer3：15秒安全网。若既无致命回调又没播起来（网络挂起/
-              // 清单静默失败等未知形态），强制走统一恢复，杜绝无限转圈
+              // 🛟 Layer3：安全网。短剧集均时长 15-30s，15s 安全网会误触发；
+              // 短剧使用 8s，普通内容保持 15s。且增加 readyState 检查，
+              // 视频已开始解码/缓冲(readyState>=3)或已可播放(readyState=4)时
+              // 不再触发，避免对正常播放中(网络波动)的误杀。
+              const isShortDramaSource =
+                currentSourceRef.current === 'shortdrama' ||
+                shortdramaId !== '' ||
+                shortdramaSource !== '';
+              const safetyNetMs = isShortDramaSource ? 8000 : 15000;
               fatalHandledRef.current = false;
               if (safetyNetTimer.current) {
                 clearTimeout(safetyNetTimer.current);
@@ -2896,12 +2903,15 @@ function PlayPageClient() {
                 if (
                   !fatalHandledRef.current &&
                   !recoveryBusyRef.current &&
+                  (video.readyState ?? 0) < 3 &&
                   (video.currentTime || 0) < 1
                 ) {
-                  console.warn('[安全网] 15s未起播，触发自动换源');
+                  console.warn(
+                    `[安全网] ${safetyNetMs / 1000}s未起播，触发自动换源`,
+                  );
                   autoRecoveryFnRef.current?.();
                 }
-              }, 15000);
+              }, safetyNetMs);
 
               // HLS音轨事件监听
               hls.on(
@@ -3036,8 +3046,18 @@ function PlayPageClient() {
                 if (
                   data.details === HlsModule.ErrorDetails.FRAG_PARSING_ERROR
                 ) {
-                  // 重新开始加载，利用v1.6.13的initPTS修复
                   hls.startLoad();
+                  return;
+                }
+
+                // 片段加载失败（网络波动/临时 403/CDN 限流）：尝试重启加载
+                if (data.details === HlsModule.ErrorDetails.FRAG_LOAD_ERROR) {
+                  hls.startLoad();
+                  return;
+                }
+
+                // 缓冲满（常见于移动端低端设备解码慢）：静默等待，非致命
+                if (data.details === HlsModule.ErrorDetails.BUFFER_FULL_ERROR) {
                   return;
                 }
 
@@ -3049,7 +3069,6 @@ function PlayPageClient() {
                   data.err.message.includes('timestamp')
                 ) {
                   try {
-                    // 清理缓冲区后重新开始，利用v1.6.13的时间戳包装修复
                     const currentTime = video.currentTime;
                     hls.trigger(HlsModule.Events.BUFFER_RESET, undefined);
                     hls.startLoad(currentTime);
@@ -4801,8 +4820,15 @@ function PlayPageClient() {
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
 
-          // 仅在视频未开始播放时（currentTime < 1）触发换源
-          if (artPlayerRef.current.currentTime > 1) {
+          // 视频已稳定播放(>3s)且错误非"stalled"类时，认为已进入正常播放
+          // 此时不触发换源（避免中途网络波动导致不必要的换源）
+          const currTime = artPlayerRef.current.currentTime;
+          const errType = err?.type || err?.code || '';
+          const isSevereError =
+            errType.includes('abort') ||
+            errType.includes('stalled') ||
+            errType.includes('network');
+          if (currTime > 3 && !isSevereError) {
             return;
           }
 
