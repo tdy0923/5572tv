@@ -71,10 +71,15 @@ function HeroBanner({
   // 处理图片 URL，使用代理绕过防盗链（避免双重代理）
   const getProxiedImageUrl = (url: string) => {
     if (!url) return url;
-    // 已经是代理URL，直接返回
-    if (url.startsWith('/api/image-proxy')) return url;
+    // 已经是代理URL（image-proxy 或 poster-cache），直接返回，避免双重代理
+    if (
+      url.startsWith('/api/image-proxy') ||
+      url.startsWith('/api/poster-cache')
+    ) {
+      return url;
+    }
     if (url?.includes('douban') || url?.includes('doubanio')) {
-      return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+      return `/api/poster-cache?url=${encodeURIComponent(url)}`;
     }
     return url;
   };
