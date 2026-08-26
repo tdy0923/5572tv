@@ -1,4 +1,4 @@
-/* eslint-disable no-console,react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 /* eslint-disable unused-imports/no-unused-vars */
 
@@ -22,9 +22,9 @@ import { DoubanItem, DoubanResult } from '@/lib/types';
 import DoubanCardSkeleton from '@/components/DoubanCardSkeleton';
 import DoubanCustomSelector from '@/components/DoubanCustomSelector';
 import DoubanSelector from '@/components/DoubanSelector';
-import { FluentLoadingPage } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
+import PosterGridSkeleton from '@/components/PosterGridSkeleton';
 import Toggle from '@/components/Toggle';
 import VideoCard from '@/components/VideoCard';
 import VirtualGrid from '@/components/VirtualGrid';
@@ -1383,7 +1383,7 @@ function DoubanPageClient() {
 
 export default function DoubanPage() {
   return (
-    <Suspense fallback={<FluentLoadingPage />}>
+    <Suspense fallback={<PosterGridSkeleton />}>
       <DoubanPageClient />
     </Suspense>
   );

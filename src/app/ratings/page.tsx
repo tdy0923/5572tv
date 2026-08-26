@@ -5,8 +5,8 @@ import { Flame, Star, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
+import PosterGridSkeleton from '@/components/PosterGridSkeleton';
 
 interface RatingEntry {
   videoId: string;
@@ -187,9 +187,7 @@ export default function RatingsPage() {
           </h2>
 
           {isLoading ? (
-            <div className='flex justify-center py-16'>
-              <FluentSpinner />
-            </div>
+            <PosterGridSkeleton count={10} />
           ) : filtered.length === 0 ? (
             <div className='ui-surface py-10 text-center text-sm text-gray-500 dark:text-gray-400'>
               <p>暂无用户评分</p>
