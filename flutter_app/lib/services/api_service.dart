@@ -911,4 +911,69 @@ class ApiService {
       return null;
     }
   }
+
+  // ============ 字幕相关（预设字幕源，镜像回退由服务端处理） ============
+  static final Map<String, _CacheEntry> _subtitleCache = {};
+  static const Duration _subtitleCacheTtl = Duration(minutes: 10);
+
+  /// 搜索字幕（按片名，自动走预设源：subhd 中文 + OpenSubtitles 兜底）
+  static Future<List<Map<String, dynamic>>> searchSubtitles(
+    String title, {
+    String? year,
+  }) async {
+    final key = '$title:${year ?? ''}';
+    final cached = _subtitleCache[key];
+    if (cached != null &&
+        DateTime.now().difference(cached.time) < _subtitleCacheTtl) {
+      return List<Map<String, dynamic>>.from(cached.data as List);
+    }
+    try {
+      final params = <String, String>{'title': title};
+      if (year != null && year.isNotEmpty) params['year'] = year;
+      final uri = Uri.parse(await _buildUrl('/api/subtitle/search'))
+          .replace(queryParameters: params);
+      final headers = await _buildHeaders();
+      final response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final list = (data['list'] as List?) ?? [];
+        final result = List<Map<String, dynamic>>.from(
+            list.map((e) => Map<String, dynamic>.from(e as Map)));
+        _subtitleCache[key] = _CacheEntry(result, DateTime.now());
+        if (_subtitleCache.length > 100) {
+          _subtitleCache.remove(_subtitleCache.keys.first);
+        }
+        return result;
+      }
+      return [];
+    } catch (e) {
+      debugPrint('搜索字幕失败: $e');
+      return [];
+    }
+  }
+
+  /// 加载字幕内容（subhd 直接返回内容文本，opensubtitles 返回可加载 URL）
+  static Future<Map<String, dynamic>?> loadSubtitle(
+      Map<String, dynamic> subtitle) async {
+    try {
+      final uri = Uri.parse(await _buildUrl('/api/subtitle/load'));
+      final headers = await _buildHeaders();
+      final response = await http.post(uri,
+          headers: headers, body: json.encode(subtitle));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        if (data['success'] == true) return data;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('加载字幕失败: $e');
+      return null;
+    }
+  }
+}
+
+class _CacheEntry {
+  final dynamic data;
+  final DateTime time;
+  _CacheEntry(this.data, this.time);
 }
