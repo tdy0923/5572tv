@@ -52,6 +52,9 @@ interface CronStats {
       favoritesErrors: number;
       duration: number;
     };
+    posterCacheWarm?: {
+      duration: number;
+    };
   };
   memoryUsed: number;
   dbQueries: number;
@@ -400,6 +403,25 @@ async function cronJob() {
       } catch (err) {
         console.error('❌ 播放记录和收藏刷新失败:', err);
         throw err;
+      }
+    })(),
+  ]);
+
+  // 第三组：海报缓存预热（走 poster-cache 下载首页热门海报，避免冷缓存时用户等待）
+  await Promise.allSettled([
+    (async () => {
+      try {
+        const warmStart = Date.now();
+        await warmPosterCache();
+        const warmDuration = Date.now() - warmStart;
+
+        if (currentCronStats) {
+          currentCronStats.tasks.posterCacheWarm = {
+            duration: warmDuration,
+          };
+        }
+      } catch (err) {
+        console.error('❌ 海报缓存预热失败:', err);
       }
     })(),
   ]);
@@ -1120,4 +1142,66 @@ async function updateSpiderJarToBlob() {
   } catch (error) {
     console.error('[Spider Update] 更新失败:', error);
   }
+}
+
+// 预热首页热门海报到磁盘缓存（poster-cache），避免冷缓存时用户等待豆瓣回源
+async function warmPosterCache(): Promise<{ warmed: number }> {
+  const base = `http://${process.env.HOSTNAME || 'localhost'}:${
+    process.env.PORT || 3000
+  }`;
+
+  const collect = async (endpoint: string): Promise<string[]> => {
+    try {
+      const res = await fetch(`${base}${endpoint}`, {
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) return [];
+      const data = await res.json();
+      const subjects: any[] = Array.isArray(data.subjects)
+        ? data.subjects
+        : Array.isArray(data.list)
+          ? data.list
+          : [];
+      return subjects
+        .map((s: any) => s.poster || s.cover || '')
+        .filter((u: string) => u && /^https?:/.test(u));
+    } catch {
+      return [];
+    }
+  };
+
+  // 收集热门海报 URL（豆瓣高分电影/剧集/动漫）
+  const posterUrls = Array.from(
+    new Set([
+      ...(await collect(
+        '/api/douban?type=movie&tag=豆瓣高分&page=0&pageSize=20',
+      )),
+      ...(await collect('/api/douban?type=tv&tag=豆瓣高分&page=0&pageSize=12')),
+      ...(await collect(
+        '/api/douban?type=anime&tag=豆瓣高分&page=0&pageSize=12',
+      )),
+    ]),
+  );
+
+  let warmed = 0;
+  // 并发 4，逐个请求 poster-cache 完成下载并写入磁盘
+  const CONCURRENCY = 4;
+  for (let i = 0; i < posterUrls.length; i += CONCURRENCY) {
+    const batch = posterUrls.slice(i, i + CONCURRENCY);
+    await Promise.all(
+      batch.map(async (url) => {
+        try {
+          const res = await fetch(
+            `${base}/api/poster-cache?url=${encodeURIComponent(url)}`,
+            { signal: AbortSignal.timeout(25000) },
+          );
+          if (res.ok) warmed++;
+        } catch {
+          // 单个海报预热失败不影响其他
+        }
+      }),
+    );
+  }
+
+  return { warmed };
 }
