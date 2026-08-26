@@ -16,6 +16,8 @@ export default [
     rules: {
       'no-unused-vars': 'off',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      // 代理图片必须用 <img>（next/image 无法 fetch 内部代理路由，见 scripts/check-no-next-image-for-proxy.js）
+      '@next/next/no-img-element': 'off',
       'react/no-unescaped-entities': 'off',
       'react/display-name': 'off',
       'react/jsx-curly-brace-presence': [
