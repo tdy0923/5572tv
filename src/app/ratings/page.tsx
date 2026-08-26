@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Star, TrendingUp } from 'lucide-react';
+import { Flame, Star, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -28,11 +28,115 @@ const RATINGS_OPTIONS = {
   staleTime: 5 * 60 * 1000,
 };
 
+const DOUBAN_HIGH_OPTIONS = (type: string) => ({
+  queryKey: ['ratings', 'douban-high', type],
+  queryFn: async (): Promise<RatingEntry[]> => {
+    const res = await fetch(
+      `/api/douban?type=${type}&tag=豆瓣高分&page=0&pageSize=12`,
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const subjects = Array.isArray(data.subjects)
+      ? data.subjects
+      : Array.isArray(data.list)
+        ? data.list
+        : [];
+    return subjects.map((s: any) => ({
+      videoId: String(s.id || ''),
+      videoSource: 'douban',
+      title: String(s.title || ''),
+      poster: s.poster || s.cover || '',
+      avgRating: Number(s.rate || s.rating?.value || 0),
+      count: 0,
+    }));
+  },
+  staleTime: 10 * 60 * 1000,
+});
+
+function RatingCard({
+  item,
+  index,
+  showRank = false,
+  to = 'douban',
+}: {
+  item: RatingEntry;
+  index: number;
+  showRank?: boolean;
+  to?: string;
+}) {
+  const href =
+    to === 'play'
+      ? `/play?source=${encodeURIComponent(item.videoSource)}&id=${encodeURIComponent(item.videoId)}&title=${encodeURIComponent(item.title)}`
+      : `/douban?type=movie`;
+  return (
+    <Link href={href} className='group relative block'>
+      {showRank && (
+        <div
+          className={`absolute -top-1 -left-1 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold shadow-md ${
+            index === 0
+              ? 'bg-linear-to-br from-primary-400 to-primary-600 text-gray-950'
+              : index === 1
+                ? 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100'
+                : index === 2
+                  ? 'bg-amber-700/80 text-amber-100'
+                  : 'bg-gray-800/80 text-gray-200 backdrop-blur'
+          }`}
+        >
+          {index + 1}
+        </div>
+      )}
+
+      <div className='relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800'>
+        {item.poster ? (
+          <img
+            src={item.poster}
+            alt={item.title}
+            loading='lazy'
+            className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className='flex h-full w-full items-center justify-center p-3 text-center'>
+            <span className='text-xs text-gray-500 line-clamp-3'>
+              {item.title}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className='mt-2'>
+        <p className='truncate text-sm font-medium text-gray-800 dark:text-gray-200'>
+          {item.title}
+        </p>
+        <div className='mt-0.5 flex items-center gap-1'>
+          <Star className='h-3.5 w-3.5 fill-primary-500 text-primary-500' />
+          <span className='text-sm font-semibold text-primary-600 dark:text-primary-400'>
+            {item.avgRating.toFixed(1)}
+          </span>
+          {item.count > 0 && (
+            <span className='text-xs text-gray-500 dark:text-gray-400'>
+              {item.count} 票
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default function RatingsPage() {
   const { data: list = [], isLoading } = useQuery(RATINGS_OPTIONS);
   const [minVotes, setMinVotes] = useState(1);
+  const [doubanType, setDoubanType] = useState<'movie' | 'tv' | 'anime'>(
+    'movie',
+  );
+
+  const { data: doubanHigh = [] } = useQuery(DOUBAN_HIGH_OPTIONS(doubanType));
 
   const filtered = list.filter((item) => item.count >= minVotes);
+  const showDouban = filtered.length < 8;
 
   return (
     <PageLayout activePath='/ratings'>
@@ -51,7 +155,6 @@ export default function RatingsPage() {
             </p>
           </div>
 
-          {/* 最少投票筛选 */}
           <div className='flex items-center gap-2'>
             <span className='text-xs text-gray-500 dark:text-gray-400'>
               至少
@@ -70,78 +173,78 @@ export default function RatingsPage() {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className='flex justify-center py-20'>
-            <FluentSpinner />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className='ui-surface py-20 text-center text-sm text-gray-500 dark:text-gray-400'>
-            暂无评分数据，去观看影片并评分吧
-          </div>
-        ) : (
-          <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5'>
-            {filtered.map((item, index) => (
-              <Link
-                key={`${item.videoSource}-${item.videoId}`}
-                href={`/play?source=${encodeURIComponent(item.videoSource)}&id=${encodeURIComponent(item.videoId)}&title=${encodeURIComponent(item.title)}`}
-                className='group relative block'
-              >
-                {/* 排名角标 */}
-                <div
-                  className={`absolute -top-1 -left-1 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold shadow-md ${
-                    index === 0
-                      ? 'bg-linear-to-br from-primary-400 to-primary-600 text-gray-950'
-                      : index === 1
-                        ? 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-100'
-                        : index === 2
-                          ? 'bg-amber-700/80 text-amber-100'
-                          : 'bg-gray-800/80 text-gray-200 backdrop-blur'
-                  }`}
-                >
-                  {index + 1}
-                </div>
+        {/* 用户评分榜 */}
+        <section className='mb-10'>
+          <h2 className='mb-4 flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-gray-200'>
+            <Star className='h-4 w-4 text-primary-500' />
+            用户评分榜
+            <span className='text-xs font-normal text-gray-400'>
+              {filtered.length} 部
+            </span>
+          </h2>
 
-                {/* 海报 */}
-                <div className='relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800'>
-                  {item.poster ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.poster}
-                      alt={item.title}
-                      loading='lazy'
-                      className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-105'
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display =
-                          'none';
-                      }}
-                    />
-                  ) : (
-                    <div className='flex h-full w-full items-center justify-center p-3 text-center'>
-                      <span className='text-xs text-gray-500 line-clamp-3'>
-                        {item.title}
-                      </span>
-                    </div>
-                  )}
-                </div>
+          {isLoading ? (
+            <div className='flex justify-center py-16'>
+              <FluentSpinner />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className='ui-surface py-10 text-center text-sm text-gray-500 dark:text-gray-400'>
+              <p>暂无用户评分</p>
+              <p className='mt-1 text-xs text-gray-400'>
+                播放影片后即可点亮你的评分
+              </p>
+            </div>
+          ) : (
+            <div className='grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-5 lg:grid-cols-6'>
+              {filtered.map((item, index) => (
+                <RatingCard
+                  key={`${item.videoSource}-${item.videoId}`}
+                  item={item}
+                  index={index}
+                  showRank
+                  to='play'
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
-                {/* 信息 */}
-                <div className='mt-2'>
-                  <p className='truncate text-sm font-medium text-gray-800 dark:text-gray-200'>
-                    {item.title}
-                  </p>
-                  <div className='mt-0.5 flex items-center gap-1'>
-                    <Star className='h-3.5 w-3.5 fill-primary-500 text-primary-500' />
-                    <span className='text-sm font-semibold text-primary-600 dark:text-primary-400'>
-                      {item.avgRating.toFixed(1)}
-                    </span>
-                    <span className='text-xs text-gray-500 dark:text-gray-400'>
-                      {item.count} 票
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        {/* 豆瓣高分精选：用户评分少时兜底，页面不空 */}
+        {showDouban && (
+          <section>
+            <div className='mb-4 flex items-center justify-between'>
+              <h2 className='flex items-center gap-2 text-base font-semibold text-gray-800 dark:text-gray-200'>
+                <Flame className='h-4 w-4 text-orange-500' />
+                豆瓣高分精选
+              </h2>
+              <div className='flex gap-1'>
+                {(
+                  [
+                    ['movie', '电影'],
+                    ['tv', '剧集'],
+                    ['anime', '动漫'],
+                  ] as const
+                ).map(([t, label]) => (
+                  <button
+                    key={t}
+                    onClick={() => setDoubanType(t)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      doubanType === t
+                        ? 'bg-primary-500 text-gray-950'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className='grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-5 lg:grid-cols-6'>
+              {doubanHigh.map((item, index) => (
+                <RatingCard key={item.videoId} item={item} index={index} />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </PageLayout>
