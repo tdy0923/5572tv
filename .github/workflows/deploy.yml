@@ -72,6 +72,9 @@ jobs:
               -e AI_API_KEY_5='${{ secrets.AI_API_KEY_5 }}' \
                -e AI_API_KEY_6='${{ secrets.AI_API_KEY_6 }}' \
                -e AUTH_SECRET='${{ secrets.AUTH_SECRET }}' \
+               -e OPENSUBTITLES_API_KEY='${{ secrets.OPENSUBTITLES_API_KEY }}' \
+               -e OPENSUBTITLES_USERNAME='${{ secrets.OPENSUBTITLES_USERNAME }}' \
+               -e OPENSUBTITLES_PASSWORD='${{ secrets.OPENSUBTITLES_PASSWORD }}' \
                -v /app/video-cache:/app/video-cache \
                -v /app/static/download:/app/static/download \
               -v /app/poster-cache:/app/public/poster-cache \
