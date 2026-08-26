@@ -12,6 +12,10 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
+// 🚀 服务端内存缓存：分类探测（逐源请求）较慢，缓存 5 分钟避免每次请求都实时探测
+let categoriesCache: { data: unknown; fetchedAt: number } | null = null;
+const CATEGORIES_CACHE_TTL = 5 * 60 * 1000;
+
 // 并行验证分类是否有内容（带并发限制）
 async function validateCategoriesHasContent(
   categories: {
@@ -36,7 +40,7 @@ async function validateCategoriesHasContent(
               'User-Agent': DEFAULT_USER_AGENT,
               Accept: 'application/json',
             },
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(3000),
           });
 
           if (testResponse.ok) {
@@ -73,12 +77,26 @@ async function validateCategoriesHasContent(
 
 export async function GET() {
   try {
+    // 命中内存缓存直接返回
+    if (
+      categoriesCache &&
+      Date.now() - categoriesCache.fetchedAt < CATEGORIES_CACHE_TTL
+    ) {
+      const cachedResponse = NextResponse.json(categoriesCache.data);
+      return applyShortDramaCacheHeaders(
+        cachedResponse,
+        SHORTDRAMA_CACHE_SECONDS.categories,
+      );
+    }
+
     // 从多源配置获取所有分类（含主源自动发现）
     const allCategories = await getAllCategoriesWithSource();
 
     // 并行验证分类是否有内容
     const validatedCategories =
       await validateCategoriesHasContent(allCategories);
+
+    categoriesCache = { data: validatedCategories, fetchedAt: Date.now() };
 
     const response = NextResponse.json(validatedCategories);
     return applyShortDramaCacheHeaders(
