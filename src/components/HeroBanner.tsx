@@ -215,6 +215,42 @@ function HeroBanner({
     return () => clearTimeout(timer);
   }, [currentItem, refreshedTrailerUrls, refreshTrailerUrl, enableVideo]);
 
+  // 🎬 延迟自动播放预告片：等页面资源（海报/JS）加载完再播，避免首屏抢带宽卡顿
+  useEffect(() => {
+    if (!enableVideo || !videoLoaded || !videoRef.current) return;
+
+    const play = () => {
+      const v = videoRef.current;
+      if (v) {
+        try {
+          v.muted = isMuted;
+          void v.play();
+        } catch {
+          // 自动播放被拦截时静默忽略
+        }
+      }
+    };
+
+    // 尊重用户减少动态偏好
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+
+    // 页面 load 后延迟 2.5s 播放，先让海报与首屏渲染完成
+    const timer = setTimeout(() => {
+      if (document.readyState === 'complete') {
+        play();
+      } else {
+        window.addEventListener('load', () => {
+          setTimeout(play, 2500);
+        });
+      }
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [enableVideo, videoLoaded, isMuted]);
+
   if (!hasItems || !currentItem) {
     return (
       <div className='relative w-full h-[40vh] sm:h-[52vh] md:h-[60vh] overflow-hidden rounded-xl sm:rounded-xl bg-gray-200 dark:bg-gray-800 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
@@ -279,11 +315,11 @@ function HeroBanner({
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
                       videoLoaded ? 'opacity-100' : 'opacity-0'
                     }`}
-                    autoPlay
+                    autoPlay={false}
                     muted={isMuted}
                     loop
                     playsInline
-                    preload='metadata'
+                    preload='none'
                     onError={async (e) => {
                       const video = e.currentTarget;
 
