@@ -218,7 +218,7 @@ function ShortDramaCard({
     if (!disableEpisodeFetch && drama.episode_count === 1) {
       fetchEpisodeCount();
     }
-  }, [drama.id, drama.episode_count, drama.name]);
+  }, [drama.id, drama.episode_count, drama.name, disableEpisodeFetch]);
 
   // 处理收藏切换 - 使用 TanStack Query mutation
   const handleToggleFavorite = useCallback(
