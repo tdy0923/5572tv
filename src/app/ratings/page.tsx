@@ -15,6 +15,7 @@ interface RatingEntry {
   poster?: string;
   avgRating: number;
   count: number;
+  type?: string;
 }
 
 const RATINGS_OPTIONS = {
@@ -35,19 +36,22 @@ const DOUBAN_HIGH_OPTIONS = (type: string) => ({
       `/api/douban?type=${type}&tag=豆瓣高分&page=0&pageSize=12`,
     );
     if (!res.ok) return [];
-    const data = await res.json();
-    const subjects = Array.isArray(data.subjects)
-      ? data.subjects
-      : Array.isArray(data.list)
-        ? data.list
+    const json = await res.json();
+    // 响应结构: { ok: true, data: { subjects: [...] } }
+    const raw = json?.data ?? json;
+    const subjects = Array.isArray(raw?.subjects)
+      ? raw.subjects
+      : Array.isArray(raw?.list)
+        ? raw.list
         : [];
     return subjects.map((s: any) => ({
       videoId: String(s.id || ''),
       videoSource: 'douban',
       title: String(s.title || ''),
-      poster: s.poster || s.cover || '',
+      poster: s.cover || s.poster || '',
       avgRating: Number(s.rate || s.rating?.value || 0),
       count: 0,
+      type,
     }));
   },
   staleTime: 10 * 60 * 1000,
@@ -57,17 +61,16 @@ function RatingCard({
   item,
   index,
   showRank = false,
-  to = 'douban',
 }: {
   item: RatingEntry;
   index: number;
   showRank?: boolean;
-  to?: string;
 }) {
+  // 用户评分 → 播放页（带 source+id）；豆瓣精选 → 播放页（带 douban_id+stype）
   const href =
-    to === 'play'
-      ? `/play?source=${encodeURIComponent(item.videoSource)}&id=${encodeURIComponent(item.videoId)}&title=${encodeURIComponent(item.title)}`
-      : `/douban?type=movie`;
+    item.videoSource === 'douban'
+      ? `/play?title=${encodeURIComponent(item.title)}&douban_id=${encodeURIComponent(item.videoId)}&stype=${item.type || 'movie'}`
+      : `/play?source=${encodeURIComponent(item.videoSource)}&id=${encodeURIComponent(item.videoId)}&title=${encodeURIComponent(item.title)}`;
   return (
     <Link href={href} className='group relative block'>
       {showRank && (
@@ -202,7 +205,6 @@ export default function RatingsPage() {
                   item={item}
                   index={index}
                   showRank
-                  to='play'
                 />
               ))}
             </div>
