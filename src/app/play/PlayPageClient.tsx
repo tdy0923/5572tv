@@ -50,6 +50,7 @@ import { useFavorites } from './hooks/useFavorites';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useLoadingState } from './hooks/useLoadingState';
 import { useNetdiskSearch } from './hooks/useNetdiskSearch';
+import { usePlayerAnalytics } from './hooks/usePlayerAnalytics';
 import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
 import { useSubtitles } from './hooks/useSubtitles';
@@ -932,6 +933,13 @@ function PlayPageClient() {
     lastDanmuLoadKeyRef,
     danmuLoadingRef,
   });
+
+  // 播放行为统计（play/pause/error/source switch/episode change）
+  const playerAnalytics = usePlayerAnalytics(
+    artPlayerRef,
+    currentSourceRef,
+    currentEpisodeIndexRef,
+  );
 
   // 跨源兜底：按剧名到其他短剧采集源搜索同名剧集（非阻塞，异步追加）
   const [dramaAlternatives, setDramaAlternatives] = useState<string[][]>([]);
