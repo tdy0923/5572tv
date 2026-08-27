@@ -87,8 +87,7 @@ export function FluentButton({
         border
         cursor-pointer
         select-none
-        focus:outline-none
-        focus:ring-2 focus:ring-[${brandColor.gold}] focus:ring-offset-2
+        focus:outline-none focus:ring-2 focus:ring-offset-2
         disabled:opacity-40 disabled:cursor-not-allowed
         touch-manipulation
         ${className}

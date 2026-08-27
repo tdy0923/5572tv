@@ -4752,10 +4752,19 @@ function PlayPageClient() {
           if (recoveryBusyRef.current) return;
           recoveryBusyRef.current = true;
           try {
-            // 流式搜索可能仍在收集候选，最多等6s保证列表充足
+            // 流式搜索可能仍在收集候选，等待它完成但设置上限；
+            // 短剧源少且需快速恢复，上限 2s；普通内容 6s 确保列表充足
             const sp = streamSearchRef.current?.promise;
             if (sp) {
-              await Promise.race([sp, new Promise((r) => setTimeout(r, 6000))]);
+              const isShortDramaRecovery =
+                currentSourceRef.current === 'shortdrama' ||
+                shortdramaId !== '' ||
+                shortdramaSource !== '';
+              const waitMs = isShortDramaRecovery ? 2000 : 6000;
+              await Promise.race([
+                sp,
+                new Promise((r) => setTimeout(r, waitMs)),
+              ]);
             }
 
             sourceErrorCountRef.current++;

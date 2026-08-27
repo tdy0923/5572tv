@@ -11,6 +11,8 @@ const RETRY_BACKOFFS = [30_000, 120_000, 300_000, 600_000] as const;
 const MAX_RETRIES = RETRY_BACKOFFS.length;
 const MAX_SESSION_FAILURES = 50;
 const MAX_SOURCE_ERRORS = 2;
+const QUICK_PROBE_TIMEOUT_MS = 2000;
+const SHORT_DRAMA_PROBE_TIMEOUT_MS = 1200;
 
 const parseSourceForApi = (
   source: string,
@@ -123,17 +125,28 @@ export function useSourceSwitching(params: {
     [],
   );
 
+  const isShortDramaSource = useCallback(
+    (source: string): boolean =>
+      source === 'shortdrama' ||
+      source.startsWith('shortdrama') ||
+      source === '短剧',
+    [],
+  );
+
   const quickProbe = useCallback(
     async (
       url: string,
-      timeout = 2000,
-      _source?: string,
+      timeout = QUICK_PROBE_TIMEOUT_MS,
+      source?: string,
     ): Promise<'ok' | 'slow' | 'fail'> => {
+      const effectiveTimeout =
+        source && isShortDramaSource(source)
+          ? SHORT_DRAMA_PROBE_TIMEOUT_MS
+          : timeout;
+
       try {
-        // 经代理探测：直连 no-cors 拿不到真实状态码（opaque 恒为 ok），
-        // 死链会被误判可用导致无限换源；代理能返回真实 404/403
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeout);
+        const timer = setTimeout(() => controller.abort(), effectiveTimeout);
         const resp = await fetch(
           `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
           {
@@ -149,7 +162,7 @@ export function useSourceSwitching(params: {
         return 'fail';
       }
     },
-    [],
+    [isShortDramaSource],
   );
 
   const findWorkingSource = async (
@@ -395,6 +408,7 @@ export function useSourceSwitching(params: {
     sourceRetryStateRef.current.clear();
     totalSessionFailuresRef.current = 0;
     fallbackAutoRetriedRef.current = false;
+    sourceErrorCountRef.current = 0;
   }, []);
 
   const setAvailableSources = useCallback((sources: SearchResult[]) => {
