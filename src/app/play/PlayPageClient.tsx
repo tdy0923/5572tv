@@ -17,6 +17,19 @@ import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey } from '@/lib/db.client';
 import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
+import {
+  BLOCK_AD_KEY,
+  DANMAKU_FONT_SIZE_KEY,
+  DANMAKU_MARGIN_KEY,
+  DANMAKU_MODES_KEY,
+  DANMAKU_OPACITY_KEY,
+  DANMAKU_SPEED_KEY,
+  getHlsBufferConfig,
+  OPTIMIZATION_KEY,
+  PLAYER_OBJECT_FIT_KEY,
+  PLAYER_PLAYBACK_RATE_KEY,
+  SHORT_DRAMA_AUTO_NEXT_KEY,
+} from '@/lib/player-config';
 import { attachMobileGestures } from '@/lib/player-gestures';
 import { SearchResult } from '@/lib/types';
 import { processImageUrl, resolveCardPosterUrl } from '@/lib/utils';
@@ -152,18 +165,15 @@ import {
 import { useSourceSearch } from './hooks/useSourceSearch';
 import { useTrailerFallback } from './hooks/useTrailerFallback';
 
-const PLAYER_PLAYBACK_RATE_KEY = '5572tv_player_playback_rate';
-const AUTOPLAY_NEXT_KEY = '5572tv_autoplay_next';
-
 // 自动连播下一集开关（localStorage 记忆，默认开启）
-const isAutoPlayNextEnabled = (): boolean => {
+function isAutoPlayNextEnabled(): boolean {
   if (typeof window === 'undefined') return true;
   try {
-    return localStorage.getItem(AUTOPLAY_NEXT_KEY) !== 'false';
+    return localStorage.getItem(SHORT_DRAMA_AUTO_NEXT_KEY) !== 'false';
   } catch {
     return true;
   }
-};
+}
 
 function PlayPageClient() {
   const searchParams = useSearchParams();
@@ -305,39 +315,6 @@ function PlayPageClient() {
     };
     fetchServerConfig();
   }, []);
-
-  // 获取 HLS 缓冲配置（根据用户设置的模式）
-  const getHlsBufferConfig = () => {
-    const mode =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('playerBufferMode') || 'standard'
-        : 'standard';
-
-    switch (mode) {
-      case 'enhanced':
-        // 增强模式：1.5 倍缓冲
-        return {
-          maxBufferLength: 45, // 45s（默认30s × 1.5）
-          backBufferLength: 45,
-          maxBufferSize: 90 * 1000 * 1000, // 90MB
-        };
-      case 'max':
-        // 强力模式：3 倍缓冲
-        return {
-          maxBufferLength: 90, // 90s（默认30s × 3）
-          backBufferLength: 60,
-          maxBufferSize: 180 * 1000 * 1000, // 180MB
-        };
-      case 'standard':
-      default:
-        // 默认模式
-        return {
-          maxBufferLength: 30,
-          backBufferLength: 30,
-          maxBufferSize: 60 * 1000 * 1000, // 60MB
-        };
-    }
-  };
 
   // 视频基本信息
   const [videoTitle, setVideoTitle] = useState(searchParams.get('title') || '');
@@ -872,7 +849,7 @@ function PlayPageClient() {
   // 优选和测速开关
   const [optimizationEnabled] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('enableOptimization');
+      const saved = localStorage.getItem(OPTIMIZATION_KEY);
       if (saved !== null) {
         try {
           return JSON.parse(saved);
@@ -3139,7 +3116,7 @@ function PlayPageClient() {
               onClick() {
                 const newVal = !blockAdEnabled;
                 try {
-                  localStorage.setItem('enable_blockad', String(newVal));
+                  localStorage.setItem(BLOCK_AD_KEY, String(newVal));
                   if (artPlayerRef.current) {
                     resumeTimeRef.current = artPlayerRef.current.currentTime;
                     if (artPlayerRef.current.video.hls) {
@@ -3197,7 +3174,7 @@ function PlayPageClient() {
               icon: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>',
               tooltip: (() => {
                 const mode =
-                  localStorage.getItem('video_object_fit') || 'contain';
+                  localStorage.getItem(PLAYER_OBJECT_FIT_KEY) || 'contain';
                 const modeNames: Record<string, string> = {
                   contain: '默认(完整显示)',
                   cover: '填充(裁切)',
@@ -3210,23 +3187,25 @@ function PlayPageClient() {
                   html: '默认(完整显示)',
                   value: 'contain',
                   default:
-                    (localStorage.getItem('video_object_fit') || 'contain') ===
-                    'contain',
+                    (localStorage.getItem(PLAYER_OBJECT_FIT_KEY) ||
+                      'contain') === 'contain',
                 },
                 {
                   html: '填充(裁切)',
                   value: 'cover',
-                  default: localStorage.getItem('video_object_fit') === 'cover',
+                  default:
+                    localStorage.getItem(PLAYER_OBJECT_FIT_KEY) === 'cover',
                 },
                 {
                   html: '拉伸(变形)',
                   value: 'fill',
-                  default: localStorage.getItem('video_object_fit') === 'fill',
+                  default:
+                    localStorage.getItem(PLAYER_OBJECT_FIT_KEY) === 'fill',
                 },
               ],
               onSelect: function (item: any) {
                 const mode = item.value;
-                localStorage.setItem('video_object_fit', mode);
+                localStorage.setItem(PLAYER_OBJECT_FIT_KEY, mode);
 
                 // 应用到当前视频元素
                 if (artPlayerRef.current?.video) {
@@ -3405,21 +3384,21 @@ function PlayPageClient() {
                   const baseConfig = {
                     danmuku: [], // 初始为空数组，后续通过load方法加载
                     speed: parseFloat(
-                      localStorage.getItem('danmaku_speed') || '5',
+                      localStorage.getItem(DANMAKU_SPEED_KEY) || '5',
                     ),
                     opacity: parseFloat(
-                      localStorage.getItem('danmaku_opacity') || '0.8',
+                      localStorage.getItem(DANMAKU_OPACITY_KEY) || '0.8',
                     ),
                     fontSize: parseInt(
-                      localStorage.getItem('danmaku_fontSize') || '25',
+                      localStorage.getItem(DANMAKU_FONT_SIZE_KEY) || '25',
                     ),
                     color: '#FFFFFF',
                     mode: 0 as const,
                     modes: JSON.parse(
-                      localStorage.getItem('danmaku_modes') || '[0, 1, 2]',
+                      localStorage.getItem(DANMAKU_MODES_KEY) || '[0, 1, 2]',
                     ) as Array<0 | 1 | 2>,
                     margin: JSON.parse(
-                      localStorage.getItem('danmaku_margin') || '[10, "75%"]',
+                      localStorage.getItem(DANMAKU_MARGIN_KEY) || '[10, "75%"]',
                     ) as [number | `${number}%`, number | `${number}%`],
                     visible:
                       localStorage.getItem('danmaku_visible') !== 'false',
@@ -3771,7 +3750,7 @@ function PlayPageClient() {
 
           // 🖥️ 应用保存的显示模式设置（支持超宽屏）
           const savedObjectFit =
-            localStorage.getItem('video_object_fit') || 'contain';
+            localStorage.getItem(PLAYER_OBJECT_FIT_KEY) || 'contain';
           if (video) {
             video.style.objectFit = savedObjectFit;
           }
@@ -4386,31 +4365,31 @@ function PlayPageClient() {
                 // 保存所有弹幕配置到localStorage
                 if (typeof option.fontSize !== 'undefined') {
                   localStorage.setItem(
-                    'danmaku_fontSize',
+                    DANMAKU_FONT_SIZE_KEY,
                     option.fontSize.toString(),
                   );
                 }
                 if (typeof option.opacity !== 'undefined') {
                   localStorage.setItem(
-                    'danmaku_opacity',
+                    DANMAKU_OPACITY_KEY,
                     option.opacity.toString(),
                   );
                 }
                 if (typeof option.speed !== 'undefined') {
                   localStorage.setItem(
-                    'danmaku_speed',
+                    DANMAKU_SPEED_KEY,
                     option.speed.toString(),
                   );
                 }
                 if (typeof option.margin !== 'undefined') {
                   localStorage.setItem(
-                    'danmaku_margin',
+                    DANMAKU_MARGIN_KEY,
                     JSON.stringify(option.margin),
                   );
                 }
                 if (typeof option.modes !== 'undefined') {
                   localStorage.setItem(
-                    'danmaku_modes',
+                    DANMAKU_MODES_KEY,
                     JSON.stringify(option.modes),
                   );
                 }
@@ -5553,7 +5532,10 @@ function PlayPageClient() {
                       const next = !autoPlayNext;
                       setAutoPlayNext(next);
                       try {
-                        localStorage.setItem(AUTOPLAY_NEXT_KEY, String(next));
+                        localStorage.setItem(
+                          SHORT_DRAMA_AUTO_NEXT_KEY,
+                          String(next),
+                        );
                       } catch {
                         // ignore
                       }
@@ -5757,19 +5739,20 @@ function PlayPageClient() {
                     settings={{
                       enabled: externalDanmuEnabled, // 启用弹幕主开关
                       fontSize: parseInt(
-                        localStorage.getItem('danmaku_fontSize') || '25',
+                        localStorage.getItem(DANMAKU_FONT_SIZE_KEY) || '25',
                       ),
                       speed: parseFloat(
-                        localStorage.getItem('danmaku_speed') || '5',
+                        localStorage.getItem(DANMAKU_SPEED_KEY) || '5',
                       ),
                       opacity: parseFloat(
-                        localStorage.getItem('danmaku_opacity') || '0.8',
+                        localStorage.getItem(DANMAKU_OPACITY_KEY) || '0.8',
                       ),
                       margin: JSON.parse(
-                        localStorage.getItem('danmaku_margin') || '[10, "75%"]',
+                        localStorage.getItem(DANMAKU_MARGIN_KEY) ||
+                          '[10, "75%"]',
                       ),
                       modes: JSON.parse(
-                        localStorage.getItem('danmaku_modes') || '[0, 1, 2]',
+                        localStorage.getItem(DANMAKU_MODES_KEY) || '[0, 1, 2]',
                       ) as Array<0 | 1 | 2>,
                       antiOverlap:
                         localStorage.getItem('danmaku_antiOverlap') !== null
@@ -5796,31 +5779,31 @@ function PlayPageClient() {
                       // 更新 localStorage
                       if (newSettings.fontSize !== undefined) {
                         localStorage.setItem(
-                          'danmaku_fontSize',
+                          DANMAKU_FONT_SIZE_KEY,
                           String(newSettings.fontSize),
                         );
                       }
                       if (newSettings.speed !== undefined) {
                         localStorage.setItem(
-                          'danmaku_speed',
+                          DANMAKU_SPEED_KEY,
                           String(newSettings.speed),
                         );
                       }
                       if (newSettings.opacity !== undefined) {
                         localStorage.setItem(
-                          'danmaku_opacity',
+                          DANMAKU_OPACITY_KEY,
                           String(newSettings.opacity),
                         );
                       }
                       if (newSettings.margin !== undefined) {
                         localStorage.setItem(
-                          'danmaku_margin',
+                          DANMAKU_MARGIN_KEY,
                           JSON.stringify(newSettings.margin),
                         );
                       }
                       if (newSettings.modes !== undefined) {
                         localStorage.setItem(
-                          'danmaku_modes',
+                          DANMAKU_MODES_KEY,
                           JSON.stringify(newSettings.modes),
                         );
                       }

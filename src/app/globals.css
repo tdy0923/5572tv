@@ -1171,6 +1171,25 @@ select:focus-visible,
   }
 }
 
+@keyframes play-episode-toast-fade {
+  0% {
+    opacity: 0;
+    pointer-events: none;
+  }
+  10% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  90% {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
 .animate-fluent2-fade-in {
   animation: fluent2-fade-in 250ms cubic-bezier(0, 0, 0, 1) forwards;
 }
