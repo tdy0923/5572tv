@@ -1,8 +1,9 @@
 'use client';
 
-import { Film } from 'lucide-react';
+import { Film, Search, Zap } from 'lucide-react';
 import { memo } from 'react';
 
+import { FluentSpinner } from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 
 import LoadingProgressIndicator from './LoadingProgressIndicator';
@@ -19,58 +20,77 @@ interface LoadingScreenProps {
   } | null;
 }
 
-/**
- * 加载状态组件 - 独立拆分以优化性能
- * 使用 React.memo 防止不必要的重新渲染
- */
+const stageConfig: Record<
+  LoadingScreenProps['loadingStage'],
+  { icon: React.ReactNode; badge: string; color: string }
+> = {
+  searching: {
+    icon: <Search size={24} />,
+    badge: '搜索中',
+    color: '#3b82f6',
+  },
+  preferring: {
+    icon: <Zap size={24} />,
+    badge: '优选中',
+    color: '#f4c24d',
+  },
+  fetching: {
+    icon: <Film size={24} />,
+    badge: '获取中',
+    color: '#22c55e',
+  },
+  ready: {
+    icon: <Film size={24} />,
+    badge: '准备就绪',
+    color: '#f4c24d',
+  },
+};
+
 const LoadingScreen = memo(function LoadingScreen({
   loadingStage,
   loadingMessage,
   speedTestProgress,
 }: LoadingScreenProps) {
+  const config = stageConfig[loadingStage];
+
   return (
     <PageLayout activePath='/play'>
-      <div className='flex items-center justify-center min-h-screen bg-transparent'>
-        <div className='text-center max-w-md mx-auto px-6'>
-          {/* 动画影院图标 */}
-          <div className='relative mb-8'>
-            <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform  transition-transform duration-300'>
-              <div className='text-white text-4xl'>
-                {loadingStage === 'searching' && '🔍'}
-                {loadingStage === 'preferring' && '⚡'}
-                {loadingStage === 'fetching' && (
-                  <Film className='inline-block w-5 h-5' />
-                )}
-                {loadingStage === 'ready' && '✨'}
-              </div>
-              {/* 旋转光环 */}
-              <div className='absolute -inset-2 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl opacity-20 animate-spin'></div>
+      <div className='flex items-center justify-center min-h-screen bg-transparent px-4'>
+        <div className='flex flex-col items-center gap-6 max-w-sm w-full'>
+          <div className='relative flex flex-col items-center gap-4'>
+            <div
+              className='w-20 h-20 rounded-2xl flex items-center justify-center shadow-xl'
+              style={{
+                backgroundColor: `${config.color}15`,
+                borderColor: `${config.color}30`,
+                borderWidth: '1px',
+              }}
+            >
+              <span style={{ color: config.color }}>{config.icon}</span>
             </div>
-
-            {/* 浮动粒子效果 */}
-            <div className='absolute top-0 left-0 w-full h-full pointer-events-none'>
-              <div className='absolute top-2 left-2 w-2 h-2 bg-green-400 rounded-full animate-bounce'></div>
-              <div
-                className='absolute top-4 right-4 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce'
-                style={{ animationDelay: '0.5s' }}
-              ></div>
-              <div
-                className='absolute bottom-3 left-6 w-1 h-1 bg-lime-400 rounded-full animate-bounce'
-                style={{ animationDelay: '1s' }}
-              ></div>
-            </div>
+            <span
+              className='px-2 py-0.5 rounded-full text-[10px] font-medium'
+              style={{
+                backgroundColor: `${config.color}15`,
+                color: config.color,
+                borderColor: `${config.color}30`,
+                borderWidth: '1px',
+              }}
+            >
+              {config.badge}
+            </span>
           </div>
 
-          {/* 进度指示器 */}
-          <LoadingProgressIndicator loadingStage={loadingStage} />
+          <FluentSpinner size='large' />
 
-          {/* 加载消息 */}
-          <div className='space-y-2'>
-            <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
+          <div className='text-center flex flex-col gap-2'>
+            <LoadingProgressIndicator loadingStage={loadingStage} />
+            <p
+              className='text-base font-medium animate-[fluent2-shimmer_2s_ease-in-out_infinite]'
+              style={{ color: 'var(--color-foreground-subtle)' }}
+            >
               {loadingMessage}
             </p>
-
-            {/* Netflix风格测速进度显示 */}
             {speedTestProgress && (
               <SpeedTestProgress progress={speedTestProgress} />
             )}

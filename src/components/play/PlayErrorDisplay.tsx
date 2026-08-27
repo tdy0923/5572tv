@@ -1,15 +1,11 @@
 'use client';
 
-import { Frown } from 'lucide-react';
+import { Check, Copy, Frown, RefreshCw, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-interface PlayErrorDisplayProps {
-  error: string;
-  videoTitle?: string;
-}
+import { FluentButton, FluentCard, FluentDivider } from '@/components/FluentUI';
 
-/** 收集诊断快照：便于用户一键复制反馈，替代来回猜问题 */
 function buildDiagnostics(error: string, videoTitle?: string): string {
   const nav = typeof navigator !== 'undefined' ? navigator : null;
   return [
@@ -27,6 +23,11 @@ function buildDiagnostics(error: string, videoTitle?: string): string {
   ].join('\n');
 }
 
+interface PlayErrorDisplayProps {
+  error: string;
+  videoTitle?: string;
+}
+
 export default function PlayErrorDisplay({
   error,
   videoTitle,
@@ -40,79 +41,119 @@ export default function PlayErrorDisplay({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // 剪贴板不可用时降级为选中文本提示
       setCopied(false);
     }
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-transparent'>
-      <div className='text-center max-w-md mx-auto px-6'>
-        {/* 错误图标 */}
-        <div className='relative mb-8'>
-          <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform  transition-transform duration-300'>
-            <Frown className='w-12 h-12 text-white' />
-            {/* 脉冲效果 */}
-            <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
+    <div className='flex items-center justify-center min-h-screen bg-transparent px-4'>
+      <FluentCard
+        variant='filled'
+        className='w-full max-w-md p-8'
+        padding='32px'
+      >
+        <div className='flex flex-col items-center gap-6'>
+          <div className='relative'>
+            <div
+              className='w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg'
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
+              }}
+            >
+              <Frown className='w-10 h-10 text-white' />
+            </div>
+            <div
+              className='absolute -inset-1 rounded-2xl opacity-20 pointer-events-none'
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
+                animation: 'fluent2-shimmer 2s ease-in-out infinite',
+              }}
+            />
           </div>
 
-          {/* 浮动错误粒子 */}
-          <div className='absolute top-0 left-0 w-full h-full pointer-events-none'>
-            <div className='absolute top-2 left-2 w-2 h-2 bg-red-400 rounded-full animate-bounce'></div>
-            <div
-              className='absolute top-4 right-4 w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce'
-              style={{ animationDelay: '0.5s' }}
-            ></div>
-            <div
-              className='absolute bottom-3 left-6 w-1 h-1 bg-yellow-400 rounded-full animate-bounce'
-              style={{ animationDelay: '1s' }}
-            ></div>
+          <div className='text-center flex flex-col gap-1.5'>
+            <h2
+              className='text-lg font-semibold'
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              播放出现问题
+            </h2>
+            <p
+              className='text-sm'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              请检查网络连接或尝试刷新页面
+            </p>
           </div>
-        </div>
 
-        {/* 错误信息 */}
-        <div className='space-y-4 mb-8'>
-          <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-            哎呀，出现了一些问题
-          </h2>
-          <div className='bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4'>
-            <p className='text-red-600 dark:text-red-400 font-medium'>
+          <div
+            className='w-full p-3 rounded-lg border'
+            style={{
+              backgroundColor: 'rgba(239,68,68,0.08)',
+              borderColor: 'rgba(239,68,68,0.2)',
+            }}
+          >
+            <p
+              className='text-xs font-medium text-center'
+              style={{ color: '#ef4444' }}
+            >
               {error}
             </p>
           </div>
-          <p className='text-sm text-gray-500 dark:text-gray-400'>
-            请检查网络连接或尝试刷新页面
-          </p>
+
+          <div className='w-full flex flex-col gap-2.5'>
+            <FluentButton
+              variant='primary'
+              size='md'
+              fullWidth
+              onClick={() =>
+                videoTitle
+                  ? router.push(`/search?q=${encodeURIComponent(videoTitle)}`)
+                  : router.back()
+              }
+              icon={<Search size={16} />}
+            >
+              {videoTitle ? '返回搜索' : '返回上页'}
+            </FluentButton>
+
+            <FluentButton
+              variant='secondary'
+              size='md'
+              fullWidth
+              onClick={() => window.location.reload()}
+              icon={<RefreshCw size={16} />}
+            >
+              重新尝试
+            </FluentButton>
+
+            <FluentDivider orientation='horizontal' />
+
+            <button
+              onClick={copyDiagnostics}
+              className='w-full px-4 py-2 text-xs font-medium rounded-lg border transition-all duration-150 cursor-pointer'
+              style={{
+                borderColor: 'rgba(255,255,255,0.12)',
+                color: '#9ca3af',
+                backgroundColor: 'transparent',
+              }}
+            >
+              <span className='flex items-center justify-center gap-1.5'>
+                {copied ? (
+                  <>
+                    <Check size={12} />
+                    <span>已复制诊断信息</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy size={12} />
+                    <span>复制诊断信息（反馈给站长）</span>
+                  </>
+                )}
+              </span>
+            </button>
+          </div>
         </div>
-
-        {/* 操作按钮 */}
-        <div className='space-y-3'>
-          <button
-            onClick={() =>
-              videoTitle
-                ? router.push(`/search?q=${encodeURIComponent(videoTitle)}`)
-                : router.back()
-            }
-            className='w-full px-6 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-emerald-700 transform  transition-all duration-200 shadow-lg hover:shadow-xl'
-          >
-            {videoTitle ? '🔍 返回搜索' : '← 返回上页'}
-          </button>
-
-          <button
-            onClick={() => window.location.reload()}
-            className='w-full px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200'
-          >
-            🔄 重新尝试
-          </button>
-
-          <button
-            onClick={copyDiagnostics}
-            className='w-full px-6 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors'
-          >
-            {copied ? '✅ 已复制诊断信息' : '📋 复制诊断信息（反馈给站长）'}
-          </button>
-        </div>
-      </div>
+      </FluentCard>
     </div>
   );
 }

@@ -4,6 +4,8 @@ export { FluentButton, FluentButtonGroup } from '../FluentButton';
 export { FluentCard, FluentCardFooter, FluentCardHeader } from '../FluentCard';
 export { FluentCheckbox, FluentRadio } from '../FluentCheckbox';
 export { FluentDivider } from '../FluentDivider';
+export { FluentEmptyState } from '../FluentEmptyState';
+export { FluentIcon, FluentIconRow } from '../FluentIcon';
 export { FluentInput, FluentTextArea } from '../FluentInput';
 export { FluentConfirm, FluentModal } from '../FluentModal';
 export { FluentSelect } from '../FluentSelect';
@@ -21,6 +23,7 @@ export {
   removeToast,
   ToastProvider,
 } from '../FluentToast';
+export { FluentTooltip } from '../FluentTooltip';
 export {
   FluentFadeIn,
   FluentScaleIn,

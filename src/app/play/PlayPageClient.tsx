@@ -409,6 +409,9 @@ function PlayPageClient() {
     ? `&source=${encodeURIComponent(shortdramaSource)}`
     : '';
 
+  // 短剧模式标志（基于URL参数，不变）
+  const isShortDramaMode = shortdramaId !== '' || shortdramaSource !== '';
+
   // 搜索所需信息
   const [searchTitle, setSearchTitle] = useState(
     searchParams.get('stitle') || '',
@@ -2911,9 +2914,7 @@ function PlayPageClient() {
               // 视频已开始解码/缓冲(readyState>=3)或已可播放(readyState=4)时
               // 不再触发，避免对正常播放中(网络波动)的误杀。
               const isShortDramaSource =
-                currentSourceRef.current === 'shortdrama' ||
-                shortdramaId !== '' ||
-                shortdramaSource !== '';
+                currentSourceRef.current === 'shortdrama' || isShortDramaMode;
               const safetyNetMs = isShortDramaSource ? 8000 : 15000;
               fatalHandledRef.current = false;
               if (safetyNetTimer.current) {
@@ -4777,9 +4778,7 @@ function PlayPageClient() {
             const sp = streamSearchRef.current?.promise;
             if (sp) {
               const isShortDramaRecovery =
-                currentSourceRef.current === 'shortdrama' ||
-                shortdramaId !== '' ||
-                shortdramaSource !== '';
+                currentSourceRef.current === 'shortdrama' || isShortDramaMode;
               const waitMs = isShortDramaRecovery ? 2000 : 6000;
               await Promise.race([
                 sp,
