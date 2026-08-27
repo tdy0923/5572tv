@@ -1,3 +1,4 @@
+export { FluentAvatar, FluentAvatarGroup } from '../FluentAvatar';
 export { FluentBadge } from '../FluentBadge';
 export type { ButtonSize, ButtonVariant } from '../FluentButton';
 export { FluentButton, FluentButtonGroup } from '../FluentButton';
@@ -18,6 +19,7 @@ export {
   FluentLoadingPage,
   FluentSpinner,
 } from '../FluentSpinner';
+export { FluentTabs } from '../FluentTabs';
 export {
   FluentToast,
   pushToast,
