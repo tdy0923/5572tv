@@ -16,6 +16,7 @@ import React, {
 import { isAdSettingRenderable } from '@/lib/ad-settings';
 
 import AcgSearch from '@/components/AcgSearch';
+import { FluentEmptyState } from '@/components/FluentUI';
 import ImageViewer from '@/components/ImageViewer';
 import MountAnimation from '@/components/MountAnimation';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
@@ -161,7 +162,7 @@ function SearchPageClient() {
       >
         <div className='flex items-start gap-4'>
           <div className='relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {}
             <img
               src={item.poster}
               alt={item.title}
@@ -1255,14 +1256,16 @@ function SearchPageClient() {
                               </p>
                             </div>
                           ) : searchResults.length === 0 ? (
-                            <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
-                              <div className='text-gray-500 dark:text-gray-400'>
-                                未找到相关影视结果
-                              </div>
-                              <p className='mt-2 text-sm text-gray-400 dark:text-gray-400'>
-                                可以尝试更短的关键词，或关闭精确搜索后再试一次。
-                              </p>
-                            </div>
+                            <FluentEmptyState
+                              icon={
+                                <Search
+                                  className='w-6 h-6'
+                                  style={{ color: '#9ca3af' }}
+                                />
+                              }
+                              title='未找到相关影视结果'
+                              description='可以尝试更短的关键词，或关闭精确搜索后再试一次。'
+                            />
                           ) : useVirtualization &&
                             resultDisplayMode === 'card' ? (
                             <div key={`search-results-${viewMode}`}>
@@ -1581,14 +1584,17 @@ function SearchPageClient() {
                 )}
 
                 {searchHistory.length === 0 && (
-                  <section className='mb-12 rounded-2xl sm:rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
-                    <h2 className='text-xl font-semibold text-gray-700 dark:text-gray-300'>
-                      还没有搜索历史
-                    </h2>
-                    <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
-                      输入关键词开始搜索，常用内容会显示在这里。
-                    </p>
-                  </section>
+                  <FluentEmptyState
+                    icon={
+                      <Search
+                        className='w-6 h-6'
+                        style={{ color: '#9ca3af' }}
+                      />
+                    }
+                    title='还没有搜索历史'
+                    description='输入关键词开始搜索，常用内容会显示在这里。'
+                    className='mb-12 rounded-2xl border border-dashed'
+                  />
                 )}
               </>
             )}

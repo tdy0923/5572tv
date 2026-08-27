@@ -1,8 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
-
 /* eslint-disable unused-imports/no-unused-vars */
 
-import { AlertTriangle, Tv } from 'lucide-react';
+import { AlertTriangle, Search, Tv } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, {
   useCallback,
@@ -14,6 +12,12 @@ import React, {
 
 import { SearchResult } from '@/lib/types';
 import { getVideoResolutionFromM3u8, processImageUrl } from '@/lib/utils';
+
+import {
+  FluentButton,
+  FluentEmptyState,
+  FluentSpinner,
+} from '@/components/FluentUI';
 
 // 定义视频信息类型
 interface VideoInfo {
@@ -532,36 +536,47 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
       {activeTab === 'sources' && (
         <div className='flex flex-col h-full min-h-0 mt-4'>
           {sourceSearchLoading && (
-            <div className='flex items-center justify-center py-8'>
-              <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-green-500'></div>
-              <span className='ml-2 text-sm text-gray-600 dark:text-gray-300'>
+            <div className='flex flex-col items-center justify-center py-10 gap-3'>
+              <FluentSpinner size='large' />
+              <span
+                className='text-sm'
+                style={{ color: 'var(--color-foreground-muted)' }}
+              >
                 搜索中...
               </span>
             </div>
           )}
 
           {sourceSearchError && (
-            <div className='flex items-center justify-center py-8'>
-              <div className='text-center'>
-                <AlertTriangle className='w-8 h-8 text-red-500 mx-auto mb-2' />
-                <p className='text-sm text-red-600 dark:text-red-400'>
-                  {sourceSearchError}
-                </p>
-              </div>
-            </div>
+            <FluentEmptyState
+              icon={<AlertTriangle className='w-6 h-6 text-red-500' />}
+              title='搜索失败'
+              description={sourceSearchError}
+              action={
+                videoTitle ? (
+                  <FluentButton
+                    variant='secondary'
+                    size='sm'
+                    icon={<Search size={14} />}
+                    onClick={() =>
+                      router.push(`/search?q=${encodeURIComponent(videoTitle)}`)
+                    }
+                  >
+                    去搜索页重试
+                  </FluentButton>
+                ) : undefined
+              }
+            />
           )}
 
           {!sourceSearchLoading &&
             !sourceSearchError &&
             availableSources.length === 0 && (
-              <div className='flex items-center justify-center py-8'>
-                <div className='text-center'>
-                  <Tv className='w-8 h-8 text-gray-400 mx-auto mb-2' />
-                  <p className='text-sm text-gray-600 dark:text-gray-300'>
-                    暂无可用的换源
-                  </p>
-                </div>
-              </div>
+              <FluentEmptyState
+                icon={<Tv className='w-6 h-6' style={{ color: '#9ca3af' }} />}
+                title='暂无可用的换源'
+                description='尝试更换关键词或稍后重试'
+              />
             )}
 
           {!sourceSearchLoading &&
