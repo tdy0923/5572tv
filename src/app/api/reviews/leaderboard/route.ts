@@ -24,8 +24,8 @@ interface StoredReview {
 
 export async function GET() {
   try {
-    // 命中缓存直接返回
-    const cached = await db.getCache('rating:leaderboard');
+    // 命中缓存直接返回（v2 已过滤纯数字标题脏数据）
+    const cached = await db.getCache('rating:leaderboard:v2');
     if (Array.isArray(cached)) {
       return NextResponse.json({ success: true, list: cached });
     }
@@ -61,11 +61,15 @@ export async function GET() {
 
       if (count === 0) continue;
 
+      // 跳过纯数字标题（历史脏数据，videoId 回退），避免“影片 #69446”展示
+      const finalTitle = title && !/^\d+$/.test(title) ? title : '';
+      if (!finalTitle) continue;
+
       const aggKey = `${videoSource}:${videoId}`;
       aggMap.set(aggKey, {
         videoId,
         videoSource,
-        title: title || videoId,
+        title: finalTitle,
         poster,
         avgRating: Math.round((total / count) * 10) / 10,
         count,
@@ -78,7 +82,7 @@ export async function GET() {
 
     // 写缓存
     await db
-      .setCache('rating:leaderboard', list, LEADERBOARD_CACHE_SECONDS)
+      .setCache('rating:leaderboard:v2', list, LEADERBOARD_CACHE_SECONDS)
       .catch(() => {});
 
     return NextResponse.json({ success: true, list });

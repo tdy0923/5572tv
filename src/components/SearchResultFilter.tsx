@@ -8,6 +8,7 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { FluentTag } from '@/components/FluentUI';
 import { GlassPanel, PillButton, PillGroup } from '@/components/ui-surface';
 
 export type SearchFilterKey = 'source' | 'title' | 'year' | 'yearOrder';
@@ -282,19 +283,20 @@ const SearchResultFilter: React.FC<SearchResultFilterProps> = ({
                   categories.find((cat) => cat.key === activeCategory)
                     ?.options ?? []
                 ).map((option) => (
-                  <button
+                  <FluentTag
                     key={option.value}
+                    label={option.label}
+                    active={isOptionSelected(activeCategory, option.value)}
+                    variant={
+                      isOptionSelected(activeCategory, option.value)
+                        ? 'primary'
+                        : 'default'
+                    }
+                    size='md'
                     onClick={() =>
                       handleOptionSelect(activeCategory, option.value)
                     }
-                    className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 text-left ${
-                      isOptionSelected(activeCategory, option.value)
-                        ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-[0_10px_24px_rgba(244,194,77,0.2)]'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-gray-700/80'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
+                  />
                 ))}
               </div>
             </div>

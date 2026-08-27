@@ -36,7 +36,6 @@ export function FluentInput({
   const baseStyle: React.CSSProperties = {
     borderRadius: radius.lg,
     fontSize: '14px',
-    color: '#ffffff',
     transition: `all ${duration.fast} ${easing.standard}`,
     width: fullWidth ? '100%' : undefined,
   };
@@ -44,19 +43,16 @@ export function FluentInput({
   const variantStyleMap: Record<InputVariant, React.CSSProperties> = {
     default: {
       padding: '10px 14px',
-      background: 'rgba(255,255,255,0.05)',
-      borderColor: 'rgba(255,255,255,0.12)',
+      borderWidth: '1px',
     },
     filled: {
       padding: '10px 14px',
-      background: 'rgba(255,255,255,0.08)',
+      borderWidth: '1px',
       borderColor: 'transparent',
     },
     underlined: {
       padding: '10px 0',
       borderRadius: '0',
-      background: 'transparent',
-      borderColor: 'rgba(255,255,255,0.2)',
       borderWidth: '0 0 1px 0',
     },
   };
@@ -80,20 +76,21 @@ export function FluentInput({
           id={inputId}
           className={`
             block w-full border
-            focus:outline-none
-            focus:ring-2 focus:ring-offset-1
+            bg-white dark:bg-white/5
+            text-gray-900 dark:text-white
+            border-gray-200 dark:border-white/10
+            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1
             disabled:opacity-50 disabled:cursor-not-allowed
-            placeholder:text-[#6b7280]
-            ${isError ? 'border-[#ef4444]' : ''}
+            placeholder:text-gray-400 dark:placeholder:text-[#6b7280]
+            ${variant === 'filled' ? '!bg-gray-50 dark:!bg-white/[0.08] !border-transparent' : ''}
+            ${variant === 'underlined' ? '!bg-transparent !rounded-none border-b dark:!border-white/20' : ''}
+            ${isError ? '!border-[#ef4444]' : ''}
           `}
           style={{
             ...baseStyle,
             ...variantStyleMap[variant],
             ...(prefix ? { paddingLeft: '2.5rem' } : {}),
             ...(suffix ? { paddingRight: '2.5rem' } : {}),
-            borderColor: isError
-              ? '#ef4444'
-              : variantStyleMap[variant].borderColor,
             ...style,
           }}
           aria-invalid={isError ? 'true' : 'false'}
@@ -142,12 +139,14 @@ export function FluentTextArea({
       <textarea
         rows={rows}
         className={`
-          w-full rounded-lg border border-[rgba(255,255,255,0.12)]
-          bg-[rgba(255,255,255,0.05)]
-          px-4 py-3 text-sm text-white
-          focus:outline-none focus:ring-2
-          placeholder:text-[#6b7280]
-          ${error ? 'border-[#ef4444]' : ''}
+          w-full rounded-lg border
+          bg-white dark:bg-white/5
+          border-gray-200 dark:border-white/10
+          text-gray-900 dark:text-white
+          px-4 py-3 text-sm
+          focus:outline-none focus:ring-2 focus:ring-primary-500
+          placeholder:text-gray-400 dark:placeholder:text-[#6b7280]
+          ${error ? '!border-[#ef4444]' : ''}
         `}
         style={{
           transition: `all ${duration.fast} ${easing.standard}`,

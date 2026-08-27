@@ -16,7 +16,7 @@ export function FluentDivider({
       <hr
         className={`
           border-0 h-[1px]
-          bg-[rgba(255,255,255,0.08)]
+          bg-gray-200 dark:bg-white/10
           my-4
           ${className}
         `}
@@ -29,7 +29,7 @@ export function FluentDivider({
     <div
       className={`
         w-[1px] h-full
-        bg-[rgba(255,255,255,0.08)]
+        bg-gray-200 dark:bg-white/10
         mx-3
         ${className}
       `}

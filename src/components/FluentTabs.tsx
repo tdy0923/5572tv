@@ -37,13 +37,8 @@ export function FluentTabs({
 
   return (
     <div
-      className={`flex items-center gap-1 rounded-lg p-1 ${className}`}
-      style={{
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: '1px',
-        borderRadius: '8px',
-      }}
+      className={`flex items-center gap-1 rounded-lg border p-1 bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 ${className}`}
+      style={{ borderRadius: '8px' }}
       role='tablist'
     >
       {tabs.map((tab) => {

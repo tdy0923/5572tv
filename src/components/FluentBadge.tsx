@@ -14,9 +14,9 @@ const variantColors: Record<
   { bg: string; text: string; border: string }
 > = {
   default: {
-    bg: 'rgba(255,255,255,0.08)',
-    text: '#9ca3af',
-    border: 'rgba(255,255,255,0.12)',
+    bg: '#f3f4f6',
+    text: '#6b7280',
+    border: '#e5e7eb',
   },
   primary: {
     bg: '#f4c24d',

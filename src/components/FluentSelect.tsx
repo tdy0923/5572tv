@@ -52,24 +52,19 @@ export function FluentSelect({
         <select
           id={selectId}
           className={`
-            block w-full border
-            appearance-none
-            pr-8
-            focus:outline-none focus:ring-2 focus:ring-offset-1
+            block w-full border appearance-none pr-8
+            ${variant === 'filled' ? 'bg-gray-50 dark:bg-white/10' : 'bg-white dark:bg-white/5'}
+            text-gray-900 dark:text-white
+            border-gray-200 dark:border-white/10
+            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1
             disabled:opacity-50 disabled:cursor-not-allowed
             cursor-pointer
-            ${isError ? 'border-[#ef4444]' : ''}
+            ${isError ? '!border-[#ef4444] !text-red-600 dark:!text-red-400' : ''}
           `}
           style={{
             padding: `${prefix ? '10px 14px 10px 2.5rem' : '10px 14px'}`,
             fontSize: '14px',
-            color: '#ffffff',
             borderRadius: radius.lg,
-            borderColor: isError ? '#ef4444' : 'rgba(255,255,255,0.12)',
-            backgroundColor:
-              variant === 'filled'
-                ? 'rgba(255,255,255,0.08)'
-                : 'rgba(255,255,255,0.05)',
             transition: `all ${duration.fast} ${easing.standard}`,
             width: fullWidth ? '100%' : undefined,
             paddingRight: suffix ? '2.5rem' : '2rem',
@@ -78,7 +73,12 @@ export function FluentSelect({
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+            <option
+              key={opt.value}
+              value={opt.value}
+              disabled={opt.disabled}
+              className='bg-white text-gray-900 dark:bg-gray-800 dark:text-white'
+            >
               {String(opt.label)}
             </option>
           ))}

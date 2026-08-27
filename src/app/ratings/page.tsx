@@ -5,6 +5,8 @@ import { Flame, Search, Star, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { resolveCardPosterUrl } from '@/lib/utils';
+
 import {
   FluentEmptyState,
   FluentSelect,
@@ -71,9 +73,9 @@ function RatingCard({
   index: number;
   showRank?: boolean;
 }) {
-  const displayTitle = /^\d+$/.test(item.title)
-    ? `影片 #${item.title}`
-    : item.title;
+  // API 已过滤纯数字脏数据，前端防御性兜底：数字标题不展示
+  if (/^\d+$/.test(item.title)) return null;
+  const displayTitle = item.title;
 
   const href =
     item.videoSource === 'douban'
@@ -143,34 +145,39 @@ function RatingCard({
       >
         {item.poster ? (
           <img
-            src={item.poster}
+            src={resolveCardPosterUrl(item.poster)}
             alt={item.title}
             loading='lazy'
             decoding='async'
             className='h-full w-full object-cover transition-transform duration-400 ease-out group-hover:scale-[1.03]'
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = 'none';
+              const t = e.currentTarget as HTMLImageElement;
+              t.style.display = 'none';
+              const fb = t.nextElementSibling as HTMLElement | null;
+              if (fb) fb.style.display = 'flex';
             }}
           />
-        ) : (
+        ) : null}
+        <div
+          className='flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-center absolute inset-0'
+          style={{
+            background: 'var(--color-background-subtle)',
+            display: item.poster ? 'none' : 'flex',
+          }}
+        >
           <div
-            className='flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-center'
-            style={{ background: 'var(--color-background-subtle)' }}
+            className='flex h-10 w-10 items-center justify-center rounded-full'
+            style={{ background: 'rgba(244,194,77,0.12)', color: '#f4c24d' }}
           >
-            <div
-              className='flex h-10 w-10 items-center justify-center rounded-full'
-              style={{ background: 'rgba(244,194,77,0.12)', color: '#f4c24d' }}
-            >
-              <Star className='h-5 w-5' />
-            </div>
-            <span
-              className='line-clamp-3 text-xs leading-relaxed'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
-              {displayTitle}
-            </span>
+            <Star className='h-5 w-5' />
           </div>
-        )}
+          <span
+            className='line-clamp-3 text-xs leading-relaxed'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            {displayTitle}
+          </span>
+        </div>
         {/* 评分角标 */}
         <div
           className='absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none backdrop-blur-md'
@@ -237,6 +244,7 @@ function RatingCard({
 export default function RatingsPage() {
   const { data: list = [], isLoading } = useQuery(RATINGS_OPTIONS);
   const [minVotes, setMinVotes] = useState(1);
+  const [sortBy, setSortBy] = useState<'rating' | 'count'>('rating');
   const [doubanType, setDoubanType] = useState<'movie' | 'tv' | 'anime'>(
     'movie',
   );
@@ -245,7 +253,15 @@ export default function RatingsPage() {
     DOUBAN_HIGH_OPTIONS(doubanType),
   );
 
-  const filtered = list.filter((item) => item.count >= minVotes);
+  const filteredRaw = list.filter(
+    (item) => item.count >= minVotes && !/^\d+$/.test(item.title),
+  );
+  const filtered =
+    sortBy === 'count'
+      ? [...filteredRaw].sort(
+          (a, b) => b.count - a.count || b.avgRating - a.avgRating,
+        )
+      : filteredRaw;
   const showDouban = filtered.length < 8;
 
   return (
@@ -294,13 +310,14 @@ export default function RatingsPage() {
                 className='text-xs'
                 style={{ color: 'var(--color-foreground-muted)' }}
               >
-                {filtered.length} 部 · 按平均分排序
+                {filtered.length} 部 ·{' '}
+                {sortBy === 'rating' ? '按平均分排序' : '按票数排序'}
                 {filtered.length > 0 && ` · 前 3 名高亮`}
               </p>
             </div>
           </div>
 
-          <div className='flex items-center gap-2 self-start sm:self-auto'>
+          <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
             <span
               className='whitespace-nowrap text-xs'
               style={{ color: 'var(--color-foreground-muted)' }}
@@ -318,6 +335,22 @@ export default function RatingsPage() {
                 { value: '3', label: '3 票' },
                 { value: '5', label: '5 票' },
                 { value: '10', label: '10 票' },
+              ]}
+            />
+            <span
+              className='whitespace-nowrap text-xs'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              排序
+            </span>
+            <FluentSelect
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy((e.target as HTMLSelectElement).value as any)
+              }
+              options={[
+                { value: 'rating', label: '按评分' },
+                { value: 'count', label: '按票数' },
               ]}
             />
           </div>

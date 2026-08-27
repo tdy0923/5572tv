@@ -28,44 +28,33 @@ export function FluentCard({
     transition: 'all 250ms cubic-bezier(0, 0, 0, 1)',
   };
 
-  const variantStyleMap: Record<CardVariant, React.CSSProperties> = {
-    default: {
-      background: 'rgba(255,255,255,0.03)',
-      borderColor: 'rgba(255,255,255,0.05)',
-      boxShadow: shadow.light,
-    },
-    glass: {
-      background: 'rgba(255,255,255,0.05)',
-      backdropFilter: 'blur(12px)',
-      borderColor: 'rgba(255,255,255,0.1)',
-      boxShadow: shadow.light,
-    },
-    bordered: {
-      background: 'transparent',
-      borderColor: 'rgba(255,255,255,0.1)',
-      boxShadow: 'none',
-    },
-    filled: {
-      background: '#ffffff',
-      borderColor: '#e8e8e8',
-      boxShadow: shadow.medium,
-    },
+  const variantClassMap: Record<CardVariant, string> = {
+    default:
+      'bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5',
+    glass:
+      'bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 backdrop-blur',
+    bordered: 'bg-transparent border-gray-200 dark:border-white/10',
+    filled: 'bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/5',
+  };
+
+  const shadowStyle: Record<CardVariant, React.CSSProperties> = {
+    default: { boxShadow: shadow.light },
+    glass: { boxShadow: shadow.light },
+    bordered: { boxShadow: 'none' },
+    filled: { boxShadow: shadow.medium },
   };
 
   return (
     <div
       className={`
-        border
-        overflow-hidden
-        transition-[all]
-        duration-250
-        ease-out
+        border overflow-hidden transition-[all] duration-250 ease-out
+        ${variantClassMap[variant]}
         ${hoverable ? 'cursor-pointer hover:-translate-y-[1px] active:scale-[0.98]' : ''}
         ${className}
       `}
       style={{
         ...baseStyle,
-        ...variantStyleMap[variant],
+        ...shadowStyle[variant],
       }}
       {...props}
     >
@@ -85,7 +74,7 @@ export function FluentCardHeader({
 }: FluentCardHeaderProps) {
   return (
     <div
-      className={`flex items-center justify-between pb-3 mb-3 border-b border-[rgba(255,255,255,0.06)] ${className}`}
+      className={`flex items-center justify-between pb-3 mb-3 border-b border-gray-200 dark:border-white/5 ${className}`}
     >
       {children}
     </div>
@@ -103,7 +92,7 @@ export function FluentCardFooter({
 }: FluentCardFooterProps) {
   return (
     <div
-      className={`flex items-center justify-between pt-3 mt-3 border-t border-[rgba(255,255,255,0.06)] ${className}`}
+      className={`flex items-center justify-between pt-3 mt-3 border-t border-gray-200 dark:border-white/5 ${className}`}
     >
       {children}
     </div>

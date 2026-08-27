@@ -22,28 +22,41 @@ export function FluentTag({
   onRemove,
   className = '',
 }: FluentTagProps) {
+  const isDefaultVariant = variant === 'default';
   const bg = active
     ? variant === 'primary'
       ? brandColor.gold
       : variant === 'success'
         ? '#22c55e'
-        : 'rgba(255,255,255,0.08)'
-    : 'rgba(255,255,255,0.04)';
+        : undefined
+    : undefined;
   const color = active
     ? variant === 'primary'
       ? '#000'
       : variant === 'success'
         ? '#fff'
-        : '#fff'
-    : '#9ca3af';
+        : undefined
+    : undefined;
+
+  const defaultClasses = isDefaultVariant
+    ? active
+      ? 'bg-gray-200 dark:bg-white/10 border-transparent text-gray-900 dark:text-white'
+      : 'bg-gray-100 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
+    : '';
+
   return (
     <span
       onClick={onClick}
-      className={`inline-flex items-center gap-1 border transition-colors cursor-pointer select-none ${className}`}
+      className={`inline-flex items-center gap-1 border transition-colors cursor-pointer select-none ${isDefaultVariant ? defaultClasses : ''} ${className}`}
       style={{
-        background: bg,
-        color,
-        borderColor: active ? 'transparent' : 'rgba(255,255,255,0.08)',
+        ...(bg ? { background: bg } : {}),
+        ...(color ? { color } : {}),
+        borderColor:
+          !isDefaultVariant && active
+            ? 'transparent'
+            : !isDefaultVariant
+              ? 'rgba(255,255,255,0.08)'
+              : undefined,
         borderRadius: 999,
         padding: size === 'sm' ? '4px 10px' : '6px 12px',
         fontSize: size === 'sm' ? 12 : 13,

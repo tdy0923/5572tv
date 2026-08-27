@@ -47,10 +47,9 @@ export function FluentProgress({
         </div>
       )}
       <div
-        className='w-full rounded-full overflow-hidden'
+        className='w-full rounded-full overflow-hidden bg-gray-200 dark:bg-white/10'
         style={{
           height: heightMap[size],
-          backgroundColor: 'rgba(255,255,255,0.08)',
           position: 'relative',
         }}
       >

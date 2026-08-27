@@ -29,21 +29,22 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     borderColor: brandColor.gold,
     boxShadow: shadow.medium,
   },
-  secondary: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    color: '#ffffff',
-    borderColor: 'rgba(255,255,255,0.12)',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    color: '#ffffff',
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
+  secondary: {},
+  ghost: {},
   danger: {
     backgroundColor: '#ef4444',
     color: '#ffffff',
     borderColor: '#ef4444',
   },
+};
+
+const variantClasses: Record<ButtonVariant, string> = {
+  primary: '',
+  secondary:
+    'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/15',
+  ghost:
+    'bg-transparent text-gray-700 dark:text-white border-gray-300 dark:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5',
+  danger: '',
 };
 
 const sizeStyles: Record<ButtonSize, React.CSSProperties> = {
@@ -90,6 +91,7 @@ export function FluentButton({
         focus:outline-none focus:ring-2 focus:ring-offset-2
         disabled:opacity-40 disabled:cursor-not-allowed
         touch-manipulation
+        ${variantClasses[variant]}
         ${className}
       `}
       style={{
