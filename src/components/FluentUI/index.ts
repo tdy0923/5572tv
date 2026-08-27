@@ -8,6 +8,7 @@ export { FluentEmptyState } from '../FluentEmptyState';
 export { FluentIcon, FluentIconRow } from '../FluentIcon';
 export { FluentInput, FluentTextArea } from '../FluentInput';
 export { FluentConfirm, FluentModal } from '../FluentModal';
+export { FluentProgress } from '../FluentProgress';
 export { FluentSelect } from '../FluentSelect';
 export { default as FluentSkeleton } from '../FluentSkeleton';
 export { FluentSkeletonAvatar, FluentSkeletonText } from '../FluentSkeleton';
