@@ -101,6 +101,7 @@ const ShortDramaVerticalPlayer = dynamic(
   { ssr: false },
 );
 
+import { FluentCard, FluentEmptyState } from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
@@ -5597,7 +5598,11 @@ function PlayPageClient() {
 
               {/* 兴趣关联推荐 */}
               <div className='md:col-span-4'>
-                <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-white/[0.04] p-4 sm:p-5'>
+                <FluentCard
+                  variant='filled'
+                  padding='16px'
+                  className='p-4 sm:p-5'
+                >
                   <div className='flex items-center gap-2 mb-3'>
                     <Film className='w-4 h-4' />
                     <h3 className='text-sm font-bold text-gray-800 dark:text-gray-200'>
@@ -5635,9 +5640,10 @@ function PlayPageClient() {
                     </div>
                   )}
                   {!relatedLoading && relatedMovies.length === 0 && (
-                    <p className='text-xs text-gray-400 dark:text-gray-400'>
-                      暂无相关推荐
-                    </p>
+                    <FluentEmptyState
+                      title='暂无相关推荐'
+                      description='尝试搜索其他影片或稍后再试'
+                    />
                   )}
                   {!relatedLoading && relatedMovies.length > 0 && (
                     <div className='grid grid-cols-3 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]'>
@@ -5674,7 +5680,7 @@ function PlayPageClient() {
                       ))}
                     </div>
                   )}
-                </div>
+                </FluentCard>
               </div>
             </div>
 
