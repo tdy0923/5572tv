@@ -9,6 +9,7 @@ import { DoubanItem } from '@/lib/types';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
 
+import { FluentTag } from '@/components/FluentUI';
 import HeroBanner from '@/components/HeroBanner';
 const ContinueWatching = dynamic(() => import('@/components/ContinueWatching'));
 import PersonalRecommend from '@/components/home/PersonalRecommend';
@@ -149,10 +150,11 @@ export default function HomeContentView({
             />
             <Link
               href='/release-calendar'
-              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='group flex items-center gap-1 px-2 py-1.5 text-sm transition-colors hover:text-primary-600 dark:hover:text-primary-400'
+              style={{ color: 'var(--color-foreground-muted)' }}
             >
               更多内容
-              <ChevronRight className='w-4 h-4 ml-1' />
+              <ChevronRight className='h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5' />
             </Link>
           </div>
 
@@ -171,28 +173,13 @@ export default function HomeContentView({
                 count: upcomingReleases.filter((r) => r.type === 'tv').length,
               },
             ].map(({ key, label, count }) => (
-              <button
+              <FluentTag
                 key={key}
+                label={`${label}${count > 0 ? ` (${count})` : ''}`}
+                active={upcomingFilter === key}
+                variant={upcomingFilter === key ? 'primary' : 'default'}
                 onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                  upcomingFilter === key
-                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                    : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-                }`}
-              >
-                {label}
-                {count > 0 && (
-                  <span
-                    className={`ml-1.5 text-xs ${
-                      upcomingFilter === key
-                        ? 'text-white/80'
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}
-                  >
-                    ({count})
-                  </span>
-                )}
-              </button>
+              />
             ))}
           </div>
 
@@ -330,10 +317,11 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=tv'
-              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='group flex items-center gap-1 px-2 py-1.5 text-sm transition-colors hover:text-primary-600 dark:hover:text-primary-400'
+              style={{ color: 'var(--color-foreground-muted)' }}
             >
               更多内容
-              <ChevronRight className='w-4 h-4 ml-1' />
+              <ChevronRight className='h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5' />
             </Link>
           </div>
           <ScrollableRow enableVirtualization={true}>
@@ -375,10 +363,11 @@ export default function HomeContentView({
             />
             <Link
               href='/shortdrama'
-              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='group flex items-center gap-1 px-2 py-1.5 text-sm transition-colors hover:text-primary-600 dark:hover:text-primary-400'
+              style={{ color: 'var(--color-foreground-muted)' }}
             >
               更多内容
-              <ChevronRight className='w-4 h-4 ml-1' />
+              <ChevronRight className='h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5' />
             </Link>
           </div>
           <ScrollableRow enableVirtualization={true}>
@@ -410,10 +399,11 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=show'
-              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='group flex items-center gap-1 px-2 py-1.5 text-sm transition-colors hover:text-primary-600 dark:hover:text-primary-400'
+              style={{ color: 'var(--color-foreground-muted)' }}
             >
               更多内容
-              <ChevronRight className='w-4 h-4 ml-1' />
+              <ChevronRight className='h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5' />
             </Link>
           </div>
           <ScrollableRow enableVirtualization={true}>
@@ -455,10 +445,11 @@ export default function HomeContentView({
             />
             <Link
               href='/douban?type=anime'
-              className='flex items-center px-2 py-1.5 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
+              className='group flex items-center gap-1 px-2 py-1.5 text-sm transition-colors hover:text-primary-600 dark:hover:text-primary-400'
+              style={{ color: 'var(--color-foreground-muted)' }}
             >
               更多内容
-              <ChevronRight className='w-4 h-4 ml-1' />
+              <ChevronRight className='h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5' />
             </Link>
           </div>
           <ScrollableRow enableVirtualization={true}>
