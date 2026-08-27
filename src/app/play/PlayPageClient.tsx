@@ -264,6 +264,13 @@ function PlayPageClient() {
   const fatalHandledRef = useRef(false);
   const safetyNetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 短剧下一集预取URL缓存：播放当前集时提前解析下一集URL，实现"秒开"
+  const nextShortDramaUrlRef = useRef<{
+    url: string;
+    episodeIndex: number;
+  } | null>(null);
+  const nextShortDramaPrefetchRef = useRef<Promise<void> | null>(null);
+
   // 获取服务器配置（下载功能开关）
 
   // 🔍 真机调试模式：URL 带 &debug=1 时加载 vConsole，
@@ -1357,9 +1364,18 @@ function PlayPageClient() {
 
     // 检查是否为短剧格式
     if (episodeData && episodeData.startsWith('shortdrama:')) {
+      // 🚀 秒开：优先使用预取的下一集URL
+      const cached = nextShortDramaUrlRef.current;
+      if (cached && cached.episodeIndex === episodeIndex && cached.url) {
+        nextShortDramaUrlRef.current = null;
+        if (cached.url !== videoUrl) {
+          setVideoUrl(cached.url);
+        }
+        return;
+      }
+
       try {
         const [, videoId, episode] = episodeData.split(':');
-        // 添加剧名参数以支持备用API fallback
         const nameParam = detailData.drama_name
           ? `&name=${encodeURIComponent(detailData.drama_name)}`
           : '';
@@ -1500,6 +1516,8 @@ function PlayPageClient() {
       clearTimeout(safetyNetTimer.current);
       safetyNetTimer.current = null;
     }
+    nextShortDramaUrlRef.current = null;
+    nextShortDramaPrefetchRef.current = null;
     fatalHandledRef.current = false;
 
     // 清理弹幕状态引用
@@ -1750,6 +1768,8 @@ function PlayPageClient() {
       }
       // 切换视频时重置源重试状态，避免上一部视频的失败标记影响当前播放
       resetSourceState();
+      nextShortDramaUrlRef.current = null;
+      nextShortDramaPrefetchRef.current = null;
       earlyStartedRef.current = false;
       setLoadingStage(
         currentSource && currentId ? 'fetching' : 'searching',
@@ -4920,25 +4940,66 @@ function PlayPageClient() {
         artPlayerRef.current.on('video:timeupdate', () => {
           const currentTime = artPlayerRef.current.currentTime || 0;
           const duration = artPlayerRef.current.duration || 0;
-          const now = performance.now(); // 使用performance.now()更精确
+          const remainingTime = duration - currentTime;
 
-          // 更新 SkipController 所需的时间信息
           setCurrentPlayTime(currentTime);
           setVideoDuration(duration);
 
-          // 保存播放进度逻辑 - 优化保存间隔以减少网络开销
+          // 🚀 短剧下一集URL预取：临近结尾时提前解析下一集，实现秒开连播
+          if (
+            isAutoPlayNextEnabled() &&
+            currentSourceRef.current === 'shortdrama' &&
+            duration > 0 &&
+            remainingTime < Math.min(5, duration * 0.3) &&
+            remainingTime >= 0
+          ) {
+            const detail = detailRef.current;
+            const curIdx = currentEpisodeIndexRef.current;
+            if (
+              detail &&
+              detail.episodes &&
+              curIdx < detail.episodes.length - 1
+            ) {
+              const nextIdx = curIdx + 1;
+              if (
+                nextShortDramaUrlRef.current?.episodeIndex !== nextIdx &&
+                !nextShortDramaPrefetchRef.current
+              ) {
+                const episodeData = detail.episodes[nextIdx];
+                if (episodeData && episodeData.startsWith('shortdrama:')) {
+                  const [, videoId, episode] = episodeData.split(':');
+                  const nameParam = detail.drama_name
+                    ? `&name=${encodeURIComponent(detail.drama_name)}`
+                    : '';
+                  nextShortDramaPrefetchRef.current = (async () => {
+                    try {
+                      const resp = await fetch(
+                        `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}${shortdramaSourceParam}`,
+                      );
+                      if (resp.ok) {
+                        const json = await resp.json();
+                        const url = json.url || '';
+                        nextShortDramaUrlRef.current = {
+                          url,
+                          episodeIndex: nextIdx,
+                        };
+                      }
+                    } catch {}
+                  })();
+                  nextShortDramaPrefetchRef.current.then(() => {
+                    nextShortDramaPrefetchRef.current = null;
+                  });
+                }
+              }
+            }
+          }
+
+          // 保存播放进度逻辑
           const saveNow = Date.now();
-          // 🔧 优化：增加播放中的保存间隔，依赖暂停时保存作为主要保存时机
-          // upstash: 60秒兜底保存，其他存储: 30秒兜底保存
-          // 用户暂停、切换集数、页面卸载时会立即保存，因此较长间隔不影响体验
           const interval =
             process.env.NEXT_PUBLIC_STORAGE_TYPE === 'upstash' ? 60000 : 30000;
 
-          // 🔥 关键修复：如果当前播放位置接近视频结尾（最后3分钟），不保存进度
-          // 这是为了避免自动跳过片尾时保存了片尾位置的进度，导致"继续观看"从错误位置开始
-          const remainingTime = duration - currentTime;
-          const isNearEnd = duration > 0 && remainingTime < 180; // 最后3分钟
-
+          const isNearEnd = duration > 0 && remainingTime < 180;
           if (saveNow - lastSaveTimeRef.current > interval && !isNearEnd) {
             saveCurrentPlayProgress();
             lastSaveTimeRef.current = saveNow;
