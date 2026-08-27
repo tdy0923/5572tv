@@ -4874,7 +4874,8 @@ function PlayPageClient() {
             videoEndedHandledRef.current = true;
             const nextIndex = idx + 1;
             const nextEp = d.episodes[nextIndex];
-            const isShortDrama = currentSourceRef.current === 'shortdrama';
+            const isShortDrama =
+              currentSourceRef.current === 'shortdrama' || isShortDramaMode;
 
             if (isShortDrama) {
               // 短剧模式：无等待立即连播（类似抖音/红果体验）
@@ -4927,7 +4928,7 @@ function PlayPageClient() {
           // 🚀 短剧下一集URL预取：临近结尾时提前解析下一集，实现秒开连播
           if (
             isAutoPlayNextEnabled() &&
-            currentSourceRef.current === 'shortdrama' &&
+            (currentSourceRef.current === 'shortdrama' || isShortDramaMode) &&
             duration > 0 &&
             remainingTime < Math.min(5, duration * 0.3) &&
             remainingTime >= 0
@@ -5204,9 +5205,7 @@ function PlayPageClient() {
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
           detail?.source === 'shortdrama' ||
-          // 从短剧卡片进入（URL携带shortdrama_id）一律竖屏，
-          // 即使播放源已统一为CMS线路
-          Boolean(shortdramaId)) &&
+          isShortDramaMode) &&
         (detail ||
           (Boolean(shortdramaId) && !!shortdramaDetails?.episodes?.length)) && (
           <ShortDramaVerticalPlayer
@@ -5251,9 +5250,7 @@ function PlayPageClient() {
         !verticalModeOverride &&
         (currentSourceRef.current === 'shortdrama' ||
           detail?.source === 'shortdrama' ||
-          // 与竖屏挂载条件保持一致：短剧卡片入口（URL含shortdrama_id）
-          // 在移动端只渲染竖屏播放器，避免双播放器同屏抢流
-          Boolean(shortdramaId))
+          isShortDramaMode)
       ) && (
         <PageLayout activePath='/play' noPadding>
           <div className='flex flex-col gap-3 py-4 px-3 sm:px-5 lg:px-[3rem] 2xl:px-20'>
@@ -5348,7 +5345,8 @@ function PlayPageClient() {
                   <div className='relative w-full aspect-video sm:aspect-video md:aspect-auto md:h-[56vh] lg:h-full min-h-[220px] sm:min-h-[260px] flex items-center justify-center'>
                     <div
                       className={`relative ${
-                        currentSourceRef.current === 'shortdrama'
+                        currentSourceRef.current === 'shortdrama' ||
+                        isShortDramaMode
                           ? 'h-full aspect-[9/16] max-w-full'
                           : 'w-full h-full'
                       }`}
