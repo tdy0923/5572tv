@@ -145,17 +145,22 @@ export function useSourceSwitching(params: {
           : timeout;
 
       try {
+        // 改用 GET + Range 获取首部字节，因为部分 CDN 对 HEAD 返回错误 200
+        // 但对 GET Range 请求返回真实状态，避免 HEAD/GET 不一致导致的误判
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), effectiveTimeout);
         const resp = await fetch(
           `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
           {
-            method: 'HEAD',
+            method: 'GET',
             signal: controller.signal,
+            headers: { Range: 'bytes=0-0' },
           },
         );
         clearTimeout(timer);
-        if (resp.ok) return 'ok';
+
+        // 直接返回真实状态码：404/525/502/403 一律标记 fail
+        if (resp.ok && resp.status < 400) return 'ok';
         return 'fail';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'slow';

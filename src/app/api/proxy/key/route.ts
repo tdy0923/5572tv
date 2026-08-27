@@ -139,7 +139,7 @@ export async function GET(request: Request) {
       } catch {}
     }
 
-    const response = await fetchWithRetry(
+    let response = await fetchWithRetry(
       decodedUrl,
       {
         signal: controller.signal,
@@ -159,6 +159,31 @@ export async function GET(request: Request) {
       },
       ua,
     );
+
+    // 403 时重试：去掉防盗链头（部分 CDN 白名单校验）
+    if (response.status === 403) {
+      try {
+        await response.body?.cancel();
+      } catch {}
+      const retryHeaders = {
+        'User-Agent': ua,
+        Accept: 'application/octet-stream, */*',
+        'Cache-Control': 'no-cache',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+      };
+      try {
+        response = await fetchWithRetry(
+          decodedUrl,
+          {
+            signal: controller.signal,
+            headers: retryHeaders,
+            agent: typeof window === 'undefined' ? agent : undefined,
+          },
+          ua,
+        );
+      } catch {}
+    }
 
     clearTimeout(timeoutId);
 

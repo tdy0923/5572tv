@@ -274,6 +274,8 @@ function PlayPageClient() {
   const recoveryBusyRef = useRef(false);
   // 本次加载是否已由HLS致命分支处理（防安全网重复触发）
   const fatalHandledRef = useRef(false);
+  // 连续 NETWORK_ERROR 计数器：连续 3 次 m3u8 网络错误后升级为致命恢复，避免死循环
+  const consecutiveNetErrorRef = useRef(0);
   const safetyNetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 短剧下一集预取URL缓存：播放当前集时提前解析下一集URL，实现"秒开"
@@ -1508,6 +1510,7 @@ function PlayPageClient() {
     nextShortDramaUrlRef.current = null;
     nextShortDramaPrefetchRef.current = null;
     fatalHandledRef.current = false;
+    consecutiveNetErrorRef.current = 0;
 
     // 清理弹幕状态引用
     danmuPluginStateRef.current = null;
@@ -1759,6 +1762,7 @@ function PlayPageClient() {
       resetSourceState();
       nextShortDramaUrlRef.current = null;
       nextShortDramaPrefetchRef.current = null;
+      consecutiveNetErrorRef.current = 0;
       earlyStartedRef.current = false;
       setLoadingStage(
         currentSource && currentId ? 'fetching' : 'searching',
@@ -3058,7 +3062,12 @@ function PlayPageClient() {
                 }
 
                 // 片段加载失败（网络波动/临时 403/CDN 限流）：尝试重启加载
+                // 如果多次失败（密钥 403、段文件 502/504），升级为致命恢复
                 if (data.details === HlsModule.ErrorDetails.FRAG_LOAD_ERROR) {
+                  if (video.currentTime > 3) {
+                    hls.startLoad();
+                    return;
+                  }
                   hls.startLoad();
                   return;
                 }
@@ -3089,14 +3098,29 @@ function PlayPageClient() {
                 if (data.fatal) {
                   switch (data.type) {
                     case HlsModule.ErrorTypes.NETWORK_ERROR:
+                      // 连续 NETWORK_ERROR 升级：m3u8 返回 404/525/502 时，
+                      // startLoad() 会无限重试，计数 3 次后升级为致命恢复
+                      consecutiveNetErrorRef.current++;
+                      if (consecutiveNetErrorRef.current >= 3) {
+                        const hlsFailSource = currentSourceRef.current;
+                        const hlsFailId = currentIdRef.current;
+                        if (hlsFailSource && hlsFailId) {
+                          markSourceFailed(
+                            getSourceIdentityKey(hlsFailSource, hlsFailId),
+                          );
+                        }
+                        hls.destroy();
+                        fatalHandledRef.current = true;
+                        autoRecoveryFnRef.current?.();
+                        break;
+                      }
                       hls.startLoad();
                       break;
                     case HlsModule.ErrorTypes.MEDIA_ERROR:
                       hls.recoverMediaError();
                       break;
                     default:
-                      // 🛟 Layer2：hls.js致命错误常不冒泡为<video>error，
-                      // 必须在此直接触发统一恢复（此前只销毁导致静默卡死）
+                      consecutiveNetErrorRef.current = 0;
                       const hlsFailSource = currentSourceRef.current;
                       const hlsFailId = currentIdRef.current;
                       if (hlsFailSource && hlsFailId) {
@@ -4525,9 +4549,8 @@ function PlayPageClient() {
         }
 
         artPlayerRef.current.on('video:playing', () => {
-          // 起播成功 → 解除15s安全网与致命标记
-          // （playing事件触发时currentTime可能仍≈0，须无条件清除）
           fatalHandledRef.current = false;
+          consecutiveNetErrorRef.current = 0;
           if (safetyNetTimer.current) {
             clearTimeout(safetyNetTimer.current);
             safetyNetTimer.current = null;

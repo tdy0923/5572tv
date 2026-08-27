@@ -201,15 +201,15 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       stats.errors++;
-      clearTimeout(timeoutId);
 
-      // ⚠️ 彻底移除 302 直连降级：任何 CDN 都可能严格 CORS，
-      // 浏览器直连必然被拦。始终透传上游状态并带 CORS 头，
-      // 让 hls.js 拿到干净错误以切换线路
-      return new NextResponse(response.body, {
-        status: response.status,
+      // 立即标记失败：404/525/502 等不可恢复的错误，返回带 CORS 头的错误响应
+      // 让 hls.js 拿到真实状态码，触发 MANIFEST_LOAD_ERROR / LEVEL_LOAD_ERROR（致命）
+      const errorStatus = response.status;
+      const errorText = `m3u8 proxy error: ${errorStatus} ${response.statusText}`;
+      return new Response(errorText, {
+        status: errorStatus,
         headers: {
-          'Content-Type': response.headers.get('Content-Type') || 'text/plain',
+          'Content-Type': 'text/plain',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
           'Access-Control-Allow-Headers': '*',
