@@ -102,7 +102,11 @@ const ShortDramaVerticalPlayer = dynamic(
   { ssr: false },
 );
 
-import { FluentCard, FluentEmptyState } from '@/components/FluentUI';
+import {
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+} from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
@@ -5539,25 +5543,32 @@ function PlayPageClient() {
                   {/* 上一集/下一集按钮 - 移动端友好 */}
                   {totalEpisodes > 1 && (
                     <div className='flex gap-2 mt-3'>
-                      <button
+                      <FluentButton
+                        variant='secondary'
+                        size='lg'
                         onClick={handlePreviousEpisode}
                         disabled={currentEpisodeIndex <= 0}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-3.5 sm:py-4 min-h-[44px] rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1'
                       >
                         <span>◀</span> 上一集
-                      </button>
-                      <button
+                      </FluentButton>
+                      <FluentButton
+                        variant='primary'
+                        size='lg'
                         onClick={handleNextEpisode}
                         disabled={currentEpisodeIndex >= totalEpisodes - 1}
-                        className='flex-1 flex items-center justify-center gap-1.5 py-3.5 sm:py-4 min-h-[44px] rounded-lg text-sm font-medium bg-green-500 text-white hover:bg-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors'
+                        className='flex-1'
                       >
                         下一集 <span>▶</span>
-                      </button>
+                      </FluentButton>
                     </div>
                   )}
 
                   {/* 自动连播开关 */}
-                  <button
+                  <FluentButton
+                    variant={autoPlayNext ? 'primary' : 'secondary'}
+                    size='md'
+                    fullWidth
                     onClick={() => {
                       const next = !autoPlayNext;
                       setAutoPlayNext(next);
@@ -5570,7 +5581,7 @@ function PlayPageClient() {
                         // ignore
                       }
                     }}
-                    className={`mt-2 w-full flex items-center justify-center gap-1.5 py-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors ${
+                    className={`mt-2 ${
                       autoPlayNext
                         ? 'bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/30'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-transparent'
@@ -5582,7 +5593,7 @@ function PlayPageClient() {
                       }`}
                     />
                     {autoPlayNext ? '自动连播：开' : '自动连播：关'}
-                  </button>
+                  </FluentButton>
                 </div>
               </div>
             </div>
