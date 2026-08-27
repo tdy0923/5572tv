@@ -16,6 +16,12 @@ export {
   FluentSpinner,
 } from '../FluentSpinner';
 export {
+  FluentToast,
+  pushToast,
+  removeToast,
+  ToastProvider,
+} from '../FluentToast';
+export {
   FluentFadeIn,
   FluentScaleIn,
   FluentStagger,
