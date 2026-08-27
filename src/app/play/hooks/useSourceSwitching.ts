@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 
 import { deletePlayRecord } from '@/lib/db.client';
+import { isHostDead, markHostDead } from '@/lib/dead-cdn-tracker';
 import type { SearchResult } from '@/lib/types';
 import { resolveCardPosterUrl } from '@/lib/utils';
 import { deduplicateDanmaku } from '@/hooks/useDanmu';
@@ -144,9 +145,9 @@ export function useSourceSwitching(params: {
           ? SHORT_DRAMA_PROBE_TIMEOUT_MS
           : timeout;
 
+      // 命中已知死链主机直接判 fail，不再发请求
+      if (isHostDead(url)) return 'fail';
       try {
-        // 改用 GET + Range 获取首部字节，因为部分 CDN 对 HEAD 返回错误 200
-        // 但对 GET Range 请求返回真实状态，避免 HEAD/GET 不一致导致的误判
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), effectiveTimeout);
         const resp = await fetch(
@@ -158,12 +159,13 @@ export function useSourceSwitching(params: {
           },
         );
         clearTimeout(timer);
-
-        // 直接返回真实状态码：404/525/502/403 一律标记 fail
         if (resp.ok && resp.status < 400) return 'ok';
+        // 4xx/5xx 标记主机死亡，10 分钟内跳过该 CDN
+        markHostDead(url);
         return 'fail';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'slow';
+        markHostDead(url);
         return 'fail';
       }
     },
@@ -414,6 +416,7 @@ export function useSourceSwitching(params: {
     totalSessionFailuresRef.current = 0;
     fallbackAutoRetriedRef.current = false;
     sourceErrorCountRef.current = 0;
+    // 切新视频时不清除 deadHosts，跨视频复用以加速跳过已知 525/404 CDN
   }, []);
 
   const setAvailableSources = useCallback((sources: SearchResult[]) => {

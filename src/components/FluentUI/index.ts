@@ -20,6 +20,7 @@ export {
   FluentSpinner,
 } from '../FluentSpinner';
 export { FluentTabs } from '../FluentTabs';
+export { FluentTag } from '../FluentTag';
 export {
   FluentToast,
   pushToast,

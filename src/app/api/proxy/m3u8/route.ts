@@ -201,11 +201,20 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       stats.errors++;
-
-      // 立即标记失败：404/525/502 等不可恢复的错误，返回带 CORS 头的错误响应
-      // 让 hls.js 拿到真实状态码，触发 MANIFEST_LOAD_ERROR / LEVEL_LOAD_ERROR（致命）
       const errorStatus = response.status;
-      const errorText = `m3u8 proxy error: ${errorStatus} ${response.statusText}`;
+      // 525/526 为 CF 回源 SSL 握手失败，与影片是否存在无关；521/522/523 为回源网络/超时
+      // 统一透传真实状态，前端据此跳过该 CDN。备案与否不影响握手结果。
+      const errorHint =
+        errorStatus === 525 || errorStatus === 526
+          ? ' (CF SSL handshake failed: origin cert mismatch/expired)'
+          : errorStatus === 521
+            ? ' (origin down)'
+            : errorStatus === 522
+              ? ' (connection timeout)'
+              : errorStatus === 523
+                ? ' (origin unreachable)'
+                : '';
+      const errorText = `m3u8 proxy error: ${errorStatus} ${response.statusText}${errorHint}`;
       return new Response(errorText, {
         status: errorStatus,
         headers: {
