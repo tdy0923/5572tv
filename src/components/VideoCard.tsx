@@ -1031,9 +1031,11 @@ function VideoCard({
       >
         {/* 海报容器 */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-primary-300/70 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] dark:group-hover:border-primary-500/40 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative aspect-[2/3] overflow-hidden rounded-xl border bg-white dark:bg-gray-800 transition-all duration-250 ease-out group-hover:-translate-y-1 group-hover:border-primary-300/70 dark:group-hover:border-primary-500/40 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
           style={
             {
+              borderColor: 'var(--color-stroke-subtle)',
+              boxShadow: 'var(--shadow-2)',
               WebkitUserSelect: 'none',
               userSelect: 'none',
               WebkitTouchCallout: 'none',
