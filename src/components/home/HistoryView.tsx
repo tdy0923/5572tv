@@ -2,6 +2,7 @@
 
 import { Film } from 'lucide-react';
 
+import { FluentEmptyState } from '@/components/FluentUI';
 import ScrollableRow from '@/components/ScrollableRow';
 
 interface HistoryViewProps {
@@ -12,31 +13,54 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
   const entries = Object.entries(historyTimeline);
 
   return (
-    <section className='mb-8 overflow-hidden rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md sm:p-5'>
-      <div className='px-4 sm:px-0 pt-4 sm:pt-0 pb-1 flex items-center justify-between'>
-        <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+    <section
+      className='mb-8 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03] sm:rounded-2xl'
+      style={{ borderColor: 'var(--color-stroke-subtle)' }}
+    >
+      <div className='flex items-center justify-between pb-3'>
+        <h2
+          className='text-[15px] font-semibold'
+          style={{ color: 'var(--color-foreground)' }}
+        >
           观看历史
         </h2>
+        <span
+          className='text-xs'
+          style={{ color: 'var(--color-foreground-muted)' }}
+        >
+          {entries.length > 0
+            ? `${entries.reduce((a, [, items]) => a + items.length, 0)} 部`
+            : ''}
+        </span>
       </div>
       {entries.length === 0 ? (
-        <div className='flex flex-col items-center justify-center gap-3 py-12 text-center'>
-          <Film className='h-10 w-10 text-gray-300 dark:text-gray-300' />
-          <div className='text-sm text-gray-500 dark:text-gray-400'>
-            暂无播放记录
-          </div>
-          <div className='text-xs text-gray-400 dark:text-gray-400'>
-            观看过的影视会显示在这里
-          </div>
-        </div>
+        <FluentEmptyState
+          icon={<Film className='h-6 w-6' style={{ color: '#9ca3af' }} />}
+          title='暂无播放记录'
+          description='观看过的影视会显示在这里'
+        />
       ) : (
         <div className='px-4 sm:px-0 mt-2 space-y-5'>
           {entries.map(([date, items]) => (
             <div key={date}>
-              <div className='flex items-center gap-2 mb-2 px-1'>
-                <div className='w-2 h-2 rounded-full bg-primary-500' />
-                <h3 className='text-sm font-medium text-gray-500 dark:text-gray-400'>
+              <div className='flex items-center gap-2 mb-3 px-1'>
+                <span
+                  className='h-2 w-2 rounded-full'
+                  style={{ background: '#f4c24d' }}
+                />
+                <h3
+                  className='text-xs font-semibold tracking-wide'
+                  style={{ color: 'var(--color-foreground-muted)' }}
+                >
                   {date}
                 </h3>
+                <span className='h-px flex-1 bg-gray-200 dark:bg-white/5' />
+                <span
+                  className='text-xs'
+                  style={{ color: 'var(--color-foreground-muted)' }}
+                >
+                  {items.length} 部
+                </span>
               </div>
               <ScrollableRow>
                 {items.map((item) => (
@@ -45,21 +69,38 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
                     href={`/play?source=${encodeURIComponent(item.source || item.key.split('+')[0])}&id=${encodeURIComponent(item.id || item.key.split('+').slice(1).join('+'))}&title=${encodeURIComponent(item.title || '')}`}
                     className='group min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
                   >
-                    <div className='aspect-[2/3] rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden'>
+                    <div
+                      className='aspect-[2/3] overflow-hidden rounded-xl border bg-white dark:bg-gray-800 transition-all duration-250 ease-out group-hover:-translate-y-0.5 group-hover:shadow-md'
+                      style={{
+                        borderColor: 'var(--color-stroke-subtle)',
+                        boxShadow: 'var(--shadow-2)',
+                      }}
+                    >
                       {item.cover ? (
                         <img
                           src={item.cover}
                           alt={item.title}
                           loading='lazy'
-                          className='w-full h-full object-cover group- transition-transform'
+                          className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]'
                         />
                       ) : (
-                        <div className='w-full h-full flex items-center justify-center text-gray-400'>
-                          <Film className='w-8 h-8' />
+                        <div
+                          className='flex h-full w-full items-center justify-center'
+                          style={{
+                            background: 'var(--color-background-subtle)',
+                          }}
+                        >
+                          <Film
+                            className='h-8 w-8'
+                            style={{ color: '#9ca3af' }}
+                          />
                         </div>
                       )}
                     </div>
-                    <p className='mt-1 text-xs text-gray-700 dark:text-gray-300 line-clamp-1'>
+                    <p
+                      className='mt-2 truncate text-xs font-medium transition-colors group-hover:text-primary-600 dark:group-hover:text-primary-400'
+                      style={{ color: 'var(--color-foreground)' }}
+                    >
                       {item.title}
                     </p>
                   </a>
