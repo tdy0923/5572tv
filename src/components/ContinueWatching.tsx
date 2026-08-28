@@ -16,8 +16,10 @@ import {
 import { useClearPlayRecordsMutation } from '@/hooks/usePlayRecordsMutations';
 
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { FluentBadge, FluentButton } from '@/components/FluentUI';
 import ScrollableRow from '@/components/ScrollableRow';
 import SectionTitle from '@/components/SectionTitle';
+import SkeletonCard from '@/components/SkeletonCard';
 import VideoCard from '@/components/VideoCard';
 
 interface ContinueWatchingProps {
@@ -162,20 +164,21 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
           index='01'
         />
         {!loading && playRecords.length > 0 && (
-          <button
-            className='inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-white/72 px-3 py-1.5 text-sm font-medium text-red-600 shadow-sm transition-all duration-200 hover:border-red-600 hover:bg-red-600 hover:text-white hover:shadow-md dark:border-red-700 dark:bg-white/[0.04] dark:text-red-400 dark:hover:border-red-500 dark:hover:bg-red-500 dark:hover:text-white'
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Trash2 className='h-4 w-4' />}
             onClick={() => {
-              // 根据用户设置决定是否显示确认对话框
               if (requireClearConfirmation) {
                 setShowConfirmDialog(true);
               } else {
                 handleClearAll();
               }
             }}
+            className='rounded-full border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
           >
-            <Trash2 className='w-4 h-4' />
-            <span>清空</span>
-          </button>
+            清空
+          </FluentButton>
         )}
       </div>
 
@@ -192,17 +195,12 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
       />
       <ScrollableRow>
         {loading
-          ? // 加载状态显示灰色占位数据
-            Array.from({ length: 6 }).map((_, index) => (
+          ? Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`skeleton-${index}`}
                 className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
               >
-                <div className='relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'>
-                  <div className='absolute inset-0 bg-gray-300 dark:bg-gray-700'></div>
-                </div>
-                <div className='mt-2 h-4 bg-gray-200 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'></div>
-                <div className='mt-1 h-3 bg-gray-200 rounded animate-[fluent2-shimmer_1.5s_ease-in-out_infinite] dark:bg-gray-800'></div>
+                <SkeletonCard />
               </div>
             ))
           : // 显示真实数据
@@ -237,10 +235,11 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
                       douban_id={record.douban_id}
                     />
                   </div>
-                  {/* 新集数徽章 - Netflix 统一风格 */}
                   {newEpisodesCount > 0 && (
-                    <div className='absolute -right-2 -top-2 z-10 rounded-full border border-red-500/30 bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
-                      +{newEpisodesCount}
+                    <div className='absolute -right-2 -top-2 z-10'>
+                      <FluentBadge variant='error' size='sm' rounded>
+                        +{newEpisodesCount}
+                      </FluentBadge>
                     </div>
                   )}
                 </div>
