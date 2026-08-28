@@ -249,8 +249,8 @@ const DownloadEpisodeSelector: React.FC<DownloadEpisodeSelectorProps> = ({
                       if (!title) {
                         return episodeNumber;
                       }
-                      // 兼容"集/话/部"，统一提取数字
-                      const match = title.match(/(?:第)?(\d+)(?:集|话|部)/);
+                      // 兼容"集/话/部/期"，统一提取数字
+                      const match = title.match(/(?:第)?(\d+)(?:集|话|部|期)/);
                       if (match) {
                         return match[1];
                       }

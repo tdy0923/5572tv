@@ -511,8 +511,8 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                       if (!title) {
                         return episodeNumber;
                       }
-                      // 兼容"集/话/部"（部分源对多集电影用“部”），统一提取数字
-                      const match = title.match(/(?:第)?(\d+)(?:集|话|部)/);
+                      // 兼容"集/话/部/期"（综艺用“期”），统一提取数字
+                      const match = title.match(/(?:第)?(\d+)(?:集|话|部|期)/);
                       if (match) {
                         return match[1];
                       }

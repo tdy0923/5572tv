@@ -1394,9 +1394,9 @@ function VideoCard({
                     </span>
                   </>
                 ) : (
-                  /* 仅显示总集数 */
+                  /* 仅显示总集数 - 综艺用“期”，其他用“集” */
                   <span className='flex items-center bg-black/70 backdrop-blur-sm px-2 py-0.5 text-[11px] font-medium text-white/80'>
-                    {actualEpisodes} 集
+                    {actualEpisodes} {type === 'variety' ? '期' : '集'}
                   </span>
                 )}
               </div>
