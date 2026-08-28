@@ -61,12 +61,12 @@ function getReferer(url: string): string {
 
 /**
  * 海报下载调度：并发限流 + 同 URL 去重 + 失败重试
- * 豆瓣图片源对高并发断连敏感，这里控制全局并发不超过 MAX_CONCURRENT_DOWNLOADS，
- * 相同 URL 的并发请求共享同一次下载，避免海报墙双列重复下载。
+ * 豆瓣图片源对高并发断连敏感，这里控制全局并发。首页首屏并发 20+ 张，
+ * 8 并发会让冷缓存首屏排队 2 轮；提至 12 并发 + 缩短超时快速失败进降级。
  */
-const MAX_CONCURRENT_DOWNLOADS = 8;
-const DOWNLOAD_TIMEOUT_MS = 20000;
-const RETRY_DELAY_MS = 500;
+const MAX_CONCURRENT_DOWNLOADS = 12;
+const DOWNLOAD_TIMEOUT_MS = 10000;
+const RETRY_DELAY_MS = 300;
 
 const inflight = new Map<string, Promise<ArrayBuffer | null>>();
 let activeDownloads = 0;
@@ -220,9 +220,10 @@ export async function GET(request: NextRequest) {
     const imageData = await getImageData(url);
 
     if (!imageData) {
-      return NextResponse.json(
-        { error: 'Failed to download poster' },
-        { status: 502 },
+      // 502 会让浏览器直接白屏；改 302 跳 image-proxy 透传，客户端仍有机会拿到图
+      return NextResponse.redirect(
+        `/api/image-proxy?url=${encodeURIComponent(url)}`,
+        302,
       );
     }
 
