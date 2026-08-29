@@ -465,7 +465,11 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
           </div>
 
           {/* 集数网格 */}
-          <div className='flex flex-wrap gap-2 sm:gap-3 overflow-y-auto flex-1 min-h-0 content-start pb-4'>
+          <div
+            role='grid'
+            aria-label='选集'
+            className='flex flex-wrap gap-2 sm:gap-3 overflow-y-auto flex-1 min-h-0 content-start pb-4'
+          >
             {(() => {
               const len = currentEnd - currentStart + 1;
               const episodes = Array.from({ length: len }, (_, i) =>
@@ -478,6 +482,9 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
               return (
                 <button
                   key={episodeNumber}
+                  role='gridcell'
+                  aria-selected={isActive}
+                  aria-label={`第${episodeNumber}集${isWatched ? '已看' : ''}${isActive ? '当前' : ''}`}
                   onClick={() => handleEpisodeClick(episodeNumber - 1)}
                   onContextMenu={(e) => {
                     e.preventDefault();

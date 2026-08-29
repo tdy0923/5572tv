@@ -48,6 +48,7 @@ import { useDeletePlayRecordMutation } from '@/hooks/usePlayRecordsMutations';
 import { useToggleReminderMutation } from '@/hooks/useRemindersMutations';
 
 import AIRecommendModal from '@/components/AIRecommendModal';
+import { FluentBadge } from '@/components/FluentUI';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import MobileActionSheet from '@/components/MobileActionSheet';
 
@@ -1457,57 +1458,29 @@ function VideoCard({
               </div>
             )}
 
-          {/* 已完结徽章 - Netflix 风格 - 底部左侧 */}
           {remarks && isSeriesCompleted(remarks) && (
-            <div
-              className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group-'
-              style={
-                {
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none',
-                  WebkitTouchCallout: 'none',
-                } as React.CSSProperties
-              }
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            >
-              <Check className='w-4 h-4 text-green-400' />
-              <span>已完结</span>
+            <div className='absolute bottom-2 left-2 z-30'>
+              <FluentBadge variant='success' size='sm' rounded>
+                <Check className='h-3 w-3' /> 已完结
+              </FluentBadge>
             </div>
           )}
 
           {/* 上映状态徽章 - Netflix 风格 - 底部左侧 */}
           {hasReleaseTag &&
             (() => {
-              // 根据状态选择颜色和文本
-              let statusColor = 'text-orange-400';
-              let statusText = remarks || '';
-
-              if (remarks?.includes('已上映')) {
-                statusColor = 'text-green-400';
-              } else if (remarks?.includes('今日上映')) {
-                statusColor = 'text-yellow-400';
-              }
-
+              const statusText = remarks || '';
+              const variant: 'success' | 'warning' | 'info' =
+                statusText.includes('已上映')
+                  ? 'success'
+                  : statusText.includes('今日上映')
+                    ? 'warning'
+                    : 'info';
               return (
-                <div
-                  className='absolute bottom-2 left-2 z-30 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium transition-all duration-300 ease-out group-'
-                  style={
-                    {
-                      WebkitUserSelect: 'none',
-                      userSelect: 'none',
-                      WebkitTouchCallout: 'none',
-                    } as React.CSSProperties
-                  }
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    return false;
-                  }}
-                >
-                  <span className={statusColor}>●</span>
-                  <span className='text-white/80'>{statusText}</span>
+                <div className='absolute bottom-2 left-2 z-30'>
+                  <FluentBadge variant={variant} size='sm' rounded>
+                    {statusText}
+                  </FluentBadge>
                 </div>
               );
             })()}
