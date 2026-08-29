@@ -5,6 +5,13 @@ import { Heart, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React from 'react';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentEmptyState,
+  FluentTag,
+} from '@/components/FluentUI';
+
 const VideoCard = dynamic(() => import('@/components/VideoCard'), {
   ssr: false,
   loading: () => (
@@ -131,14 +138,22 @@ export default function FavoritesView({
     }
   };
   return (
-    <section className='mb-8 rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
-      <div className='mb-6 flex items-center justify-between'>
-        <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+    <section
+      className='mb-8 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03] sm:rounded-2xl'
+      style={{ borderColor: 'var(--color-stroke-subtle)' }}
+    >
+      <div className='mb-4 flex items-center justify-between'>
+        <h2
+          className='text-[15px] font-semibold'
+          style={{ color: 'var(--color-foreground)' }}
+        >
           我的收藏
         </h2>
         {favoriteItems.length > 0 && (
-          <button
-            className='ui-control flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Trash2 className='h-4 w-4' />}
             onClick={() => {
               if (requireClearConfirmation) {
                 setShowClearFavoritesDialog(true);
@@ -146,51 +161,47 @@ export default function FavoritesView({
                 clearFavoritesMutation();
               }
             }}
+            className='rounded-full border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
           >
-            <Trash2 className='w-4 h-4' />
-            <span>清空收藏</span>
-          </button>
+            清空收藏
+          </FluentButton>
         )}
       </div>
 
       {favoriteStats && (
-        <div className='mb-4 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400'>
-          <span className='rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1'>
-            共{' '}
-            <strong className='text-gray-900 dark:text-gray-100'>
-              {favoriteStats.total}
-            </strong>{' '}
-            项
-          </span>
+        <div className='mb-4 flex flex-wrap gap-2'>
+          <FluentBadge variant='default' size='md' rounded>
+            共 <strong>{favoriteStats.total}</strong> 项
+          </FluentBadge>
           {favoriteStats.movie > 0 && (
-            <span className='rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-blue-700 dark:border-blue-800/50 dark:bg-blue-900/20 dark:text-blue-300'>
+            <FluentBadge variant='info' size='md' rounded>
               电影 {favoriteStats.movie}
-            </span>
+            </FluentBadge>
           )}
           {favoriteStats.tv > 0 && (
-            <span className='rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-purple-700 dark:border-purple-800/50 dark:bg-purple-900/20 dark:text-purple-300'>
+            <FluentBadge variant='default' size='md' rounded>
               剧集 {favoriteStats.tv}
-            </span>
+            </FluentBadge>
           )}
           {favoriteStats.anime > 0 && (
-            <span className='rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-pink-700 dark:border-pink-800/50 dark:bg-pink-900/20 dark:text-pink-300'>
+            <FluentBadge variant='default' size='md' rounded>
               动漫 {favoriteStats.anime}
-            </span>
+            </FluentBadge>
           )}
           {favoriteStats.shortdrama > 0 && (
-            <span className='rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-rose-700 dark:border-rose-800/50 dark:bg-rose-900/20 dark:text-rose-300'>
+            <FluentBadge variant='warning' size='md' rounded>
               短剧 {favoriteStats.shortdrama}
-            </span>
+            </FluentBadge>
           )}
           {favoriteStats.live > 0 && (
-            <span className='rounded-full border border-red-200 bg-red-50 px-3 py-1 text-red-700 dark:border-red-800/50 dark:bg-red-900/20 dark:text-red-300'>
+            <FluentBadge variant='error' size='md' rounded>
               直播 {favoriteStats.live}
-            </span>
+            </FluentBadge>
           )}
           {favoriteStats.variety > 0 && (
-            <span className='rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-orange-700 dark:border-orange-800/50 dark:bg-orange-900/20 dark:text-orange-300'>
+            <FluentBadge variant='warning' size='md' rounded>
               综艺 {favoriteStats.variety}
-            </span>
+            </FluentBadge>
           )}
         </div>
       )}
@@ -198,47 +209,30 @@ export default function FavoritesView({
       {favoriteItems.length > 0 && (
         <div className='mb-4'>
           <div className='flex flex-wrap gap-2'>
-            <button
+            <FluentTag
+              label='全部'
+              active={favoriteGroupFilter === '全部'}
+              variant='primary'
               onClick={() => setFavoriteGroupFilter('全部')}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                favoriteGroupFilter === '全部'
-                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                  : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-              }`}
-            >
-              全部
-            </button>
+            />
             {favoriteGroups
               .filter((g) => g !== '默认')
               .map((g) => (
                 <div key={g} className='group relative'>
-                  <button
+                  <FluentTag
+                    label={g}
+                    active={favoriteGroupFilter === g}
+                    variant='primary'
                     onClick={() => setFavoriteGroupFilter(g)}
-                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                      favoriteGroupFilter === g
-                        ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                        : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteGroup(g);
-                    }}
-                    className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'
-                  >
-                    ×
-                  </button>
+                    onRemove={() => handleDeleteGroup(g)}
+                  />
                 </div>
               ))}
-            <button
+            <FluentTag
+              label='+ 新建'
+              variant='default'
               onClick={() => setShowNewGroupInput(true)}
-              className='rounded-full px-3 py-2 text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-all duration-200'
-            >
-              + 新建
-            </button>
+            />
           </div>
           {showNewGroupInput && (
             <div className='mt-2 flex items-center gap-2'>
@@ -282,40 +276,32 @@ export default function FavoritesView({
             { key: 'live' as const, label: '直播' },
             { key: 'variety' as const, label: '综艺' },
           ].map(({ key, label }) => (
-            <button
+            <FluentTag
               key={key}
+              label={label}
+              active={favoriteFilter === key}
+              variant='primary'
               onClick={() => setFavoriteFilter(key)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                favoriteFilter === key
-                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                  : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-              }`}
-            >
-              {label}
-            </button>
+            />
           ))}
         </div>
       )}
 
       {favoriteItems.length > 0 && (
         <div className='mb-4 flex flex-wrap items-center gap-2 text-sm'>
-          <span className='text-gray-600 dark:text-gray-400'>排序：</span>
+          <span style={{ color: 'var(--color-foreground-muted)' }}>排序：</span>
           <div className='flex gap-2'>
             {[
               { key: 'recent' as const, label: '最近添加' },
               { key: 'title' as const, label: '标题 A-Z' },
             ].map(({ key, label }) => (
-              <button
+              <FluentTag
                 key={key}
+                label={label}
+                active={favoriteSortBy === key}
+                variant='primary'
                 onClick={() => setFavoriteSortBy(key)}
-                className={`rounded-full px-3 py-2 transition-colors ${
-                  favoriteSortBy === key
-                    ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                    : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white'
-                }`}
-              >
-                {label}
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -447,39 +433,14 @@ export default function FavoritesView({
               });
             })()}
             {favoriteItems.length === 0 && (
-              <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
-                <div className='mb-6 relative'>
-                  <div className='absolute inset-0 bg-linear-to-r from-primary-300 to-primary-400 dark:from-primary-500/40 dark:to-primary-600/40 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                  <svg
-                    className='w-32 h-32 relative z-10'
-                    viewBox='0 0 200 200'
-                    fill='none'
-                    xmlns='http://www.w3.org/2000/svg'
-                  >
-                    <path
-                      d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
-                      className='fill-gray-300 dark:fill-gray-600 stroke-gray-400 dark:stroke-gray-500 transition-colors duration-300'
-                      strokeWidth='3'
-                    />
-                    <path
-                      d='M100 170C100 170 30 130 30 80C30 50 50 30 70 30C85 30 95 40 100 50C105 40 115 30 130 30C150 30 170 50 170 80C170 130 100 170 100 170Z'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='2'
-                      strokeDasharray='5,5'
-                      className='text-gray-400 dark:text-gray-400'
-                    />
-                  </svg>
-                </div>
-
-                <h3 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-                  收藏夹空空如也
-                </h3>
-                <p className='text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs'>
-                  快去发现喜欢的影视作品，点击{' '}
-                  <Heart className='inline-block w-4 h-4 align-text-bottom text-red-500' />{' '}
-                  添加到收藏吧！
-                </p>
+              <div className='col-span-full'>
+                <FluentEmptyState
+                  icon={
+                    <Heart className='h-6 w-6' style={{ color: '#f87171' }} />
+                  }
+                  title='收藏夹空空如也'
+                  description='快去发现喜欢的影视作品，点击爱心添加到收藏吧！'
+                />
               </div>
             )}
           </>
