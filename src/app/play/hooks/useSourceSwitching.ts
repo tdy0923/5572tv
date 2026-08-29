@@ -14,6 +14,22 @@ const MAX_SESSION_FAILURES = 50;
 const MAX_SOURCE_ERRORS = 2;
 const QUICK_PROBE_TIMEOUT_MS = 2000;
 const SHORT_DRAMA_PROBE_TIMEOUT_MS = 1200;
+const M3U8_PROBE_CONCURRENCY = 3;
+let activeM3u8Probes = 0;
+const m3u8ProbeQueue: Array<() => void> = [];
+async function acquireM3u8ProbeSlot(): Promise<void> {
+  if (activeM3u8Probes < M3U8_PROBE_CONCURRENCY) {
+    activeM3u8Probes++;
+    return;
+  }
+  await new Promise<void>((r) => m3u8ProbeQueue.push(r));
+  activeM3u8Probes++;
+}
+function releaseM3u8ProbeSlot(): void {
+  activeM3u8Probes = Math.max(0, activeM3u8Probes - 1);
+  const nxt = m3u8ProbeQueue.shift();
+  if (nxt) nxt();
+}
 
 const parseSourceForApi = (
   source: string,
@@ -145,8 +161,8 @@ export function useSourceSwitching(params: {
           ? SHORT_DRAMA_PROBE_TIMEOUT_MS
           : timeout;
 
-      // 命中已知死链主机直接判 fail，不再发请求
       if (isHostDead(url)) return 'fail';
+      await acquireM3u8ProbeSlot();
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), effectiveTimeout);
@@ -160,13 +176,14 @@ export function useSourceSwitching(params: {
         );
         clearTimeout(timer);
         if (resp.ok && resp.status < 400) return 'ok';
-        // 4xx/5xx 标记主机死亡，10 分钟内跳过该 CDN
         markHostDead(url);
         return 'fail';
       } catch (err: any) {
         if (err?.name === 'AbortError') return 'slow';
         markHostDead(url);
         return 'fail';
+      } finally {
+        releaseM3u8ProbeSlot();
       }
     },
     [isShortDramaSource],

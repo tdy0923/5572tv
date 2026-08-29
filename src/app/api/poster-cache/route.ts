@@ -61,10 +61,10 @@ function getReferer(url: string): string {
 
 /**
  * 海报下载调度：并发限流 + 同 URL 去重 + 失败重试
- * 豆瓣图片源对高并发断连敏感，这里控制全局并发。首页首屏并发 20+ 张，
- * 8 并发会让冷缓存首屏排队 2 轮；提至 12 并发 + 缩短超时快速失败进降级。
+ * 豆瓣图片源对高并发断连敏感，8 并发为安全上限；上次提至 12 导致与
+ * m3u8 探活并发叠加耗尽浏览器 socket（ERR_INSUFFICIENT_RESOURCES），回退至 6。
  */
-const MAX_CONCURRENT_DOWNLOADS = 12;
+const MAX_CONCURRENT_DOWNLOADS = 6;
 const DOWNLOAD_TIMEOUT_MS = 10000;
 const RETRY_DELAY_MS = 300;
 
