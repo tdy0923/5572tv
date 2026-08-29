@@ -3,6 +3,8 @@
 import { MessageSquare, Star } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { FluentEmptyState } from '@/components/FluentUI';
+
 interface Review {
   id: string;
   username: string;
@@ -220,9 +222,13 @@ export default function ReviewSection({
       )}
 
       {!loading && reviews.length === 0 && !showReviewForm && (
-        <p className='text-sm text-gray-500 dark:text-gray-400 text-center py-4'>
-          暂无评价，来写第一条吧
-        </p>
+        <FluentEmptyState
+          icon={
+            <MessageSquare className='h-6 w-6' style={{ color: '#9ca3af' }} />
+          }
+          title='暂无评价'
+          description='来写第一条吧'
+        />
       )}
     </div>
   );

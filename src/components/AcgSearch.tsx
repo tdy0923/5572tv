@@ -3,6 +3,8 @@
 import { AlertCircle, Check, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { FluentEmptyState } from '@/components/FluentUI';
+
 interface AcgSearchItem {
   title: string;
   link: string;
@@ -257,16 +259,14 @@ export default function AcgSearch({
         </div>
       </div>
 
-      {/* 未找到资源提示 */}
       {allItems.length === 0 && (
-        <div className='flex items-center justify-center py-12'>
-          <div className='text-center'>
-            <AlertCircle className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-300' />
-            <p className='mt-4 text-sm text-gray-600 dark:text-gray-400'>
-              未找到相关资源，请尝试切换其他搜索源
-            </p>
-          </div>
-        </div>
+        <FluentEmptyState
+          icon={
+            <AlertCircle className='h-6 w-6' style={{ color: '#9ca3af' }} />
+          }
+          title='未找到相关资源'
+          description='请尝试切换其他搜索源'
+        />
       )}
 
       {/* 结果列表 */}
