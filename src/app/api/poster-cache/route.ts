@@ -9,6 +9,8 @@ import { mkdir, readdir, readFile, stat, unlink, writeFile } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
+
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'poster-cache');
@@ -187,6 +189,12 @@ export async function GET(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json({ error: 'Missing url' }, { status: 400 });
+    }
+
+    // SSRF 防护：本端点公开且会把抓取到的响应字节回传并落盘缓存，
+    // 必须校验目标 URL，禁止内网/私有地址（与 image-proxy 一致）
+    if (!(await isUrlSafeDeep(url))) {
+      return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
     }
 
     await ensureCacheDir();
