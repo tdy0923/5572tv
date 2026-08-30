@@ -379,20 +379,28 @@ async function handleAuthentication(
 
   // 验证签名（如果存在）
   if (authInfo.signature) {
+    // P1-5：登录用 AUTH_SECRET||PASSWORD 签发，此处必须同样回退，
+    // 否则配置了 AUTH_SECRET 时中间件永远验签失败 → 非信任网络用户登录死循环
+    const secrets = [
+      process.env.PASSWORD || '',
+      process.env.AUTH_SECRET || '',
+    ].filter(Boolean);
     // 新格式：sign(username:role)，向后兼容旧格式 sign(username)
     const signData = `${authInfo.username}:${authInfo.role || 'user'}`;
-    let isValidSignature = await verifySignature(
-      signData,
-      authInfo.signature,
-      process.env.PASSWORD || '',
-    );
-
-    if (!isValidSignature) {
+    let isValidSignature = false;
+    for (const secret of secrets) {
+      isValidSignature = await verifySignature(
+        signData,
+        authInfo.signature,
+        secret,
+      );
+      if (isValidSignature) break;
       isValidSignature = await verifySignature(
         authInfo.username,
         authInfo.signature,
-        process.env.PASSWORD || '',
+        secret,
       );
+      if (isValidSignature) break;
     }
 
     if (isValidSignature) {
