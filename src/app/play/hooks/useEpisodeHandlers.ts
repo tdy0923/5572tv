@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 
 import { generateStorageKey, getAllPlayRecords } from '@/lib/db.client';
 
+import { pickEpisodeResumeTime } from '../episode-resume';
 import { replacePlaybackUrlParams } from '../utils';
 
 export function useEpisodeHandlers(params: {
@@ -49,22 +50,12 @@ export function useEpisodeHandlers(params: {
           );
           const record = allRecords[key];
 
-          // 按集进度优先：会话内权威 ref 命中则恢复到该集上次进度；
-          // 其次用记录里的 episode_times；再回退旧逻辑（记录恰好指向被点集时用 play_time）
-          const perEpisode =
-            episodeTimesRef.current?.[episodeNumber + 1] ??
-            record?.episode_times?.[episodeNumber + 1];
-          if (perEpisode && perEpisode > 0) {
-            resumeTimeRef.current = perEpisode;
-          } else if (
-            record &&
-            record.index - 1 === episodeNumber &&
-            record.play_time > 0
-          ) {
-            resumeTimeRef.current = record.play_time;
-          } else {
-            resumeTimeRef.current = 0;
-          }
+          // 按集进度优先恢复（纯函数，含单测守护）
+          resumeTimeRef.current = pickEpisodeResumeTime({
+            sessionMap: episodeTimesRef.current,
+            record,
+            episodeNumber,
+          });
         } catch (err) {
           console.warn('读取历史记录失败:', err);
           resumeTimeRef.current = 0;

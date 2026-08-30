@@ -28,7 +28,7 @@ async function ensureCacheDir() {
  * 豆瓣: /view/photo/s_ratio_poster/public/p2929038414.jpg → p2929038414
  * 通用: 使用URL的最后部分作为ID
  */
-function getContentId(url: string): string {
+export function getContentId(url: string): string {
   // 豆瓣图片URL格式: https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929038414.jpg
   // 必须把尺寸变体段（l / s_ratio_poster / m_ratio_poster / s / sqxs ...）并入 key，
   // 否则同一 pNNN 的横图与竖图会共用缓存文件互相覆盖，返回错误尺寸的海报。
