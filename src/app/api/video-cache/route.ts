@@ -8,6 +8,8 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
+
 export const runtime = 'nodejs';
 
 const CACHE_DIR = join(process.cwd(), 'public', 'video-cache');
@@ -37,6 +39,11 @@ export async function GET(request: NextRequest) {
 
     if (!url) {
       return NextResponse.json({ error: 'Missing url' }, { status: 400 });
+    }
+
+    // SSRF 防护：公开端点，服务端抓取任意 ?url 并回传/落盘，必须拦截内网地址
+    if (!(await isUrlSafeDeep(url))) {
+      return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
     }
 
     await ensureCacheDir();
