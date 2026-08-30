@@ -257,7 +257,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 验证播放记录数据
-    if (!record.title || !record.source_name || record.index < 1) {
+    // P1-6：source_name 仅用于展示，不应作为必填项拦截保存，
+    // 否则换源抖动期会 400 静默丢失播放进度
+    if (!record.title || record.index < 1) {
       const errorResponse = { error: 'Invalid record data' };
       const errorSize = Buffer.byteLength(
         JSON.stringify(errorResponse),
@@ -328,10 +330,26 @@ export async function POST(request: NextRequest) {
         record.total_episodes;
     }
 
+    // P0-4/按集进度：服务端对 episode_times 做并集合并，
+    // 免疫客户端"ref 尚未 seed 就保存"导致的整表覆盖丢失。
+    // 约定：incoming 值 >0 表示设置该集进度；===0 表示删除（看完重播从头）。
+    const mergedEpisodeTimes: Record<number, number> = {
+      ...(existingRecord?.episode_times || {}),
+    };
+    if (record.episode_times) {
+      for (const [k, v] of Object.entries(record.episode_times)) {
+        const n = Number(k);
+        if (!Number.isFinite(n)) continue;
+        if (v > 0) mergedEpisodeTimes[n] = Math.floor(v);
+        else delete mergedEpisodeTimes[n];
+      }
+    }
+
     const finalRecord = {
       ...record,
       save_time: record.save_time ?? Date.now(),
       original_episodes: originalEpisodes,
+      episode_times: mergedEpisodeTimes,
     } as PlayRecord;
 
     await db.savePlayRecord(authInfo.username, source, id, finalRecord);

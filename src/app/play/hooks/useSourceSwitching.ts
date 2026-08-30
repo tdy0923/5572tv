@@ -48,7 +48,6 @@ export function useSourceSwitching(params: {
   setDetail: (d: any) => void;
   setError: (e: string | null) => void;
   artPlayerRef: React.MutableRefObject<any>;
-  currentEpisodeIndex: number;
   setCurrentEpisodeIndex: (i: number) => void;
   currentSourceRef: React.MutableRefObject<string>;
   currentIdRef: React.MutableRefObject<string>;
@@ -264,8 +263,11 @@ export function useSourceSwitching(params: {
 
       const currentPlayTime = params.artPlayerRef.current?.currentTime || 0;
 
+      // P0-3：用 ref 读取当前集数，避免 handleSourceChange 被播放器创建时的旧闭包捕获
+      const liveEpisodeIndex = params.currentEpisodeIndexRef.current;
+
       if (currentPlayTime > 1) {
-        const tempProgressKey = `temp_progress_${newSource}_${newId}_${params.currentEpisodeIndex}`;
+        const tempProgressKey = `temp_progress_${newSource}_${newId}_${liveEpisodeIndex}`;
         sessionStorage.setItem(tempProgressKey, currentPlayTime.toString());
       }
 
@@ -312,12 +314,12 @@ export function useSourceSwitching(params: {
         }
       }
 
-      let targetIndex = params.currentEpisodeIndex;
+      let targetIndex = liveEpisodeIndex;
 
       if (detailToUse.episodes && detailToUse.episodes.length > 0) {
         if (targetIndex >= detailToUse.episodes.length) {
           targetIndex = detailToUse.episodes.length - 1;
-          const tempProgressKey = `temp_progress_${newSource}_${newId}_${params.currentEpisodeIndex}`;
+          const tempProgressKey = `temp_progress_${newSource}_${newId}_${liveEpisodeIndex}`;
           sessionStorage.removeItem(tempProgressKey);
         }
       }
@@ -332,7 +334,7 @@ export function useSourceSwitching(params: {
       params.setCurrentId(newId);
       params.setDetail(detailToUse);
 
-      if (targetIndex !== params.currentEpisodeIndex) {
+      if (targetIndex !== liveEpisodeIndex) {
         params.setCurrentEpisodeIndex(targetIndex);
       }
 

@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { isFloatAdElement, textContainsAdKeyword } from '@/lib/ad-blocker';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
-import { generateStorageKey } from '@/lib/db.client';
+import { generateStorageKey, getAllPlayRecords } from '@/lib/db.client';
 import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 import {
   BLOCK_AD_KEY,
@@ -288,6 +288,8 @@ function PlayPageClient() {
     episodeIndex: number;
   } | null>(null);
   const nextShortDramaPrefetchRef = useRef<Promise<void> | null>(null);
+  // P2：短剧解析竞态守卫——快速连点不同集时，只应用最后一次请求的结果
+  const shortDramaParseSeqRef = useRef(0);
 
   // 获取服务器配置（下载功能开关）
 
@@ -488,14 +490,14 @@ function PlayPageClient() {
 
   // 监听 URL index 参数变化（观影室切集同步）
 
+  const urlIndexParam = searchParams.get('index');
   useEffect(() => {
-    const indexParam = searchParams.get('index');
-    const parsedIndex = indexParam ? parseInt(indexParam, 10) : 0;
+    const parsedIndex = urlIndexParam ? parseInt(urlIndexParam, 10) : 0;
     const newIndex = Number.isNaN(parsedIndex) ? 0 : parsedIndex;
     if (newIndex !== currentEpisodeIndex) {
       setCurrentEpisodeIndex(newIndex);
     }
-  }, [searchParams.get('index')]);
+  }, [urlIndexParam, currentEpisodeIndex]);
 
   // 重新加载触发器（用于触发 initAll 重新执行）
   const [reloadTrigger, setReloadTrigger] = useState(0);
@@ -804,6 +806,9 @@ function PlayPageClient() {
 
   // 用于记录是否需要在播放器 ready 后跳转到指定进度
   const resumeTimeRef = useRef<number | null>(null);
+  // 按集进度的会话内权威副本（集序号1起 → 秒）。加载时从记录 seed，
+  // 会话内每次保存都累加进它，避免多层缓存陈旧导致各集进度互相覆盖/丢失。
+  const episodeTimesRef = useRef<Record<number, number>>({});
 
   const {
     audioTracks,
@@ -888,6 +893,14 @@ function PlayPageClient() {
   const isEpisodeChangingRef = useRef<boolean>(false); // 标记是否正在切换集数
   const isSkipControllerTriggeredRef = useRef<boolean>(false); // 标记是否通过 SkipController 触发了下一集
   const videoEndedHandledRef = useRef<boolean>(false); // 🔥 标记当前视频的 video:ended 事件是否已经被处理过（防止多个监听器重复触发）
+  // P0-2：自动连播倒计时定时器，必须在切集/卸载时清理，否则旧倒计时会把 index 拉到"旧集+1"
+  const autoNextTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearAutoNextTimer = useCallback(() => {
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
+  }, []);
 
   // 🚀 新增：连续切换源防抖和资源管理
   const sourceSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -917,7 +930,6 @@ function PlayPageClient() {
     setDetail,
     setError,
     artPlayerRef,
-    currentEpisodeIndex,
     setCurrentEpisodeIndex,
     currentSourceRef,
     currentIdRef,
@@ -1374,9 +1386,13 @@ function PlayPageClient() {
         const nameParam = detailData.drama_name
           ? `&name=${encodeURIComponent(detailData.drama_name)}`
           : '';
+        const seq = ++shortDramaParseSeqRef.current;
         const response = await fetch(
           `/api/shortdrama/parse?id=${videoId}&episode=${episode}${nameParam}${shortdramaSourceParam}`,
         );
+
+        // P2：若期间用户又切了集，丢弃过期响应
+        if (seq !== shortDramaParseSeqRef.current) return;
 
         if (response.ok) {
           const result = await response.json();
@@ -1425,6 +1441,10 @@ function PlayPageClient() {
 
       if (newUrl !== videoUrl) {
         setVideoUrl(newUrl);
+      } else if (!isSourceChangingRef.current) {
+        // P1-7：URL 未变化则不会有 switch 发生，重置切集标志，
+        // 避免残留 true 导致下次"换源"误走 switchUrl 而丢失播放进度
+        isEpisodeChangingRef.current = false;
       }
     }
   };
@@ -1575,6 +1595,9 @@ function PlayPageClient() {
 
   // 🚀 优化的集数变化处理（防抖 + 状态保护）
   useEffect(() => {
+    // P0-2：任何集数变化都先取消未触发的"自动连播"倒计时，避免旧倒计时覆盖新选择
+    clearAutoNextTimer();
+
     // 🔥 标记正在切换集数（只在非换源时）
     if (!isSourceChangingRef.current) {
       isEpisodeChangingRef.current = true;
@@ -1663,7 +1686,7 @@ function PlayPageClient() {
         }
       }, 800); // 缩短延迟时间，提高响应性
     }
-  }, [detail, currentEpisodeIndex]);
+  }, [detail, currentEpisodeIndex, clearAutoNextTimer]);
 
   // 进入页面时直接获取全部源信息
 
@@ -2170,12 +2193,18 @@ function PlayPageClient() {
       }
 
       try {
-        const allRecords = await cachedGetAllPlayRecords();
+        // 强制刷新，确保 seed 到最新的按集进度（episode_times）
+        const allRecords = await getAllPlayRecords(true);
         const key = generateStorageKey(currentSource, currentId);
         const record = allRecords[key];
 
+        // seed 会话内按集进度权威副本（换源/换片时随 currentSource/currentId 变化重新 seed）
+        episodeTimesRef.current = { ...(record?.episode_times || {}) };
+
         if (record) {
           if (hasExplicitPlaybackState) {
+            // 带显式 index/time 进入：交由 handleEpisodeChange / temp_progress 处理恢复，
+            // 此处不再赋值 resumeTimeRef，避免在每次切集重跑时用旧索引覆盖点击恢复值
             return;
           }
 
@@ -2212,6 +2241,11 @@ function PlayPageClient() {
       if (sourceSwitchTimeoutRef.current) {
         clearTimeout(sourceSwitchTimeoutRef.current);
       }
+      // P0-2：卸载时清理自动连播倒计时
+      if (autoNextTimerRef.current) {
+        clearTimeout(autoNextTimerRef.current);
+        autoNextTimerRef.current = null;
+      }
 
       // 重置状态
       isSourceChangingRef.current = false;
@@ -2224,12 +2258,13 @@ function PlayPageClient() {
   // ---------------------------------------------------------------------------
   // 保存播放进度
   const saveCurrentPlayProgress = async () => {
+    // P1-6：不再因 detailRef.source_name 缺失而拒绝保存（该字段仅展示用），
+    // 否则换源/详情抖动期的进度会静默丢失
     if (
       !artPlayerRef.current ||
       !currentSourceRef.current ||
       !currentIdRef.current ||
-      !videoTitleRef.current ||
-      !detailRef.current?.source_name
+      !videoTitleRef.current
     ) {
       return;
     }
@@ -2265,13 +2300,31 @@ function PlayPageClient() {
       );
       const remarksToSave =
         sourceFromList?.remarks || detailRef.current?.remarks;
+      // P1-6：source_name 回退到换源列表，避免抖动期存成空串
+      const sourceNameToSave =
+        detailRef.current?.source_name || sourceFromList?.source_name || '';
+
+      // 按集记忆进度：以会话内权威 ref 为基准合并（不依赖可能陈旧的缓存），
+      // 仅在有意义的进度时写入；接近片尾（剩余≤10s）视为看完，清除该集进度以便重播从头开始
+      const epNum = currentEpisodeIndexRef.current + 1;
+      const episodeTimes: Record<number, number> = {
+        ...(existingRecord?.episode_times || {}),
+        ...episodeTimesRef.current,
+      };
+      if (duration > 0 && duration - currentTime <= 10) {
+        // 看完：写 0 作为"删除"信号（服务端合并时据此移除），便于重播从头
+        episodeTimes[epNum] = 0;
+      } else if (currentTime >= 5) {
+        episodeTimes[epNum] = Math.floor(currentTime);
+      }
+      episodeTimesRef.current = episodeTimes;
 
       savePlayRecordMutation.mutate({
         source: currentSourceRef.current,
         id: currentIdRef.current,
         record: {
           title: videoTitleRef.current,
-          source_name: detailRef.current?.source_name || '',
+          source_name: sourceNameToSave,
           year: detailRef.current?.year,
           cover: resolveCardPosterUrl(detailRef.current?.poster),
           index: currentEpisodeIndexRef.current + 1,
@@ -2287,6 +2340,7 @@ function PlayPageClient() {
             detailRef.current?.douban_id ||
             undefined,
           type: searchType || undefined,
+          episode_times: episodeTimes,
         },
       });
 
@@ -2311,6 +2365,11 @@ function PlayPageClient() {
           total_time: Math.floor(duration),
           save_time: Date.now(),
           search_title: searchTitle,
+          // 按集进度：与本机旧记录合并，避免每次保存覆盖丢失其他集进度
+          episode_times: {
+            ...(localRecords[localKey]?.episode_times || {}),
+            ...episodeTimes,
+          },
         };
         // 限制条数，仅保留最近 100 条
         const localKeys = Object.keys(localRecords);
@@ -2357,6 +2416,7 @@ function PlayPageClient() {
       totalEpisodes,
       isSkipControllerTriggeredRef,
       resumeTimeRef,
+      episodeTimesRef,
     });
 
   // 键盘快捷键
@@ -2584,6 +2644,9 @@ function PlayPageClient() {
           // 🚀 关键修复：区分换源和切换集数
           const isEpisodeChange = isEpisodeChangingRef.current;
           const currentTime = artPlayerRef.current.currentTime || 0;
+          // P0-1：切集前捕获是否有待恢复进度；video:canplay 会先应用恢复，
+          // 若此处再无条件归零会把刚恢复的进度冲掉
+          const hasPendingResume = (resumeTimeRef.current ?? 0) > 0;
 
           // 在切换前从 localStorage 重新读取播放速率，确保使用最新保存的值
           const savedPlaybackRate = loadPlaybackRate();
@@ -2611,7 +2674,10 @@ function PlayPageClient() {
                 // 🔥 重置集数切换标识
                 if (isEpisodeChange) {
                   // 🔑 关键修复：切换集数后显式重置播放时间为 0，确保片头自动跳过能触发
-                  artPlayerRef.current.currentTime = 0;
+                  // 但若本次切集带有恢复进度（resumeTimeRef），canplay 已跳转，不能再归零
+                  if (!hasPendingResume) {
+                    artPlayerRef.current.currentTime = 0;
+                  }
                   isEpisodeChangingRef.current = false;
                 }
               }
@@ -4937,14 +5003,17 @@ function PlayPageClient() {
               artPlayerRef.current?.container?.appendChild(notice);
 
               const autoPlayTimer = setTimeout(() => {
+                autoNextTimerRef.current = null;
                 if (notice.parentNode) notice.remove();
                 replacePlaybackUrlParams({ index: String(nextIndex) });
                 setCurrentEpisodeIndex(nextIndex);
               }, 3000);
+              autoNextTimerRef.current = autoPlayTimer;
 
               notice.addEventListener('click', () => {
                 if (notice.parentNode) notice.remove();
                 clearTimeout(autoPlayTimer);
+                autoNextTimerRef.current = null;
                 videoEndedHandledRef.current = false;
               });
             }

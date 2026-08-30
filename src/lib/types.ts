@@ -16,6 +16,9 @@ export interface PlayRecord {
   remarks?: string; // 备注信息（如"已完结"、"更新至20集"等）
   douban_id?: number; // 豆瓣ID（用于准确识别视频）
   type?: string; // 内容类型（anime/tv/movie）用于继续播放时正确请求详情
+  // 按集记忆播放进度：key 为集序号（1 起，与 index 同基数），value 为该集上次播放秒数。
+  // 可选字段，向后兼容旧记录（缺失时按"仅最后一集有进度"处理）。
+  episode_times?: Record<number, number>;
 }
 
 // 收藏数据结构

@@ -1,9 +1,9 @@
 'use client';
 import { useCallback } from 'react';
 
-import { generateStorageKey } from '@/lib/db.client';
+import { generateStorageKey, getAllPlayRecords } from '@/lib/db.client';
 
-import { cachedGetAllPlayRecords, replacePlaybackUrlParams } from '../utils';
+import { replacePlaybackUrlParams } from '../utils';
 
 export function useEpisodeHandlers(params: {
   artPlayerRef: React.RefObject<any>;
@@ -16,6 +16,7 @@ export function useEpisodeHandlers(params: {
   totalEpisodes: number;
   isSkipControllerTriggeredRef: React.RefObject<boolean>;
   resumeTimeRef: React.RefObject<number | null>;
+  episodeTimesRef: React.RefObject<Record<number, number>>;
 }) {
   const {
     artPlayerRef,
@@ -28,6 +29,7 @@ export function useEpisodeHandlers(params: {
     totalEpisodes,
     isSkipControllerTriggeredRef,
     resumeTimeRef,
+    episodeTimesRef,
   } = params;
 
   const handleEpisodeChange = useCallback(
@@ -38,14 +40,23 @@ export function useEpisodeHandlers(params: {
         }
 
         try {
-          const allRecords = await cachedGetAllPlayRecords();
+          // 强制刷新读取，绕开"先返回陈旧缓存"的混合策略，
+          // 确保拿到服务端最新的按集进度（episode_times）
+          const allRecords = await getAllPlayRecords(true);
           const key = generateStorageKey(
             currentSourceRef.current,
             currentIdRef.current,
           );
           const record = allRecords[key];
 
-          if (
+          // 按集进度优先：会话内权威 ref 命中则恢复到该集上次进度；
+          // 其次用记录里的 episode_times；再回退旧逻辑（记录恰好指向被点集时用 play_time）
+          const perEpisode =
+            episodeTimesRef.current?.[episodeNumber + 1] ??
+            record?.episode_times?.[episodeNumber + 1];
+          if (perEpisode && perEpisode > 0) {
+            resumeTimeRef.current = perEpisode;
+          } else if (
             record &&
             record.index - 1 === episodeNumber &&
             record.play_time > 0
@@ -76,6 +87,7 @@ export function useEpisodeHandlers(params: {
       setCurrentEpisodeIndex,
       totalEpisodes,
       resumeTimeRef,
+      episodeTimesRef,
     ],
   );
 
