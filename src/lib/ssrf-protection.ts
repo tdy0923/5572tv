@@ -5,33 +5,35 @@
 import dns from 'dns/promises';
 
 function isPrivateIP(hostname: string): boolean {
+  // 规范化：URL 解析出的 IPv6 主机名带方括号（如 [::1]），先剥离再判断，
+  // 否则 IPv6 内网/回环地址会绕过下面的前缀匹配
+  const host = hostname.replace(/^\[+|\]+$/g, '').toLowerCase();
+
   // IPv4 private ranges
   if (
     /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|0\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1[0-2][0-7])\.)/.test(
-      hostname,
+      host,
     )
   ) {
     return true;
   }
   // IPv4 benchmark/test ranges (198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24)
-  if (/^198\.1[89]\./.test(hostname)) {
+  if (/^198\.1[89]\./.test(host)) {
     return true;
   }
-  if (/^198\.51\.100\./.test(hostname)) {
+  if (/^198\.51\.100\./.test(host)) {
     return true;
   }
-  if (/^203\.0\.113\./.test(hostname)) {
+  if (/^203\.0\.113\./.test(host)) {
     return true;
   }
   // IPv6 private ranges
-  if (/^(fc|fd|fe80|::1|::)/i.test(hostname)) {
+  if (/^(fc|fd|fe80|::1|::)/i.test(host)) {
     return true;
   }
   // Common internal hostnames
   if (
-    ['localhost', 'metadata.google.internal', '169.254.169.254'].includes(
-      hostname,
-    )
+    ['localhost', 'metadata.google.internal', '169.254.169.254'].includes(host)
   ) {
     return true;
   }
