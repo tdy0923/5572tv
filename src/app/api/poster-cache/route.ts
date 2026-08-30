@@ -28,9 +28,11 @@ async function ensureCacheDir() {
  */
 function getContentId(url: string): string {
   // 豆瓣图片URL格式: https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929038414.jpg
-  const doubanMatch = url.match(/\/public\/(p\d+)\./);
+  // 必须把尺寸变体段（l / s_ratio_poster / m_ratio_poster / s / sqxs ...）并入 key，
+  // 否则同一 pNNN 的横图与竖图会共用缓存文件互相覆盖，返回错误尺寸的海报。
+  const doubanMatch = url.match(/\/view\/photo\/([^/]+)\/public\/(p\d+)\./);
   if (doubanMatch) {
-    return doubanMatch[1]; // p2929038414
+    return `${doubanMatch[2]}_${doubanMatch[1]}`; // p2929038414_s_ratio_poster
   }
 
   // manmankan格式: /yybpic/202401/xxx.jpg

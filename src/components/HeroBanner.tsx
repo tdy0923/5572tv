@@ -309,6 +309,33 @@ function HeroBanner({
                 }`}
                 loading={index === 0 ? 'eager' : 'lazy'}
                 decoding='async'
+                onError={(e) => {
+                  // 焦点图背景降级：poster-cache 失败→image-proxy 透传→原始(非横图)地址，
+                  // 避免横图回源 403/超时导致焦点图永久空白且无任何兜底
+                  const img = e.currentTarget;
+                  const orig = getProxiedImageUrl(
+                    getHDBackdrop(item.backdrop) || item.poster,
+                  );
+                  if (!img.dataset.heroTried) {
+                    img.dataset.heroTried = '1';
+                    if (orig.includes('/api/poster-cache')) {
+                      img.src = orig.replace(
+                        '/api/poster-cache?url=',
+                        '/api/image-proxy?url=',
+                      );
+                      return;
+                    }
+                  } else if (img.dataset.heroTried === '1' && item.poster) {
+                    // 横图变体失败，退回竖图海报（多数情况仍能显示）
+                    img.dataset.heroTried = '2';
+                    const portrait = getProxiedImageUrl(item.poster);
+                    if (img.src !== portrait) {
+                      img.src = portrait;
+                      return;
+                    }
+                  }
+                  img.style.display = 'none';
+                }}
               />
 
               {/* 视频背景（如果启用且有预告片URL，加载完成后淡入） */}
