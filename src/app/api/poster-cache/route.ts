@@ -69,6 +69,10 @@ function getReferer(url: string): string {
 const MAX_CONCURRENT_DOWNLOADS = 6;
 const DOWNLOAD_TIMEOUT_MS = 10000;
 const RETRY_DELAY_MS = 300;
+const MAX_DOWNLOAD_ATTEMPTS = 3;
+// 豆瓣对服务器 IP 偶发限流会返回这些瞬时状态；旧代码 !ok 直接放弃导致偶发空白，
+// 这里对瞬时状态带退避+抖动重试，仅对 404 等永久错误快速放弃。
+const TRANSIENT_STATUSES = new Set([403, 408, 425, 429, 500, 502, 503, 504]);
 
 const inflight = new Map<string, Promise<ArrayBuffer | null>>();
 let activeDownloads = 0;
@@ -79,7 +83,7 @@ const downloadQueue: Array<{
 
 async function downloadOnce(url: string): Promise<ArrayBuffer | null> {
   const referer = getReferer(url);
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < MAX_DOWNLOAD_ATTEMPTS; attempt++) {
     try {
       const response = await fetch(url, {
         headers: {
@@ -90,12 +94,22 @@ async function downloadOnce(url: string): Promise<ArrayBuffer | null> {
         },
         signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
       });
-      if (!response.ok) return null;
-      return await response.arrayBuffer();
+      if (response.ok) {
+        return await response.arrayBuffer();
+      }
+      const transient = TRANSIENT_STATUSES.has(response.status);
+      try {
+        await response.body?.cancel();
+      } catch {}
+      // 永久错误（404 等）立即放弃；瞬时错误进入下面的退避重试
+      if (!transient || attempt === MAX_DOWNLOAD_ATTEMPTS - 1) return null;
     } catch {
-      if (attempt === 0)
-        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+      // 网络异常/超时：最后一次仍失败则放弃
+      if (attempt === MAX_DOWNLOAD_ATTEMPTS - 1) return null;
     }
+    await new Promise((r) =>
+      setTimeout(r, RETRY_DELAY_MS * (attempt + 1) + Math.random() * 250),
+    );
   }
   return null;
 }
@@ -222,9 +236,10 @@ export async function GET(request: NextRequest) {
     const imageData = await getImageData(url);
 
     if (!imageData) {
-      // 502 会让浏览器直接白屏；改 302 跳 image-proxy 透传，客户端仍有机会拿到图
+      // 502 会让浏览器直接白屏；改 302 跳 image-proxy 透传，客户端仍有机会拿到图。
+      // 注意：NextResponse.redirect 必须用绝对 URL，相对 URL 会抛错导致 500（旧 bug）。
       return NextResponse.redirect(
-        `/api/image-proxy?url=${encodeURIComponent(url)}`,
+        new URL(`/api/image-proxy?url=${encodeURIComponent(url)}`, request.url),
         302,
       );
     }
