@@ -16,18 +16,38 @@ function GlobalCacheInvalidator() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    // P2-9：去抖合并——每次乐观保存都会同步派发更新事件，
+    // 不去抖会让连续保存触发多次 invalidate + 全量 refetch
+    const debounce = <T extends unknown[]>(
+      fn: (...args: T) => void,
+      ms: number,
+    ) => {
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      return (...args: T) => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          timer = null;
+          fn(...args);
+        }, ms);
+      };
+    };
+
+    const invalidatePlayRecords = debounce(() => {
+      queryClient.invalidateQueries({ queryKey: ['playRecords'] });
+    }, 800);
+
+    const invalidateFavorites = debounce(() => {
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    }, 800);
+
     const unsubscribePlayRecords = subscribeToDataUpdates(
       'playRecordsUpdated',
-      () => {
-        queryClient.invalidateQueries({ queryKey: ['playRecords'] });
-      },
+      invalidatePlayRecords,
     );
 
     const unsubscribeFavorites = subscribeToDataUpdates(
       'favoritesUpdated',
-      () => {
-        queryClient.invalidateQueries({ queryKey: ['favorites'] });
-      },
+      invalidateFavorites,
     );
 
     return () => {
