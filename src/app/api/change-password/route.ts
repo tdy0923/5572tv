@@ -49,10 +49,12 @@ export async function POST(request: NextRequest) {
     const username = authInfo.username;
 
     // 先验证旧密码（支持 V1/V2）
+    // 注意：这里刻意 fail-closed —— verify 抛错（如 DB 抖动）时按"旧密码无效"处理，
+    // 绝不能因异常而放行改密。故空 catch 是有意为之，勿改成 fail-open。
     let isOldPasswordValid = false;
     try {
       isOldPasswordValid = await db.verifyUserV2(username, oldPassword);
-    } catch (error) {}
+    } catch {}
     if (!isOldPasswordValid) {
       try {
         isOldPasswordValid = await db.verifyUser(username, oldPassword);
