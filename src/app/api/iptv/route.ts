@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -128,6 +129,11 @@ export async function GET(request: NextRequest) {
         { error: 'Missing url parameter' },
         { status: 400 },
       );
+    }
+
+    // SSRF 防护：服务端直接抓取用户传入的 IPTV 源地址
+    if (!(await isUrlSafeDeep(url))) {
+      return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
     }
 
     const channels = await fetchIPTVSource(url);

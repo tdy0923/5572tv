@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -121,6 +122,11 @@ export async function GET(request: NextRequest) {
 
   if (!url) {
     return NextResponse.json({ error: 'Missing url' }, { status: 400 });
+  }
+
+  // SSRF 防护：服务端直接抓取用户传入的直播地址
+  if (!(await isUrlSafeDeep(url))) {
+    return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
   }
 
   const config = await getConfig();

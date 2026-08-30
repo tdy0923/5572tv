@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 import { DEFAULT_USER_AGENT } from '@/lib/user-agent';
 
 export const runtime = 'nodejs';
@@ -21,6 +22,11 @@ export async function GET(req: NextRequest) {
 
     // 清理URL（移除MD5部分）
     const cleanUrl = jarUrl.split(';')[0];
+
+    // SSRF 防护：服务端 HEAD 请求用户传入的 jar 地址
+    if (!(await isUrlSafeDeep(cleanUrl))) {
+      return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
+    }
 
     // 检查jar文件可用性
     const controller = new AbortController();
