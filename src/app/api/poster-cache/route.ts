@@ -76,6 +76,16 @@ const MAX_DOWNLOAD_ATTEMPTS = 3;
 // 这里对瞬时状态带退避+抖动重试，仅对 404 等永久错误快速放弃。
 const TRANSIENT_STATUSES = new Set([403, 408, 425, 429, 500, 502, 503, 504]);
 
+// 负缓存：短期内不再对刚失败的 URL 重复回源（死图/持续限流），到期自动恢复。
+// TTL 取较短值，避免豆瓣短暂抖动时把大量海报"锁死"在失败态。
+const NEGATIVE_TTL_MS = 30_000;
+const NEGATIVE_CACHE_MAX = 5000;
+const negativeCache = new Map<string, number>(); // url -> 过期时间戳
+
+// 近似文件计数：避免每次缓存 miss 都 readdir 整个目录（最多 3 万项）来判断是否到上限。
+// 只有当计数逼近上限时才做一次真实 readdir + 淘汰。
+let approxFileCount = -1; // -1 = 未知，需首次 readdir 校准
+
 const inflight = new Map<string, Promise<ArrayBuffer | null>>();
 let activeDownloads = 0;
 const downloadQueue: Array<{
@@ -221,22 +231,37 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 检查缓存空间
-    const files = await readdir(CACHE_DIR);
-    if (files.length >= MAX_CACHE_FILES) {
-      // 删除最旧的10%文件
-      const fileStats = await Promise.all(
-        files.map(async (f) => ({
-          name: f,
-          mtime: (await stat(join(CACHE_DIR, f))).mtimeMs,
-        })),
+    // 负缓存命中：短期内不再对刚失败的 URL 回源，直接降级到 image-proxy
+    const negExpiry = negativeCache.get(url);
+    if (negExpiry && negExpiry > Date.now()) {
+      return NextResponse.redirect(
+        new URL(`/api/image-proxy?url=${encodeURIComponent(url)}`, request.url),
+        302,
       );
-      fileStats.sort((a, b) => a.mtime - b.mtime);
-      const toDelete = fileStats.slice(0, Math.floor(files.length * 0.1));
-      for (const f of toDelete) {
-        try {
-          await unlink(join(CACHE_DIR, f.name));
-        } catch {}
+    }
+
+    // 检查缓存空间：仅在近似计数逼近上限（或未知）时才做一次真实 readdir + 淘汰，
+    // 避免每次缓存 miss 都 readdir 整个目录（最多 3 万项）
+    if (approxFileCount < 0 || approxFileCount >= MAX_CACHE_FILES) {
+      const files = await readdir(CACHE_DIR);
+      if (files.length >= MAX_CACHE_FILES) {
+        // 删除最旧的10%文件
+        const fileStats = await Promise.all(
+          files.map(async (f) => ({
+            name: f,
+            mtime: (await stat(join(CACHE_DIR, f))).mtimeMs,
+          })),
+        );
+        fileStats.sort((a, b) => a.mtime - b.mtime);
+        const toDelete = fileStats.slice(0, Math.floor(files.length * 0.1));
+        for (const f of toDelete) {
+          try {
+            await unlink(join(CACHE_DIR, f.name));
+          } catch {}
+        }
+        approxFileCount = files.length - toDelete.length;
+      } else {
+        approxFileCount = files.length;
       }
     }
 
@@ -244,6 +269,14 @@ export async function GET(request: NextRequest) {
     const imageData = await getImageData(url);
 
     if (!imageData) {
+      // 记入短期负缓存，避免死图/持续限流被反复回源打爆上游
+      if (negativeCache.size >= NEGATIVE_CACHE_MAX) {
+        const now = Date.now();
+        for (const [k, exp] of negativeCache)
+          if (exp <= now) negativeCache.delete(k);
+        if (negativeCache.size >= NEGATIVE_CACHE_MAX) negativeCache.clear();
+      }
+      negativeCache.set(url, Date.now() + NEGATIVE_TTL_MS);
       // 502 会让浏览器直接白屏；改 302 跳 image-proxy 透传，客户端仍有机会拿到图。
       // 注意：NextResponse.redirect 必须用绝对 URL，相对 URL 会抛错导致 500（旧 bug）。
       return NextResponse.redirect(
@@ -253,7 +286,9 @@ export async function GET(request: NextRequest) {
     }
 
     // 保存海报（自动替换同ID旧文件）
-    await savePoster(contentId, imageData, url);
+    const saved = await savePoster(contentId, imageData, url);
+    if (saved && approxFileCount >= 0) approxFileCount++;
+    negativeCache.delete(url);
 
     return new NextResponse(imageData, {
       headers: {
