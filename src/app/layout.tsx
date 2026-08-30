@@ -185,10 +185,13 @@ export default async function RootLayout({
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
-        <script
-          nonce={nonce}
-          dangerouslySetInnerHTML={{
-            __html: `
+        {/* 仅生产环境注册 SW：dev 下 Turbopack 的 chunk 名不带内容哈希，
+            SW 的 cacheFirst 会在代码变更后继续喂旧 chunk，造成"改了不生效"的假象 */}
+        {process.env.NODE_ENV === 'production' && (
+          <script
+            nonce={nonce}
+            dangerouslySetInnerHTML={{
+              __html: `
               if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.addEventListener('controllerchange', function() {
                   window.location.reload();
@@ -207,8 +210,9 @@ export default async function RootLayout({
                 });
               }
             `,
-          }}
-        />
+            }}
+          />
+        )}
         {customCSS && (
           <style
             nonce={nonce}
