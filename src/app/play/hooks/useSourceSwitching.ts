@@ -14,6 +14,11 @@ import {
   nextFailCount,
   type RetryState,
 } from '../source-backoff';
+import {
+  getSourceIdentityKey,
+  isShortDramaSource,
+  parseSourceForApi,
+} from '../source-identity';
 
 const MAX_SESSION_FAILURES = 50;
 const MAX_SOURCE_ERRORS = 2;
@@ -35,16 +40,6 @@ function releaseM3u8ProbeSlot(): void {
   const nxt = m3u8ProbeQueue.shift();
   if (nxt) nxt();
 }
-
-const parseSourceForApi = (
-  source: string,
-): { source: string; embyKey?: string } => {
-  if (source.startsWith('emby_')) {
-    const key = source.substring(5);
-    return { source: 'emby', embyKey: key };
-  }
-  return { source };
-};
 
 export function useSourceSwitching(params: {
   videoTitleRef: React.MutableRefObject<string>;
@@ -92,9 +87,6 @@ export function useSourceSwitching(params: {
   const isSourceChangingRef = useRef(false);
   const sourceErrorCountRef = useRef(0);
 
-  const getSourceIdentityKey = (source: string, id: string) =>
-    `${source}::${id}`;
-
   const isSourceAvailable = useCallback((sourceKey: string): boolean => {
     const state = sourceRetryStateRef.current.get(sourceKey);
     const now = Date.now();
@@ -135,14 +127,6 @@ export function useSourceSwitching(params: {
     [],
   );
 
-  const isShortDramaSource = useCallback(
-    (source: string): boolean =>
-      source === 'shortdrama' ||
-      source.startsWith('shortdrama') ||
-      source === '短剧',
-    [],
-  );
-
   const quickProbe = useCallback(
     async (
       url: string,
@@ -179,7 +163,7 @@ export function useSourceSwitching(params: {
         releaseM3u8ProbeSlot();
       }
     },
-    [isShortDramaSource],
+    [],
   );
 
   const findWorkingSource = async (
