@@ -45,6 +45,7 @@ import {
   parseNumericParam,
   resolveIndexForDetail,
 } from './episode-index';
+import { buildFullscreenTitleHtml } from './fullscreen-title';
 import { useAdFilter } from './hooks/useAdFilter';
 import { useAudioTracks } from './hooks/useAudioTracks';
 import { useBangumiDetails } from './hooks/useBangumiDetails';
@@ -65,7 +66,6 @@ import type { WakeLockSentinel } from './utils';
 import {
   cachedGetAllFavorites,
   cachedGetAllPlayRecords,
-  escapeAudioTrackHtml,
   getHlsModule,
   loadPlaybackRate,
   loadPlayerVolume,
@@ -749,22 +749,14 @@ function PlayPageClient() {
     if (!titleLayer) return;
 
     const episodeName = detail?.episodes_titles?.[currentEpisodeIndex] || '';
-    const hasEpisodes = detail?.episodes && detail.episodes.length > 1;
+    const hasEpisodes = !!(detail?.episodes && detail.episodes.length > 1);
 
-    titleLayer.innerHTML = `
-      <div class="fullscreen-title-container">
-        <div class="fullscreen-title-content">
-          <h1 class="fullscreen-title-text">${escapeAudioTrackHtml(detail?.title || '')}</h1>
-          ${
-            hasEpisodes && episodeName
-              ? `<span class="fullscreen-episode-text">${escapeAudioTrackHtml(episodeName)}</span>`
-              : hasEpisodes
-                ? `<span class="fullscreen-episode-text">第 ${currentEpisodeIndex + 1} 集</span>`
-                : ''
-          }
-        </div>
-      </div>
-    `;
+    titleLayer.innerHTML = buildFullscreenTitleHtml({
+      title: detail?.title || '',
+      episodeName,
+      episodeIndex: currentEpisodeIndex,
+      hasEpisodes,
+    });
   }, [currentEpisodeIndex, detail, portalContainer]);
 
   // 🚀 豆瓣评论由 useDoubanCommentsQuery 自动加载，无需手动 useEffect
@@ -3865,25 +3857,17 @@ function PlayPageClient() {
           });
 
           // 🎬 全屏标题/集数层
-          const fsEpisodeName =
-            detail?.episodes_titles?.[currentEpisodeIndex] || '';
-          const fsHasEpisodes = detail?.episodes && detail.episodes.length > 1;
+          const fsHasEpisodes = !!(
+            detail?.episodes && detail.episodes.length > 1
+          );
           artPlayerRef.current.layers.add({
             name: 'fullscreen-title',
-            html: `
-            <div class="fullscreen-title-container">
-              <div class="fullscreen-title-content">
-                <h1 class="fullscreen-title-text">${detail?.title || ''}</h1>
-                ${
-                  fsHasEpisodes && fsEpisodeName
-                    ? `<span class="fullscreen-episode-text">${fsEpisodeName}</span>`
-                    : fsHasEpisodes
-                      ? `<span class="fullscreen-episode-text">第 ${currentEpisodeIndex + 1} 集</span>`
-                      : ''
-                }
-              </div>
-            </div>
-          `,
+            html: buildFullscreenTitleHtml({
+              title: detail?.title || '',
+              episodeName: detail?.episodes_titles?.[currentEpisodeIndex] || '',
+              episodeIndex: currentEpisodeIndex,
+              hasEpisodes: fsHasEpisodes,
+            }),
             style: {
               position: 'absolute',
               top: '0',
