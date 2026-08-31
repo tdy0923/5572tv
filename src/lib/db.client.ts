@@ -17,6 +17,7 @@
 
 import { getAuthInfoFromBrowserCookie } from './auth';
 import { BoundedMap } from './bounded-map';
+import { decideOriginalEpisodesUpdate } from './original-episodes';
 import type { Favorite, PlayRecord, Reminder } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
 import { generateStorageKey } from './utils';
@@ -726,47 +727,12 @@ async function checkShouldUpdateOriginalEpisodes(
     }
   }
 
-  // 条件1：用户观看进度超过了原始集数（说明用户已经看了新更新的集数）
-  const hasWatchedBeyondOriginal = newRecord.index > originalEpisodes;
-
-  // 条件2：用户观看进度有实质性进展（不是刚点进去就退出）
-  const hasSignificantProgress = newRecord.play_time > 60; // 观看超过1分钟
-
-  if (!hasWatchedBeyondOriginal || !hasSignificantProgress) {
-    //       `✗ 不更新原始集数: ${existingRecord.title} - 观看第${newRecord.index}集，原始${originalEpisodes}集 (${hasWatchedBeyondOriginal ? '观看时间不足' : '未超过原始集数'})`,
-    //     );
-    return {
-      shouldUpdate: false,
-      latestTotalEpisodes: newRecord.total_episodes,
-    };
-  }
-
-  // 用户看了超过原始集数的集数，获取最新的 total_episodes
-  //     `🔍 用户看了第${newRecord.index}集（超过原始${originalEpisodes}集），从数据库获取最新集数...`,
-  //   );
-
-  try {
-    const latestTotalEpisodes = Math.max(
-      freshRecord.total_episodes,
-      originalEpisodes,
-      newRecord.total_episodes,
-    );
-    //       `✓ 应更新原始集数: ${existingRecord.title} - 用户看了第${newRecord.index}集（超过原始${originalEpisodes}集），数据库最新集数${freshRecord.total_episodes}集，播放器集数${newRecord.total_episodes}集 → 更新原始集数为${latestTotalEpisodes}集`,
-    //     );
-
-    return { shouldUpdate: true, latestTotalEpisodes };
-  } catch (error) {
-    console.error('❌ 获取最新集数失败:', error);
-    // 失败时仍然更新，使用保守的值
-    return {
-      shouldUpdate: true,
-      latestTotalEpisodes: Math.max(
-        newRecord.total_episodes,
-        originalEpisodes,
-        existingRecord.total_episodes,
-      ),
-    };
-  }
+  // 纯决策（含单测）：看过基线集数且有实质进度时才推进 original_episodes
+  return decideOriginalEpisodesUpdate({
+    originalEpisodes,
+    newRecord,
+    freshTotalEpisodes: freshRecord.total_episodes,
+  });
 }
 
 // ---- API ----
