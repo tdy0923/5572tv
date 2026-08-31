@@ -15,6 +15,8 @@ import { formatTime, secondsToTime, timeToSeconds } from '@/lib/time-utils';
 import { useDraggable } from '@/components/play/hooks/useDraggable';
 import { useSkipPresets } from '@/components/play/hooks/useSkipPresets';
 
+import { buildDefaultSkipSegments } from './skip-segments';
+
 interface SkipControllerProps {
   source: string;
   id: string;
@@ -302,73 +304,11 @@ export default function SkipController({
       let segments = skipConfig?.segments;
 
       if (!segments || segments.length === 0) {
-        // 根据 batchSettings 生成临时配置
-        const tempSegments: SkipSegment[] = [];
-
-        // 添加片头配置
-        const openingStart = timeToSeconds(currentBatchSettings.openingStart);
-        const openingEnd = timeToSeconds(currentBatchSettings.openingEnd);
-
-        // 🔥 优化：对于短视频，智能调整片头检测范围
-        // 如果视频总长度小于 5 分钟（300秒），不启用默认片头检测
-        // 避免在短视频中频繁触发片头跳过
-        const isShortVideo = duration > 0 && duration < 300; // 5分钟以下算短视频
-        const shouldEnableOpening =
-          openingStart < openingEnd &&
-          (!isShortVideo || openingEnd < duration * 0.3);
-
-        if (shouldEnableOpening) {
-          tempSegments.push({
-            type: 'opening',
-            start: openingStart,
-            end: Math.min(openingEnd, duration * 0.4), // 限制片头最多占视频40%
-            autoSkip: currentBatchSettings.autoSkip,
-          });
-          //             `✅ [SkipController] 添加片头配置: ${openingStart}s-${Math.min(openingEnd, duration * 0.4)}s, autoSkip=${currentBatchSettings.autoSkip}`,
-          //           );
-        } else if (isShortVideo) {
-        }
-
-        // 添加片尾配置（如果设置了）
-        if (duration > 0 && currentBatchSettings.endingStart) {
-          const endingStartSeconds = timeToSeconds(
-            currentBatchSettings.endingStart,
-          );
-          const endingStart =
-            currentBatchSettings.endingMode === 'remaining'
-              ? duration - endingStartSeconds
-              : endingStartSeconds;
-
-          // 🔥 优化：对于短视频，确保片尾检测合理
-          // 如果片尾开始时间太早（超过视频60%），调整或跳过
-          const endingStartRatio = endingStart / duration;
-          const shouldEnableEnding =
-            endingStart < duration && endingStartRatio > 0.6;
-
-          if (shouldEnableEnding) {
-            tempSegments.push({
-              type: 'ending',
-              start: endingStart,
-              end: duration,
-              autoSkip: currentBatchSettings.autoSkip,
-              autoNextEpisode: currentBatchSettings.autoNextEpisode,
-              mode: currentBatchSettings.endingMode as 'absolute' | 'remaining',
-              remainingTime:
-                currentBatchSettings.endingMode === 'remaining'
-                  ? endingStartSeconds
-                  : undefined,
-            });
-            //               `✅ [SkipController] 添加片尾配置: ${endingStart}s-${duration}s, autoSkip=${currentBatchSettings.autoSkip}, autoNextEpisode=${currentBatchSettings.autoNextEpisode}`,
-            //             );
-          } else {
-            //               `⏭️ [SkipController] 片尾开始时间(${endingStart}s)太早(${(endingStartRatio * 100).toFixed(1)}%)，跳过片尾检测`,
-            //             );
-          }
-        }
-
-        segments = tempSegments;
-        //           `📋 [SkipController] 使用临时配置，共${tempSegments.length}个片段`,
-        //         );
+        // 根据 batchSettings 生成临时配置（纯函数，含单测）
+        segments = buildDefaultSkipSegments({
+          duration,
+          settings: currentBatchSettings,
+        });
       } else {
         // 如果有保存的配置，处理 remaining 模式
         segments = segments.map((seg) => {
