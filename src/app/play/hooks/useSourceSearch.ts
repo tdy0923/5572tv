@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import { SearchResult } from '@/lib/types';
 
+import { normalizeForMatch } from '../title-match';
+
 const safeStr = (v: any) => String(v || '');
 
 const ADULT_KEYWORDS =
@@ -573,16 +575,11 @@ export function useSourceSearch(params: {
               return false;
             });
           } else {
-            const normalizedQuery = queryTitle.replace(
-              /[^\w\u4e00-\u9fff]/g,
-              '',
-            );
+            const normalizedQuery = normalizeForMatch(queryTitle);
 
             const exactChinese = allCandidates.filter((result) => {
               if (isAdultContent(result)) return false;
-              const normalizedTitle = result.title
-                .toLowerCase()
-                .replace(/[^\w\u4e00-\u9fff]/g, '');
+              const normalizedTitle = normalizeForMatch(result.title);
               const isExact =
                 normalizedTitle === normalizedQuery ||
                 normalizedTitle.replace(/\d+/g, '') ===
@@ -595,10 +592,8 @@ export function useSourceSearch(params: {
             } else {
               relevantMatches = allCandidates.filter((result) => {
                 if (isAdultContent(result)) return false;
-                const title = safeStr(result.title).toLowerCase();
-                const normalizedTitle = title.replace(
-                  /[^\w\u4e00-\u9fff]/g,
-                  '',
+                const normalizedTitle = normalizeForMatch(
+                  safeStr(result.title),
                 );
 
                 if (
