@@ -1,5 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import { HorizontalRailProvider } from './rail-context';
+
 interface ScrollableRowProps {
   children: React.ReactNode;
   scrollDistance?: number;
@@ -58,7 +60,7 @@ function ScrollableRow({
         className='flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory [&>*]:snap-start px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {children}
+        <HorizontalRailProvider value={true}>{children}</HorizontalRailProvider>
       </div>
 
       {/* 左箭头按钮 - 移动端隐藏（手势滑动足够），sm+ 显示 */}

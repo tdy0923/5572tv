@@ -51,6 +51,7 @@ import AIRecommendModal from '@/components/AIRecommendModal';
 import { FluentBadge } from '@/components/FluentUI';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import MobileActionSheet from '@/components/MobileActionSheet';
+import { useIsHorizontalRail } from '@/components/rail-context';
 
 export interface VideoCardProps {
   id?: string;
@@ -75,6 +76,7 @@ export interface VideoCardProps {
   remarks?: string; // 备注信息（如"已完结"、"更新至20集"等）
   releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
   priority?: boolean; // 图片加载优先级（用于首屏可见图片）
+  eager?: boolean; // 强制立即加载（用于横向滚动轨道：原生 lazy 对被裁切的图不触发）
   aiEnabled?: boolean; // AI功能是否启用（从父组件传递）
   aiCheckComplete?: boolean; // AI权限检测是否完成（从父组件传递）
 }
@@ -114,10 +116,12 @@ function VideoCard({
   remarks,
   releaseDate,
   priority = false,
+  eager = false,
   aiEnabled: aiEnabledProp,
   aiCheckComplete: aiCheckCompleteProp,
 }: VideoCardProps & { ref?: React.Ref<VideoCardHandle> }) {
   const router = useRouter();
+  const inRail = useIsHorizontalRail();
   const queryClient = useQueryClient();
   const toggleFavoriteMutation = useToggleFavoriteMutation();
   const toggleReminderMutation = useToggleReminderMutation();
@@ -1059,7 +1063,7 @@ function VideoCard({
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             referrerPolicy='no-referrer'
-            loading={priority ? undefined : 'lazy'}
+            loading={priority || eager || inRail ? undefined : 'lazy'}
             priority={priority}
             quality={75}
             onLoad={() => {
