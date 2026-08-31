@@ -40,6 +40,11 @@ import type { DanmuManualSelection } from '@/components/DanmuManualMatchModal';
 
 import { searchStreamingFirstHit } from '@/app/play/hooks/useSourceSearch';
 
+import {
+  clampIndexToRange,
+  parseNumericParam,
+  resolveIndexForDetail,
+} from './episode-index';
 import { useAdFilter } from './hooks/useAdFilter';
 import { useAudioTracks } from './hooks/useAudioTracks';
 import { useBangumiDetails } from './hooks/useBangumiDetails';
@@ -413,9 +418,7 @@ function PlayPageClient() {
   // 集数相关
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(() => {
     // 从 URL 读取初始集数
-    const indexParam = searchParams.get('index');
-    const parsed = indexParam ? parseInt(indexParam, 10) : 0;
-    return Number.isNaN(parsed) ? 0 : parsed;
+    return parseNumericParam(searchParams.get('index'));
   });
 
   // 已观看集数（0 索引），localStorage 持久化，键: watched:episodes:<source>:<id>
@@ -492,8 +495,7 @@ function PlayPageClient() {
 
   const urlIndexParam = searchParams.get('index');
   useEffect(() => {
-    const parsedIndex = urlIndexParam ? parseInt(urlIndexParam, 10) : 0;
-    const newIndex = Number.isNaN(parsedIndex) ? 0 : parsedIndex;
+    const newIndex = parseNumericParam(urlIndexParam);
     if (newIndex !== currentEpisodeIndex) {
       setCurrentEpisodeIndex(newIndex);
     }
@@ -512,10 +514,8 @@ function PlayPageClient() {
   useEffect(() => {
     const newSource = searchParams.get('source') || '';
     const newId = searchParams.get('id') || '';
-    const parsedIndex = parseInt(searchParams.get('index') || '0');
-    const parsedTime = parseInt(searchParams.get('t') || '0');
-    const newIndex = Number.isNaN(parsedIndex) ? 0 : parsedIndex;
-    const newTime = Number.isNaN(parsedTime) ? 0 : parsedTime;
+    const newIndex = parseNumericParam(searchParams.get('index'));
+    const newTime = parseNumericParam(searchParams.get('t'));
     const reloadFlag = searchParams.get('_reload');
 
     // 如果 source 或 id 变化，且有 _reload 标记，且不是已经处理过的reload
@@ -2105,10 +2105,10 @@ function PlayPageClient() {
       // 优先保留URL参数中的豆瓣ID，如果URL中没有则使用详情数据中的
       setVideoDoubanId(videoDoubanIdRef.current || detailData.douban_id || 0);
       setDetail(detailData);
-      const resolvedEpisodeIndex =
-        currentEpisodeIndex >= detailData.episodes.length
-          ? 0
-          : currentEpisodeIndex;
+      const resolvedEpisodeIndex = resolveIndexForDetail(
+        currentEpisodeIndex,
+        detailData.episodes.length,
+      );
       if (resolvedEpisodeIndex !== currentEpisodeIndex) {
         setCurrentEpisodeIndex(resolvedEpisodeIndex);
       }
@@ -2193,11 +2193,10 @@ function PlayPageClient() {
             return;
           }
 
-          const maxIndex = Math.max(
-            (detailRef.current?.episodes?.length || 1) - 1,
-            0,
+          const targetIndex = clampIndexToRange(
+            record.index - 1,
+            detailRef.current?.episodes?.length || 1,
           );
-          const targetIndex = Math.min(Math.max(record.index - 1, 0), maxIndex);
           const targetTime = record.play_time;
 
           // 更新当前选集索引
