@@ -1,4 +1,4 @@
-import { normalizeForMatch } from '../title-match';
+import { matchesYearAndType, normalizeForMatch } from '../title-match';
 
 describe('normalizeForMatch', () => {
   it('lowercases and strips punctuation/whitespace', () => {
@@ -20,5 +20,72 @@ describe('normalizeForMatch', () => {
   it('handles empty/nullish', () => {
     expect(normalizeForMatch('')).toBe('');
     expect(normalizeForMatch(undefined as unknown as string)).toBe('');
+  });
+});
+
+describe('matchesYearAndType', () => {
+  it('passes year when no expected year', () => {
+    expect(
+      matchesYearAndType({
+        year: '2020',
+        episodeCount: 5,
+        expectedYear: '',
+        searchType: '',
+      }),
+    ).toBe(true);
+  });
+
+  it('requires year to match when expected', () => {
+    expect(
+      matchesYearAndType({
+        year: '2024',
+        episodeCount: 5,
+        expectedYear: '2024',
+        searchType: '',
+      }),
+    ).toBe(true);
+    expect(
+      matchesYearAndType({
+        year: '2019',
+        episodeCount: 5,
+        expectedYear: '2024',
+        searchType: '',
+      }),
+    ).toBe(false);
+  });
+
+  it('tv requires multiple episodes, movie requires exactly one', () => {
+    expect(
+      matchesYearAndType({
+        year: '',
+        episodeCount: 3,
+        expectedYear: '',
+        searchType: 'tv',
+      }),
+    ).toBe(true);
+    expect(
+      matchesYearAndType({
+        year: '',
+        episodeCount: 1,
+        expectedYear: '',
+        searchType: 'tv',
+      }),
+    ).toBe(false);
+    expect(
+      matchesYearAndType({
+        year: '',
+        episodeCount: 1,
+        expectedYear: '',
+        searchType: 'movie',
+      }),
+    ).toBe(true);
+    expect(
+      matchesYearAndType({
+        year: '',
+        episodeCount: 2,
+        expectedYear: '',
+        searchType: 'movie',
+      }),
+    ).toBe(false);
   });
 });

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { SearchResult } from '@/lib/types';
 
-import { normalizeForMatch } from '../title-match';
+import { matchesYearAndType, normalizeForMatch } from '../title-match';
 
 const safeStr = (v: any) => String(v || '');
 
@@ -431,15 +431,12 @@ export function useSourceSearch(params: {
           const episodes = Array.isArray(result.episodes)
             ? result.episodes
             : [];
-          const yearMatch = videoYearRef.current
-            ? String(result.year || '').toLowerCase() ===
-              String(videoYearRef.current).toLowerCase()
-            : true;
-          const typeMatch = searchType
-            ? (searchType === 'tv' && episodes.length > 1) ||
-              (searchType === 'movie' && episodes.length === 1)
-            : true;
-          return yearMatch && typeMatch;
+          return matchesYearAndType({
+            year: result.year,
+            episodeCount: episodes.length,
+            expectedYear: videoYearRef.current,
+            searchType,
+          });
         };
 
         for (const variant of searchVariants) {
