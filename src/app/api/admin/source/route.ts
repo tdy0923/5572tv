@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { clearConfigCache, getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -195,6 +196,16 @@ export async function POST(request: NextRequest) {
               try {
                 const testUrl =
                   s.api + (s.api.includes('?') ? '&' : '?') + 'ac=list&pg=1';
+                // SSRF 纵深防御：管理员录入的源地址必须是公网地址，
+                // 禁止借"检测源"让服务端探测内网/云元数据；非法地址按 fail 处理（会被自动禁用）
+                if (!(await isUrlSafeDeep(testUrl))) {
+                  return {
+                    key: s.key,
+                    name: s.name,
+                    status: 'fail' as const,
+                    code: 0,
+                  };
+                }
                 const controller = new AbortController();
                 const timer = setTimeout(
                   () => controller.abort(),
