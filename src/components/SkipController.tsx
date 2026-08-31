@@ -15,7 +15,11 @@ import { formatTime, secondsToTime, timeToSeconds } from '@/lib/time-utils';
 import { useDraggable } from '@/components/play/hooks/useDraggable';
 import { useSkipPresets } from '@/components/play/hooks/useSkipPresets';
 
-import { buildDefaultSkipSegments } from './skip-segments';
+import {
+  buildDefaultSkipSegments,
+  findActiveSegment,
+  resolveSegmentsForDuration,
+} from './skip-segments';
 
 interface SkipControllerProps {
   source: string;
@@ -310,31 +314,15 @@ export default function SkipController({
           settings: currentBatchSettings,
         });
       } else {
-        // 如果有保存的配置，处理 remaining 模式
-        segments = segments.map((seg) => {
-          if (
-            seg.type === 'ending' &&
-            seg.mode === 'remaining' &&
-            seg.remainingTime
-          ) {
-            // 重新计算 start 和 end（基于当前视频的 duration）
-            return {
-              ...seg,
-              start: duration - seg.remainingTime,
-              end: duration,
-            };
-          }
-          return seg;
-        });
+        // 如果有保存的配置，按当前时长重新解析 remaining 模式区间（纯函数）
+        segments = resolveSegmentsForDuration(segments, duration);
       }
 
       if (!segments || segments.length === 0) {
         return;
       }
 
-      const currentSegment = segments.find(
-        (segment) => time >= segment.start && time <= segment.end,
-      );
+      const currentSegment = findActiveSegment(time, segments);
 
       //         `🔎 [SkipController] 查找片段结果: currentSegment=${currentSegment ? `${currentSegment.type}(${currentSegment.start}s-${currentSegment.end}s)` : 'null'}, currentSkipSegment=${currentSkipSegment?.type || 'null'}`,
       //       );

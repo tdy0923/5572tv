@@ -1,4 +1,8 @@
-import { buildDefaultSkipSegments } from '../skip-segments';
+import {
+  buildDefaultSkipSegments,
+  findActiveSegment,
+  resolveSegmentsForDuration,
+} from '../skip-segments';
 
 const base = {
   openingStart: '0:00',
@@ -59,5 +63,55 @@ describe('buildDefaultSkipSegments', () => {
   it('never adds an ending segment when duration is 0', () => {
     const segs = buildDefaultSkipSegments({ duration: 0, settings: base });
     expect(segs.find((s) => s.type === 'ending')).toBeUndefined();
+  });
+});
+
+describe('resolveSegmentsForDuration', () => {
+  it('recomputes remaining-mode ending start/end from duration', () => {
+    const saved = [
+      {
+        type: 'ending' as const,
+        start: 0,
+        end: 0,
+        mode: 'remaining' as const,
+        remainingTime: 120,
+      },
+    ];
+    const out = resolveSegmentsForDuration(saved, 2700);
+    expect(out[0].start).toBe(2580);
+    expect(out[0].end).toBe(2700);
+  });
+
+  it('leaves absolute-mode and opening segments untouched', () => {
+    const saved = [
+      { type: 'opening' as const, start: 0, end: 90 },
+      {
+        type: 'ending' as const,
+        start: 2500,
+        end: 2700,
+        mode: 'absolute' as const,
+      },
+    ];
+    const out = resolveSegmentsForDuration(saved, 2700);
+    expect(out[0]).toEqual(saved[0]);
+    expect(out[1].start).toBe(2500);
+  });
+});
+
+describe('findActiveSegment', () => {
+  const segs = [
+    { type: 'opening' as const, start: 0, end: 90 },
+    { type: 'ending' as const, start: 2580, end: 2700 },
+  ];
+  it('returns the segment containing the time', () => {
+    expect(findActiveSegment(45, segs)?.type).toBe('opening');
+    expect(findActiveSegment(2600, segs)?.type).toBe('ending');
+  });
+  it('is inclusive at boundaries', () => {
+    expect(findActiveSegment(90, segs)?.type).toBe('opening');
+    expect(findActiveSegment(2580, segs)?.type).toBe('ending');
+  });
+  it('returns undefined outside all segments', () => {
+    expect(findActiveSegment(1000, segs)).toBeUndefined();
   });
 });

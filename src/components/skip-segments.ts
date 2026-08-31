@@ -64,3 +64,35 @@ export function buildDefaultSkipSegments(params: {
 
   return segments;
 }
+
+/**
+ * 纯函数：把已保存的跳过区间按当前视频时长重新解析。
+ * remaining 模式的片尾区间需按实际 duration 重算 start/end。
+ */
+export function resolveSegmentsForDuration(
+  segments: SkipSegment[],
+  duration: number,
+): SkipSegment[] {
+  return segments.map((seg) => {
+    if (
+      seg.type === 'ending' &&
+      seg.mode === 'remaining' &&
+      seg.remainingTime
+    ) {
+      return {
+        ...seg,
+        start: duration - seg.remainingTime,
+        end: duration,
+      };
+    }
+    return seg;
+  });
+}
+
+/** 纯函数：返回给定播放时刻命中的跳过区间（含边界）。 */
+export function findActiveSegment(
+  time: number,
+  segments: SkipSegment[],
+): SkipSegment | undefined {
+  return segments.find((s) => time >= s.start && time <= s.end);
+}
