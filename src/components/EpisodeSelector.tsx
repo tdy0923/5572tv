@@ -19,6 +19,8 @@ import {
   FluentSpinner,
 } from '@/components/FluentUI';
 
+import { formatEpisodeLabel } from './episode-label';
+
 // 定义视频信息类型
 interface VideoInfo {
   quality: string;
@@ -513,18 +515,10 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                     <div className='absolute inset-0 bg-linear-to-r from-transparent via-white/0 to-transparent group-hover:via-white/20 dark:group-hover:via-white/10 transition-all duration-300'></div>
                   )}
                   <span className='relative z-10'>
-                    {(() => {
-                      const title = episodes_titles?.[episodeNumber - 1];
-                      if (!title) {
-                        return episodeNumber;
-                      }
-                      // 兼容"集/话/部/期"（综艺用“期”），统一提取数字
-                      const match = title.match(/(?:第)?(\d+)(?:集|话|部|期)/);
-                      if (match) {
-                        return match[1];
-                      }
-                      return title;
-                    })()}
+                    {formatEpisodeLabel(
+                      episodes_titles?.[episodeNumber - 1],
+                      episodeNumber,
+                    )}
                   </span>
                   {/* 已看标记 - 右上角小对勾 */}
                   {isWatched && !isActive && (
