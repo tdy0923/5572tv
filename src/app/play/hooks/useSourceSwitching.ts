@@ -8,8 +8,13 @@ import type { SearchResult } from '@/lib/types';
 import { resolveCardPosterUrl } from '@/lib/utils';
 import { deduplicateDanmaku } from '@/hooks/useDanmu';
 
-const RETRY_BACKOFFS = [30_000, 120_000, 300_000, 600_000] as const;
-const MAX_RETRIES = RETRY_BACKOFFS.length;
+import {
+  isRetryWindowElapsed,
+  isRetryWindowExpired,
+  nextFailCount,
+  type RetryState,
+} from '../source-backoff';
+
 const MAX_SESSION_FAILURES = 50;
 const MAX_SOURCE_ERRORS = 2;
 const QUICK_PROBE_TIMEOUT_MS = 2000;
@@ -81,9 +86,7 @@ export function useSourceSwitching(params: {
     [],
   );
   const availableSourcesRef = useRef<SearchResult[]>([]);
-  const sourceRetryStateRef = useRef<
-    Map<string, { failCount: number; lastFailTime: number }>
-  >(new Map());
+  const sourceRetryStateRef = useRef<Map<string, RetryState>>(new Map());
   const totalSessionFailuresRef = useRef(0);
   const fallbackAutoRetriedRef = useRef(false);
   const isSourceChangingRef = useRef(false);
@@ -94,14 +97,9 @@ export function useSourceSwitching(params: {
 
   const isSourceAvailable = useCallback((sourceKey: string): boolean => {
     const state = sourceRetryStateRef.current.get(sourceKey);
-    if (!state) return true;
-
     const now = Date.now();
-    const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
-    const nextRetryTime = state.lastFailTime + RETRY_BACKOFFS[backoffIndex];
-
-    if (now >= nextRetryTime) {
-      sourceRetryStateRef.current.delete(sourceKey);
+    if (isRetryWindowElapsed(state, now)) {
+      if (state) sourceRetryStateRef.current.delete(sourceKey);
       return true;
     }
     return false;
@@ -109,9 +107,8 @@ export function useSourceSwitching(params: {
 
   const markSourceFailed = useCallback((sourceKey: string) => {
     const prev = sourceRetryStateRef.current.get(sourceKey);
-    const failCount = Math.min((prev?.failCount || 0) + 1, MAX_RETRIES);
     sourceRetryStateRef.current.set(sourceKey, {
-      failCount,
+      failCount: nextFailCount(prev?.failCount),
       lastFailTime: Date.now(),
     });
     totalSessionFailuresRef.current++;
@@ -128,11 +125,8 @@ export function useSourceSwitching(params: {
       return sources.filter((source) => {
         const key = getSourceIdentityKey(source.source, source.id);
         const state = sourceRetryStateRef.current.get(key);
-        if (!state) return true;
-
-        const backoffIndex = Math.min(state.failCount - 1, MAX_RETRIES - 1);
-        if (now - state.lastFailTime > RETRY_BACKOFFS[backoffIndex]) {
-          sourceRetryStateRef.current.delete(key);
+        if (isRetryWindowExpired(state, now)) {
+          if (state) sourceRetryStateRef.current.delete(key);
           return true;
         }
         return false;
