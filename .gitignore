@@ -86,8 +86,7 @@ package-lock.json
 .kilo/
 .vscode/
 commitlint.config.js
-jest.config.js
-jest.setup.js
+# jest config is committed so CI can run the test suite
 *.keystore
 mcp.json
 _audit_parens.py

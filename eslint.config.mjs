@@ -4,7 +4,18 @@ import unusedImports from 'eslint-plugin-unused-imports';
 
 export default [
   {
-    ignores: ['public/sw.js', 'public/workbox-*.js', 'public/*.min.js', 'node_modules/**', '.next/**'],
+    ignores: [
+      'public/sw.js',
+      'public/workbox-*.js',
+      'public/*.min.js',
+      'node_modules/**',
+      '.next/**',
+      // CJS 工具/配置文件，用 app 规则 lint 会因 require/未注册规则报错
+      'jest.config.js',
+      'jest.setup.js',
+      'next.config.js',
+      'scripts/**',
+    ],
   },
   ...nextVitals,
   {
