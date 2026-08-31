@@ -55,9 +55,9 @@ import { useSourceSwitching } from './hooks/useSourceSwitching';
 import { useSpeedTest } from './hooks/useSpeedTest';
 import { useSubtitles } from './hooks/useSubtitles';
 import { useWebSR } from './hooks/useWebSR';
+import { buildEpisodePlaybackUrl } from './playback-url';
 import type { WakeLockSentinel } from './utils';
 import {
-  appendAudioStreamIndex,
   cachedGetAllFavorites,
   cachedGetAllPlayRecords,
   escapeAudioTrackHtml,
@@ -1416,28 +1416,13 @@ function PlayPageClient() {
         setVideoUrl('');
       }
     } else {
-      // 普通视频格式
-      let newUrl = episodeData || '';
-
-      // ✅ 关键修复：对于Emby源，如果有偏好音轨，添加AudioStreamIndex参数
-      const isEmbySource =
-        detailData.source === 'emby' || detailData.source?.startsWith('emby_');
-      if (isEmbySource && newUrl && currentAudioTrackRef.current >= 0) {
-        newUrl = appendAudioStreamIndex(newUrl, currentAudioTrackRef.current);
-      }
-
-      if (
-        newUrl &&
-        newUrl.includes('.m3u8') &&
-        !newUrl.includes(window.location.host) &&
-        !isEmbySource
-      ) {
-        const encodedUrl = encodeURIComponent(newUrl);
-        const source = detailData.source || '';
-        newUrl = source
-          ? `/api/proxy/m3u8?url=${encodedUrl}&5572tv-source=${encodeURIComponent(source)}`
-          : `/api/proxy/m3u8?url=${encodedUrl}`;
-      }
+      // 普通视频格式：纯函数构造播放地址（emby 音轨拼接 / m3u8 代理包装）
+      const newUrl = buildEpisodePlaybackUrl({
+        episodeData: episodeData || '',
+        source: detailData.source || '',
+        audioTrackIndex: currentAudioTrackRef.current,
+        host: window.location.host,
+      });
 
       if (newUrl !== videoUrl) {
         setVideoUrl(newUrl);
