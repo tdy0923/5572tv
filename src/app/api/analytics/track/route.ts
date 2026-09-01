@@ -112,5 +112,61 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (type === 'search') {
+    const query =
+      typeof body.query === 'string' ? body.query.slice(0, 100) : '';
+    if (!query) return NextResponse.json({ ok: false }, { status: 400 });
+    const results =
+      typeof body.results === 'number' ? Math.max(0, body.results) : undefined;
+    trackEvent({ type: 'search', ts, uid, anon, query, results });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (type === 'play') {
+    const videoId =
+      typeof body.videoId === 'string' ? body.videoId.slice(0, 200) : '';
+    const title =
+      typeof body.title === 'string' ? body.title.slice(0, 200) : '';
+    if (!videoId) return NextResponse.json({ ok: false }, { status: 400 });
+    trackEvent({
+      type: 'play',
+      ts,
+      uid,
+      anon,
+      videoId,
+      title: title || videoId,
+      sourceName:
+        typeof body.sourceName === 'string'
+          ? body.sourceName.slice(0, 50)
+          : undefined,
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (type === 'favorite') {
+    const videoId =
+      typeof body.videoId === 'string' ? body.videoId.slice(0, 200) : '';
+    const action = body.action === 'remove' ? 'remove' : 'add';
+    if (!videoId) return NextResponse.json({ ok: false }, { status: 400 });
+    trackEvent({
+      type: 'favorite',
+      ts,
+      uid,
+      anon,
+      videoId,
+      title:
+        typeof body.title === 'string' ? body.title.slice(0, 200) : undefined,
+      action,
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  if (type === 'download') {
+    const apk =
+      typeof body.apk === 'string' ? body.apk.slice(0, 100) : 'unknown';
+    trackEvent({ type: 'download', ts, uid, anon, apk });
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ ok: false }, { status: 400 });
 }

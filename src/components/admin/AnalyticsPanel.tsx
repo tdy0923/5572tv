@@ -114,6 +114,9 @@ export default function AnalyticsPanel({
 }: AnalyticsPanelProps) {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fallbackVideos, setFallbackVideos] = useState<
+    { videoId: string; title: string; count: number }[] | null
+  >(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -121,6 +124,35 @@ export default function AnalyticsPanel({
       if (res.ok) {
         const json = await res.json();
         setData(json.data);
+        // 如果行为数据为空，尝试用播放记录兜底展示“用户实际看了什么”
+        if (
+          json.data &&
+          (json.data.totals.plays === 0 || json.data.topVideos.length === 0)
+        ) {
+          try {
+            const r2 = await fetch('/api/admin/play-stats');
+            if (r2.ok) {
+              const j2 = await r2.json();
+              // play-stats 返回按用户聚合的播放统计，这里简单取最热影片做兜底
+              const list: { videoId: string; title: string; count: number }[] =
+                [];
+              // 兼容两种返回结构
+              const src = j2.data || j2;
+              if (Array.isArray(src?.topVideos)) {
+                for (const v of src.topVideos.slice(0, 10)) {
+                  list.push({
+                    videoId: String(v.videoId || v.id || ''),
+                    title: String(v.title || v.videoId || ''),
+                    count: Number(v.count || 1),
+                  });
+                }
+              }
+              if (list.length > 0) setFallbackVideos(list);
+            }
+          } catch {}
+        } else {
+          setFallbackVideos(null);
+        }
       }
     } catch {
       // 静默失败
@@ -156,6 +188,7 @@ export default function AnalyticsPanel({
   }
 
   const t = data.totals;
+  const showFallback = fallbackVideos && fallbackVideos.length > 0;
 
   return (
     <div className='space-y-4'>
@@ -240,7 +273,9 @@ export default function AnalyticsPanel({
         />
         <TopList
           title='热门播放影片'
-          items={data.topVideos}
+          items={
+            data.topVideos.length > 0 ? data.topVideos : fallbackVideos || []
+          }
           render={(item) => (
             <div className='min-w-0'>
               <div className='text-gray-700 dark:text-gray-300 truncate'>
@@ -252,6 +287,11 @@ export default function AnalyticsPanel({
             </div>
           )}
         />
+        {showFallback && (
+          <div className='text-xs text-amber-600 dark:text-amber-400 -mt-2'>
+            行为统计暂无播放数据，已降级展示播放记录中的热门影片（修复后新播放才会进入行为统计）
+          </div>
+        )}
         <TopList
           title='下载渠道'
           items={data.topDownloads}
