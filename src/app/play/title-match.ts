@@ -27,3 +27,62 @@ export function matchesYearAndType(params: {
     : true;
   return yearMatch && typeMatch;
 }
+
+const ENGLISH_STOPWORDS = new Set([
+  'the',
+  'a',
+  'an',
+  'and',
+  'or',
+  'of',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'with',
+  'by',
+]);
+
+/** 查询是否以英文为主（英文字符数 > 中文字符数）。 */
+export function isEnglishQuery(queryTitle: string): boolean {
+  const q = (queryTitle || '').toLowerCase();
+  const englishChars = (q.match(/[a-z\s]/g) || []).length;
+  const chineseChars = (q.match(/[\u4e00-\u9fff]/g) || []).length;
+  return englishChars > chineseChars;
+}
+
+function tokenizeWords(s: string, minLen: number): string[] {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > minLen);
+}
+
+/**
+ * 英文查询与候选标题的词匹配判定：去停用词后，
+ * 命中词占比 >= 0.75 视为匹配（含子串与 4 字前缀近似）。
+ */
+export function matchesEnglishQuery(
+  queryTitle: string,
+  title: string,
+): boolean {
+  const queryWords = tokenizeWords(queryTitle, 2).filter(
+    (w) => !ENGLISH_STOPWORDS.has(w),
+  );
+  if (queryWords.length === 0) return false;
+  const titleWords = tokenizeWords(title, 1);
+
+  const matched = queryWords.filter((queryWord) =>
+    titleWords.some(
+      (titleWord) =>
+        titleWord.includes(queryWord) ||
+        queryWord.includes(titleWord) ||
+        (queryWord.length > 4 &&
+          titleWord.length > 4 &&
+          queryWord.substring(0, 4) === titleWord.substring(0, 4)),
+    ),
+  );
+  return matched.length / queryWords.length >= 0.75;
+}

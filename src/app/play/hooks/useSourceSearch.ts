@@ -2,7 +2,12 @@ import { useCallback } from 'react';
 
 import { SearchResult } from '@/lib/types';
 
-import { matchesYearAndType, normalizeForMatch } from '../title-match';
+import {
+  isEnglishQuery,
+  matchesEnglishQuery,
+  matchesYearAndType,
+  normalizeForMatch,
+} from '../title-match';
 
 const safeStr = (v: any) => String(v || '');
 
@@ -514,62 +519,12 @@ export function useSourceSearch(params: {
             .trim();
           const allCandidates = allResults;
 
-          const englishChars = (queryTitle.match(/[a-z\s]/g) || []).length;
-          const chineseChars = (queryTitle.match(/[\u4e00-\u9fff]/g) || [])
-            .length;
-          const isEnglishQuery = englishChars > chineseChars;
-
           let relevantMatches;
 
-          if (isEnglishQuery) {
-            const queryWords = queryTitle
-              .toLowerCase()
-              .replace(/[^\w\s]/g, ' ')
-              .split(/\s+/)
-              .filter(
-                (word) =>
-                  word.length > 2 &&
-                  ![
-                    'the',
-                    'a',
-                    'an',
-                    'and',
-                    'or',
-                    'of',
-                    'in',
-                    'on',
-                    'at',
-                    'to',
-                    'for',
-                    'with',
-                    'by',
-                  ].includes(word),
-              );
-
+          if (isEnglishQuery(queryTitle)) {
             relevantMatches = allCandidates.filter((result) => {
               if (isAdultContent(result)) return false;
-              const title = result.title.toLowerCase();
-              const titleWords = title
-                .replace(/[^\w\s]/g, ' ')
-                .split(/\s+/)
-                .filter((word) => word.length > 1);
-
-              const matchedWords = queryWords.filter((queryWord) =>
-                titleWords.some(
-                  (titleWord) =>
-                    titleWord.includes(queryWord) ||
-                    queryWord.includes(titleWord) ||
-                    (queryWord.length > 4 &&
-                      titleWord.length > 4 &&
-                      queryWord.substring(0, 4) === titleWord.substring(0, 4)),
-                ),
-              );
-
-              const wordMatchRatio = matchedWords.length / queryWords.length;
-              if (wordMatchRatio >= 0.75) {
-                return true;
-              }
-              return false;
+              return matchesEnglishQuery(queryTitle, result.title);
             });
           } else {
             const normalizedQuery = normalizeForMatch(queryTitle);

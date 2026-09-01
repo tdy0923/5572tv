@@ -1,4 +1,9 @@
-import { matchesYearAndType, normalizeForMatch } from '../title-match';
+import {
+  isEnglishQuery,
+  matchesEnglishQuery,
+  matchesYearAndType,
+  normalizeForMatch,
+} from '../title-match';
 
 describe('normalizeForMatch', () => {
   it('lowercases and strips punctuation/whitespace', () => {
@@ -87,5 +92,30 @@ describe('matchesYearAndType', () => {
         searchType: 'movie',
       }),
     ).toBe(false);
+  });
+});
+
+describe('isEnglishQuery', () => {
+  it('detects latin-dominant queries', () => {
+    expect(isEnglishQuery('Breaking Bad')).toBe(true);
+    expect(isEnglishQuery('庆余年')).toBe(false);
+    expect(isEnglishQuery('the matrix')).toBe(true);
+  });
+});
+
+describe('matchesEnglishQuery', () => {
+  it('matches when most query words appear in the title', () => {
+    expect(matchesEnglishQuery('breaking bad', 'Breaking Bad Season 1')).toBe(
+      true,
+    );
+  });
+  it('ignores stopwords', () => {
+    expect(matchesEnglishQuery('the the the', 'anything')).toBe(false); // all stopwords -> no query words
+  });
+  it('rejects unrelated titles', () => {
+    expect(matchesEnglishQuery('friends', 'breaking bad')).toBe(false);
+  });
+  it('matches via 4-char prefix similarity', () => {
+    expect(matchesEnglishQuery('stranger', 'strangers things')).toBe(true);
   });
 });
