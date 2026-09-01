@@ -257,18 +257,26 @@ export default function AnalyticsPanel({
           title='热门访问页面'
           items={data.topPages}
           render={(item) => (
-            <span className='text-gray-700 dark:text-gray-300 truncate block'>
+            <a
+              href={item.path}
+              className='text-blue-600 dark:text-blue-400 hover:underline truncate block'
+              title={item.path}
+            >
               {item.path}
-            </span>
+            </a>
           )}
         />
         <TopList
           title='热门搜索词'
           items={data.topSearches}
           render={(item) => (
-            <span className='text-gray-700 dark:text-gray-300 truncate block'>
+            <a
+              href={`/search?q=${encodeURIComponent(item.query)}`}
+              className='text-blue-600 dark:text-blue-400 hover:underline truncate block'
+              title={`搜索 ${item.query}`}
+            >
               {item.query}
-            </span>
+            </a>
           )}
         />
         <TopList
@@ -276,16 +284,36 @@ export default function AnalyticsPanel({
           items={
             data.topVideos.length > 0 ? data.topVideos : fallbackVideos || []
           }
-          render={(item) => (
-            <div className='min-w-0'>
-              <div className='text-gray-700 dark:text-gray-300 truncate'>
-                {item.title || item.videoId}
-              </div>
-              <div className='text-xs text-gray-400 truncate'>
-                {item.videoId}
-              </div>
-            </div>
-          )}
+          render={(item) => {
+            const vid = String(item.videoId || '');
+            const title = String(item.title || vid);
+            let href = `/search?q=${encodeURIComponent(title)}`;
+            if (vid.includes(':')) {
+              const [s, ...rest] = vid.split(':');
+              const id = rest.join(':');
+              if (s && id)
+                href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
+            } else if (vid.includes('+')) {
+              const [s, ...rest] = vid.split('+');
+              const id = rest.join('+');
+              if (s && id)
+                href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
+            }
+            return (
+              <a
+                href={href}
+                className='min-w-0 block hover:opacity-80 transition-opacity'
+                title={`播放 ${title}`}
+              >
+                <div className='text-blue-600 dark:text-blue-400 hover:underline truncate'>
+                  {title}
+                </div>
+                <div className='text-xs text-gray-400 truncate'>
+                  {vid}
+                </div>
+              </a>
+            );
+          }}
         />
         {showFallback && (
           <div className='text-xs text-amber-600 dark:text-amber-400 -mt-2'>
