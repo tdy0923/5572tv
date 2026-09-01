@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthInfoFromCookie } from '@/lib/auth';
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 
 export const runtime = 'nodejs';
 
@@ -25,8 +26,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '缺少URL参数' }, { status: 400 });
     }
 
+    // SSRF 防护 + 超时：管理员提供的订阅地址须为公网、且不得挂起请求
+    if (!(await isUrlSafeDeep(url))) {
+      return NextResponse.json({ error: 'URL rejected' }, { status: 403 });
+    }
+
     // 直接 fetch URL 获取配置内容
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+    });
 
     if (!response.ok) {
       return NextResponse.json(

@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(10000),
         body: JSON.stringify({
           url: webhookUrl,
           allowed_updates: ['message'],
@@ -86,6 +87,7 @@ export async function GET(request: Request) {
     // 获取 webhook 信息
     const response = await fetch(
       `https://api.telegram.org/bot${telegramConfig.botToken}/getWebhookInfo`,
+      { signal: AbortSignal.timeout(10000) },
     );
 
     const result = await response.json();
