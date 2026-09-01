@@ -406,6 +406,31 @@ export default function AnalyticsPanel({
             }}
           />
         )}
+        <TopList
+          title='热门来源'
+          items={data.topReferrers}
+          render={(item) => (
+            <span
+              className='text-gray-700 dark:text-gray-300 truncate block'
+              title={item.domain}
+            >
+              {item.domain}
+            </span>
+          )}
+        />
+        <TopList
+          title='入口页面'
+          items={data.entryPages}
+          render={(item) => (
+            <a
+              href={item.path}
+              className='text-blue-600 dark:text-blue-400 hover:underline truncate block'
+              title={item.path}
+            >
+              {item.path}
+            </a>
+          )}
+        />
       </div>
 
       {/* 活跃用户表 */}
