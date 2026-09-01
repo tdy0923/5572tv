@@ -8,10 +8,12 @@ import {
   Activity,
   AlertTriangle,
   Brain,
+  ChevronLeft,
   Database,
   Download,
   FileText,
   FolderOpen,
+  Search,
   Settings,
   Shield,
   TestTube,
@@ -21,6 +23,7 @@ import {
   Video,
 } from 'lucide-react';
 import { KeyRound, LayoutTemplate, MessageSquare, Palette } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -56,12 +59,42 @@ import {
 } from './admin-utils';
 import CategoryConfig from './sections/category-config';
 import ConfigFileComponent from './sections/config-file';
-import LiveSourceConfig from './sections/live-source-config';
 import NetDiskConfig from './sections/netdisk-config';
 import SiteConfigComponent from './sections/site-config';
-import SourceScripts from './sections/source-scripts';
-import UserConfig from './sections/user-config';
-import VideoSourceConfig from './sections/video-source-config';
+const LiveSourceConfig = dynamic(
+  () => import('./sections/live-source-config'),
+  {
+    loading: () => (
+      <div className='flex justify-center py-12'>
+        <div className='h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-primary-500)] border-t-transparent' />
+      </div>
+    ),
+  },
+);
+const SourceScripts = dynamic(() => import('./sections/source-scripts'), {
+  loading: () => (
+    <div className='flex justify-center py-12'>
+      <div className='h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-primary-500)] border-t-transparent' />
+    </div>
+  ),
+});
+const UserConfig = dynamic(() => import('./sections/user-config'), {
+  loading: () => (
+    <div className='flex justify-center py-12'>
+      <div className='h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-primary-500)] border-t-transparent' />
+    </div>
+  ),
+});
+const VideoSourceConfig = dynamic(
+  () => import('./sections/video-source-config'),
+  {
+    loading: () => (
+      <div className='flex justify-center py-12'>
+        <div className='h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-primary-500)] border-t-transparent' />
+      </div>
+    ),
+  },
+);
 function AdminMetricCard({
   label,
   value,
@@ -133,24 +166,33 @@ function AdminPageClient() {
   const { alertModal, showAlert, hideAlert } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
   const [config, setConfig] = useState<AdminConfig | null>(null);
-  const [activeAdminSection, setActiveAdminSection] = useState('site-config');
-  const [activeAdminGroup, setActiveAdminGroup] = useState('站点基础');
+  const [activeAdminSection, setActiveAdminSection] =
+    useState('system-performance');
+  const [activeAdminGroup, setActiveAdminGroup] = useState('总览');
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const adminSections = useMemo(
     () => [
       {
-        group: '站点基础',
+        group: '总览',
+        items: [
+          { id: 'system-performance', label: '统计中心', icon: Activity },
+          { id: 'cache-tools', label: '缓存管理', icon: Database },
+          { id: 'data-migration', label: '数据迁移', icon: Database },
+        ],
+      },
+      {
+        group: '站点与外观',
         items: [
           { id: 'site-config', label: '站点配置', icon: Settings },
           { id: 'theme-config', label: '主题定制', icon: Palette },
           { id: 'config-file', label: '配置文件', icon: FileText },
+          { id: 'site-ads', label: '广告位配置', icon: LayoutTemplate },
         ],
       },
       {
-        group: '广告管理',
-        items: [{ id: 'site-ads', label: '广告位配置', icon: LayoutTemplate }],
-      },
-      {
-        group: '用户与权限',
+        group: '用户与安全',
         items: [
           { id: 'user-config', label: '用户配置', icon: Users },
           { id: 'invite-tools', label: '邀请码', icon: Ticket },
@@ -161,7 +203,7 @@ function AdminPageClient() {
         ],
       },
       {
-        group: '内容源与发现',
+        group: '内容与发现',
         items: [
           { id: 'source-config', label: '视频源', icon: Video },
           { id: 'live-config', label: '直播源', icon: Tv },
@@ -169,10 +211,11 @@ function AdminPageClient() {
           { id: 'system-tools', label: '源检测', icon: TestTube },
           { id: 'category-config', label: '分类配置', icon: FolderOpen },
           { id: 'netdisk-config', label: '网盘搜索', icon: Database },
+          { id: 'ai-config', label: 'AI 推荐', icon: Brain },
         ],
       },
       {
-        group: '播放与媒体',
+        group: '播放与能力',
         items: [
           { id: 'media-tools', label: '媒体工具', icon: FolderOpen },
           { id: 'download-tools', label: '下载工具', icon: Download },
@@ -181,21 +224,36 @@ function AdminPageClient() {
           { id: 'danmu-tools', label: '弹幕能力', icon: MessageSquare },
         ],
       },
-      {
-        group: '智能增强',
-        items: [{ id: 'ai-config', label: 'AI 推荐', icon: Brain }],
-      },
-      {
-        group: '系统运维',
-        items: [
-          { id: 'cache-tools', label: '缓存管理', icon: Database },
-          { id: 'data-migration', label: '数据迁移', icon: Database },
-          { id: 'system-performance', label: '统计中心', icon: Activity },
-        ],
-      },
     ],
     [],
   );
+  const filteredAdminSections = useMemo(() => {
+    if (!adminSearchQuery.trim()) return adminSections;
+    const q = adminSearchQuery.toLowerCase();
+    return adminSections
+      .map((group) => ({
+        ...group,
+        items: group.items.filter(
+          (item) =>
+            item.label.toLowerCase().includes(q) ||
+            item.id.toLowerCase().includes(q) ||
+            group.group.toLowerCase().includes(q),
+        ),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [adminSections, adminSearchQuery]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        document.getElementById('admin-search-input')?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<'owner' | 'admin' | null>(null);
@@ -228,9 +286,14 @@ function AdminPageClient() {
 
   const adminSectionGroups = useMemo(
     () => ({
-      站点基础: new Set(['config-file', 'site-config', 'theme-config']),
-      广告管理: new Set(['site-ads']),
-      用户与权限: new Set([
+      总览: new Set(['system-performance', 'cache-tools', 'data-migration']),
+      站点与外观: new Set([
+        'site-config',
+        'theme-config',
+        'config-file',
+        'site-ads',
+      ]),
+      用户与安全: new Set([
         'user-config',
         'invite-tools',
         'security-tools',
@@ -245,19 +308,14 @@ function AdminPageClient() {
         'system-tools',
         'category-config',
         'netdisk-config',
+        'ai-config',
       ]),
-      播放与媒体: new Set([
+      播放与能力: new Set([
         'media-tools',
         'download-tools',
         'watchroom-tools',
         'adfilter-tools',
         'danmu-tools',
-      ]),
-      智能增强: new Set(['ai-config']),
-      系统运维: new Set([
-        'cache-tools',
-        'data-migration',
-        'system-performance',
       ]),
     }),
     [],
@@ -265,13 +323,11 @@ function AdminPageClient() {
 
   const adminGroupDescriptions = useMemo(
     () => ({
-      站点基础: '管理站点基础信息、公告和核心配置文件。',
-      广告管理: '管理前台固定广告位与受控广告样式。',
-      用户与权限: '集中处理用户、邀请码、登录方式、访问控制与安全。',
-      内容源与发现: '维护视频源、直播源、源检测、分类和内容发现入口。',
-      播放与媒体: '管理影库、下载、观影室、去广告和弹幕等播放能力。',
-      智能增强: '集中管理 AI 推荐等智能化能力。',
-      系统运维: '处理缓存、迁移和统计监控。',
+      总览: '核心运营数据与系统健康一目了然。',
+      站点与外观: '站点信息、主题、配置文件与广告位集中管理。',
+      用户与安全: '用户、邀请码、登录方式、访问控制与安全。',
+      内容与发现: '视频源、直播源、源脚本、源检测、分类、网盘与 AI 推荐。',
+      播放与能力: '影库、下载、观影室、去广告与弹幕等播放能力。',
     }),
     [],
   );
@@ -357,7 +413,7 @@ function AdminPageClient() {
     return (
       <PageLayout activePath='/admin'>
         <div className='-mt-6 md:mt-0'>
-          <div className='max-w-[95%] mx-auto'>
+          <div className='max-w-7xl mx-auto px-4'>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8'>
               管理员设置
             </h1>
@@ -381,7 +437,7 @@ function AdminPageClient() {
     return (
       <PageLayout activePath='/admin'>
         <div className='-mt-6 md:mt-0'>
-          <div className='mx-auto max-w-[95%] pb-40 md:pb-safe-bottom'>
+          <div className='mx-auto max-w-7xl px-4 pb-40 md:pb-safe-bottom'>
             <div className='ui-surface p-8 text-center'>
               <div className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
                 管理后台加载失败
@@ -408,7 +464,7 @@ function AdminPageClient() {
   return (
     <PageLayout activePath='/admin'>
       <div className='-mt-6 md:mt-0'>
-        <div className='mx-auto max-w-[95%] pb-40 md:pb-safe-bottom'>
+        <div className='mx-auto max-w-7xl px-4 pb-40 md:pb-safe-bottom'>
           <div className='mb-8 flex items-center gap-2'>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100'>
               管理员设置
@@ -423,47 +479,140 @@ function AdminPageClient() {
             )}
           </div>
 
-          <div className='grid gap-6 grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)]'>
-            <aside className='ui-screen lg:sticky lg:top-24 h-fit overflow-y-auto max-h-[calc(100vh-6rem)] p-4'>
-              <div className='mb-4'>
-                <div className='text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-foreground-muted)]'>
-                  Admin Console
-                </div>
-                <div className='mt-2 text-lg font-semibold text-[var(--color-foreground)]'>
-                  后台
-                </div>
+          {/* 移动端抽屉触发栏 */}
+          <div className='lg:hidden mb-4 flex items-center justify-between gap-3'>
+            <button
+              onClick={() => setIsMobileNavOpen(true)}
+              className='inline-flex items-center gap-2 rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-4 py-2 text-sm font-medium text-[var(--color-foreground)] shadow-sm'
+            >
+              <span className='h-2 w-2 rounded-full bg-[var(--color-primary-500)]' />
+              {activeAdminGroup} / {activeAdminSectionMeta?.label || '后台'}
+            </button>
+            <span className='text-xs text-[var(--color-foreground-muted)]'>
+              {activeAdminGroupMeta?.items.length || 0} 项
+            </span>
+          </div>
+
+          <div
+            className={`grid gap-6 grid-cols-1 ${isNavCollapsed ? 'lg:grid-cols-[72px_minmax(0,1fr)]' : 'lg:grid-cols-[260px_minmax(0,1fr)]'}`}
+          >
+            {/* 移动端抽屉遮罩 */}
+            {isMobileNavOpen && (
+              <button
+                aria-label='关闭导航'
+                onClick={() => setIsMobileNavOpen(false)}
+                className='fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden'
+              />
+            )}
+            <aside
+              className={`${isMobileNavOpen ? 'fixed inset-y-0 left-0 z-50 w-[86%] max-w-[320px] overflow-y-auto p-4 shadow-2xl' : 'hidden'} lg:sticky lg:top-24 lg:flex lg:h-fit lg:max-h-[calc(100vh-6rem)] lg:w-auto lg:translate-x-0 flex-col overflow-y-auto ${isNavCollapsed ? 'lg:p-2' : 'lg:p-4'} ui-screen`}
+            >
+              <div className='mb-3 flex items-center justify-between'>
+                {!isNavCollapsed && (
+                  <div>
+                    <div className='text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-foreground-muted)]'>
+                      Admin Console
+                    </div>
+                    <div className='mt-1 text-sm font-semibold text-[var(--color-foreground)]'>
+                      后台导航
+                    </div>
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsNavCollapsed((v) => !v)}
+                  className='hidden lg:inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] text-[var(--color-foreground-muted)] hover:bg-[var(--color-background-subtle)]'
+                  aria-label={isNavCollapsed ? '展开导航' : '收起导航'}
+                >
+                  <ChevronLeft
+                    size={16}
+                    className={`transition-transform ${isNavCollapsed ? 'rotate-180' : ''}`}
+                  />
+                </button>
               </div>
 
-              <div className='space-y-1'>
-                {adminSections.map((group) => (
-                  <div key={group.group}>
+              {!isNavCollapsed && (
+                <div className='relative mb-3'>
+                  <Search
+                    size={14}
+                    className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-foreground-muted)]'
+                  />
+                  <input
+                    id='admin-search-input'
+                    value={adminSearchQuery}
+                    onChange={(e) => setAdminSearchQuery(e.target.value)}
+                    placeholder='搜索模块 / 功能…  ⌘K'
+                    className='w-full rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] py-2 pl-9 pr-8 text-sm text-[var(--color-foreground)] placeholder:text-[var(--color-foreground-muted)] focus:border-[var(--color-primary-400)] focus:outline-none'
+                  />
+                  {adminSearchQuery && (
                     <button
-                      onClick={() => {
-                        setActiveAdminGroup(group.group);
-                        const firstSection = group.items[0]?.id;
-                        if (firstSection) {
-                          setActiveAdminSection(firstSection);
-                        }
-                      }}
-                      className={`flex w-full items-center justify-between rounded-[var(--radius-xl)] px-3 py-2.5 text-left transition-all duration-200 ${
-                        activeAdminGroup === group.group
-                          ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-500)]/15 dark:text-[var(--color-primary-300)] shadow-[var(--shadow-2)]'
-                          : 'text-[var(--color-foreground-subtle)] hover:bg-[var(--color-background-subtle)] hover:text-[var(--color-foreground)] dark:hover:bg-white/5'
-                      }`}
+                      onClick={() => setAdminSearchQuery('')}
+                      className='absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-[var(--color-foreground-muted)] hover:bg-[var(--color-background-subtle)]'
                     >
-                      <span className='text-sm font-semibold'>
-                        {group.group}
-                      </span>
-                      <span className='text-xs opacity-60'>
-                        {group.items.length}
-                      </span>
+                      ×
                     </button>
+                  )}
+                </div>
+              )}
+
+              <div className='space-y-1'>
+                {adminSearchQuery && filteredAdminSections.length === 0 && (
+                  <div className='rounded-xl border border-dashed border-[var(--color-stroke)] p-4 text-center text-sm text-[var(--color-foreground-muted)]'>
+                    无匹配结果
                   </div>
-                ))}
+                )}
+                {(adminSearchQuery ? filteredAdminSections : adminSections).map(
+                  (group) => (
+                    <div key={group.group}>
+                      <button
+                        onClick={() => {
+                          setActiveAdminGroup(group.group);
+                          const firstSection = group.items[0]?.id;
+                          if (firstSection) {
+                            setActiveAdminSection(firstSection);
+                          }
+                          setIsMobileNavOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-[var(--radius-xl)] px-3 py-2.5 text-left transition-all duration-200 ${
+                          activeAdminGroup === group.group
+                            ? 'bg-[var(--color-primary-50)] text-[var(--color-primary-700)] dark:bg-[var(--color-primary-500)]/15 dark:text-[var(--color-primary-300)] shadow-[var(--shadow-2)]'
+                            : 'text-[var(--color-foreground-subtle)] hover:bg-[var(--color-background-subtle)] hover:text-[var(--color-foreground)] dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <span
+                          className={`${isNavCollapsed ? 'text-center w-full' : 'text-sm font-semibold'}`}
+                        >
+                          {isNavCollapsed
+                            ? group.group.slice(0, 1)
+                            : group.group}
+                        </span>
+                        {!isNavCollapsed && (
+                          <span className='text-xs opacity-60'>
+                            {group.items.length}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  ),
+                )}
               </div>
             </aside>
 
-            <section className='space-y-6'>
+            <section className='space-y-6 min-w-0'>
+              <nav className='flex items-center gap-1.5 text-xs text-[var(--color-foreground-muted)]'>
+                <span>后台</span>
+                <span className='opacity-40'>/</span>
+                <span className='font-medium text-[var(--color-foreground)]'>
+                  {activeAdminGroup}
+                </span>
+                {activeAdminSectionMeta && (
+                  <>
+                    <span className='opacity-40'>/</span>
+                    <span className='font-medium text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)]'>
+                      {activeAdminSectionMeta.label}
+                    </span>
+                  </>
+                )}
+              </nav>
               <div className='ui-surface p-5'>
                 <div className='text-xs font-semibold uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400'>
                   {activeAdminGroup}
