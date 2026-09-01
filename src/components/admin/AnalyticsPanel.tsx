@@ -138,12 +138,27 @@ export default function AnalyticsPanel({
                 [];
               // 兼容两种返回结构
               const src = j2.data || j2;
-              if (Array.isArray(src?.topVideos)) {
-                for (const v of src.topVideos.slice(0, 10)) {
+              // play-stats returns {title, playCount, source_name} while analytics uses {videoId, title, count}
+              const rawList = src?.topVideos || src?.topContents || [];
+              if (Array.isArray(rawList)) {
+                for (const v of rawList.slice(0, 10)) {
                   list.push({
-                    videoId: String(v.videoId || v.id || ''),
-                    title: String(v.title || v.videoId || ''),
-                    count: Number(v.count || 1),
+                    videoId: String(
+                      (v as Record<string, unknown>).videoId ||
+                        (v as Record<string, unknown>).id ||
+                        (v as Record<string, unknown>).title ||
+                        '',
+                    ),
+                    title: String(
+                      (v as Record<string, unknown>).title ||
+                        (v as Record<string, unknown>).videoId ||
+                        '',
+                    ),
+                    count: Number(
+                      (v as Record<string, unknown>).playCount ||
+                        (v as Record<string, unknown>).count ||
+                        1,
+                    ),
                   });
                 }
               }
