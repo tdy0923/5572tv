@@ -11,6 +11,60 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '1.16.0',
+    date: '2026-08-31',
+    added: [
+      '⭐ **按集记忆播放进度**：新增 `episode_times`，点回看过的任意一集都能精确续播（服务端并集合并，免疫"未 seed 就保存"的竞态覆盖；看完的集写 0 以便重播从头）',
+      '🧪 **CI 质量门禁**：每次 push/PR 自动跑 typecheck + lint + 单测；测试从 17 增至 128，回归在合并前即被拦下',
+      '🔌 **服务端 fetch 超时**：13 个外部请求/响应端点补 `AbortSignal.timeout`，杜绝上游挂起占死请求/耗尽连接',
+    ],
+    changed: [
+      '🖼️ **海报缓存韧性**：失败短 TTL 负缓存、淘汰改为近似计数门控（不再每次 miss 全量 readdir）、瞬时错误退避+抖动重试',
+      '🧩 **播放页/记录层重构**：抽出 12 个纯逻辑模块（播放地址构造、集数解析/钳制、换源退避状态机、跳过区间、缓存有效期、进度计算、标题匹配等）并补单测；消除 5 处重复的存储键解析与 getProgress',
+    ],
+    fixed: [
+      '🐛 **首页海报偶发不显示（根因）**：横向滚动轨道内 `loading=lazy` 对被裁切的图永不触发 → 轨道内卡片改 eager，生产实测 28/28 加载',
+      '🐛 **选集播放**：切集恢复被 `switchUrl` 后归零、自动连播倒计时不取消致 index 失控、换源/恢复闭包捕获过期集数、同 URL 切集标志卡死',
+      '🐛 **`/api/detail` 404 抖动**：不再对所有带 detail 的源一律抓 HTML 详情页，改为 JSON 接口优先、HTML 兜底',
+      '🔒 **SSRF**：`poster-cache`/`video-cache`（公开）及 `iptv`/`live-precheck`/`tvbox-health`/`admin-source`/`config-subscription` 补 `isUrlSafeDeep`；修复带方括号 IPv6 `[::1]` 绕过校验',
+      '🔒 **XSS**：播放器全屏标题图层将第三方源标题/集名未转义注入 innerHTML → 统一转义',
+      '🔐 **登录死循环**：中间件验签补 `AUTH_SECRET` 回退（此前配置 AUTH_SECRET 时非信任网络用户登录后被反复弹回）',
+      '🐛 **标题匹配大小写不对称**：查询侧未小写导致含拉丁字符的标题（如 "Friends"）漏匹配',
+      '🐛 **进度静默丢失**：换源抖动期 `source_name` 为空导致保存被 400 拒绝，已放宽校验并回退',
+      '🧱 **dev 改了不生效**：Service Worker 改为仅生产注册（Turbopack dev chunk 名不带哈希，cacheFirst 会喂旧 JS）',
+    ],
+  },
+  {
+    version: '1.15.0',
+    date: '2026-08-26',
+    added: [
+      '⭐ **评分排行榜页**：聚合全站用户评分，按平均分排序，支持"至少 N 票"筛选；用户评分少时自动展示豆瓣高分精选兜底，卡片点击直达播放',
+      '🎬 **预设字幕源**：字幕源抽象层（subhd 中文主源 + OpenSubtitles 英文兜底），支持多镜像回退（subhd.tv/me/tw）、10 分钟缓存、自动选简体中文字幕；播放 6 秒后按片名自动搜索加载，用户零配置',
+      '🎞️ **自动字幕**：Emby 源字幕轨 + HLS 流内嵌字幕轨自动检测并提供 CC 控制按钮，优先中文',
+      '👁️ **悬浮小窗播放**：Artplayer `autoMini` 启用，页面滚动时播放器缩为 400×240 小窗跟随（避开顶部导航，可拖动）',
+      '🔊 **记忆音量**：音量持久化到 localStorage，下次播放自动恢复',
+      '🤖 **猜你喜欢**：首页新增个性化推荐区，基于播放历史主流类型推荐豆瓣高分未看内容',
+    ],
+    changed: [
+      '🖼️ **海报加载性能**：豆瓣/漫慢看/短剧图床改走 `/api/poster-cache` 磁盘缓存（7 天），并发 4→8；cron 每小时预热热门海报',
+      '🎨 **导航图标系统**：统一为 Fluent 2 标准（40px 容器 / 24px 图标），新增 `.nav-cluster-btn` 共享类，AI 按钮由金色渐变改为幽灵风格紫色 hover，4 按钮协调一致',
+      '🌓 **三态主题切换**：亮色 → 暗色 → 跟随系统循环，`system` 模式显示 MonitorSmartphone 图标，随系统明暗自动切换',
+      '🎬 **Hero 预告片延迟播放**：移除 `autoPlay`，页面 load 后 2.5s 再播，尊重 `prefers-reduced-motion`',
+      '📱 **触摸目标优化**：首页 CapsuleSwitch `py-1.5→py-2.5`、AI问片按钮、更多内容链接等加大命中区',
+      '🧭 **内容浏览开放**：评分榜、搜索页（含 SSE 流式搜索）、豆瓣浏览、发布日历、直播、TVBox 均改为匿名可访问',
+      '🧹 **代码质量**：移除 458 个 `console.log`/`console.debug`，修复 77 个未使用变量，`no-console` 配置允许 `warn`/`error`，PosterGridSkeleton 骨架屏统一',
+    ],
+    fixed: [
+      '🐛 **评分榜 UI**：Doudan 高分精选区解析修复（`data.data.subjects`）、卡片标题裸 ID 优雅降级为"影片 #id"',
+      '🐛 **海报双重代理 403**：Hero 封面 `getProxiedImageUrl` 同时识别 `/api/poster-cache`',
+      '🐛 **短剧页 522 超时**：分类接口加 5 分钟内存缓存，探测超时 5s→3s',
+      '🐛 **匿名首页跳登录**：HomeClient 用户数据查询加 `isLoggedIn` 门控；`fetchWithAuth` 401 改为清理态不跳转',
+      '🐛 **海报墙分类失效**：匿名 84 个后台 401 请求消除（`isFavorited`/`getAll*` 登录门控）',
+      '🐛 **图标被压扁**：`ui-control-icon > svg { flex-shrink: 0 }` 修复 10px 窄条问题',
+      '🐛 **CSS 构建错误**：`hover:bg-black/4` → `hover:bg-black/[0.04]`',
+    ],
+  },
+  {
     version: '1.14.0',
     date: '2026-08-24',
     added: [

@@ -1,3 +1,28 @@
+## [1.16.0] - 2026-08-31
+
+### Added
+
+- ⭐ **按集记忆播放进度**：新增 `episode_times`，点回看过的任意一集都能精确续播（服务端并集合并，免疫"未 seed 就保存"的竞态覆盖；看完的集写 0 以便重播从头）
+- 🧪 **CI 质量门禁**：每次 push/PR 自动跑 typecheck + lint + 单测；测试从 17 增至 128，回归在合并前即被拦下
+- 🔌 **服务端 fetch 超时**：13 个外部请求/响应端点补 `AbortSignal.timeout`，杜绝上游挂起占死请求/耗尽连接
+
+### Changed
+
+- 🖼️ **海报缓存韧性**：失败短 TTL 负缓存、淘汰改为近似计数门控（不再每次 miss 全量 readdir）、瞬时错误退避+抖动重试
+- 🧩 **播放页/记录层重构**：抽出 12 个纯逻辑模块（播放地址构造、集数解析/钳制、换源退避状态机、跳过区间、缓存有效期、进度计算、标题匹配等）并补单测；消除 5 处重复的存储键解析与 getProgress
+
+### Fixed
+
+- 🐛 **首页海报偶发不显示（根因）**：横向滚动轨道内 `loading=lazy` 对被裁切的图永不触发 → 轨道内卡片改 eager，生产实测 28/28 加载
+- 🐛 **选集播放**：切集恢复被 `switchUrl` 后归零、自动连播倒计时不取消致 index 失控、换源/恢复闭包捕获过期集数、同 URL 切集标志卡死
+- 🐛 **`/api/detail` 404 抖动**：不再对所有带 detail 的源一律抓 HTML 详情页，改为 JSON 接口优先、HTML 兜底
+- 🔒 **SSRF**：`poster-cache`/`video-cache`（公开）及 `iptv`/`live-precheck`/`tvbox-health`/`admin-source`/`config-subscription` 补 `isUrlSafeDeep`；修复带方括号 IPv6 `[::1]` 绕过校验
+- 🔒 **XSS**：播放器全屏标题图层将第三方源标题/集名未转义注入 innerHTML → 统一转义
+- 🔐 **登录死循环**：中间件验签补 `AUTH_SECRET` 回退（此前配置 AUTH_SECRET 时非信任网络用户登录后被反复弹回）
+- 🐛 **标题匹配大小写不对称**：查询侧未小写导致含拉丁字符的标题（如 "Friends"）漏匹配
+- 🐛 **进度静默丢失**：换源抖动期 `source_name` 为空导致保存被 400 拒绝，已放宽校验并回退
+- 🧱 **dev 改了不生效**：Service Worker 改为仅生产注册（Turbopack dev chunk 名不带哈希，cacheFirst 会喂旧 JS）
+
 ## [1.15.0] - 2026-08-26
 
 ### Added
