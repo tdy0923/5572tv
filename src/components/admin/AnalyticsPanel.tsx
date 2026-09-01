@@ -307,6 +307,27 @@ export default function AnalyticsPanel({
         />
       </div>
 
+      {/* 转化漏斗 */}
+      <div className='grid grid-cols-2 gap-4 md:grid-cols-3'>
+        <KpiCard
+          label='搜索→播放转化'
+          value={
+            t.searches ? `${((t.plays / t.searches) * 100).toFixed(1)}%` : '—'
+          }
+          icon={<TrendingUp className='w-4 h-4 text-cyan-500' />}
+        />
+        <KpiCard
+          label='人均播放'
+          value={t.uv ? (t.plays / t.uv).toFixed(2) : '0'}
+          icon={<Activity className='w-4 h-4 text-cyan-500' />}
+        />
+        <KpiCard
+          label='人均搜索'
+          value={t.uv ? (t.searches / t.uv).toFixed(2) : '0'}
+          icon={<Search className='w-4 h-4 text-pink-500' />}
+        />
+      </div>
+
       {/* 近 14 天 PV/UV 趋势 */}
       <details
         className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'
