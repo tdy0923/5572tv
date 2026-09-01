@@ -1,0 +1,105 @@
+name: Build iOS IPA (unsigned)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'flutter_app/**'
+      - '.github/workflows/build-ios.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Gate - skip auto-commit / no-flutter-change
+        id: gate
+        run: |
+          MSG=$(git log -1 --pretty=%B)
+          if echo "$MSG" | grep -q "\[skip ios\]"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # also skip if no flutter change on push (allow manual dispatch)
+          if [ "${{ github.event_name }}" = "push" ]; then
+            if ! git diff --name-only HEAD~1 2>/dev/null | grep -q "^flutter_app/"; then
+              # check workflow itself changed
+              if ! git diff --name-only HEAD~1 2>/dev/null | grep -q "build-ios.yml"; then
+                echo "skip=true" >> $GITHUB_OUTPUT
+                exit 0
+              fi
+            fi
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Set up Flutter
+        if: steps.gate.outputs.skip != 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: flutter_app
+        run: flutter pub get
+
+      - name: Build unsigned IPA
+        if: steps.gate.outputs.skip != 'true'
+        working-directory: flutter_app
+        run: |
+          # --no-codesign 产出未签名包，用户用 TrollStore / SideStore 自签
+          flutter build ipa --release --no-codesign --export-options-plist=ios/ExportOptions.plist 2>&1 | tee /tmp/ios_build.log || \
+          flutter build ios --release --no-codesign 2>&1 | tee /tmp/ios_build.log
+          echo "--- build output ---"
+          find build -name "*.ipa" -o -name "Runner.app" 2>/dev/null | head -20
+          cat /tmp/ios_build.log | tail -30
+
+      - name: Package IPA (if ios build)
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          set -e
+          IPA=$(find flutter_app/build -name "*.ipa" 2>/dev/null | head -1)
+          if [ -z "$IPA" ]; then
+            # fallback: manually zip Runner.app
+            APP=$(find flutter_app/build -name "Runner.app" -type d 2>/dev/null | head -1)
+            if [ -n "$APP" ]; then
+              mkdir -p /tmp/Payload
+              cp -r "$APP" /tmp/Payload/
+              (cd /tmp && zip -r flutter_app/build/ios/ipa/Runner-unsigned.ipa Payload >/dev/null)
+              IPA="flutter_app/build/ios/ipa/Runner-unsigned.ipa"
+            fi
+          fi
+          if [ -z "$IPA" ] || [ ! -f "$IPA" ]; then
+            echo "No IPA found"; ls -R flutter_app/build 2>/dev/null | head -50; exit 1
+          fi
+          echo "IPA=$IPA" >> $GITHUB_ENV
+          echo "Found IPA: $IPA"
+          ls -lh "$IPA"
+
+      - name: Copy IPA to download dir
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          mkdir -p static/download
+          cp "$IPA" static/download/5572tv-ios-unsigned.ipa
+          ls -lh static/download/5572tv-ios-unsigned.ipa
+
+      - name: Commit and push IPA
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add static/download/5572tv-ios-unsigned.ipa
+          git commit -m "chore(ios): rebuild unsigned IPA [skip ios]" || exit 0
+          git push origin HEAD:${{ github.ref_name }}
