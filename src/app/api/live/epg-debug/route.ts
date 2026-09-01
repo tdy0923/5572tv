@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'User-Agent': ua,
       },
+      signal: AbortSignal.timeout(15000),
     });
     const m3uData = await m3uResponse.text();
     const m3uResult = parseM3U(sourceKey, m3uData);

@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         'User-Agent': DEFAULT_USER_AGENT,
         Accept: 'application/json',
       },
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!searchResponse.ok) {
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
           'User-Agent': DEFAULT_USER_AGENT,
           Accept: 'application/json',
         },
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!fuzzyResponse.ok) {

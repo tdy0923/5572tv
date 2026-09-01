@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unused-imports/no-unused-vars */
+/* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getConfig } from '@/lib/config';
@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
           headers: {
             'User-Agent': live.ua || DEFAULT_USER_AGENT,
           },
+          signal: AbortSignal.timeout(15000),
         });
 
         if (response.ok) {
