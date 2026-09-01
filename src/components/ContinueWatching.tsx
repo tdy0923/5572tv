@@ -7,6 +7,7 @@ import { memo, useEffect, useState } from 'react';
 import type { PlayRecord } from '@/lib/db.client';
 import { savePlayRecord } from '@/lib/db.client';
 import { parseStorageKey } from '@/lib/key-parser';
+import { computeProgressPercent } from '@/lib/play-progress';
 import { resolveCardPosterUrl } from '@/lib/utils';
 // 🚀 TanStack Query Queries
 import {
@@ -93,10 +94,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
   }
 
   // 计算播放进度百分比
-  const getProgress = (record: PlayRecord) => {
-    if (record.total_time === 0) return 0;
-    return (record.play_time / record.total_time) * 100;
-  };
+  const getProgress = computeProgressPercent;
 
   // 从 key 中解析 source 和 id
   // 检查播放记录是否有新集数更新

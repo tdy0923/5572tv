@@ -26,6 +26,7 @@ import { createPortal } from 'react-dom';
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import type { PlayRecord } from '@/lib/db.client';
 import { parseStorageKey } from '@/lib/key-parser';
+import { computeProgressPercent } from '@/lib/play-progress';
 import { resolveCardPosterUrl } from '@/lib/utils';
 import { CURRENT_VERSION } from '@/lib/version';
 import { UpdateStatus } from '@/lib/version_check';
@@ -499,10 +500,7 @@ export const UserMenu: React.FC = () => {
   const parseKey = parseStorageKey;
 
   // 计算播放进度百分比
-  const getProgress = (record: PlayRecord) => {
-    if (record.total_time === 0) return 0;
-    return (record.play_time / record.total_time) * 100;
-  };
+  const getProgress = computeProgressPercent;
 
   // 检查播放记录是否有新集数更新
   const getNewEpisodesCount = (
