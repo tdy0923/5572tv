@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         // 缓存5分钟
         revalidate: 300,
       },
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {

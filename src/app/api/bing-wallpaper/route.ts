@@ -32,6 +32,7 @@ export async function GET() {
         `https://www.bing.com/HPImageArchive.aspx?format=js&idx=${randomIdx}&n=1&mkt=zh-CN`,
         {
           next: { revalidate: WALLPAPER_CACHE_SECONDS },
+          signal: AbortSignal.timeout(10000),
         },
       );
 

@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
       headers: {
         'User-Agent': DEFAULT_USER_AGENT,
       },
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
