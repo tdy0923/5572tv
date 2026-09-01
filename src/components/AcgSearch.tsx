@@ -295,7 +295,7 @@ export default function AcgSearch({
                     src={img}
                     alt=''
                     className='h-20 w-auto rounded object-cover'
-                    loading='lazy'
+                    loading='eager'
                   />
                 ))}
               </div>
