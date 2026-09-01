@@ -6,6 +6,7 @@ import { memo, useEffect, useState } from 'react';
 
 import type { PlayRecord } from '@/lib/db.client';
 import { savePlayRecord } from '@/lib/db.client';
+import { parseStorageKey } from '@/lib/key-parser';
 import { resolveCardPosterUrl } from '@/lib/utils';
 // 🚀 TanStack Query Queries
 import {
@@ -26,16 +27,8 @@ interface ContinueWatchingProps {
   className?: string;
 }
 
-function parsePlayRecordKey(key: string) {
-  const separatorIndex = key.indexOf('+');
-  if (separatorIndex === -1) {
-    return { source: '', id: key };
-  }
-
-  const source = key.slice(0, separatorIndex);
-  const id = key.slice(separatorIndex + 1);
-  return { source, id };
-}
+// 复用统一的存储键解析（此前是本文件内的重复实现，易与 key-parser 漂移）
+const parsePlayRecordKey = parseStorageKey;
 
 // 🚀 优化方案6：使用React.memo防止不必要的重渲染
 function ContinueWatching({ className }: ContinueWatchingProps) {
