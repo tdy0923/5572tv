@@ -24,6 +24,7 @@ import {
   getAllReminders,
 } from '@/lib/db.client';
 import { getDoubanDetails } from '@/lib/douban.client';
+import { parseStorageKey } from '@/lib/key-parser';
 import { getNotificationPermission } from '@/lib/reminder-notification';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { DoubanItem } from '@/lib/types';
@@ -410,9 +411,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     return Object.entries(allFavorites)
       .sort(([, a], [, b]) => b.save_time - a.save_time)
       .map(([key, fav]) => {
-        const plusIndex = key.indexOf('+');
-        const source = key.slice(0, plusIndex);
-        const id = key.slice(plusIndex + 1);
+        const { source, id } = parseStorageKey(key);
 
         // 查找对应的播放记录，获取当前集数
         const playRecord = allPlayRecords[key];
@@ -443,9 +442,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     return Object.entries(allReminders)
       .sort(([, a], [, b]) => b.save_time - a.save_time)
       .map(([key, reminder]) => {
-        const plusIndex = key.indexOf('+');
-        const source = key.slice(0, plusIndex);
-        const id = key.slice(plusIndex + 1);
+        const { source, id } = parseStorageKey(key);
 
         return {
           id,

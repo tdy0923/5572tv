@@ -25,6 +25,7 @@ import { createPortal } from 'react-dom';
 
 import { getAuthInfoFromBrowserCookie } from '@/lib/auth';
 import type { PlayRecord } from '@/lib/db.client';
+import { parseStorageKey } from '@/lib/key-parser';
 import { resolveCardPosterUrl } from '@/lib/utils';
 import { CURRENT_VERSION } from '@/lib/version';
 import { UpdateStatus } from '@/lib/version_check';
@@ -494,17 +495,8 @@ export const UserMenu: React.FC = () => {
     }
   };
 
-  // 从 key 中解析 source 和 id
-  const parseKey = (key: string) => {
-    const separatorIndex = key.indexOf('+');
-    if (separatorIndex === -1) {
-      return { source: '', id: key };
-    }
-
-    const source = key.slice(0, separatorIndex);
-    const id = key.slice(separatorIndex + 1);
-    return { source, id };
-  };
+  // 从 key 中解析 source 和 id（复用统一实现）
+  const parseKey = parseStorageKey;
 
   // 计算播放进度百分比
   const getProgress = (record: PlayRecord) => {

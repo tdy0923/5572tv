@@ -100,16 +100,8 @@ export function loadPlaybackRate(): number {
 // ---------------------------------------------------------------------------
 // Storage key helpers
 // ---------------------------------------------------------------------------
-export function parseStorageKey(key: string) {
-  const separatorIndex = key.indexOf('+');
-  if (separatorIndex === -1) {
-    return { source: '', id: key };
-  }
-  return {
-    source: key.slice(0, separatorIndex),
-    id: key.slice(separatorIndex + 1),
-  };
-}
+// 统一复用 lib/key-parser，避免重复实现漂移
+export { parseStorageKey } from '@/lib/key-parser';
 
 // ---------------------------------------------------------------------------
 // URL helpers
