@@ -17,6 +17,7 @@
 
 import { getAuthInfoFromBrowserCookie } from './auth';
 import { BoundedMap } from './bounded-map';
+import { CACHE_VERSION, isCacheEntryValid } from './cache-expiry';
 import { decideOriginalEpisodesUpdate } from './original-episodes';
 import type { Favorite, PlayRecord, Reminder } from './types';
 import { EpisodeSkipConfig, UserPlayStat } from './types';
@@ -71,9 +72,7 @@ const USER_STATS_KEY = '5572tv_user_stats'; // 添加用户统计数据存储键
 // 缓存相关常量
 const CACHE_PREFIX = '5572tv_cache_';
 const LEGACY_CACHE_PREFIX = 'moontv_cache_';
-const CACHE_VERSION = '1.0.0';
-const CACHE_EXPIRE_TIME = 60 * 60 * 1000; // 一小时缓存过期
-const PLAY_RECORDS_CACHE_EXPIRE_TIME = 5 * 60 * 1000; // 播放记录5分钟缓存过期，与新集数更新检查保持一致
+// CACHE_VERSION / *_EXPIRE_TIME 见 ./cache-expiry（纯判定与常量单一来源）
 
 // 注意：豆瓣缓存配置已迁移到 douban.client.ts
 
@@ -232,14 +231,12 @@ class HybridCacheManager {
     cache: CacheData<T>,
     cacheType?: 'playRecords',
   ): boolean {
-    const now = Date.now();
-    const expireTime =
-      cacheType === 'playRecords'
-        ? PLAY_RECORDS_CACHE_EXPIRE_TIME
-        : CACHE_EXPIRE_TIME;
-    return (
-      cache.version === CACHE_VERSION && now - cache.timestamp < expireTime
-    );
+    return isCacheEntryValid({
+      version: cache.version,
+      timestamp: cache.timestamp,
+      now: Date.now(),
+      cacheType,
+    });
   }
 
   /**
