@@ -45,24 +45,52 @@ function KpiCard({
 
 function TrendChart({ daily }: { daily: AnalyticsSummary['daily'] }) {
   const items = daily.slice(-14);
-  const max = Math.max(...items.map((d) => d.pv), 1);
+  const maxPv = Math.max(...items.map((d) => d.pv), 1);
+  const maxPvPlays = Math.max(...items.map((d) => d.plays), 1);
   return (
-    <div className='flex items-end gap-1.5 h-28'>
-      {items.map((d) => (
-        <div
-          key={d.date}
-          className='flex-1 flex flex-col items-center justify-end h-full gap-1'
-          title={`${d.date} PV:${d.pv} UV:${d.uv}`}
-        >
+    <div className='space-y-2'>
+      <div className='flex items-center gap-3 text-[10px] text-gray-500 dark:text-gray-400'>
+        <span className='flex items-center gap-1'>
+          <span className='w-2 h-2 rounded-sm bg-blue-500' /> PV
+        </span>
+        <span className='flex items-center gap-1'>
+          <span className='w-2 h-2 rounded-sm bg-cyan-500' /> 播放
+        </span>
+        <span className='flex items-center gap-1'>
+          <span className='w-2 h-2 rounded-sm bg-pink-500' /> 搜索
+        </span>
+      </div>
+      <div className='flex items-end gap-1 h-28'>
+        {items.map((d) => (
           <div
-            className='w-full rounded-t bg-blue-500 dark:bg-blue-600'
-            style={{ height: `${Math.max((d.pv / max) * 100, 3)}%` }}
-          />
-          <span className='text-[9px] text-gray-500 dark:text-gray-400 leading-none whitespace-nowrap'>
-            {d.date.slice(5)}
-          </span>
-        </div>
-      ))}
+            key={d.date}
+            className='flex-1 flex flex-col items-center justify-end h-full gap-1'
+            title={`${d.date} PV:${d.pv} 播放:${d.plays} 搜索:${d.searches} UV:${d.uv}`}
+          >
+            <div className='flex w-full items-end gap-[1px] h-full justify-center'>
+              <div
+                className='flex-1 rounded-t bg-blue-500 dark:bg-blue-600'
+                style={{ height: `${Math.max((d.pv / maxPv) * 100, 3)}%` }}
+              />
+              <div
+                className='flex-1 rounded-t bg-cyan-500/80 dark:bg-cyan-600/80'
+                style={{
+                  height: `${Math.max((d.plays / Math.max(maxPvPlays, maxPv)) * 100, d.plays ? 3 : 0)}%`,
+                }}
+              />
+              <div
+                className='flex-1 rounded-t bg-pink-500/80 dark:bg-pink-600/80'
+                style={{
+                  height: `${Math.max((d.searches / Math.max(maxPvPlays, maxPv)) * 100, d.searches ? 3 : 0)}%`,
+                }}
+              />
+            </div>
+            <span className='text-[9px] text-gray-500 dark:text-gray-400 leading-none whitespace-nowrap'>
+              {d.date.slice(5)}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
