@@ -117,6 +117,9 @@ export default function AnalyticsPanel({
   const [fallbackVideos, setFallbackVideos] = useState<
     { videoId: string; title: string; count: number }[] | null
   >(null);
+  const [recordTop, setRecordTop] = useState<
+    { videoId: string; title: string; count: number }[] | null
+  >(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -185,6 +188,31 @@ export default function AnalyticsPanel({
     const interval = setInterval(fetchData, 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
+
+  const fetchRecordTop = useCallback(async () => {
+    try {
+      const r = await fetch('/api/admin/play-stats');
+      if (!r.ok) return;
+      const j = await r.json();
+      const src = j.data || j;
+      const rawList = (src?.topVideos as unknown[]) || [];
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        const list = rawList.slice(0, 10).map((v) => {
+          const o = v as Record<string, unknown>;
+          return {
+            videoId: String(o.videoId || o.title || ''),
+            title: String(o.title || o.videoId || ''),
+            count: Number(o.playCount || o.count || 1),
+          };
+        });
+        setRecordTop(list);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchRecordTop();
+  }, [fetchRecordTop]);
 
   if (loading) {
     return (
@@ -344,6 +372,40 @@ export default function AnalyticsPanel({
             </span>
           )}
         />
+        {recordTop && recordTop.length > 0 && (
+          <TopList
+            title='热门播放（播放记录，持久化）'
+            items={recordTop}
+            render={(item) => {
+              const vid = String(item.videoId || '');
+              const title = String(item.title || vid);
+              let href = `/search?q=${encodeURIComponent(title)}`;
+              if (vid.includes(':')) {
+                const [s, ...rest] = vid.split(':');
+                const id = rest.join(':');
+                if (s && id)
+                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
+              } else if (vid.includes('+')) {
+                const [s, ...rest] = vid.split('+');
+                const id = rest.join('+');
+                if (s && id)
+                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
+              }
+              return (
+                <a
+                  href={href}
+                  className='min-w-0 block hover:opacity-80 transition-opacity'
+                  title={`播放 ${title}`}
+                >
+                  <div className='text-blue-600 dark:text-blue-400 hover:underline truncate'>
+                    {title}
+                  </div>
+                  <div className='text-xs text-gray-400 truncate'>{vid}</div>
+                </a>
+              );
+            }}
+          />
+        )}
       </div>
 
       {/* 活跃用户表 */}
