@@ -36,6 +36,7 @@ import {
   isReminded,
   subscribeToDataUpdates,
 } from '@/lib/db.client';
+import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 import { requestNotificationPermission } from '@/lib/reminder-notification';
 import {
   isSeriesCompleted,
@@ -52,7 +53,6 @@ import { FluentBadge } from '@/components/FluentUI';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import MobileActionSheet from '@/components/MobileActionSheet';
 import { useIsHorizontalRail } from '@/components/rail-context';
-import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 
 export interface VideoCardProps {
   id?: string;
@@ -1173,7 +1173,7 @@ function VideoCard({
           {config.showPlayButton && (
             <div
               data-button='true'
-              className='absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 transition-all duration-300 ease-in-out delay-75 md:group-hover:opacity-100 md:group-hover:scale-100 pointer-coarse:opacity-100 pointer-coarse:scale-100'
+              className='absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 transition-all duration-300 ease-in-out delay-75 md:group-hover:opacity-100 md:group-hover:scale-100 pointer-coarse:opacity-100 pointer-coarse:scale-100 vc-playbtn'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1220,7 +1220,7 @@ function VideoCard({
             from !== 'favorite' && (
               <div
                 data-button='true'
-                className='absolute bottom-3 right-3 flex gap-1 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0'
+                className='absolute bottom-3 right-3 flex gap-1 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0 vc-actions'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1241,9 +1241,7 @@ function VideoCard({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleDeleteRecord(
-                        e as unknown as React.MouseEvent,
-                      );
+                      handleDeleteRecord(e as unknown as React.MouseEvent);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -1491,7 +1489,7 @@ function VideoCard({
             !isUpcoming &&
             !(from === 'favorite' && actualEpisodes === 99) && (
               <div
-                className='absolute top-2 left-2 z-30 flex items-stretch overflow-hidden rounded-md transition-all duration-300 ease-out group-'
+                className='absolute top-2 left-2 z-30 flex items-stretch overflow-hidden rounded-md transition-all duration-300 ease-out group- vc-episode'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1530,7 +1528,7 @@ function VideoCard({
             actualYear !== 'unknown' &&
             actualYear.trim() !== '' && (
               <div
-                className={`absolute left-2 z-30 flex items-center rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group- ${
+                className={`absolute left-2 z-30 flex items-center rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white/80 transition-all duration-300 ease-out group- vc-year ${
                   actualEpisodes &&
                   actualEpisodes > 1 &&
                   !isUpcoming &&
@@ -1555,7 +1553,7 @@ function VideoCard({
             )}
 
           {remarks && isSeriesCompleted(remarks) && (
-            <div className='absolute bottom-2 left-2 z-30'>
+            <div className='absolute bottom-2 left-2 z-30 vc-badge'>
               <FluentBadge variant='success' size='sm' rounded>
                 <Check className='h-3 w-3' /> 已完结
               </FluentBadge>
@@ -1573,7 +1571,7 @@ function VideoCard({
                     ? 'warning'
                     : 'info';
               return (
-                <div className='absolute bottom-2 left-2 z-30'>
+                <div className='absolute bottom-2 left-2 z-30 vc-badge'>
                   <FluentBadge variant={variant} size='sm' rounded>
                     {statusText}
                   </FluentBadge>
@@ -1584,7 +1582,7 @@ function VideoCard({
           {/* 评分徽章 - 动态颜色 - 🎯 使用容器查询替代媒体查询 */}
           {config.showRating && rate && ratingBadgeStyle && (
             <div
-              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-active:scale-95 @[140px]:top-1 @[140px]:right-1 @[140px]:h-8 @[140px]:w-8`}
+              className={`absolute top-2 right-2 ${ratingBadgeStyle.bgColor} ${ratingBadgeStyle.ringColor} ${ratingBadgeStyle.shadowColor} ${ratingBadgeStyle.textColor} ${ratingBadgeStyle.glowClass} flex h-9 w-9 flex-col items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ease-out group-active:scale-95 @[140px]:top-1 @[140px]:right-1 @[140px]:h-8 @[140px]:w-8 vc-rating`}
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1609,9 +1607,7 @@ function VideoCard({
             <button
               type='button'
               data-button='true'
-              aria-label={
-                isBangumi ? '查看 Bangumi 详情' : '查看豆瓣详情'
-              }
+              aria-label={isBangumi ? '查看 Bangumi 详情' : '查看豆瓣详情'}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -1625,7 +1621,7 @@ function VideoCard({
                   e.stopPropagation();
                 }
               }}
-              className='absolute top-2 left-2 flex min-h-[44px] min-w-[44px] items-center justify-center opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-full'
+              className='absolute top-2 left-2 flex min-h-[44px] min-w-[44px] items-center justify-center opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-full vc-douban'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1678,7 +1674,7 @@ function VideoCard({
 
               return (
                 <div
-                  className='absolute bottom-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 ease-in-out delay-75 @[140px]:bottom-1 @[140px]:right-1 pointer-coarse:opacity-100'
+                  className='absolute bottom-2 right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 ease-in-out delay-75 @[140px]:bottom-1 @[140px]:right-1 pointer-coarse:opacity-100 vc-sources'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1781,7 +1777,11 @@ function VideoCard({
                   } as React.CSSProperties
                 }
               >
-                <Sparkles size={14} aria-hidden='true' className='text-purple-400 pointer-events-none' />
+                <Sparkles
+                  size={14}
+                  aria-hidden='true'
+                  className='text-purple-400 pointer-events-none'
+                />
                 <span className='text-xs font-medium whitespace-nowrap'>
                   AI问片
                 </span>

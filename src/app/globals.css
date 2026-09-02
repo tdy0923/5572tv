@@ -953,6 +953,47 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 }
 
 /* ============================================
+   移动端卡片信息密度精简（Netflix 式移动端标准）
+   手机上隐藏次要覆盖物，只保留核心：评分+集数进度+播放按钮。
+   年份、已完结、源计数、评论按钮 → 进入详情页看。
+   ============================================ */
+@media (max-width: 767px) {
+  .vc-year,
+  .vc-badge,
+  .vc-douban,
+  .vc-sources,
+  .vc-actions {
+    display: none !important;
+  }
+  .vc-rating {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 9px !important;
+    top: 4px !important;
+    right: 4px !important;
+  }
+  .vc-rating svg {
+    width: 8px !important;
+    height: 8px !important;
+  }
+  .vc-rating span {
+    font-size: 8px !important;
+  }
+  .vc-episode {
+    font-size: 9px !important;
+    top: 4px !important;
+    left: 4px !important;
+  }
+  .vc-episode span {
+    font-size: 9px !important;
+    padding: 1px 4px !important;
+  }
+  .vc-playbtn {
+    opacity: 0 !important;
+  }
+}
+
+/* ============================================
    Fluent 2 Global Design System Layer
    Enforces Microsoft Fluent 2 design standards
    across the entire application
