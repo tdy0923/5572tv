@@ -64,7 +64,7 @@ export default function PersonalRecommend() {
           {items.map((item, index) => (
             <div
               key={item.id}
-              className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
+              className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
             >
               <VideoCard
                 from='douban'

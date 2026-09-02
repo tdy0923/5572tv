@@ -1,12 +1,11 @@
 'use client';
 
-import { Film, RefreshCw, Search, Zap } from 'lucide-react';
+import { Clapperboard, Film, RefreshCw, Zap } from 'lucide-react';
 import { memo } from 'react';
 
 import { FluentButton, FluentSpinner } from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 
-import LoadingProgressIndicator from './LoadingProgressIndicator';
 import SpeedTestProgress from './SpeedTestProgress';
 
 interface LoadingScreenProps {
@@ -27,7 +26,7 @@ const stageConfig: Record<
   { icon: React.ReactNode; badge: string; color: string }
 > = {
   searching: {
-    icon: <Search size={24} />,
+    icon: <Clapperboard size={24} />,
     badge: '搜索中',
     color: '#3b82f6',
   },
@@ -87,10 +86,9 @@ const LoadingScreen = memo(function LoadingScreen({
 
           <FluentSpinner size='large' />
 
-          <div className='text-center flex flex-col gap-2'>
-            <LoadingProgressIndicator loadingStage={loadingStage} />
+          <div className='text-center flex flex-col gap-2 w-full'>
             <p
-              className='text-base font-medium animate-[fluent2-shimmer_2s_ease-in-out_infinite]'
+              className='text-base font-medium'
               style={{ color: 'var(--color-foreground-subtle)' }}
             >
               {loadingMessage}
@@ -98,19 +96,23 @@ const LoadingScreen = memo(function LoadingScreen({
             {speedTestProgress && (
               <SpeedTestProgress progress={speedTestProgress} />
             )}
-            {hasTimedOut && onRetry && (
-              <div className='mt-2 flex flex-col gap-2 w-full'>
-                <p className='text-xs text-amber-500'>搜索时间较长，可尝试重试</p>
+            <div className='flex justify-center gap-3 mt-2'>
+              {onRetry && (
                 <FluentButton
                   variant='secondary'
                   size='sm'
                   onClick={onRetry}
                   icon={<RefreshCw size={14} />}
                 >
-                  重试搜索
+                  {hasTimedOut ? '重试' : '取消'}
                 </FluentButton>
-              </div>
-            )}
+              )}
+              {hasTimedOut && (
+                <p className='text-xs text-amber-500 w-full text-center'>
+                  搜索时间较长，可尝试重试
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

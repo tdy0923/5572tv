@@ -98,17 +98,24 @@
 }
 
 /* ===== Subtitle (字幕) 定位 =====
-   始终水平居中、位于控制栏上方，任何主题/插件下不乱放 */
+   对齐 Netflix：控制栏显示时字幕上移避开按钮；
+   控制栏隐藏时字幕贴近底部（不遮挡影片画面主体） */
 .art-subtitle {
   left: 50% !important;
   right: auto !important;
   transform: translateX(-50%) !important;
   max-width: 92% !important;
   text-align: center !important;
-  bottom: calc(var(--art-control-height, 44px) + 12px) !important;
+  bottom: 24px !important;
   z-index: 30 !important;
   pointer-events: none !important;
   line-height: 1.4 !important;
+}
+
+/* 控制栏显示时，字幕上移到控制栏上方 */
+.artplayer-plugin-liquid-glass.art-control-show .art-subtitle,
+.art-control-show .art-subtitle {
+  bottom: calc(var(--art-control-height, 44px) + 12px) !important;
 }
 
 .art-subtitle span {

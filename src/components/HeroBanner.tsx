@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 
+import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 // 🚀 TanStack Query Queries & Mutations
 import {
   shouldSkipTrailerRefresh,
@@ -18,8 +19,6 @@ import {
   useRefreshedTrailerUrlsQuery,
   useRefreshTrailerUrlMutation,
 } from '@/hooks/useHeroBannerQueries';
-
-import { brandColor, duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 
 import { useAutoplay } from './hooks/useAutoplay';
 import { useSwipeGesture } from './hooks/useSwipeGesture';
@@ -274,7 +273,7 @@ function HeroBanner({
 
   return (
     <div
-      className='relative w-full h-[42vh] sm:h-[52vh] md:h-[60vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
+      className='relative w-full h-[32vh] sm:h-[44vh] md:h-[56vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
       style={{
         borderRadius: radius.xl,
         boxShadow: shadow.deep,

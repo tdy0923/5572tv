@@ -933,6 +933,26 @@ html:not(.dark) .hover\:bg-slate-50:hover {
 }
 
 /* ============================================
+   移动端首页扁平化（Netflix 式行布局）
+   手机端移除 FluentCard 的卡片chrome：透明背景、无边框、无阴影、
+   无圆角、减少内边距，让海报行直接浮在页面背景上；
+   桌面端保持卡片样式不变。
+   ============================================ */
+@media (max-width: 767px) {
+  .home-section {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+  .home-section > section {
+    padding: 0.5rem 0.5rem !important;
+  }
+}
+
+/* ============================================
    Fluent 2 Global Design System Layer
    Enforces Microsoft Fluent 2 design standards
    across the entire application

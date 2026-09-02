@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 import { DoubanItem } from '@/lib/types';
 import { ReleaseCalendarItem, ShortDramaItem } from '@/lib/types';
 import { resolveCardPosterUrl, resolvePosterUrl } from '@/lib/utils';
@@ -17,7 +18,6 @@ import {
   FluentTag,
 } from '@/components/FluentUI';
 import HeroBanner from '@/components/HeroBanner';
-import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 const ContinueWatching = dynamic(() => import('@/components/ContinueWatching'));
 import PersonalRecommend from '@/components/home/PersonalRecommend';
 import LazySection from '@/components/LazySection';
@@ -178,326 +178,381 @@ export default function HomeContentView({
               </Link>
             </div>
 
-          <div className='mb-4 flex flex-wrap gap-2'>
-            {[
-              { key: 'all', label: '全部', count: upcomingReleases.length },
-              {
-                key: 'movie',
-                label: '电影',
-                count: upcomingReleases.filter((r) => r.type === 'movie')
-                  .length,
-              },
-              {
-                key: 'tv',
-                label: '电视剧',
-                count: upcomingReleases.filter((r) => r.type === 'tv').length,
-              },
-            ].map(({ key, label, count }) => (
-              <FluentTag
-                key={key}
-                label={`${label}${count > 0 ? ` (${count})` : ''}`}
-                active={upcomingFilter === key}
-                variant={upcomingFilter === key ? 'primary' : 'default'}
-                onClick={() => setUpcomingFilter(key as 'all' | 'movie' | 'tv')}
-              />
-            ))}
-          </div>
-
-          {(() => {
-            const filteredUpcomingReleases = upcomingReleases.filter(
-              (release) =>
-                upcomingFilter === 'all' || release.type === upcomingFilter,
-            );
-
-            const parseYMDToMs = (value: string): number | null => {
-              if (!value || typeof value !== 'string') return null;
-              const parts = value.split('-').map(Number);
-              if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
-              const ms = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
-              return Number.isNaN(ms) ? null : ms;
-            };
-
-            const getRemarksText = (releaseDate: string, todayStr: string): string => {
-              const releaseMs = parseYMDToMs(releaseDate);
-              const todayMs = parseYMDToMs(todayStr);
-              if (releaseMs === null || todayMs === null) {
-                return releaseDate || '待上映';
-              }
-              if (releaseMs < todayMs) {
-                const daysAgo = Math.floor((todayMs - releaseMs) / (1000 * 60 * 60 * 24));
-                return `已上映${Math.max(0, daysAgo)}天`;
-              }
-              if (releaseMs === todayMs) {
-                return '今日上映';
-              }
-              const daysUntil = Math.ceil((releaseMs - todayMs) / (1000 * 60 * 60 * 24));
-              return `${Math.max(1, daysUntil)}天后上映`;
-            };
-
-            if (filteredUpcomingReleases.length === 0) {
-              return (
-                <FluentEmptyState
-                  icon={<Calendar className='h-6 w-6' style={{ color: '#f97316' }} />}
-                  title='暂无即将上映'
-                  description={
-                    upcomingFilter === 'all'
-                      ? '暂无即将上映的内容'
-                      : `暂无${upcomingFilter === 'movie' ? '电影' : '电视剧'}即将上映，试试其他分类`
+            <div className='mb-4 flex flex-wrap gap-2'>
+              {[
+                { key: 'all', label: '全部', count: upcomingReleases.length },
+                {
+                  key: 'movie',
+                  label: '电影',
+                  count: upcomingReleases.filter((r) => r.type === 'movie')
+                    .length,
+                },
+                {
+                  key: 'tv',
+                  label: '电视剧',
+                  count: upcomingReleases.filter((r) => r.type === 'tv').length,
+                },
+              ].map(({ key, label, count }) => (
+                <FluentTag
+                  key={key}
+                  label={`${label}${count > 0 ? ` (${count})` : ''}`}
+                  active={upcomingFilter === key}
+                  variant={upcomingFilter === key ? 'primary' : 'default'}
+                  onClick={() =>
+                    setUpcomingFilter(key as 'all' | 'movie' | 'tv')
                   }
                 />
+              ))}
+            </div>
+
+            {(() => {
+              const filteredUpcomingReleases = upcomingReleases.filter(
+                (release) =>
+                  upcomingFilter === 'all' || release.type === upcomingFilter,
               );
-            }
 
-            return (
-              <ScrollableRow enableVirtualization={true}>
-                {filteredUpcomingReleases.map((release, index) => {
-                  const releaseDate = release.releaseDate;
-                  const remarksText = getRemarksText(releaseDate, today);
+              const parseYMDToMs = (value: string): number | null => {
+                if (!value || typeof value !== 'string') return null;
+                const parts = value.split('-').map(Number);
+                if (parts.length !== 3 || parts.some((n) => Number.isNaN(n)))
+                  return null;
+                const ms = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+                return Number.isNaN(ms) ? null : ms;
+              };
 
-                  return (
-                    <div
-                      key={`${release.id}-${index}`}
-                      className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                    >
-                      <VideoCard
-                        source='upcoming_release'
-                        id={release.id}
-                        source_name='即将上映'
-                        from='douban'
-                        title={release.title}
-                        poster={resolvePosterUrl(
-                          release.cover,
-                          '/placeholder-poster.jpg',
-                        )}
-                        year={release.releaseDate.split('-')[0]}
-                        type={release.type}
-                        remarks={remarksText}
-                        releaseDate={release.releaseDate}
-                        query={release.title}
-                        episodes={
-                          release.episodes ||
-                          (release.type === 'tv' ? undefined : 1)
-                        }
-                      />
-                    </div>
+              const getRemarksText = (
+                releaseDate: string,
+                todayStr: string,
+              ): string => {
+                const releaseMs = parseYMDToMs(releaseDate);
+                const todayMs = parseYMDToMs(todayStr);
+                if (releaseMs === null || todayMs === null) {
+                  return releaseDate || '待上映';
+                }
+                if (releaseMs < todayMs) {
+                  const daysAgo = Math.floor(
+                    (todayMs - releaseMs) / (1000 * 60 * 60 * 24),
                   );
-                })}
-              </ScrollableRow>
-            );
-          })()}
+                  return `已上映${Math.max(0, daysAgo)}天`;
+                }
+                if (releaseMs === todayMs) {
+                  return '今日上映';
+                }
+                const daysUntil = Math.ceil(
+                  (releaseMs - todayMs) / (1000 * 60 * 60 * 24),
+                );
+                return `${Math.max(1, daysUntil)}天后上映`;
+              };
+
+              if (filteredUpcomingReleases.length === 0) {
+                return (
+                  <FluentEmptyState
+                    icon={
+                      <Calendar
+                        className='h-6 w-6'
+                        style={{ color: '#f97316' }}
+                      />
+                    }
+                    title='暂无即将上映'
+                    description={
+                      upcomingFilter === 'all'
+                        ? '暂无即将上映的内容'
+                        : `暂无${upcomingFilter === 'movie' ? '电影' : '电视剧'}即将上映，试试其他分类`
+                    }
+                  />
+                );
+              }
+
+              return (
+                <ScrollableRow enableVirtualization={true}>
+                  {filteredUpcomingReleases.map((release, index) => {
+                    const releaseDate = release.releaseDate;
+                    const remarksText = getRemarksText(releaseDate, today);
+
+                    return (
+                      <div
+                        key={`${release.id}-${index}`}
+                        className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                      >
+                        <VideoCard
+                          source='upcoming_release'
+                          id={release.id}
+                          source_name='即将上映'
+                          from='douban'
+                          title={release.title}
+                          poster={resolvePosterUrl(
+                            release.cover,
+                            '/placeholder-poster.jpg',
+                          )}
+                          year={release.releaseDate.split('-')[0]}
+                          type={release.type}
+                          remarks={remarksText}
+                          releaseDate={release.releaseDate}
+                          query={release.title}
+                          episodes={
+                            release.episodes ||
+                            (release.type === 'tv' ? undefined : 1)
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </ScrollableRow>
+              );
+            })()}
           </section>
         </FluentCard>
       </LazySection>
-      <FluentCard variant='default' className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden' padding='0'>
+      <FluentCard
+        variant='default'
+        className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+        padding='0'
+      >
         <section className='p-4 sm:p-5'>
-        <div className='mb-4 flex items-center justify-between'>
-          <SectionTitle
-            title='热门电影'
-            icon={Film}
-            iconColor='text-red-500'
-            kicker='Trending'
-            index='02'
-          />
-          <Link href='/douban?type=movie'>
-            <FluentButton variant='ghost' size='sm' icon={<ChevronRight className='h-4 w-4' />}>
-              更多内容
-            </FluentButton>
-          </Link>
-        </div>
-        <ScrollableRow enableVirtualization={true}>
-          {loading
-            ? Array.from({ length: 4 }).map((_, index) => (
-                <SkeletonCard key={index} />
-              ))
-            : hotMovies.map((movie, index) => (
-                <div
-                  key={movie.id}
-                  className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                >
-                  <VideoCard
-                    from='douban'
-                    source='douban'
-                    id={movie.id}
-                    source_name='豆瓣'
-                    title={movie.title}
-                    poster={resolveCardPosterUrl(movie.poster)}
-                    douban_id={Number(movie.id)}
-                    year={movie.year}
-                    type='movie'
-                    priority={index < 3}
-                  />
-                </div>
-              ))}
-        </ScrollableRow>
+          <div className='mb-4 flex items-center justify-between'>
+            <SectionTitle
+              title='热门电影'
+              icon={Film}
+              iconColor='text-red-500'
+              kicker='Trending'
+              index='02'
+            />
+            <Link href='/douban?type=movie'>
+              <FluentButton
+                variant='ghost'
+                size='sm'
+                icon={<ChevronRight className='h-4 w-4' />}
+              >
+                更多内容
+              </FluentButton>
+            </Link>
+          </div>
+          <ScrollableRow enableVirtualization={true}>
+            {loading
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))
+              : hotMovies.map((movie, index) => (
+                  <div
+                    key={movie.id}
+                    className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                  >
+                    <VideoCard
+                      from='douban'
+                      source='douban'
+                      id={movie.id}
+                      source_name='豆瓣'
+                      title={movie.title}
+                      poster={resolveCardPosterUrl(movie.poster)}
+                      douban_id={Number(movie.id)}
+                      year={movie.year}
+                      type='movie'
+                      priority={index < 3}
+                    />
+                  </div>
+                ))}
+          </ScrollableRow>
         </section>
       </FluentCard>
       <LazySection>
-        <FluentCard variant='default' className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden' padding='0'>
+        <FluentCard
+          variant='default'
+          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          padding='0'
+        >
           <section className='p-4 sm:p-5'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='热门剧集'
-              icon={Tv}
-              iconColor='text-blue-500'
-              kicker='Series'
-              index='03'
-            />
-            <Link href='/douban?type=tv'>
-              <FluentButton variant='ghost' size='sm' icon={<ChevronRight className='h-4 w-4' />}>
-                更多内容
-              </FluentButton>
-            </Link>
-          </div>
-          <ScrollableRow enableVirtualization={true}>
-            {loading
-              ? Array.from({ length: 4 }).map((_, index) => (
-                  <SkeletonCard key={index} />
-                ))
-              : hotTvShows.map((show, index) => (
-                  <div
-                    key={show.id}
-                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                  >
-                    <VideoCard
-                      from='douban'
-                      source='douban'
-                      id={show.id}
-                      source_name='豆瓣'
-                      title={show.title}
-                      poster={resolveCardPosterUrl(show.poster)}
-                      douban_id={Number(show.id)}
-                      year={show.year}
-                      type='tv'
+            <div className='mb-4 flex items-center justify-between'>
+              <SectionTitle
+                title='热门剧集'
+                icon={Tv}
+                iconColor='text-blue-500'
+                kicker='Series'
+                index='03'
+              />
+              <Link href='/douban?type=tv'>
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
+                  icon={<ChevronRight className='h-4 w-4' />}
+                >
+                  更多内容
+                </FluentButton>
+              </Link>
+            </div>
+            <ScrollableRow enableVirtualization={true}>
+              {loading
+                ? Array.from({ length: 4 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                  ))
+                : hotTvShows.map((show, index) => (
+                    <div
+                      key={show.id}
+                      className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                    >
+                      <VideoCard
+                        from='douban'
+                        source='douban'
+                        id={show.id}
+                        source_name='豆瓣'
+                        title={show.title}
+                        poster={resolveCardPosterUrl(show.poster)}
+                        douban_id={Number(show.id)}
+                        year={show.year}
+                        type='tv'
+                        priority={index < 3}
+                      />
+                    </div>
+                  ))}
+            </ScrollableRow>
+          </section>
+        </FluentCard>
+      </LazySection>
+      <LazySection>
+        <FluentCard
+          variant='default'
+          className='mb-8 home-section !p-0 !overflow-hidden'
+          padding='0'
+        >
+          <section className='p-4 sm:p-5'>
+            <div className='mb-4 flex items-center justify-between'>
+              <SectionTitle
+                title='热门短剧'
+                icon={Play}
+                iconColor='text-orange-500'
+                kicker='Short Drama'
+                index='04'
+              />
+              <Link href='/shortdrama'>
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
+                  icon={<ChevronRight className='h-4 w-4' />}
+                >
+                  更多内容
+                </FluentButton>
+              </Link>
+            </div>
+            <ScrollableRow enableVirtualization={true}>
+              {loading
+                ? Array.from({ length: 4 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                  ))
+                : hotShortDramas.map((drama, index) => (
+                    <ShortDramaCard
+                      key={drama.id}
+                      drama={drama}
+                      className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                      disableEpisodeFetch
                       priority={index < 3}
                     />
-                  </div>
-                ))}
-          </ScrollableRow>
+                  ))}
+            </ScrollableRow>
           </section>
         </FluentCard>
       </LazySection>
       <LazySection>
-        <FluentCard variant='default' className='mb-8 home-section !p-0 !overflow-hidden' padding='0'>
+        <FluentCard
+          variant='default'
+          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          padding='0'
+        >
           <section className='p-4 sm:p-5'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='热门短剧'
-              icon={Play}
-              iconColor='text-orange-500'
-              kicker='Short Drama'
-              index='04'
-            />
-            <Link href='/shortdrama'>
-              <FluentButton variant='ghost' size='sm' icon={<ChevronRight className='h-4 w-4' />}>
-                更多内容
-              </FluentButton>
-            </Link>
-          </div>
-          <ScrollableRow enableVirtualization={true}>
-            {loading
-              ? Array.from({ length: 4 }).map((_, index) => (
-                  <SkeletonCard key={index} />
-                ))
-              : hotShortDramas.map((drama, index) => (
-                  <ShortDramaCard
-                    key={drama.id}
-                    drama={drama}
-                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                    disableEpisodeFetch
-                    priority={index < 3}
-                  />
-                ))}
-          </ScrollableRow>
+            <div className='mb-4 flex items-center justify-between'>
+              <SectionTitle
+                title='热门综艺'
+                icon={Sparkles}
+                iconColor='text-pink-500'
+                kicker='Variety'
+                index='05'
+              />
+              <Link href='/douban?type=show'>
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
+                  icon={<ChevronRight className='h-4 w-4' />}
+                >
+                  更多内容
+                </FluentButton>
+              </Link>
+            </div>
+            <ScrollableRow enableVirtualization={true}>
+              {loading
+                ? Array.from({ length: 4 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                  ))
+                : hotVarietyShows.map((show, index) => (
+                    <div
+                      key={show.id}
+                      className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                    >
+                      <VideoCard
+                        from='douban'
+                        source='douban'
+                        id={show.id}
+                        source_name='豆瓣'
+                        title={show.title}
+                        poster={resolveCardPosterUrl(show.poster)}
+                        douban_id={Number(show.id)}
+                        year={show.year}
+                        type='variety'
+                        priority={index < 3}
+                      />
+                    </div>
+                  ))}
+            </ScrollableRow>
           </section>
         </FluentCard>
       </LazySection>
       <LazySection>
-        <FluentCard variant='default' className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden' padding='0'>
+        <FluentCard
+          variant='default'
+          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          padding='0'
+        >
           <section className='p-4 sm:p-5'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='热门综艺'
-              icon={Sparkles}
-              iconColor='text-pink-500'
-              kicker='Variety'
-              index='05'
-            />
-            <Link href='/douban?type=show'>
-              <FluentButton variant='ghost' size='sm' icon={<ChevronRight className='h-4 w-4' />}>
-                更多内容
-              </FluentButton>
-            </Link>
-          </div>
-          <ScrollableRow enableVirtualization={true}>
-            {loading
-              ? Array.from({ length: 4 }).map((_, index) => (
-                  <SkeletonCard key={index} />
-                ))
-              : hotVarietyShows.map((show, index) => (
-                  <div
-                    key={show.id}
-                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                  >
-                    <VideoCard
-                      from='douban'
-                      source='douban'
-                      id={show.id}
-                      source_name='豆瓣'
-                      title={show.title}
-                      poster={resolveCardPosterUrl(show.poster)}
-                      douban_id={Number(show.id)}
-                      year={show.year}
-                      type='variety'
-                      priority={index < 3}
-                    />
-                  </div>
-                ))}
-          </ScrollableRow>
-          </section>
-        </FluentCard>
-      </LazySection>
-      <LazySection>
-        <FluentCard variant='default' className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden' padding='0'>
-          <section className='p-4 sm:p-5'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='新番放送'
-              icon={Calendar}
-              iconColor='text-purple-500'
-              kicker='Anime'
-              index='06'
-            />
-            <Link href='/douban?type=anime'>
-              <FluentButton variant='ghost' size='sm' icon={<ChevronRight className='h-4 w-4' />}>
-                更多内容
-              </FluentButton>
-            </Link>
-          </div>
-          <ScrollableRow enableVirtualization={true}>
-            {loading
-              ? Array.from({ length: 4 }).map((_, index) => (
-                  <SkeletonCard key={index} />
-                ))
-              : hotAnime.map((anime, index) => (
-                  <div
-                    key={`${anime.id}-${index}`}
-                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                  >
-                    <VideoCard
-                      from='douban'
-                      source='douban'
-                      id={anime.id}
-                      source_name='豆瓣'
-                      title={anime.title}
-                      poster={resolveCardPosterUrl(anime.poster)}
-                      douban_id={Number(anime.id)}
-                      rate={(anime as any).rate || ''}
-                      year={anime.year}
-                      type='movie'
-                    />
-                  </div>
-                ))}
-          </ScrollableRow>
+            <div className='mb-4 flex items-center justify-between'>
+              <SectionTitle
+                title='新番放送'
+                icon={Calendar}
+                iconColor='text-purple-500'
+                kicker='Anime'
+                index='06'
+              />
+              <Link href='/douban?type=anime'>
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
+                  icon={<ChevronRight className='h-4 w-4' />}
+                >
+                  更多内容
+                </FluentButton>
+              </Link>
+            </div>
+            <ScrollableRow enableVirtualization={true}>
+              {loading
+                ? Array.from({ length: 4 }).map((_, index) => (
+                    <SkeletonCard key={index} />
+                  ))
+                : hotAnime.map((anime, index) => (
+                    <div
+                      key={`${anime.id}-${index}`}
+                      className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                    >
+                      <VideoCard
+                        from='douban'
+                        source='douban'
+                        id={anime.id}
+                        source_name='豆瓣'
+                        title={anime.title}
+                        poster={resolveCardPosterUrl(anime.poster)}
+                        douban_id={Number(anime.id)}
+                        rate={(anime as any).rate || ''}
+                        year={anime.year}
+                        type='movie'
+                      />
+                    </div>
+                  ))}
+            </ScrollableRow>
           </section>
         </FluentCard>
       </LazySection>
@@ -523,13 +578,19 @@ export default function HomeContentView({
               className='flex h-10 w-10 items-center justify-center bg-white/20 backdrop-blur-sm'
               style={{ borderRadius: radius.lg, boxShadow: shadow.light }}
             >
-              <img src='/icons/icon.svg' alt='5572' className='h-7 w-7 rounded' />
+              <img
+                src='/icons/icon.svg'
+                alt='5572'
+                className='h-7 w-7 rounded'
+              />
             </div>
             <div>
               <h3 className='text-sm font-bold text-[#171717] sm:text-base'>
                 下载 5572 影视 APP
               </h3>
-              <p className='text-xs text-[#171717]/70'>更好的观影体验，支持离线缓存</p>
+              <p className='text-xs text-[#171717]/70'>
+                更好的观影体验，支持离线缓存
+              </p>
             </div>
           </div>
           <FluentBadge variant='default' size='sm' rounded>

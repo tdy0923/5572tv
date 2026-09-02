@@ -2016,7 +2016,7 @@ function PlayPageClient() {
             }, 800);
           },
         });
-        // P5: 8s 超时需有 UI 反馈；超时后显示“搜索较慢”并允许重试
+        // P5: 12s 超时需有 UI 反馈；超时后显示"搜索较慢"并允许重试
         const first = await Promise.race([
           streamSearchRef.current.promise,
           new Promise<null>((r) =>
@@ -2025,7 +2025,7 @@ function PlayPageClient() {
               setStreamingTimedOut(true);
               setLoadingStage('searching', '搜索较慢，正在尝试备用方式…');
               r(null);
-            }, 8000),
+            }, 12000),
           ),
         ]);
         if (first && first.episodes?.length && !currentSource && !detailData) {

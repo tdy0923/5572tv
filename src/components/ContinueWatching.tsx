@@ -189,7 +189,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
           ? Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={`skeleton-${index}`}
-                className='min-w-[100px] w-[100px] sm:min-w-[180px] sm:w-44'
+                className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
               >
                 <SkeletonCard />
               </div>
@@ -205,7 +205,7 @@ function ContinueWatching({ className }: ContinueWatchingProps) {
               return (
                 <div
                   key={record.key}
-                  className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44 relative group/card'
+                  className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44 relative group/card'
                 >
                   <div className='relative group-hover/card:z-5 transition-all duration-300'>
                     <VideoCard
