@@ -802,7 +802,7 @@ function SearchPageClient() {
       <div className='mb-10 overflow-visible -mt-6 md:mt-0'>
         {/* 搜索工作区 */}
         <div className='mb-8'>
-          <div className='mx-auto max-w-5xl px-3 sm:px-0'>
+          <div className='ui-page-width px-3 sm:px-0'>
             <div className='space-y-3'>
               <SiteAdSlot position='search_top' />
 
@@ -1028,7 +1028,7 @@ function SearchPageClient() {
 
         {/* 搜索结果或搜索历史 */}
         <MountAnimation>
-          <div className='mx-auto mt-12 w-full max-w-[2560px] overflow-visible px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
+          <div className='ui-page-width mt-12 overflow-visible'>
             {showResults ? (
               <section
                 id='search-results'

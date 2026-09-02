@@ -267,7 +267,7 @@ export default function DownloadPage() {
 
       {/* ── 特性条 ── */}
       <section className='relative bg-gray-950 py-20'>
-        <div className='mx-auto max-w-5xl px-5 sm:px-8'>
+        <div className='ui-page-width'>
           <div className='mb-12 text-center'>
             <p className='mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-primary-400'>
               Why 5572
@@ -324,7 +324,7 @@ export default function DownloadPage() {
 
       {/* ── Footer ── */}
       <footer className='border-t border-white/[0.06] bg-gray-950 py-6'>
-        <div className='mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 px-5 sm:flex-row sm:px-8'>
+        <div className='mx-auto flex ui-page-width flex-col items-center justify-between gap-3 sm:flex-row'>
           <div className='flex items-center gap-2'>
             <Image
               src='/icons/icon.svg'
