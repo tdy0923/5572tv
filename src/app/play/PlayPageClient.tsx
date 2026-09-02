@@ -205,9 +205,21 @@ function PlayPageClient() {
     error,
     setStage: setLoadingStage,
     setError,
+    clearError,
     setReady: setReadyLoading,
   } = useLoadingState();
   const [detail, setDetail] = useState<SearchResult | null>(null);
+  // P5: retry affordance — 暴露给错误页/加载超时重试
+  const [streamingTimedOut, setStreamingTimedOut] = useState(false);
+  const handleRetry = useCallback(() => {
+    setError(null);
+    setStreamingTimedOut(false);
+    try {
+      streamSearchRef.current?.abort();
+    } catch {}
+    setLoadingStage('searching', '正在重新搜索...');
+    setReloadTrigger((prev) => prev + 1);
+  }, [setError, setLoadingStage]);
 
   // 返回顶部按钮显示状态
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -1683,6 +1695,57 @@ function PlayPageClient() {
         );
       }
 
+      // P5: 带超时与单次重试的详情拉取，避免静默 [] 导致无重试 affordance
+      const fetchWithTimeoutRetry = async (
+        url: string,
+        timeoutMs: number,
+        retries = 1,
+      ): Promise<Response> => {
+        let lastErr: unknown = null;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+          if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+          const tSignal =
+            typeof AbortSignal.timeout === 'function'
+              ? AbortSignal.any
+                ? AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)])
+                : signal
+              : signal;
+          let timer: ReturnType<typeof setTimeout> | null = null;
+          if (typeof AbortSignal.timeout !== 'function') {
+            const ctrl = new AbortController();
+            signal.addEventListener('abort', () => ctrl.abort());
+            timer = setTimeout(() => ctrl.abort(), timeoutMs);
+            try {
+              const resp = await fetch(url, { signal: ctrl.signal });
+              if (timer) clearTimeout(timer);
+              return resp;
+            } catch (e) {
+              if (timer) clearTimeout(timer);
+              lastErr = e;
+              if ((e as any)?.name === 'AbortError' && signal.aborted) throw e;
+              if (attempt < retries) {
+                await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+                continue;
+              }
+              throw e;
+            }
+          }
+          try {
+            const resp = await fetch(url, { signal: tSignal as AbortSignal });
+            return resp;
+          } catch (e) {
+            lastErr = e;
+            if ((e as any)?.name === 'AbortError' && signal.aborted) throw e;
+            if (attempt < retries) {
+              await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+              continue;
+            }
+            throw lastErr;
+          }
+        }
+        throw lastErr;
+      };
+
       try {
         let detailResponse;
 
@@ -1695,17 +1758,19 @@ function PlayPageClient() {
           const titleParam = dramaTitle
             ? `&name=${encodeURIComponent(dramaTitle)}`
             : '';
-          detailResponse = await fetch(
+          detailResponse = await fetchWithTimeoutRetry(
             `/api/shortdrama/detail?id=${id}&episode=1${titleParam}${shortdramaSourceParam}`,
-            { signal },
+            8000,
+            1,
           );
         } else {
           // 所有其他源（包括 Emby）统一使用 /api/detail
           // 添加 title 参数用于搜索匹配
           const titleParam = title ? `&title=${encodeURIComponent(title)}` : '';
-          detailResponse = await fetch(
+          detailResponse = await fetchWithTimeoutRetry(
             `/api/detail?source=${source}&id=${id}${titleParam}`,
-            { signal },
+            8000,
+            1,
           );
         }
 
@@ -1750,7 +1815,26 @@ function PlayPageClient() {
 
         return [detailData];
       } catch (err) {
-        console.warn('获取视频详情失败:', err);
+        if ((err as any)?.name === 'AbortError') {
+          console.warn('获取视频详情已取消:', err);
+          return [];
+        }
+        const msg =
+          err instanceof Error ? err.message : '获取视频详情失败';
+        const isTimeout =
+          msg.includes('Timeout') ||
+          msg.includes('timeout') ||
+          (err as any)?.name === 'TimeoutError';
+        console.warn(
+          `获取视频详情失败${isTimeout ? '(超时)' : ''}:`,
+          err,
+        );
+        // P5: 不再静默吞错，记录到 sourceSearchError 供 UI 重试提示
+        try {
+          setSourceSearchError(
+            isTimeout ? '详情加载超时，请重试' : msg,
+          );
+        } catch {}
         return [];
       } finally {
         setSourceSearchLoading(false);
@@ -1768,6 +1852,7 @@ function PlayPageClient() {
       nextShortDramaPrefetchRef.current = null;
       consecutiveNetErrorRef.current = 0;
       earlyStartedRef.current = false;
+      setStreamingTimedOut(false);
       setLoadingStage(
         currentSource && currentId ? 'fetching' : 'searching',
         currentSource && currentId
@@ -1777,6 +1862,7 @@ function PlayPageClient() {
 
       let detailData: SearchResult | null = null;
       let sourcesInfo: SearchResult[] = [];
+      let streamingDidTimeout = false;
 
       if (currentSource && currentId && !searchTitle && !videoTitle) {
         try {
@@ -1934,9 +2020,17 @@ function PlayPageClient() {
             }, 800);
           },
         });
+        // P5: 8s 超时需有 UI 反馈；超时后显示“搜索较慢”并允许重试
         const first = await Promise.race([
           streamSearchRef.current.promise,
-          new Promise<null>((r) => setTimeout(() => r(null), 8000)),
+          new Promise<null>((r) =>
+            setTimeout(() => {
+              streamingDidTimeout = true;
+              setStreamingTimedOut(true);
+              setLoadingStage('searching', '搜索较慢，正在尝试备用方式…');
+              r(null);
+            }, 8000),
+          ),
         ]);
         if (first && first.episodes?.length && !currentSource && !detailData) {
           // 立即开播首个命中；prefer 跳过（后续失败路径已有重试机制）
@@ -1946,21 +2040,38 @@ function PlayPageClient() {
           setNeedPrefer(false);
           sourcesInfo = collected.slice();
         } else {
-          // 首命中超时/无果 → 回退传统全量结果流程
-          sourcesInfo = collected.length
-            ? collected
-            : await fetchSourcesData(searchTitle || videoTitle);
+          // 首命中超时/无果 → 回退传统全量结果流程（带重试）
+          if (streamingDidTimeout) {
+            // 已提示超时，继续 fallback 搜全量
+          }
+          try {
+            sourcesInfo = collected.length
+              ? collected
+              : await fetchSourcesData(searchTitle || videoTitle);
+          } catch (e) {
+            console.warn('[Play] 流式 fallback 搜索失败:', e);
+            sourcesInfo = collected.length ? collected : [];
+            // 保留超时标记，供下方错误提示使用
+          }
+          // 若超时且仍无结果，重置标记以便错误态显示重试按钮
+          if (streamingDidTimeout && sourcesInfo.length === 0) {
+            setStreamingTimedOut(true);
+          }
         }
       }
 
       if (!detailData && sourcesInfo.length === 0) {
-        setError(
+        const baseMsg =
           currentSource && currentId
             ? '当前线路已失效，且未找到其他严格匹配的可用线路'
             : videoDoubanIdRef.current && videoDoubanIdRef.current > 0
               ? '该影片尚未上映或暂无播放源'
-              : '未找到严格匹配结果',
-        );
+              : '未找到严格匹配结果';
+        const retryHint =
+          streamingDidTimeout || streamingTimedOut || sourceSearchError
+            ? '（搜索超时或网络波动）可点击重试或返回搜索页更换关键词'
+            : '可尝试更换关键词或点击重试';
+        setError(`${baseMsg}，${retryHint}`);
         setReadyLoading();
         return;
       }
@@ -2016,7 +2127,9 @@ function PlayPageClient() {
               needPreferRef.current = true;
               setNeedPrefer(true);
             } else {
-              setError('当前线路已失效，且未找到其他严格匹配的可用线路');
+              setError(
+                '当前线路已失效，且未找到其他严格匹配的可用线路，可点击重试或切换其他线路',
+              );
               setReadyLoading();
               return;
             }
@@ -2061,8 +2174,8 @@ function PlayPageClient() {
         } else {
           setError(
             currentSource && currentId
-              ? '当前线路已失效，且未找到其他严格匹配的可用线路'
-              : '未找到严格匹配结果',
+              ? '当前线路已失效，且未找到其他严格匹配的可用线路，可点击重试或切换其他线路'
+              : '未找到严格匹配结果，可尝试更换关键词或点击重试',
           );
           setReadyLoading();
           return;
@@ -5255,6 +5368,8 @@ function PlayPageClient() {
         loadingStage={loadingStage}
         loadingMessage={loadingMessage}
         speedTestProgress={speedTestProgress}
+        onRetry={handleRetry}
+        hasTimedOut={streamingTimedOut}
       />
     );
   }
@@ -5262,7 +5377,23 @@ function PlayPageClient() {
   if (error) {
     return (
       <PageLayout activePath='/play'>
-        <PlayErrorDisplay error={error} videoTitle={videoTitle} />
+        <PlayErrorDisplay
+          error={error}
+          videoTitle={videoTitle}
+          onRetry={handleRetry}
+          onSwitchSource={
+            availableSources.length > 0
+              ? () => {
+                  // 打开换源面板逻辑由 EpisodeSelector 处理；此处尝试自动切到首个可用源
+                  const next =
+                    availableSources.find(
+                      (s) => s.source !== currentSource || s.id !== currentId,
+                    ) || availableSources[0];
+                  if (next) handleSourceChange(next.source, next.id, next.title);
+                }
+              : undefined
+          }
+        />
       </PageLayout>
     );
   }

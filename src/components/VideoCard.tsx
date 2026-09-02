@@ -980,7 +980,7 @@ function VideoCard({
   return (
     <>
       <div
-        className='@container group relative w-full overflow-hidden bg-transparent cursor-pointer hover:z-30'
+        className='@container group relative w-full overflow-hidden bg-transparent cursor-pointer hover:z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
         style={
           {
             borderRadius: radius.xl,
@@ -995,6 +995,7 @@ function VideoCard({
         }
         role='button'
         tabIndex={0}
+        aria-label={actualTitle}
         onClick={handleClick}
         onKeyDown={(e) => {
           if (
@@ -1219,7 +1220,7 @@ function VideoCard({
             from !== 'favorite' && (
               <div
                 data-button='true'
-                className='absolute bottom-3 right-3 flex gap-3 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 pointer-coarse:opacity-100 pointer-coarse:translate-y-0'
+                className='absolute bottom-3 right-3 flex gap-1 opacity-100 translate-y-0 transition-all duration-300 ease-in-out sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 group-focus-within:opacity-100 group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1233,11 +1234,23 @@ function VideoCard({
                 }}
               >
                 {config.showCheckCircle && (
-                  <span
-                    onClick={handleDeleteRecord}
-                    role='button'
+                  <button
+                    type='button'
+                    data-button='true'
                     aria-label='删除记录'
-                    className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteRecord(
+                        e as unknown as React.MouseEvent,
+                      );
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.stopPropagation();
+                      }
+                    }}
+                    className='inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
                     style={
                       {
                         WebkitUserSelect: 'none',
@@ -1252,10 +1265,10 @@ function VideoCard({
                   >
                     <Trash2
                       size={20}
-                      pointerEvents='none'
-                      className='text-white transition-all duration-300 ease-out hover:stroke-red-500 hover:scale-[1.1]'
+                      aria-hidden='true'
+                      className='pointer-events-none text-white transition-all duration-300 ease-out hover:stroke-red-500 hover:scale-[1.1]'
                     />
-                  </span>
+                  </button>
                 )}
                 {config.showHeart && (
                   <>
@@ -1270,11 +1283,24 @@ function VideoCard({
                       if (shouldShowBell) {
                         // 即将上映或新上映：显示铃铛图标（使用 reminded 状态）
                         return optimisticReminded ? (
-                          <span
-                            onClick={handleToggleFavorite}
-                            role='button'
+                          <button
+                            type='button'
+                            data-button='true'
                             aria-label='取消提醒'
-                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
+                            aria-pressed={optimisticReminded}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleFavorite(
+                                e as unknown as React.MouseEvent,
+                              );
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation();
+                              }
+                            }}
+                            className='inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1289,16 +1315,29 @@ function VideoCard({
                           >
                             <BellRing
                               size={20}
-                              pointerEvents='none'
-                              className='fill-orange-600 stroke-orange-600 transition-all duration-300 ease-out hover:scale-[1.1]'
+                              aria-hidden='true'
+                              className='pointer-events-none fill-orange-600 stroke-orange-600 transition-all duration-300 ease-out hover:scale-[1.1]'
                             />
-                          </span>
+                          </button>
                         ) : (
-                          <span
-                            onClick={handleToggleFavorite}
-                            role='button'
+                          <button
+                            type='button'
+                            data-button='true'
                             aria-label='提醒我'
-                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
+                            aria-pressed={optimisticReminded}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleFavorite(
+                                e as unknown as React.MouseEvent,
+                              );
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation();
+                              }
+                            }}
+                            className='inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1313,19 +1352,36 @@ function VideoCard({
                           >
                             <Bell
                               size={20}
-                              pointerEvents='none'
-                              className='fill-transparent stroke-white hover:stroke-orange-400 transition-all duration-300 ease-out hover:scale-[1.1]'
+                              aria-hidden='true'
+                              className='pointer-events-none fill-transparent stroke-white hover:stroke-orange-400 transition-all duration-300 ease-out hover:scale-[1.1]'
                             />
-                          </span>
+                          </button>
                         );
                       } else {
                         // 已上映：显示爱心图标（使用 favorited 状态）
+                        const isFav =
+                          from === 'search'
+                            ? optimisticSearchFavorited
+                            : optimisticFavorited;
                         return (
-                          <span
-                            onClick={handleToggleFavorite}
-                            role='button'
-                            aria-label='收藏'
-                            className='inline-flex cursor-pointer items-center justify-center p-2 -m-2'
+                          <button
+                            type='button'
+                            data-button='true'
+                            aria-label={isFav ? '取消收藏' : '收藏'}
+                            aria-pressed={!!isFav}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleToggleFavorite(
+                                e as unknown as React.MouseEvent,
+                              );
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation();
+                              }
+                            }}
+                            className='inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
                             style={
                               {
                                 WebkitUserSelect: 'none',
@@ -1340,18 +1396,14 @@ function VideoCard({
                           >
                             <Heart
                               size={20}
-                              pointerEvents='none'
-                              className={`transition-all duration-300 ease-out ${
-                                (
-                                  from === 'search'
-                                    ? optimisticSearchFavorited
-                                    : optimisticFavorited
-                                )
+                              aria-hidden='true'
+                              className={`pointer-events-none transition-all duration-300 ease-out ${
+                                isFav
                                   ? 'fill-red-600 stroke-red-600'
                                   : 'fill-transparent stroke-white hover:stroke-red-400'
                               } hover:scale-[1.1]`}
                             />
-                          </span>
+                          </button>
                         );
                       }
                     })()}
@@ -1362,15 +1414,44 @@ function VideoCard({
 
           {/* 收藏页面专用：固定显示的爱心/铃铛按钮 */}
           {from === 'favorite' && config.showHeart && (
-            <div
-              className='absolute bottom-2 right-2 z-30 min-h-[44px] min-w-[44px] flex items-center justify-center'
-              onClick={handleToggleFavorite}
+            <button
+              type='button'
+              data-button='true'
+              aria-label={(() => {
+                const isNewRelease =
+                  remarks &&
+                  (remarks.includes('已上映') || remarks.includes('今日上映'));
+                const shouldShowBell = isUpcoming || isNewRelease;
+                if (shouldShowBell) {
+                  return optimisticReminded ? '取消提醒' : '提醒我';
+                }
+                return optimisticFavorited ? '取消收藏' : '收藏';
+              })()}
+              aria-pressed={(() => {
+                const isNewRelease =
+                  remarks &&
+                  (remarks.includes('已上映') || remarks.includes('今日上映'));
+                const shouldShowBell = isUpcoming || isNewRelease;
+                return shouldShowBell
+                  ? optimisticReminded
+                  : optimisticFavorited;
+              })()}
+              className='absolute bottom-2 right-2 z-30 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-0'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleToggleFavorite(e as unknown as React.MouseEvent);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation();
+                }
+              }}
               style={
                 {
                   WebkitUserSelect: 'none',
                   userSelect: 'none',
                   WebkitTouchCallout: 'none',
-                  cursor: 'pointer',
                 } as React.CSSProperties
               }
               onContextMenu={(e) => {
@@ -1388,16 +1469,18 @@ function VideoCard({
                 return shouldShowBell ? (
                   <BellRing
                     size={18}
-                    className='fill-orange-500 stroke-orange-500 transition-all duration-300 active:scale-95 hover:fill-orange-600 hover:stroke-orange-600'
+                    aria-hidden='true'
+                    className='pointer-events-none fill-orange-500 stroke-orange-500 transition-all duration-300 active:scale-95 hover:fill-orange-600 hover:stroke-orange-600'
                   />
                 ) : (
                   <Heart
                     size={18}
-                    className='fill-red-500 stroke-red-500 transition-all duration-300 active:scale-95 hover:fill-red-600 hover:stroke-red-600'
+                    aria-hidden='true'
+                    className='pointer-events-none fill-red-500 stroke-red-500 transition-all duration-300 active:scale-95 hover:fill-red-600 hover:stroke-red-600'
                   />
                 );
               })()}
-            </div>
+            </button>
           )}
 
           {/* 集数角标 - Netflix/DecoTV 风格 - 左上角 */}
@@ -1523,16 +1606,26 @@ function VideoCard({
 
           {/* 豆瓣链接 */}
           {config.showDoubanLink && actualDoubanId && actualDoubanId !== 0 && (
-            <a
-              href={
-                isBangumi
-                  ? `https://bgm.tv/subject/${actualDoubanId.toString()}`
-                  : `https://movie.douban.com/subject/${actualDoubanId.toString()}`
+            <button
+              type='button'
+              data-button='true'
+              aria-label={
+                isBangumi ? '查看 Bangumi 详情' : '查看豆瓣详情'
               }
-              target='_blank'
-              rel='noopener noreferrer'
-              onClick={(e) => e.stopPropagation()}
-              className='absolute top-2 left-2 opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0 pointer-coarse:opacity-100 pointer-coarse:translate-x-0'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const url = isBangumi
+                  ? `https://bgm.tv/subject/${actualDoubanId.toString()}`
+                  : `https://movie.douban.com/subject/${actualDoubanId.toString()}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.stopPropagation();
+                }
+              }}
+              className='absolute top-2 left-2 flex min-h-[44px] min-w-[44px] items-center justify-center opacity-100 md:opacity-0 -translate-x-1 transition-all duration-300 ease-in-out delay-100 md:group-hover:opacity-100 md:group-hover:translate-x-0 group-focus-within:opacity-100 group-focus-within:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 rounded-full'
               style={
                 {
                   WebkitUserSelect: 'none',
@@ -1545,8 +1638,8 @@ function VideoCard({
                 return false;
               }}
             >
-              <div
-                className='flex h-7 w-7 items-center justify-center rounded-full bg-black/62 text-white transition-all duration-300 ease-out  hover:bg-black/78'
+              <span
+                className='flex h-7 w-7 items-center justify-center rounded-full bg-black/62 text-white transition-all duration-300 ease-out hover:bg-black/78'
                 style={
                   {
                     WebkitUserSelect: 'none',
@@ -1561,6 +1654,7 @@ function VideoCard({
               >
                 <Link
                   size={16}
+                  aria-hidden='true'
                   style={
                     {
                       WebkitUserSelect: 'none',
@@ -1570,8 +1664,8 @@ function VideoCard({
                     } as React.CSSProperties
                   }
                 />
-              </div>
-            </a>
+              </span>
+            </button>
           )}
 
           {/* 聚合播放源指示器 - Netflix 统一风格 */}
@@ -1639,7 +1733,8 @@ function VideoCard({
                 ${hasBottomTags ? 'bottom-14' : 'bottom-4'}
                 opacity-0 translate-y-2
                 group-hover:opacity-100 group-hover:translate-y-0
-                pointer-coarse:opacity-100 pointer-coarse:translate-y-0
+                group-focus-within:opacity-100 group-focus-within:translate-y-0
+                focus-within:opacity-100 focus-within:translate-y-0
                 transition-all duration-300 ease-out z-20
               `}
               onClick={(e) => {
@@ -1659,17 +1754,24 @@ function VideoCard({
               }}
             >
               <button
+                type='button'
+                data-button='true'
                 onClick={(e) => {
-                  e.stopPropagation();
                   e.preventDefault();
+                  e.stopPropagation();
                   setShowAIChat(true);
                 }}
-                className='flex items-center gap-1.5 px-3 py-2 rounded-md
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                  }
+                }}
+                className='flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-3 py-2 rounded-md
                   bg-black/70 backdrop-blur-sm
                   shadow-lg text-white/90
                   hover:bg-black/80  hover:shadow-md
                   transition-all duration-300 ease-out
-                  border border-white/10'
+                  border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
                 aria-label='AI问片'
                 style={
                   {
@@ -1679,7 +1781,7 @@ function VideoCard({
                   } as React.CSSProperties
                 }
               >
-                <Sparkles size={14} className='text-purple-400' />
+                <Sparkles size={14} aria-hidden='true' className='text-purple-400 pointer-events-none' />
                 <span className='text-xs font-medium whitespace-nowrap'>
                   AI问片
                 </span>

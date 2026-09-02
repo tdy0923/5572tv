@@ -12,9 +12,9 @@ import {
   Tv,
   X,
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
-import { useInView } from '@/hooks/useInView';
+import VirtualList from '@/components/VirtualList';
 
 import type { ChannelHealthInfo, LiveChannel, LiveSource } from '../types';
 import {
@@ -87,24 +87,18 @@ function ChannelItem({
     options?: { force?: boolean },
   ) => Promise<ChannelHealthInfo>;
 }) {
-  const { ref, isInView } = useInView<HTMLButtonElement>({
-    threshold: 0.1,
-    rootMargin: '100px',
-    triggerOnce: true,
-  });
-
+  // Health check only for visible (mounted) items. VirtualList ensures only
+  // visible slice is mounted, so this effect runs O(visible) not O(n).
   useEffect(() => {
-    if (isInView && currentSourceKey) {
-      const healthInfo = channelHealthMap[channel.id];
-      if (!healthInfo || healthInfo.status === 'unknown') {
-        void checkChannelHealth(channel);
-      }
+    if (!currentSourceKey) return;
+    const healthInfo = channelHealthMap[channel.id];
+    if (!healthInfo || healthInfo.status === 'unknown') {
+      void checkChannelHealth(channel);
     }
-  }, [isInView, channel]);
+  }, [channel.id, currentSourceKey]);
 
   return (
     <button
-      ref={ref}
       key={channel.id}
       data-channel-id={channel.id}
       onClick={() => handleChannelChange(channel)}
@@ -266,6 +260,8 @@ export default function ChannelSidebar({
   filteredSources,
   handleSourceChange,
 }: ChannelSidebarProps) {
+  const searchListRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className='h-[300px] lg:h-full md:overflow-hidden transition-all duration-300 ease-in-out md:col-span-1 lg:opacity-100 lg:scale-100'>
       <div className='md:ml-2 px-4 py-0 h-full rounded-xl bg-black/10 dark:bg-gray-800 flex flex-col border border-white/0 dark:border-white/30 overflow-hidden'>
@@ -388,25 +384,31 @@ export default function ChannelSidebar({
 
                 <div
                   ref={channelListRef}
-                  className='flex-1 overflow-y-auto space-y-2 pb-24 md:pb-4'
+                  className='flex-1 overflow-y-auto pb-24 md:pb-4'
                 >
                   {filteredChannels.length > 0 ? (
-                    filteredChannels.map((channel) => (
-                      <ChannelItem
-                        key={channel.id}
-                        channel={channel}
-                        isActive={channel.id === currentChannel?.id}
-                        isDisabled={
-                          isSwitchingSource || liveSyncShouldDisableControls
-                        }
-                        currentSourceKey={currentSource?.key || ''}
-                        channelHealthMap={channelHealthMap}
-                        expandedChannels={expandedChannels}
-                        toggleChannelNameExpanded={toggleChannelNameExpanded}
-                        handleChannelChange={handleChannelChange}
-                        checkChannelHealth={checkChannelHealth}
-                      />
-                    ))
+                    <VirtualList
+                      items={filteredChannels}
+                      scrollRef={channelListRef}
+                      estimateSize={92}
+                      overscan={8}
+                      getItemKey={(c) => c.id}
+                      renderItem={(channel) => (
+                        <ChannelItem
+                          channel={channel}
+                          isActive={channel.id === currentChannel?.id}
+                          isDisabled={
+                            isSwitchingSource || liveSyncShouldDisableControls
+                          }
+                          currentSourceKey={currentSource?.key || ''}
+                          channelHealthMap={channelHealthMap}
+                          expandedChannels={expandedChannels}
+                          toggleChannelNameExpanded={toggleChannelNameExpanded}
+                          handleChannelChange={handleChannelChange}
+                          checkChannelHealth={checkChannelHealth}
+                        />
+                      )}
+                    />
                   ) : (
                     <div className='flex flex-col items-center justify-center py-12 text-center'>
                       <div className='relative mb-6'>
@@ -427,7 +429,10 @@ export default function ChannelSidebar({
                 </div>
               </>
             ) : (
-              <div className='flex-1 overflow-y-auto space-y-2 pb-24 md:pb-4'>
+              <div
+                ref={searchListRef}
+                className='flex-1 overflow-y-auto pb-24 md:pb-4'
+              >
                 {currentSourceSearchResults.length > 0 ? (
                   <div className='space-y-1 mb-2'>
                     <div className='text-xs text-gray-500 dark:text-gray-400 px-2'>
@@ -438,46 +443,53 @@ export default function ChannelSidebar({
                 ) : null}
 
                 {currentSourceSearchResults.length > 0 ? (
-                  currentSourceSearchResults.map((channel) => {
-                    const isActive = channel.id === currentChannel?.id;
-                    const isDisabled =
-                      isSwitchingSource || liveSyncShouldDisableControls;
-                    return (
-                      <button
-                        key={channel.id}
-                        onClick={() => handleChannelChange(channel)}
-                        disabled={isDisabled}
-                        className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
-                          isDisabled
-                            ? 'opacity-50 cursor-not-allowed'
-                            : isActive
-                              ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
-                              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }`}
-                      >
-                        <div className='flex items-center gap-3'>
-                          <div className='w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden'>
-                            {channel.logo ? (
-                              <img
-                                src={`/api/proxy/logo?url=${encodeURIComponent(channel.logo)}&source=${currentSource?.key || ''}`}
-                                alt={channel.name}
-                                className='w-full h-full rounded object-contain'
-                                loading='lazy'
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  if (target.dataset.fallbackApplied) {
-                                    target.style.display = 'none';
-                                    return;
-                                  }
+                  <VirtualList
+                    items={currentSourceSearchResults}
+                    scrollRef={searchListRef}
+                    estimateSize={84}
+                    overscan={8}
+                    getItemKey={(c) => c.id}
+                    renderItem={(channel) => {
+                      const isActive = channel.id === currentChannel?.id;
+                      const isDisabled =
+                        isSwitchingSource || liveSyncShouldDisableControls;
+                      return (
+                        <button
+                          key={channel.id}
+                          data-channel-id={channel.id}
+                          onClick={() => handleChannelChange(channel)}
+                          disabled={isDisabled}
+                          className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
+                            isDisabled
+                              ? 'opacity-50 cursor-not-allowed'
+                              : isActive
+                                ? 'bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700'
+                                : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          <div className='flex items-center gap-3'>
+                            <div className='w-10 h-10 bg-gray-300 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden'>
+                              {channel.logo ? (
+                                <img
+                                  src={`/api/proxy/logo?url=${encodeURIComponent(channel.logo)}&source=${currentSource?.key || ''}`}
+                                  alt={channel.name}
+                                  className='w-full h-full rounded object-contain'
+                                  loading='lazy'
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    if (target.dataset.fallbackApplied) {
+                                      target.style.display = 'none';
+                                      return;
+                                    }
 
-                                  target.dataset.fallbackApplied = 'true';
-                                  target.style.display = 'none';
-                                  const parent = target.parentElement;
-                                  if (
-                                    parent &&
-                                    !parent.querySelector('.fallback-icon')
-                                  ) {
-                                    parent.innerHTML = `
+                                    target.dataset.fallbackApplied = 'true';
+                                    target.style.display = 'none';
+                                    const parent = target.parentElement;
+                                    if (
+                                      parent &&
+                                      !parent.querySelector('.fallback-icon')
+                                    ) {
+                                      parent.innerHTML = `
                                       <div class="fallback-icon relative w-full h-full flex items-center justify-center">
                                         <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                                           <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
@@ -488,73 +500,74 @@ export default function ChannelSidebar({
                                         </span>
                                       </div>
                                     `;
-                                  }
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <Tv className='w-5 h-5 text-gray-500' />
+                              )}
+                            </div>
+                            <div className='flex-1 min-w-0'>
+                              <div
+                                className='flex items-center gap-1 cursor-pointer select-none group'
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleChannelNameExpanded(channel.id);
                                 }}
-                              />
-                            ) : (
-                              <Tv className='w-5 h-5 text-gray-500' />
-                            )}
-                          </div>
-                          <div className='flex-1 min-w-0'>
-                            <div
-                              className='flex items-center gap-1 cursor-pointer select-none group'
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleChannelNameExpanded(channel.id);
-                              }}
-                            >
-                              <div className='flex-1 min-w-0'>
-                                <div
-                                  className={`text-sm font-medium text-gray-900 dark:text-gray-100 ${expandedChannels.has(channel.id) ? '' : 'line-clamp-1 md:line-clamp-2'}`}
-                                >
-                                  <span
-                                    dangerouslySetInnerHTML={{
-                                      __html: searchQuery
-                                        ? channel.name
-                                            .replace(/&/g, '&amp;')
-                                            .replace(/</g, '&lt;')
-                                            .replace(/>/g, '&gt;')
-                                            .replace(/"/g, '&quot;')
-                                            .replace(
-                                              new RegExp(
-                                                `(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-                                                'gi',
-                                              ),
-                                              '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
-                                            )
-                                        : channel.name
-                                            .replace(/&/g, '&amp;')
-                                            .replace(/</g, '&lt;')
-                                            .replace(/>/g, '&gt;')
-                                            .replace(/"/g, '&quot;'),
-                                    }}
-                                  />
+                              >
+                                <div className='flex-1 min-w-0'>
+                                  <div
+                                    className={`text-sm font-medium text-gray-900 dark:text-gray-100 ${expandedChannels.has(channel.id) ? '' : 'line-clamp-1 md:line-clamp-2'}`}
+                                  >
+                                    <span
+                                      dangerouslySetInnerHTML={{
+                                        __html: searchQuery
+                                          ? channel.name
+                                              .replace(/&/g, '&amp;')
+                                              .replace(/</g, '&lt;')
+                                              .replace(/>/g, '&gt;')
+                                              .replace(/"/g, '&quot;')
+                                              .replace(
+                                                new RegExp(
+                                                  `(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+                                                  'gi',
+                                                ),
+                                                '<mark class="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">$1</mark>',
+                                              )
+                                          : channel.name
+                                              .replace(/&/g, '&amp;')
+                                              .replace(/</g, '&lt;')
+                                              .replace(/>/g, '&gt;')
+                                              .replace(/"/g, '&quot;'),
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <div className='shrink-0 flex items-center gap-1'>
+                                  {expandedChannels.has(channel.id) ? (
+                                    <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
+                                  ) : (
+                                    <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
+                                  )}
+                                  <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>
+                                    {expandedChannels.has(channel.id)
+                                      ? '收起'
+                                      : '展开'}
+                                  </span>
                                 </div>
                               </div>
-                              <div className='shrink-0 flex items-center gap-1'>
-                                {expandedChannels.has(channel.id) ? (
-                                  <ChevronUp className='w-4 h-4 text-blue-500 dark:text-blue-400 transition-transform duration-300' />
-                                ) : (
-                                  <ChevronDown className='w-4 h-4 text-gray-400 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-all duration-300' />
-                                )}
-                                <span className='hidden md:inline text-xs text-blue-500 dark:text-blue-400'>
-                                  {expandedChannels.has(channel.id)
-                                    ? '收起'
-                                    : '展开'}
-                                </span>
+                              <div
+                                className='text-xs text-gray-500 dark:text-gray-400 mt-1 truncate'
+                                title={channel.group}
+                              >
+                                {channel.group}
                               </div>
                             </div>
-                            <div
-                              className='text-xs text-gray-500 dark:text-gray-400 mt-1 truncate'
-                              title={channel.group}
-                            >
-                              {channel.group}
-                            </div>
                           </div>
-                        </div>
-                      </button>
-                    );
-                  })
+                        </button>
+                      );
+                    }}
+                  />
                 ) : (
                   <div className='flex flex-col items-center justify-center py-12 text-center'>
                     <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>

@@ -4,7 +4,7 @@ import {
   experimental_streamedQuery as streamedQuery,
   useQuery,
 } from '@tanstack/react-query';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { SearchResult } from '@/lib/types';
 import { resolvePosterUrl } from '@/lib/utils';
@@ -35,6 +35,7 @@ const STREAMED_INITIAL: StreamedState = {
 export function eventSourceIterable(
   url: string,
   signal?: AbortSignal,
+  onError?: (message: string) => void,
 ): AsyncIterable<SSEChunk> {
   return {
     [Symbol.asyncIterator]() {
@@ -129,6 +130,7 @@ export function eventSourceIterable(
         try {
           es.close();
         } catch {}
+        onError?.('搜索失败，请重试');
         close();
       };
 
@@ -221,6 +223,13 @@ export function useSearchResults({
   titleContainsQuery,
   compareYear,
 }: UseSearchResultsParams) {
+  const [streamedError, setStreamedError] = useState<string | null>(null);
+
+  // Clear streamed error when query or mode changes
+  useEffect(() => {
+    setStreamedError(null);
+  }, [trimmedQuery, useFluidSearch]);
+
   const streamedSearchQuery = useQuery<StreamedState>({
     queryKey: ['search', 'streamed', trimmedQuery],
     queryFn: streamedQuery<SSEChunk, StreamedState>({
@@ -228,6 +237,7 @@ export function useSearchResults({
         eventSourceIterable(
           `/api/search/ws?q=${encodeURIComponent(trimmedQuery)}`,
           ctx.signal,
+          (msg) => setStreamedError(msg),
         ),
       refetchMode: 'reset',
       reducer: (acc: StreamedState, chunk: SSEChunk): StreamedState => {
@@ -296,6 +306,27 @@ export function useSearchResults({
     traditionalSearchQuery.error instanceof Error
       ? traditionalSearchQuery.error.message
       : null;
+
+  // Sync streamed query error into streamedError state
+  useEffect(() => {
+    if (streamedSearchQuery.error) {
+      const msg =
+        streamedSearchQuery.error instanceof Error
+          ? streamedSearchQuery.error.message
+          : '搜索失败，请重试';
+      setStreamedError(msg);
+    }
+  }, [streamedSearchQuery.error]);
+
+  // Also surface fetch-level errors via onError handled in eventSourceIterable;
+  // expose refetch that clears error first
+  const refetch = () => {
+    setStreamedError(null);
+    if (useFluidSearch) {
+      return streamedSearchQuery.refetch();
+    }
+    return traditionalSearchQuery.refetch();
+  };
 
   const aggregatedResults = useMemo(() => {
     const filteredResults = exactSearch
@@ -527,6 +558,8 @@ export function useSearchResults({
     completedSources,
     isLoading,
     traditionalSearchError,
+    streamedError,
+    refetch,
     aggregatedResults,
     computeGroupStats,
     pickGroupPoster,

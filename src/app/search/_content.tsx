@@ -154,25 +154,39 @@ function SearchPageClient() {
     });
 
     return (
-      <button
+      <div
         key={item.key}
-        type='button'
+        role='button'
+        tabIndex={0}
         onClick={() => router.push(itemUrl)}
-        className='group w-full rounded-2xl border border-gray-200/80 bg-white dark:bg-gray-800 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700'
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            router.push(itemUrl);
+          }
+        }}
+        aria-label={`查看 ${item.title} 详情`}
+        className='group w-full rounded-2xl border border-gray-200/80 bg-white dark:bg-gray-800 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
       >
         <div className='flex items-start gap-4'>
           <div className='relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
             {}
-            <img
-              src={item.poster}
-              alt={item.title}
-              className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]'
-              loading='lazy'
+            <button
+              type='button'
               onClick={(e) => {
                 e.stopPropagation();
                 setPreviewImage({ url: item.poster, alt: item.title });
               }}
-            />
+              aria-label={`预览 ${item.title} 海报`}
+              className='h-full w-full p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-inset'
+            >
+              <img
+                src={item.poster}
+                alt={item.title}
+                className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]'
+                loading='lazy'
+              />
+            </button>
           </div>
           <div className='min-w-0 flex-1'>
             <div className='flex items-start justify-between gap-3'>
@@ -248,14 +262,14 @@ function SearchPageClient() {
                     [item.key]: true,
                   }));
                 }}
-                className='inline-flex shrink-0 items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50'
+                className='inline-flex shrink-0 items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
               >
                 +{hiddenSourceCount}
               </button>
             )}
           </div>
         )}
-      </button>
+      </div>
     );
   };
 
@@ -300,6 +314,8 @@ function SearchPageClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('');
+  const liveSearchAbortRef = useRef<AbortController | null>(null);
   const [trendingSearches, setTrendingSearches] = useState<string[]>([]);
   const [useFluidSearch, setUseFluidSearch] = useState(true);
 
@@ -381,6 +397,8 @@ function SearchPageClient() {
     completedSources,
     isLoading,
     traditionalSearchError,
+    streamedError,
+    refetch,
     aggregatedResults,
     computeGroupStats,
     pickGroupPoster,
@@ -401,6 +419,8 @@ function SearchPageClient() {
     titleContainsQuery,
     compareYear,
   });
+
+  const searchError = streamedError || traditionalSearchError;
 
   useEffect(() => {
     // 无搜索参数时聚焦搜索框；但移动端不自动聚焦，避免打开页面就弹出软键盘
@@ -456,6 +476,13 @@ function SearchPageClient() {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [searchPrefsLoaded]);
+
+  // 清理 live-search 的 AbortController，避免卸载后残留请求
+  useEffect(() => {
+    return () => {
+      liveSearchAbortRef.current?.abort();
+    };
+  }, []);
 
   // 加载热门搜索词
   useEffect(() => {
@@ -535,13 +562,40 @@ function SearchPageClient() {
   // 即输即搜：影视模式下输入停顿 500ms 自动更新 URL 触发搜索
   useEffect(() => {
     if (searchType !== 'video') return;
-    const value = searchQuery.trim();
-    if (!value) return;
+    const raw = searchQuery.trim().replace(/\s+/g, ' ');
+    if (!raw) {
+      if (searchQuery.trim().length > 0) {
+        setValidationMessage('请输入有效的搜索关键词');
+      } else {
+        setValidationMessage('');
+      }
+      // 中止之前的实时搜索请求
+      liveSearchAbortRef.current?.abort();
+      return;
+    }
+    // 长度校验：少于2字符或超过50字符需提示
+    if (raw.length < 2) {
+      setValidationMessage('请输入至少2个字符');
+      liveSearchAbortRef.current?.abort();
+      return;
+    }
+    if (raw.length > 50) {
+      setValidationMessage('搜索关键词不能超过50个字符');
+    } else {
+      setValidationMessage('');
+    }
+    const value = raw.slice(0, 50);
+    // 中止上一次的 SSE / 实时搜索流，避免陈旧请求覆盖新结果
+    liveSearchAbortRef.current?.abort();
+    const controller = new AbortController();
+    liveSearchAbortRef.current = controller;
     const timer = setTimeout(() => {
-      if (searchParams.get('q') === value) return;
+      if (controller.signal.aborted) return;
+      const capped = value.slice(0, 50);
+      if (searchParams.get('q') === capped) return;
       liveSearchRef.current = true;
       setShowResults(true);
-      router.replace(`/search?q=${encodeURIComponent(value)}`, {
+      router.replace(`/search?q=${encodeURIComponent(capped)}`, {
         scroll: false,
       });
     }, 500);
@@ -550,12 +604,23 @@ function SearchPageClient() {
 
   // 输入框内容变化时触发，显示搜索建议
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.slice(0, 50);
     setSearchQuery(value);
 
-    // 如果输入框为空，隐藏搜索结果，显示搜索历史
-    if (!value.trim()) {
+    const trimmed = value.trim().replace(/\s+/g, ' ');
+    if (!trimmed) {
+      if (value.trim().length > 0) {
+        setValidationMessage('请输入有效的搜索关键词');
+      } else {
+        setValidationMessage('');
+      }
       setShowResults(false);
+    } else if (trimmed.length < 2) {
+      setValidationMessage('请输入至少2个字符');
+    } else if (trimmed.length > 50) {
+      setValidationMessage('搜索关键词不能超过50个字符');
+    } else {
+      setValidationMessage('');
     }
 
     // 无论输入框是否为空，都显示建议（空时显示搜索历史）
@@ -671,8 +736,24 @@ function SearchPageClient() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
-    if (!trimmed) return;
+    const raw = searchQuery.trim().replace(/\s+/g, ' ');
+    if (!raw) {
+      setValidationMessage('请输入有效的搜索关键词');
+      return;
+    }
+    if (raw.length < 2) {
+      setValidationMessage('请输入至少2个字符');
+      return;
+    }
+    if (raw.length > 50) {
+      setValidationMessage('搜索关键词不能超过50个字符');
+    } else {
+      setValidationMessage('');
+    }
+    const trimmed = raw.slice(0, 50);
+
+    // 中止之前的实时搜索流
+    liveSearchAbortRef.current?.abort();
 
     // 回显搜索框
     setSearchQuery(trimmed);
@@ -680,9 +761,10 @@ function SearchPageClient() {
     setShowResults(true);
     addSearchHistory(trimmed);
 
+    const encoded = encodeURIComponent(trimmed);
     if (searchType === 'netdisk') {
       // 网盘搜索 - 也更新URL保持一致性
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/search?q=${encoded}`);
       if (netdiskResourceType === 'netdisk') {
         handleNetDiskSearch(trimmed);
       } else {
@@ -691,24 +773,32 @@ function SearchPageClient() {
       }
     } else if (searchType === 'tmdb-actor') {
       // TMDB演员搜索
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/search?q=${encoded}`);
       handleTmdbActorSearch(trimmed, tmdbActorType, tmdbFilterState);
     } else {
       // 原有的影视搜索逻辑
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/search?q=${encoded}`);
       // 其余由 searchParams 变化的 effect 处理
     }
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
-    setSearchQuery(suggestion);
+    const trimmed = suggestion.trim().replace(/\s+/g, ' ').slice(0, 50);
+    if (!trimmed || trimmed.length < 2) {
+      setValidationMessage('请输入至少2个字符');
+      if (!trimmed) return;
+    } else {
+      setValidationMessage('');
+    }
+    liveSearchAbortRef.current?.abort();
+    setSearchQuery(trimmed);
     setShowSuggestions(false);
-    addSearchHistory(suggestion.trim());
+    addSearchHistory(trimmed);
 
     // 自动执行搜索
     setShowResults(true);
 
-    router.push(`/search?q=${encodeURIComponent(suggestion)}`);
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
     // 其余由 searchParams 变化的 effect 处理
   };
 
@@ -748,8 +838,12 @@ function SearchPageClient() {
                       setTmdbActorResults(null);
                       setTmdbActorError(null);
                       // 如果有搜索词且当前显示结果，触发影视搜索
-                      const currentQuery =
-                        searchQuery.trim() || searchParams?.get('q');
+                      const currentQuery = (
+                        searchQuery.trim() || searchParams?.get('q') || ''
+                      )
+                        .trim()
+                        .replace(/\s+/g, ' ')
+                        .slice(0, 50);
                       if (currentQuery && showResults) {
                         router.push(
                           `/search?q=${encodeURIComponent(currentQuery)}`,
@@ -835,6 +929,13 @@ function SearchPageClient() {
                           : '搜索演员姓名...'
                     }
                     autoComplete='off'
+                    maxLength={50}
+                    aria-label='搜索影片'
+                    aria-controls='search-results'
+                    aria-describedby={
+                      validationMessage ? 'search-validation' : undefined
+                    }
+                    aria-invalid={!!validationMessage}
                     className='h-12 py-3 pl-12 pr-14 text-sm sm:text-base'
                   />
 
@@ -842,7 +943,9 @@ function SearchPageClient() {
                     <button
                       type='button'
                       onClick={() => {
+                        liveSearchAbortRef.current?.abort();
                         setSearchQuery('');
+                        setValidationMessage('');
                         setShowResults(false);
                         setShowSuggestions(true);
                         router.replace('/search');
@@ -861,19 +964,48 @@ function SearchPageClient() {
                     onSelect={handleSuggestionSelect}
                     onClose={() => setShowSuggestions(false)}
                     onEnterKey={() => {
-                      const trimmed = searchQuery.trim().replace(/\s+/g, ' ');
-                      if (!trimmed) return;
-
+                      const raw = searchQuery.trim().replace(/\s+/g, ' ');
+                      if (!raw) {
+                        setValidationMessage('请输入有效的搜索关键词');
+                        return;
+                      }
+                      if (raw.length < 2) {
+                        setValidationMessage('请输入至少2个字符');
+                        return;
+                      }
+                      const trimmed = raw.slice(0, 50);
+                      liveSearchAbortRef.current?.abort();
                       setSearchQuery(trimmed);
                       setShowResults(true);
                       setShowSuggestions(false);
                       addSearchHistory(trimmed);
 
-                      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+                      router.push(
+                        `/search?q=${encodeURIComponent(trimmed)}`,
+                      );
                     }}
                   />
                 </div>
               </form>
+              <div
+                id='search-validation'
+                role='status'
+                aria-live='polite'
+                aria-atomic='true'
+                className={`min-h-[20px] text-sm ${validationMessage ? 'text-red-500' : 'sr-only'}`}
+              >
+                {validationMessage}
+              </div>
+              {/* 实时结果播报（供读屏器） */}
+              <div
+                aria-live='polite'
+                aria-atomic='true'
+                className='sr-only'
+              >
+                {showResults && !validationMessage && trimmedQuery
+                  ? `找到 ${searchResults.length} 个结果`
+                  : ''}
+              </div>
 
               {/* 热门搜索建议 */}
               {!searchQuery && trendingSearches.length > 0 && (
@@ -887,12 +1019,19 @@ function SearchPageClient() {
                       <button
                         key={term}
                         onClick={() => {
-                          setSearchQuery(term);
-                          addSearchHistory(term.trim());
+                          const trimmedTerm = term
+                            .trim()
+                            .replace(/\s+/g, ' ')
+                            .slice(0, 50);
+                          liveSearchAbortRef.current?.abort();
+                          setSearchQuery(trimmedTerm);
+                          addSearchHistory(trimmedTerm);
                           // Trigger search
                           setShowResults(true);
                           setShowSuggestions(false);
-                          router.push(`/search?q=${encodeURIComponent(term)}`);
+                          router.push(
+                            `/search?q=${encodeURIComponent(trimmedTerm)}`,
+                          );
                         }}
                         className='px-3 py-1.5 text-xs sm:text-sm rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
                       >
@@ -910,7 +1049,13 @@ function SearchPageClient() {
         <MountAnimation>
           <div className='mx-auto mt-12 w-full max-w-[2560px] overflow-visible px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20'>
             {showResults ? (
-              <section className='mb-12 space-y-6'>
+              <section
+                id='search-results'
+                role='region'
+                aria-live='polite'
+                aria-label='搜索结果'
+                className='mb-12 space-y-6'
+              >
                 {searchType === 'netdisk' ? (
                   /* 网盘搜索结果 */
                   <>
@@ -1142,7 +1287,7 @@ function SearchPageClient() {
                                     {completedSources}/{totalSources}
                                   </span>
                                 )}
-                                {isLoading && useFluidSearch && (
+                                {isLoading && !searchError && useFluidSearch && (
                                   <span className='ml-2 inline-block align-middle'>
                                     <span className='inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-green-500'></span>
                                   </span>
@@ -1227,7 +1372,7 @@ function SearchPageClient() {
                         </div>
                         {/* 搜索结果网格/列表 */}
                         <div className='pt-1'>
-                          {isLoading && searchResults.length === 0 ? (
+                          {isLoading && !searchError && searchResults.length === 0 ? (
                             <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-4 dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
                               <div className='mb-4 flex items-center justify-between px-1 text-sm text-gray-500 dark:text-gray-400'>
                                 <span>正在整理搜索结果...</span>
@@ -1246,15 +1391,26 @@ function SearchPageClient() {
                                 ))}
                               </div>
                             </div>
-                          ) : traditionalSearchError && !useFluidSearch ? (
-                            <div className='rounded-xl border border-red-200 bg-red-50/90 p-8 text-center shadow-sm dark:border-red-800/50 dark:bg-red-900/20'>
-                              <div className='mb-2 text-red-500'>
-                                {traditionalSearchError || '搜索失败'}
-                              </div>
-                              <p className='mb-4 text-sm text-red-400 dark:text-red-300'>
-                                请稍后重试，或切换搜索词后重新搜索。
-                              </p>
-                            </div>
+                          ) : searchError ? (
+                            <FluentEmptyState
+                              icon={
+                                <Search
+                                  className='w-6 h-6'
+                                  style={{ color: '#ef4444' }}
+                                />
+                              }
+                              title='搜索失败'
+                              description={searchError}
+                              action={
+                                <button
+                                  onClick={() => refetch()}
+                                  className='rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700'
+                                >
+                                  重试
+                                </button>
+                              }
+                              className='rounded-xl border border-red-200 bg-red-50/90 dark:border-red-800/50 dark:bg-red-900/20'
+                            />
                           ) : searchResults.length === 0 ? (
                             <FluentEmptyState
                               icon={
@@ -1495,6 +1651,7 @@ function SearchPageClient() {
 
                         {/* Footer */}
                         {isLoading &&
+                        !searchError &&
                         (filteredAggResults.length > 0 ||
                           filteredAllResults.length > 0) ? (
                           <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
@@ -1556,9 +1713,14 @@ function SearchPageClient() {
                         >
                           <button
                             onClick={() => {
-                              setSearchQuery(item);
+                              const trimmedHistory = item
+                                .trim()
+                                .replace(/\s+/g, ' ')
+                                .slice(0, 50);
+                              liveSearchAbortRef.current?.abort();
+                              setSearchQuery(trimmedHistory);
                               router.push(
-                                `/search?q=${encodeURIComponent(item.trim())}`,
+                                `/search?q=${encodeURIComponent(trimmedHistory)}`,
                               );
                             }}
                             className='flex-1 truncate px-4 py-2 text-sm text-gray-700 transition-colors duration-200 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10'

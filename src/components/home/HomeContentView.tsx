@@ -155,7 +155,7 @@ export default function HomeContentView({
       <LazySection fallbackHeight={280}>
         <FluentCard
           variant='default'
-          className='mb-8 md:mb-10 !p-0 !overflow-hidden'
+          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>
@@ -203,83 +203,88 @@ export default function HomeContentView({
             ))}
           </div>
 
-          <ScrollableRow enableVirtualization={true}>
-            {upcomingReleases
-              .filter(
-                (release) =>
-                  upcomingFilter === 'all' || release.type === upcomingFilter,
-              )
-              .map((release, index) => {
-                const releaseDate = release.releaseDate;
+          {(() => {
+            const filteredUpcomingReleases = upcomingReleases.filter(
+              (release) =>
+                upcomingFilter === 'all' || release.type === upcomingFilter,
+            );
 
-                let remarksText;
-                if (releaseDate < today) {
-                  const releaseParts = releaseDate.split('-').map(Number);
-                  const todayParts = today.split('-').map(Number);
-                  const releaseMs = new Date(
-                    releaseParts[0],
-                    releaseParts[1] - 1,
-                    releaseParts[2],
-                  ).getTime();
-                  const todayMs = new Date(
-                    todayParts[0],
-                    todayParts[1] - 1,
-                    todayParts[2],
-                  ).getTime();
-                  const daysAgo = Math.floor(
-                    (todayMs - releaseMs) / (1000 * 60 * 60 * 24),
-                  );
-                  remarksText = `已上映${daysAgo}天`;
-                } else if (releaseDate === today) {
-                  remarksText = '今日上映';
-                } else {
-                  const releaseParts = releaseDate.split('-').map(Number);
-                  const todayParts = today.split('-').map(Number);
-                  const releaseMs = new Date(
-                    releaseParts[0],
-                    releaseParts[1] - 1,
-                    releaseParts[2],
-                  ).getTime();
-                  const todayMs = new Date(
-                    todayParts[0],
-                    todayParts[1] - 1,
-                    todayParts[2],
-                  ).getTime();
-                  const daysUntil = Math.ceil(
-                    (releaseMs - todayMs) / (1000 * 60 * 60 * 24),
-                  );
-                  remarksText = `${daysUntil}天后上映`;
-                }
+            const parseYMDToMs = (value: string): number | null => {
+              if (!value || typeof value !== 'string') return null;
+              const parts = value.split('-').map(Number);
+              if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
+              const ms = new Date(parts[0], parts[1] - 1, parts[2]).getTime();
+              return Number.isNaN(ms) ? null : ms;
+            };
 
-                return (
-                  <div
-                    key={`${release.id}-${index}`}
-                    className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
-                  >
-                    <VideoCard
-                      source='upcoming_release'
-                      id={release.id}
-                      source_name='即将上映'
-                      from='douban'
-                      title={release.title}
-                      poster={resolvePosterUrl(
-                        release.cover,
-                        '/placeholder-poster.jpg',
-                      )}
-                      year={release.releaseDate.split('-')[0]}
-                      type={release.type}
-                      remarks={remarksText}
-                      releaseDate={release.releaseDate}
-                      query={release.title}
-                      episodes={
-                        release.episodes ||
-                        (release.type === 'tv' ? undefined : 1)
-                      }
-                    />
-                  </div>
-                );
-              })}
-          </ScrollableRow>
+            const getRemarksText = (releaseDate: string, todayStr: string): string => {
+              const releaseMs = parseYMDToMs(releaseDate);
+              const todayMs = parseYMDToMs(todayStr);
+              if (releaseMs === null || todayMs === null) {
+                return releaseDate || '待上映';
+              }
+              if (releaseMs < todayMs) {
+                const daysAgo = Math.floor((todayMs - releaseMs) / (1000 * 60 * 60 * 24));
+                return `已上映${Math.max(0, daysAgo)}天`;
+              }
+              if (releaseMs === todayMs) {
+                return '今日上映';
+              }
+              const daysUntil = Math.ceil((releaseMs - todayMs) / (1000 * 60 * 60 * 24));
+              return `${Math.max(1, daysUntil)}天后上映`;
+            };
+
+            if (filteredUpcomingReleases.length === 0) {
+              return (
+                <FluentEmptyState
+                  icon={<Calendar className='h-6 w-6' style={{ color: '#f97316' }} />}
+                  title='暂无即将上映'
+                  description={
+                    upcomingFilter === 'all'
+                      ? '暂无即将上映的内容'
+                      : `暂无${upcomingFilter === 'movie' ? '电影' : '电视剧'}即将上映，试试其他分类`
+                  }
+                />
+              );
+            }
+
+            return (
+              <ScrollableRow enableVirtualization={true}>
+                {filteredUpcomingReleases.map((release, index) => {
+                  const releaseDate = release.releaseDate;
+                  const remarksText = getRemarksText(releaseDate, today);
+
+                  return (
+                    <div
+                      key={`${release.id}-${index}`}
+                      className='min-w-[120px] w-[120px] sm:min-w-[180px] sm:w-44'
+                    >
+                      <VideoCard
+                        source='upcoming_release'
+                        id={release.id}
+                        source_name='即将上映'
+                        from='douban'
+                        title={release.title}
+                        poster={resolvePosterUrl(
+                          release.cover,
+                          '/placeholder-poster.jpg',
+                        )}
+                        year={release.releaseDate.split('-')[0]}
+                        type={release.type}
+                        remarks={remarksText}
+                        releaseDate={release.releaseDate}
+                        query={release.title}
+                        episodes={
+                          release.episodes ||
+                          (release.type === 'tv' ? undefined : 1)
+                        }
+                      />
+                    </div>
+                  );
+                })}
+              </ScrollableRow>
+            );
+          })()}
           </section>
         </FluentCard>
       </LazySection>

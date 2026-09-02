@@ -1,9 +1,9 @@
 'use client';
 
-import { Film, Search, Zap } from 'lucide-react';
+import { Film, RefreshCw, Search, Zap } from 'lucide-react';
 import { memo } from 'react';
 
-import { FluentSpinner } from '@/components/FluentUI';
+import { FluentButton, FluentSpinner } from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 
 import LoadingProgressIndicator from './LoadingProgressIndicator';
@@ -18,6 +18,8 @@ interface LoadingScreenProps {
     currentSource: string;
     result?: string;
   } | null;
+  onRetry?: () => void;
+  hasTimedOut?: boolean;
 }
 
 const stageConfig: Record<
@@ -50,6 +52,8 @@ const LoadingScreen = memo(function LoadingScreen({
   loadingStage,
   loadingMessage,
   speedTestProgress,
+  onRetry,
+  hasTimedOut,
 }: LoadingScreenProps) {
   const config = stageConfig[loadingStage];
 
@@ -93,6 +97,19 @@ const LoadingScreen = memo(function LoadingScreen({
             </p>
             {speedTestProgress && (
               <SpeedTestProgress progress={speedTestProgress} />
+            )}
+            {hasTimedOut && onRetry && (
+              <div className='mt-2 flex flex-col gap-2 w-full'>
+                <p className='text-xs text-amber-500'>搜索时间较长，可尝试重试</p>
+                <FluentButton
+                  variant='secondary'
+                  size='sm'
+                  onClick={onRetry}
+                  icon={<RefreshCw size={14} />}
+                >
+                  重试搜索
+                </FluentButton>
+              </div>
             )}
           </div>
         </div>

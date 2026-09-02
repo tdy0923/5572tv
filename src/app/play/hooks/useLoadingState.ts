@@ -11,9 +11,10 @@ interface LoadingState {
 
 type LoadingAction =
   | { type: 'SET_STAGE'; stage: LoadingStage; message?: string }
-  | { type: 'SET_ERROR'; error: string }
+  | { type: 'SET_ERROR'; error: string | null }
   | { type: 'READY' }
-  | { type: 'RESET' };
+  | { type: 'RESET' }
+  | { type: 'CLEAR_ERROR' };
 
 const initialState: LoadingState = {
   loading: true,
@@ -36,11 +37,17 @@ function loadingReducer(
         error: null,
       };
     case 'SET_ERROR':
+      // null clears error and keeps current stage; string sets error and stops loading
+      if (action.error === null) {
+        return { ...state, error: null };
+      }
       return { ...state, loading: false, error: action.error };
     case 'READY':
       return { ...state, loading: false, stage: 'ready', error: null };
     case 'RESET':
       return initialState;
+    case 'CLEAR_ERROR':
+      return { ...state, error: null, loading: true, stage: 'searching', message: '正在搜索播放源...' };
   }
 }
 
@@ -54,7 +61,8 @@ export function useLoadingState() {
     error: state.error,
     setStage: (stage: LoadingStage, message?: string) =>
       dispatch({ type: 'SET_STAGE', stage, message }),
-    setError: (error: string) => dispatch({ type: 'SET_ERROR', error }),
+    setError: (error: string | null) => dispatch({ type: 'SET_ERROR', error }),
+    clearError: () => dispatch({ type: 'CLEAR_ERROR' }),
     setReady: () => dispatch({ type: 'READY' }),
     reset: () => dispatch({ type: 'RESET' }),
   };

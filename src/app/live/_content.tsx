@@ -719,31 +719,56 @@ function LivePageClient() {
     }
   };
 
-  // 滚动到指定频道位置的函数
+  // 滚动到指定频道位置的函数（兼容虚拟化：可见时通过DOM居中，虚拟化未渲染时通过估算高度滚动）
   const scrollToChannel = (channel: LiveChannel) => {
     if (!channelListRef.current) return;
 
-    // 使用 data 属性来查找频道元素
-    const targetElement = channelListRef.current.querySelector(
+    const container = channelListRef.current;
+    // Use data attribute to find channel element if currently virtualized-visible
+    const targetElement = container.querySelector(
       `[data-channel-id="${channel.id}"]`,
-    ) as HTMLButtonElement;
+    ) as HTMLButtonElement | null;
 
     if (targetElement) {
-      // 计算滚动位置，使频道居中显示
-      const container = channelListRef.current;
       const containerRect = container.getBoundingClientRect();
       const elementRect = targetElement.getBoundingClientRect();
-
-      // 计算目标滚动位置
       const scrollTop =
         container.scrollTop +
         (elementRect.top - containerRect.top) -
         containerRect.height / 2 +
         elementRect.height / 2;
-
-      // 平滑滚动到目标位置
       container.scrollTo({
         top: Math.max(0, scrollTop),
+        behavior: 'smooth',
+      });
+      return;
+    }
+
+    // Fallback for virtualized list: estimate scrollTop by index
+    const idx = filteredChannels.findIndex((c) => c.id === channel.id);
+    if (idx >= 0) {
+      // Estimate row height ~92px (including gap); align near center
+      const estimatedRowHeight = 92;
+      const targetTop = idx * estimatedRowHeight;
+      const centeredTop =
+        targetTop - container.clientHeight / 2 + estimatedRowHeight / 2;
+      container.scrollTo({
+        top: Math.max(0, centeredTop),
+        behavior: 'smooth',
+      });
+      return;
+    }
+
+    // Last fallback: search results virtual list
+    const searchIdx = currentSourceSearchResults.findIndex(
+      (c) => c.id === channel.id,
+    );
+    if (searchIdx >= 0) {
+      const estimatedRowHeight = 84;
+      const targetTop = searchIdx * estimatedRowHeight;
+      // Search list ref is inside ChannelSidebar; scroll the main list as fallback
+      container.scrollTo({
+        top: Math.max(0, targetTop),
         behavior: 'smooth',
       });
     }

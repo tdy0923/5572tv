@@ -445,10 +445,47 @@ export function useSourceSearch(params: {
         };
 
         for (const variant of searchVariants) {
-          const response = await fetch(
-            `/api/search?q=${encodeURIComponent(variant)}`,
-            { signal },
-          );
+          // P5: 带超时与重试的搜索变体请求，避免静默失败无重试
+          let response: Response | null = null;
+          let lastErr: unknown = null;
+          for (let attempt = 0; attempt < 2; attempt++) {
+            if (signal.aborted) break;
+            try {
+              const fetchSignal =
+                typeof AbortSignal.timeout === 'function'
+                  ? AbortSignal.any
+                    ? AbortSignal.any([signal, AbortSignal.timeout(8000)])
+                    : signal
+                  : signal;
+              // 若无 AbortSignal.timeout 兜底手动超时
+              let timeoutId: ReturnType<typeof setTimeout> | undefined;
+              let ctrl: AbortController | undefined;
+              let sigToUse = fetchSignal as AbortSignal;
+              if (typeof AbortSignal.timeout !== 'function') {
+                ctrl = new AbortController();
+                signal.addEventListener('abort', () => ctrl!.abort());
+                timeoutId = setTimeout(() => ctrl!.abort(), 8000);
+                sigToUse = ctrl.signal;
+              }
+              response = await fetch(
+                `/api/search?q=${encodeURIComponent(variant)}`,
+                { signal: sigToUse },
+              );
+              if (timeoutId) clearTimeout(timeoutId);
+              break;
+            } catch (e) {
+              lastErr = e;
+              if ((e as any)?.name === 'AbortError' && signal.aborted) break;
+              if (attempt === 0) {
+                await new Promise((r) => setTimeout(r, 500));
+                continue;
+              }
+            }
+          }
+          if (!response) {
+            console.warn(`搜索变体 "${variant}" 失败:`, lastErr);
+            continue;
+          }
           if (!response.ok) {
             console.warn(`搜索变体 "${variant}" 失败:`, response.statusText);
             continue;
@@ -624,8 +661,16 @@ export function useSourceSearch(params: {
         const sortedResults = await setAvailableSourcesWithWeight(finalResults);
         return sortedResults;
       } catch (err) {
+        if ((err as any)?.name === 'AbortError') {
+          console.warn('智能搜索已取消');
+          return [];
+        }
+        const msg = err instanceof Error ? err.message : '搜索失败';
+        const isTimeout = msg.includes('Timeout') || msg.includes('timeout');
         console.error('智能搜索失败:', err);
-        setSourceSearchError(err instanceof Error ? err.message : '搜索失败');
+        setSourceSearchError(
+          isTimeout ? '搜索超时，请点击重试' : `${msg}，可重试`,
+        );
         setAvailableSources([]);
         return [];
       } finally {

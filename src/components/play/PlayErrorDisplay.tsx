@@ -26,11 +26,15 @@ function buildDiagnostics(error: string, videoTitle?: string): string {
 interface PlayErrorDisplayProps {
   error: string;
   videoTitle?: string;
+  onRetry?: () => void;
+  onSwitchSource?: () => void;
 }
 
 export default function PlayErrorDisplay({
   error,
   videoTitle,
+  onRetry,
+  onSwitchSource,
 }: PlayErrorDisplayProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
@@ -106,6 +110,31 @@ export default function PlayErrorDisplay({
               variant='primary'
               size='md'
               fullWidth
+              onClick={() => {
+                if (onRetry) onRetry();
+                else window.location.reload();
+              }}
+              icon={<RefreshCw size={16} />}
+            >
+              重新尝试
+            </FluentButton>
+
+            {onSwitchSource && (
+              <FluentButton
+                variant='secondary'
+                size='md'
+                fullWidth
+                onClick={onSwitchSource}
+                icon={<RefreshCw size={16} />}
+              >
+                切换可用线路
+              </FluentButton>
+            )}
+
+            <FluentButton
+              variant='secondary'
+              size='md'
+              fullWidth
               onClick={() =>
                 videoTitle
                   ? router.push(`/search?q=${encodeURIComponent(videoTitle)}`)
@@ -114,16 +143,6 @@ export default function PlayErrorDisplay({
               icon={<Search size={16} />}
             >
               {videoTitle ? '返回搜索' : '返回上页'}
-            </FluentButton>
-
-            <FluentButton
-              variant='secondary'
-              size='md'
-              fullWidth
-              onClick={() => window.location.reload()}
-              icon={<RefreshCw size={16} />}
-            >
-              重新尝试
             </FluentButton>
 
             <FluentDivider orientation='horizontal' />
