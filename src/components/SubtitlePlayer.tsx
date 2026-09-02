@@ -30,8 +30,8 @@ export default function SubtitlePlayer({
   if (!visible || !currentSubtitle) return null;
 
   return (
-    <div className='absolute bottom-20 left-0 right-0 flex justify-center z-10 pointer-events-none'>
-      <div className='px-4 py-2 bg-black/70 rounded-lg backdrop-blur-sm max-w-[80%]'>
+    <div className='absolute bottom-16 md:bottom-20 left-0 right-0 flex justify-center z-10 pointer-events-none px-2'>
+      <div className='px-3 py-1.5 md:px-4 md:py-2 bg-black/70 rounded-lg backdrop-blur-sm max-w-[90%] md:max-w-[80%]'>
         <p className='text-white text-sm sm:text-base text-center leading-relaxed'>
           {currentSubtitle}
         </p>
