@@ -35,10 +35,10 @@
   );
 }
 
-/* 让按钮可自动缩小，防止溢出 */
+/* 桌面端最小尺寸 */
 .artplayer-plugin-liquid-glass .art-control {
-  flex-shrink: 1 !important;
-  min-width: 32px !important;
+  flex-shrink: 0 !important;
+  min-width: 40px !important;
   padding: 0 6px !important;
 }
 
@@ -47,10 +47,10 @@
   align-items: center; /* 官方唯一的对齐设置 */
 }
 
-/* 移动端优化 */
+/* 移动端：由 artplayer-mobile.css 统一管理，此插件不再覆写 */
 @media (max-width: 768px) {
   .artplayer-plugin-liquid-glass .art-control {
+    flex-shrink: 0 !important;
     padding: 0 4px !important;
-    min-width: 28px !important;
   }
 }

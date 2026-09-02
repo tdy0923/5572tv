@@ -4,29 +4,29 @@
    ⚠️ 重要：这些规则使用 !important 覆盖 ArtPlayer 内联样式
    ============================================ */
 
-/* ===== Medium Screen (Tablets & Mobile Landscape) ===== */
+/* ===== Mobile Screen (all phones) =====
+   策略：参考主流移动视频站（B站/YouTube），手机端控制栏只保留核心按钮，
+   次要功能（倍速/画面比例/PiP/翻转/锁定/音量）一律隐藏，避免挤压错乱 */
 @media (max-width: 768px) {
-  /* 网页全屏在移动端意义不大，隐藏以节省空间 */
-  .art-control-fullscreenWeb {
+  /* 音量、PiP、倍速、比例、翻转、锁定、网页全屏 → 手机端隐藏（可在设置中访问） */
+  .art-control-fullscreenWeb,
+  .art-control-volume,
+  .art-control-pip,
+  .art-control-flip,
+  .art-control-playbackRate,
+  .art-control-aspectRatio,
+  .art-control-lock {
     display: none !important;
   }
 
-  /* 音量控制在移动端有物理按键，隐藏以节省空间 */
-  .art-control-volume {
-    display: none !important;
-  }
-}
-
-/* ===== Mobile Screen (all phones) ===== */
-@media (max-width: 768px) {
-  /* 控制栏不换行、横向可滑（隐藏滚动条），防止窄屏挤压错乱 */
+  /* 控制栏不换行，超宽时横向可滑（隐藏滚动条），杜绝挤压/换行错乱 */
   .art-controls {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
-    padding: 0 4px !important;
+    padding: 0 2px !important;
   }
   .art-controls::-webkit-scrollbar {
     display: none !important;
@@ -36,6 +36,11 @@
     flex-shrink: 0 !important;
     gap: 0 !important;
     flex-wrap: nowrap !important;
+  }
+  /* 进度条占据剩余空间，不被挤压 */
+  .art-control-progress {
+    flex: 1 1 auto !important;
+    min-width: 60px !important;
   }
 
   /* 控制按钮至少44px触控目标 (Apple HIG) */
@@ -73,6 +78,21 @@
     min-width: 44px !important;
   }
 
+  /* 音轨/字幕按钮：仅图标+短文字，压缩宽度避免挤压 */
+  .art-control-audio-track-control,
+  .art-control-subtitle-control {
+    max-width: 60px !important;
+    overflow: hidden !important;
+  }
+  .art-control-audio-track-control span,
+  .art-control-subtitle-control span {
+    max-width: 36px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+  }
+
   /* 时间显示 */
   .art-control-time {
     font-size: 11px !important;
@@ -99,35 +119,13 @@
   }
 }
 
-/* 超窄屏 (< 380px) 进一步压缩，保证按钮不重叠；隐藏次要控件 */
-@media (max-width: 380px) {
-  .art-controls button,
-  .art-control {
-    min-width: 36px !important;
-    padding: 4px 4px !important;
-  }
-  .art-control-time {
-    font-size: 10px !important;
-  }
-  .art-control-pip,
-  .art-control-flip,
-  .art-control-playbackRate,
-  .art-control-aspectRatio,
-  .art-control-lock {
-    display: none !important;
-  }
-}
-
 /* ===== Tablet & Large Phone Landscape ===== */
 @media (min-width: 769px) and (max-width: 1024px) {
-  /* Slightly smaller controls for tablet to maximize video area */
   .art-controls button,
   .art-control {
     min-width: 44px !important;
     padding: 0 8px !important;
   }
-
-  /* Progress bar slightly thinner on tablet */
   .art-progress {
     height: 4px !important;
   }

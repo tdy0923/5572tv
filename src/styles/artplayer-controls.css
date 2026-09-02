@@ -37,12 +37,16 @@
     opacity: 1 !important;
     transform: translateY(0) !important;
     pointer-events: auto !important;
-    transition: opacity 0.15s ease 0.1s, transform 0.15s ease 0.1s !important;
+    transition:
+      opacity 0.15s ease 0.1s,
+      transform 0.15s ease 0.1s !important;
   }
 
   /* 音量面板默认隐藏状态 */
   .art-volume-panel {
-    transition: opacity 0.15s ease 0.3s, transform 0.15s ease 0.3s !important;
+    transition:
+      opacity 0.15s ease 0.3s,
+      transform 0.15s ease 0.3s !important;
   }
 }
 
@@ -87,8 +91,32 @@
     height: 14px !important;
     margin-top: -4px !important;
   }
-  
+
   .art-progress:hover .art-control-progress-indicator {
     transform: scale(1) !important;
   }
+}
+
+/* ===== Subtitle (字幕) 定位 =====
+   始终水平居中、位于控制栏上方，任何主题/插件下不乱放 */
+.art-subtitle {
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  max-width: 92% !important;
+  text-align: center !important;
+  bottom: calc(var(--art-control-height, 44px) + 12px) !important;
+  z-index: 30 !important;
+  pointer-events: none !important;
+  line-height: 1.4 !important;
+}
+
+.art-subtitle span {
+  background-color: rgba(0, 0, 0, 0.65) !important;
+  padding: 3px 10px !important;
+  border-radius: 6px !important;
+  font-size: clamp(14px, 3.5vw, 18px) !important;
+  color: #fff !important;
+  box-decoration-break: clone !important;
+  -webkit-box-decoration-break: clone !important;
 }
