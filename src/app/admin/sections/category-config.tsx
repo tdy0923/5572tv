@@ -21,13 +21,22 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Check, Edit3, GripVertical, X } from 'lucide-react';
+import { GripVertical, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 
 import {
-  buttonStyles,
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+  FluentInput,
+  FluentSelect,
+  FluentSpinner,
+} from '@/components/FluentUI';
+
+import {
   showError,
   useAlertModal,
   useLoadingState,
@@ -43,7 +52,6 @@ interface CustomCategory {
 
 function SortableCategoryItem({
   category,
-  index,
   onEdit,
   onDelete,
   onToggle,
@@ -66,48 +74,114 @@ function SortableCategoryItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className='flex items-center gap-2 p-2 bg-white dark:bg-gray-800 border rounded-lg'
     >
-      <button
-        {...attributes}
-        {...listeners}
-        className='cursor-grab active:cursor-grabbing p-1'
+      <FluentCard
+        hoverable
+        padding='12px'
+        className='flex items-center gap-2'
+        style={{ opacity: isDragging ? 0.5 : 1 }}
       >
-        <GripVertical className='w-4 h-4 text-gray-400' />
-      </button>
-      <span className='flex-1 text-sm'>
-        {category.name || category.query.slice(0, 30)}
-        {category.disabled && (
-          <span className='text-xs text-gray-400 ml-1'>(已禁用)</span>
-        )}
-      </span>
-      <span className='text-xs text-gray-500 w-12'>{category.type}</span>
-      <button
-        onClick={() => onEdit(category)}
-        className='p-1 text-blue-600 hover:text-blue-800'
-      >
-        <Edit3 className='w-4 h-4' />
-      </button>
-      <button onClick={() => onToggle(category.id)} className='p-1'>
-        {category.disabled ? (
-          <X className='w-4 h-4 text-red-500' />
-        ) : (
-          <Check className='w-4 h-4 text-green-600' />
-        )}
-      </button>
-      <button
-        onClick={() => onDelete(category.id)}
-        className='p-1 text-red-600 hover:text-red-800'
-      >
-        <X className='w-4 h-4' />
-      </button>
+        <button
+          {...attributes}
+          {...listeners}
+          className='cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 shrink-0 touch-manipulation'
+          aria-label='拖拽排序'
+        >
+          <GripVertical className='w-4 h-4 text-[#9ca3af]' />
+        </button>
+
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 min-w-0'>
+            <span
+              className={`text-sm font-medium truncate ${category.disabled ? 'line-through text-[#9ca3af]' : 'text-gray-900 dark:text-white'}`}
+            >
+              {category.name || category.query.slice(0, 30) || '未命名分类'}
+            </span>
+            {category.name && category.query && category.name !== category.query && (
+              <span className='text-xs text-[#9ca3af] truncate hidden sm:inline'>
+                {category.query.slice(0, 24)}
+              </span>
+            )}
+          </div>
+          <div className='text-xs truncate text-[#9ca3af] hidden sm:block'>
+            {category.query || '—'}
+          </div>
+        </div>
+
+        <div className='hidden sm:flex items-center gap-1.5 shrink-0'>
+          <FluentBadge
+            variant={category.type === 'movie' ? 'info' : 'success'}
+            size='sm'
+            rounded
+          >
+            {category.type === 'movie' ? '电影' : '剧集'}
+          </FluentBadge>
+          <FluentBadge variant='default' size='sm' rounded>
+            {category.from === 'config' ? '配置' : '自定义'}
+          </FluentBadge>
+          {category.disabled && (
+            <FluentBadge variant='warning' size='sm' rounded>
+              已禁用
+            </FluentBadge>
+          )}
+        </div>
+
+        {/* Mobile badges compact */}
+        <div className='flex sm:hidden items-center gap-1 shrink-0'>
+          <FluentBadge
+            variant={category.type === 'movie' ? 'info' : 'success'}
+            size='sm'
+            rounded
+          >
+            {category.type === 'movie' ? '电影' : '剧集'}
+          </FluentBadge>
+          {category.disabled && (
+            <FluentBadge variant='warning' size='sm' rounded>
+              禁用
+            </FluentBadge>
+          )}
+        </div>
+
+        <div className='flex items-center gap-1 shrink-0'>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Pencil className='h-3.5 w-3.5' />}
+            onClick={() => onEdit(category)}
+            aria-label='编辑'
+          >
+            编辑
+          </FluentButton>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            onClick={() => onToggle(category.id)}
+            className={
+              category.disabled
+                ? 'text-[#22c55e] hover:text-[#16a34a]'
+                : 'text-[#f59e0b] hover:text-[#d97706]'
+            }
+          >
+            {category.disabled ? '启用' : '禁用'}
+          </FluentButton>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Trash2 className='h-3.5 w-3.5' />}
+            onClick={() => onDelete(category.id)}
+            className='text-[#ef4444] hover:text-[#dc2626] hover:bg-red-50 dark:hover:bg-red-500/10'
+            aria-label='删除'
+          >
+            删除
+          </FluentButton>
+        </div>
+      </FluentCard>
     </div>
   );
 }
@@ -198,15 +272,17 @@ export default function CategoryConfig({
         disabled: false,
         from: 'config',
       });
+      setShowAddForm(false);
       setOrderChanged(true);
     }
   };
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
-    if (active.id !== over.id) {
-      const oldIndex = categories.findIndex((_, i) => `cat-${i}` === active.id);
-      const newIndex = categories.findIndex((_, i) => `cat-${i}` === over.id);
+    if (!over || active.id === over.id) return;
+    const oldIndex = categories.findIndex((_, i) => `cat-${i}` === active.id);
+    const newIndex = categories.findIndex((_, i) => `cat-${i}` === over.id);
+    if (oldIndex !== -1 && newIndex !== -1) {
       setCategories(arrayMove(categories, oldIndex, newIndex));
       setOrderChanged(true);
     }
@@ -214,36 +290,56 @@ export default function CategoryConfig({
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h3 className='text-base font-semibold'>分类配置</h3>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className={buttonStyles.successSmall}
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            分类配置
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            拖拽排序 · {categories.length} 个分类
+          </p>
+        </div>
+        <FluentButton
+          variant='primary'
+          size='sm'
+          icon={<Plus className='h-3.5 w-3.5' />}
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingIndex(null);
+            setNewCategory({
+              name: '',
+              type: 'movie',
+              query: '',
+              disabled: false,
+              from: 'config',
+            });
+          }}
         >
           添加分类
-        </button>
+        </FluentButton>
       </div>
 
+      {/* Add / Edit Form */}
       {showAddForm && (
-        <div className='p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 space-y-3'>
-          <input
-            placeholder='分类名称（可选）'
-            value={newCategory.name || ''}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, name: e.target.value })
-            }
-            className='w-full px-3 py-2 border rounded-lg text-sm'
-          />
-          <input
-            placeholder='搜索关键词'
-            value={newCategory.query}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, query: e.target.value })
-            }
-            className='w-full px-3 py-2 border rounded-lg text-sm'
-          />
-          <div className='flex gap-2'>
-            <select
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <FluentInput
+              label='分类名称（可选）'
+              value={newCategory.name || ''}
+              onChange={(e) =>
+                setNewCategory({ ...newCategory, name: e.target.value })
+              }
+              placeholder='例如：热门电影'
+            />
+            <FluentSelect
+              label='类型'
               value={newCategory.type}
               onChange={(e) =>
                 setNewCategory({
@@ -251,30 +347,52 @@ export default function CategoryConfig({
                   type: e.target.value as 'movie' | 'tv',
                 })
               }
-              className='px-3 py-2 border rounded-lg text-sm'
-            >
-              <option value='movie'>电影</option>
-              <option value='tv'>剧集</option>
-            </select>
-            <button
+              options={[
+                { value: 'movie', label: '电影' },
+                { value: 'tv', label: '剧集' },
+              ]}
+            />
+            <div className='sm:col-span-2'>
+              <FluentInput
+                label='搜索关键词'
+                value={newCategory.query}
+                onChange={(e) =>
+                  setNewCategory({ ...newCategory, query: e.target.value })
+                }
+                placeholder='用于搜索的关键词，例如：action'
+              />
+            </div>
+          </div>
+          <div className='flex gap-2 pt-1'>
+            <FluentButton
+              variant='primary'
+              size='sm'
               onClick={editingIndex !== null ? handleUpdate : handleAdd}
-              className={buttonStyles.primarySmall}
             >
               {editingIndex !== null ? '更新' : '添加'}
-            </button>
-            <button
+            </FluentButton>
+            <FluentButton
+              variant='ghost'
+              size='sm'
               onClick={() => {
                 setShowAddForm(false);
                 setEditingIndex(null);
+                setNewCategory({
+                  name: '',
+                  type: 'movie',
+                  query: '',
+                  disabled: false,
+                  from: 'config',
+                });
               }}
-              className={buttonStyles.secondarySmall}
             >
               取消
-            </button>
+            </FluentButton>
           </div>
-        </div>
+        </FluentCard>
       )}
 
+      {/* Sortable List */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -286,43 +404,99 @@ export default function CategoryConfig({
           strategy={verticalListSortingStrategy}
         >
           <div className='space-y-2'>
-            {categories.map((cat, i) => (
-              <SortableCategoryItem
-                key={`cat-${i}`}
-                category={{ ...cat, id: `cat-${i}` }}
-                index={i}
-                onEdit={(c) => {
-                  const idx = parseInt(c.id.replace('cat-', ''));
-                  setEditingIndex(idx);
-                  setNewCategory(categories[idx]);
-                  setShowAddForm(true);
-                }}
-                onDelete={(id) => {
-                  const idx = parseInt(id.replace('cat-', ''));
-                  setCategories(categories.filter((_, i) => i !== idx));
-                  setOrderChanged(true);
-                }}
-                onToggle={(id) => {
-                  const idx = parseInt(id.replace('cat-', ''));
-                  const updated = [...categories];
-                  updated[idx] = {
-                    ...updated[idx],
-                    disabled: !updated[idx].disabled,
-                  };
-                  setCategories(updated);
-                  setOrderChanged(true);
-                }}
-              />
-            ))}
+            {categories.length === 0 ? (
+              <FluentCard padding='0'>
+                <FluentEmptyState
+                  icon={<Layers className='h-6 w-6 text-[#9ca3af]' />}
+                  title='暂无分类'
+                  description='点击“添加分类”创建第一个分类，支持拖拽排序、启用/禁用与类型区分'
+                  action={
+                    <FluentButton
+                      variant='primary'
+                      size='sm'
+                      icon={<Plus className='h-3.5 w-3.5' />}
+                      onClick={() => {
+                        setShowAddForm(true);
+                        setEditingIndex(null);
+                        setNewCategory({
+                          name: '',
+                          type: 'movie',
+                          query: '',
+                          disabled: false,
+                          from: 'config',
+                        });
+                      }}
+                    >
+                      添加分类
+                    </FluentButton>
+                  }
+                />
+              </FluentCard>
+            ) : (
+              categories.map((cat, i) => (
+                <SortableCategoryItem
+                  key={`cat-${i}`}
+                  category={{ ...cat, id: `cat-${i}` }}
+                  index={i}
+                  onEdit={(c) => {
+                    const idx = parseInt(c.id.replace('cat-', ''), 10);
+                    setEditingIndex(idx);
+                    setNewCategory(categories[idx]);
+                    setShowAddForm(true);
+                  }}
+                  onDelete={(id) => {
+                    const idx = parseInt(id.replace('cat-', ''), 10);
+                    setCategories(categories.filter((_, i) => i !== idx));
+                    setOrderChanged(true);
+                  }}
+                  onToggle={(id) => {
+                    const idx = parseInt(id.replace('cat-', ''), 10);
+                    const updated = [...categories];
+                    updated[idx] = {
+                      ...updated[idx],
+                      disabled: !updated[idx].disabled,
+                    };
+                    setCategories(updated);
+                    setOrderChanged(true);
+                  }}
+                />
+              ))
+            )}
           </div>
         </SortableContext>
       </DndContext>
 
-      {orderChanged && (
-        <button onClick={handleSave} className={buttonStyles.primary}>
-          保存排序
-        </button>
+      {/* Save bar */}
+      {orderChanged && categories.length > 0 && (
+        <div className='flex items-center gap-3 pt-1'>
+          <FluentButton
+            variant='primary'
+            size='md'
+            loading={isLoading('saveCategory')}
+            onClick={handleSave}
+          >
+            {isLoading('saveCategory') ? '保存中…' : '保存排序'}
+          </FluentButton>
+          <span
+            className='text-xs'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            有未保存的更改
+          </span>
+        </div>
       )}
+
+      {isLoading('saveCategory') && !orderChanged && (
+        <div className='flex items-center gap-2 text-sm text-[#3b82f6]'>
+          <FluentSpinner size='small' />
+          <span>保存中...</span>
+        </div>
+      )}
+
+      {/* keep alertModal reference to avoid unused warning */}
+      <span className='hidden' aria-hidden>
+        {alertModal.isOpen ? 'open' : 'closed'}
+      </span>
     </div>
   );
 }

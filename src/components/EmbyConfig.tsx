@@ -2,12 +2,19 @@
 
 'use client';
 
-import { Plus } from 'lucide-react';
+import { Film, KeyRound, Pencil, Plus, Server, Trash2, UserRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+  FluentInput,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 interface EmbyConfigProps {
@@ -269,323 +276,360 @@ const EmbyConfig = ({ config, refreshConfig }: EmbyConfigProps) => {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            Emby 私人影库
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            私有 Emby 源 · {sources.length} 个源 · 支持密钥与账号认证
+          </p>
+        </div>
+        <div className='flex items-center gap-2'>
+          <FluentBadge variant='info' size='sm' rounded>
+            <Film className='w-3 h-3' /> {sources.length} 源
+          </FluentBadge>
+          <FluentButton
+            variant='primary'
+            size='sm'
+            icon={<Plus className='h-3.5 w-3.5' />}
+            onClick={handleAdd}
+            disabled={isLoading || showAddForm || !!editingSource}
+            loading={isLoading}
+          >
+            添加新源
+          </FluentButton>
+        </div>
+      </div>
+
       {/* 消息提示 */}
       {message && (
-        <div
-          className={`flex items-center space-x-2 p-3 rounded-lg ${
+        <FluentCard
+          padding='12px'
+          className={`flex items-center gap-2 text-sm ${
             message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+              ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+              : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
           }`}
         >
-          <span>{message.text}</span>
-        </div>
+          <FluentBadge
+            variant={message.type === 'success' ? 'success' : 'error'}
+            size='sm'
+            rounded
+          >
+            {message.type === 'success' ? '成功' : '错误'}
+          </FluentBadge>
+          <span className='flex-1'>{message.text}</span>
+        </FluentCard>
       )}
 
       {/* 源列表 */}
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100'>
-            Emby 源列表 ({sources.length})
-          </h3>
-          <button
-            onClick={handleAdd}
-            disabled={isLoading || showAddForm}
-            className='px-3 py-1.5 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-1'
-          >
-            <Plus className='h-4 w-4' />
-            <span>添加新源</span>
-          </button>
-        </div>
-
+      <div className='space-y-3'>
         {sources.length === 0 ? (
-          <div className='text-center py-8 text-gray-500 dark:text-gray-400'>
-            暂无Emby源，点击"添加新源"开始配置
-          </div>
+          <FluentCard padding='0'>
+            <FluentEmptyState
+              icon={<Server className='h-6 w-6 text-[#9ca3af]' />}
+              title='暂无 Emby 源'
+              description='点击“添加新源”创建第一个 Emby 源，支持密钥与账号两种认证方式'
+              action={
+                <FluentButton
+                  variant='primary'
+                  size='sm'
+                  icon={<Plus className='h-3.5 w-3.5' />}
+                  onClick={handleAdd}
+                  disabled={isLoading}
+                >
+                  添加新源
+                </FluentButton>
+              }
+            />
+          </FluentCard>
         ) : (
           sources.map((source) => (
-            <div
+            <FluentCard
               key={source.key}
-              className='border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800'
+              hoverable
+              padding='16px'
+              className='space-y-3'
             >
               <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'>
-                <div className='flex-1'>
-                  <div className='flex items-center gap-3 flex-wrap'>
-                    <h4 className='text-base font-medium text-gray-900 dark:text-gray-100'>
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-center gap-2 flex-wrap'>
+                    <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center shrink-0'>
+                      <Film className='w-3.5 h-3.5 text-[#3b82f6]' />
+                    </span>
+                    <h4 className='text-sm font-semibold text-gray-900 dark:text-white truncate'>
                       {source.name}
                     </h4>
-                    <span
-                      className={`px-2 py-0.5 text-xs font-medium rounded ${
-                        source.enabled
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                      }`}
+                    <FluentBadge
+                      variant={source.enabled ? 'success' : 'default'}
+                      size='sm'
+                      rounded
                     >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full inline-block ${source.enabled ? 'bg-[#22c55e]' : 'bg-[#9ca3af]'}`}
+                      />
                       {source.enabled ? '已启用' : '已禁用'}
-                    </span>
+                    </FluentBadge>
                     {source.isPublic && (
-                      <span className='px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'>
+                      <FluentBadge variant='info' size='sm' rounded>
                         公共源
-                      </span>
+                      </FluentBadge>
                     )}
+                    <FluentBadge variant='default' size='sm' rounded>
+                      {source.ApiKey ? '密钥' : source.Username ? '账号' : '未配置'}
+                    </FluentBadge>
                   </div>
-                  <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
-                    标识符: {source.key}
-                  </p>
-                  <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
-                    服务器: {source.ServerURL}
-                  </p>
+                  <div className='mt-2 space-y-1'>
+                    <p className='text-xs text-[#9ca3af] flex items-center gap-1.5'>
+                      <span className='font-medium text-gray-600 dark:text-gray-400'>标识符:</span>
+                      <FluentBadge variant='default' size='sm' rounded>
+                        {source.key}
+                      </FluentBadge>
+                    </p>
+                    <p className='text-xs text-[#9ca3af] truncate flex items-center gap-1.5'>
+                      <Server className='w-3 h-3 shrink-0' />
+                      <span className='truncate'>{source.ServerURL}</span>
+                    </p>
+                  </div>
                 </div>
-                <div className='flex gap-2 flex-wrap sm:flex-nowrap'>
-                  <button
+                <div className='flex gap-1.5 flex-wrap sm:flex-nowrap shrink-0'>
+                  <FluentButton
+                    variant='ghost'
+                    size='sm'
                     onClick={() => handleToggleEnabled(source)}
                     disabled={isLoading}
-                    className={`px-2 py-1 text-xs font-medium rounded-md transition-colors disabled:opacity-50 ${
+                    className={
                       source.enabled
-                        ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
+                        ? '!text-[#f59e0b] hover:!bg-amber-50 dark:hover:!bg-amber-500/10'
+                        : '!text-[#22c55e] hover:!bg-green-50 dark:hover:!bg-green-500/10'
+                    }
                   >
                     {source.enabled ? '禁用' : '启用'}
-                  </button>
-                  <button
+                  </FluentButton>
+                  <FluentButton
+                    variant='ghost'
+                    size='sm'
                     onClick={() => handleTest(source)}
                     disabled={isLoading}
-                    className='px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50'
                   >
                     测试
-                  </button>
-                  <button
+                  </FluentButton>
+                  <FluentButton
+                    variant='secondary'
+                    size='sm'
+                    icon={<Pencil className='h-3.5 w-3.5' />}
                     onClick={() => handleEdit(source)}
-                    className='px-2 py-1 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors'
                   >
                     编辑
-                  </button>
-                  <button
+                  </FluentButton>
+                  <FluentButton
+                    variant='ghost'
+                    size='sm'
+                    icon={<Trash2 className='h-3.5 w-3.5' />}
                     onClick={() => handleDelete(source)}
                     disabled={isLoading}
-                    className='px-2 py-1 text-xs font-medium bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors disabled:opacity-50'
+                    className='!text-[#ef4444] hover:!bg-red-50 dark:hover:!bg-red-500/10'
                   >
                     删除
-                  </button>
+                  </FluentButton>
                 </div>
               </div>
-            </div>
+            </FluentCard>
           ))
         )}
       </div>
 
       {/* 添加/编辑表单 */}
       {(showAddForm || editingSource) && (
-        <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-800/50'>
-          <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100 mb-4'>
-            {editingSource ? '编辑 Emby 源' : '添加新的 Emby 源'}
-          </h3>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <span className='w-7 h-7 rounded-lg bg-[#f4c24d]/15 flex items-center justify-center'>
+              <Server className='w-3.5 h-3.5 text-[#f4c24d]' />
+            </span>
+            <h3 className='text-[15px] font-semibold text-gray-900 dark:text-white'>
+              {editingSource ? '编辑 Emby 源' : '添加新的 Emby 源'}
+            </h3>
+            {editingSource ? (
+              <FluentBadge variant='warning' size='sm' rounded>
+                编辑中
+              </FluentBadge>
+            ) : (
+              <FluentBadge variant='success' size='sm' rounded>
+                新增
+              </FluentBadge>
+            )}
+            <FluentBadge variant='default' size='sm' rounded className='ml-auto'>
+              {authMode === 'apikey' ? '密钥认证' : '账号认证'}
+            </FluentBadge>
+          </div>
 
-          <div className='space-y-4'>
-            {/* 标识符 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                标识符 *
-              </label>
-              <input
-                type='text'
-                value={formData.key}
-                onChange={(e) =>
-                  setFormData({ ...formData, key: e.target.value })
-                }
-                disabled={!!editingSource}
-                placeholder='home, office, etc.'
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700'
-              />
-              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                唯一标识符，只能包含字母、数字、下划线，创建后不可修改
-              </p>
-            </div>
-
-            {/* 名称 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                显示名称 *
-              </label>
-              <input
-                type='text'
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder='家庭Emby, 公司Emby, etc.'
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-              />
-            </div>
-
-            {/* 服务器地址 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                Emby 服务器地址 *
-              </label>
-              <input
-                type='text'
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <FluentInput
+              label='标识符 *'
+              value={formData.key}
+              onChange={(e) =>
+                setFormData({ ...formData, key: e.target.value })
+              }
+              disabled={!!editingSource}
+              placeholder='home, office, etc.'
+            />
+            <FluentInput
+              label='显示名称 *'
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              placeholder='家庭Emby, 公司Emby, etc.'
+            />
+            <div className='sm:col-span-2'>
+              <FluentInput
+                label='Emby 服务器地址 *'
                 value={formData.ServerURL}
                 onChange={(e) =>
                   setFormData({ ...formData, ServerURL: e.target.value })
                 }
                 placeholder='https://emby.example.com/emby'
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
               />
-              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+              <p className='mt-1 text-xs text-[#9ca3af]'>
                 如果是反代，请包含完整路径，例如: https://emby.example.com/emby
               </p>
             </div>
+          </div>
 
-            {/* 认证方式切换 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                认证方式 *
-              </label>
-              <div className='flex gap-2 mb-4'>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setAuthMode('apikey');
-                    setFormData({ ...formData, Username: '', Password: '' });
-                  }}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    authMode === 'apikey'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  密钥认证
-                </button>
-                <button
-                  type='button'
-                  onClick={() => {
-                    setAuthMode('password');
-                    setFormData({ ...formData, ApiKey: '', UserId: '' });
-                  }}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
-                    authMode === 'password'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  账号认证
-                </button>
-              </div>
+          {/* 认证方式切换 */}
+          <div className='space-y-2'>
+            <p className='text-sm font-medium text-[#9ca3af]'>认证方式 *</p>
+            <div className='flex gap-2 p-1 rounded-xl border bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
+              <FluentButton
+                variant={authMode === 'apikey' ? 'primary' : 'ghost'}
+                size='sm'
+                fullWidth
+                icon={<KeyRound className='h-3.5 w-3.5' />}
+                onClick={() => {
+                  setAuthMode('apikey');
+                  setFormData({ ...formData, Username: '', Password: '' });
+                }}
+              >
+                密钥认证
+              </FluentButton>
+              <FluentButton
+                variant={authMode === 'password' ? 'primary' : 'ghost'}
+                size='sm'
+                fullWidth
+                icon={<UserRound className='h-3.5 w-3.5' />}
+                onClick={() => {
+                  setAuthMode('password');
+                  setFormData({ ...formData, ApiKey: '', UserId: '' });
+                }}
+              >
+                账号认证
+              </FluentButton>
             </div>
+          </div>
 
-            {/* 密钥认证模式 */}
-            {authMode === 'apikey' && (
-              <>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    API Key *
-                  </label>
-                  <input
-                    type='password'
-                    value={formData.ApiKey}
-                    onChange={(e) =>
-                      setFormData({ ...formData, ApiKey: e.target.value })
-                    }
-                    placeholder='在 Emby 控制台的 API 密钥页面生成'
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    用户 ID（可选）
-                  </label>
-                  <input
-                    type='text'
-                    value={formData.UserId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, UserId: e.target.value })
-                    }
-                    placeholder='留空则自动获取'
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  />
-                  <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                    不填则自动获取当前认证用户的 ID；如需指定其他用户可手动填写
-                  </p>
-                </div>
-              </>
-            )}
+          {/* 密钥认证模式 */}
+          {authMode === 'apikey' && (
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <FluentInput
+                label='API Key *'
+                type='password'
+                value={formData.ApiKey}
+                onChange={(e) =>
+                  setFormData({ ...formData, ApiKey: e.target.value })
+                }
+                placeholder='在 Emby 控制台的 API 密钥页面生成'
+              />
+              <FluentInput
+                label='用户 ID（可选）'
+                value={formData.UserId}
+                onChange={(e) =>
+                  setFormData({ ...formData, UserId: e.target.value })
+                }
+                placeholder='留空则自动获取'
+              />
+              <p className='sm:col-span-2 text-xs text-[#9ca3af] -mt-1'>
+                不填则自动获取当前认证用户的 ID；如需指定其他用户可手动填写
+              </p>
+            </div>
+          )}
 
-            {/* 账号认证模式 */}
-            {authMode === 'password' && (
-              <>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    用户名 *
-                  </label>
-                  <input
-                    type='text'
-                    value={formData.Username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, Username: e.target.value })
-                    }
-                    placeholder='Emby 用户名'
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    密码（可选）
-                  </label>
-                  <input
-                    type='password'
-                    value={formData.Password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, Password: e.target.value })
-                    }
-                    placeholder='如果账号没有密码可留空'
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  />
-                </div>
-              </>
-            )}
+          {/* 账号认证模式 */}
+          {authMode === 'password' && (
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+              <FluentInput
+                label='用户名 *'
+                value={formData.Username}
+                onChange={(e) =>
+                  setFormData({ ...formData, Username: e.target.value })
+                }
+                placeholder='Emby 用户名'
+              />
+              <FluentInput
+                label='密码（可选）'
+                type='password'
+                value={formData.Password}
+                onChange={(e) =>
+                  setFormData({ ...formData, Password: e.target.value })
+                }
+                placeholder='如果账号没有密码可留空'
+              />
+            </div>
+          )}
 
-            {/* 高级选项 */}
-            <div className='space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700'>
-              <h4 className='text-sm font-medium text-gray-900 dark:text-white mb-3'>
+          {/* 高级选项 */}
+          <FluentCard padding='16px' className='space-y-3 bg-gray-50 dark:!bg-white/[0.02]'>
+            <div className='flex items-center gap-2'>
+              <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
                 高级选项
               </h4>
-
-              <Toggle
-                checked={formData.removeEmbyPrefix}
-                onChange={(v) =>
-                  setFormData({ ...formData, removeEmbyPrefix: v })
-                }
-                label='播放链接移除/emby前缀'
-                description='启用后将从播放链接中移除 /emby 前缀'
-              />
-
-              <Toggle
-                checked={formData.appendMediaSourceId}
-                onChange={(v) =>
-                  setFormData({ ...formData, appendMediaSourceId: v })
-                }
-                label='拼接MediaSourceId参数'
-                description='启用后将调用 PlaybackInfo API 获取 MediaSourceId 并添加到播放链接'
-              />
-
-              <Toggle
-                checked={formData.transcodeMp4}
-                onChange={(v) => setFormData({ ...formData, transcodeMp4: v })}
-                label='转码mp4'
-                description='启用后将使用 stream.mp4 格式并移除 Static 参数'
-              />
-
-              <Toggle
-                checked={formData.proxyPlay}
-                onChange={(v) => setFormData({ ...formData, proxyPlay: v })}
-                label='视频播放代理'
-                description='启用后视频播放将通过服务器代理'
-              />
+              <FluentBadge variant='default' size='sm' rounded>
+                可选
+              </FluentBadge>
             </div>
 
+            <Toggle
+              checked={formData.removeEmbyPrefix}
+              onChange={(v) =>
+                setFormData({ ...formData, removeEmbyPrefix: v })
+              }
+              label='播放链接移除/emby前缀'
+              description='启用后将从播放链接中移除 /emby 前缀'
+            />
+
+            <Toggle
+              checked={formData.appendMediaSourceId}
+              onChange={(v) =>
+                setFormData({ ...formData, appendMediaSourceId: v })
+              }
+              label='拼接MediaSourceId参数'
+              description='启用后将调用 PlaybackInfo API 获取 MediaSourceId 并添加到播放链接'
+            />
+
+            <Toggle
+              checked={formData.transcodeMp4}
+              onChange={(v) => setFormData({ ...formData, transcodeMp4: v })}
+              label='转码mp4'
+              description='启用后将使用 stream.mp4 格式并移除 Static 参数'
+            />
+
+            <Toggle
+              checked={formData.proxyPlay}
+              onChange={(v) => setFormData({ ...formData, proxyPlay: v })}
+              label='视频播放代理'
+              description='启用后视频播放将通过服务器代理'
+            />
+          </FluentCard>
+
+          <div className='space-y-3'>
             <Toggle
               checked={formData.enabled}
               onChange={(v) => setFormData({ ...formData, enabled: v })}
@@ -598,26 +642,24 @@ const EmbyConfig = ({ config, refreshConfig }: EmbyConfigProps) => {
               label='设为公共源'
               description='开启后，所有用户的私人媒体库将自动包含此源'
             />
-
-            {/* 操作按钮 */}
-            <div className='flex justify-end space-x-2 pt-4'>
-              <button
-                onClick={resetForm}
-                disabled={isLoading}
-                className='px-4 py-2 text-sm font-medium bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50'
-              >
-                取消
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isLoading}
-                className='px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50'
-              >
-                {isLoading ? '保存中...' : '保存'}
-              </button>
-            </div>
           </div>
-        </div>
+
+          {/* 操作按钮 */}
+          <div className='flex justify-end gap-2 pt-2 border-t border-gray-200 dark:border-white/5'>
+            <FluentButton variant='ghost' size='sm' onClick={resetForm} disabled={isLoading}>
+              取消
+            </FluentButton>
+            <FluentButton
+              variant='primary'
+              size='sm'
+              onClick={handleSave}
+              disabled={isLoading}
+              loading={isLoading}
+            >
+              {isLoading ? '保存中...' : '保存'}
+            </FluentButton>
+          </div>
+        </FluentCard>
       )}
     </div>
   );

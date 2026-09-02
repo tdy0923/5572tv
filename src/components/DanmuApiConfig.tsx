@@ -5,12 +5,19 @@ import {
   CheckCircle,
   ExternalLink,
   MessageSquare,
+  Save,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 // 默认弹幕API配置
@@ -159,82 +166,133 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
     }
   };
 
+  const current = getCurrentApiConfig();
+
   return (
-    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6'>
-      <div className='flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6'>
-        <MessageSquare className='h-5 w-5 sm:h-6 sm:w-6 text-purple-600' />
-        <h2 className='text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100'>
-          弹幕API配置
-        </h2>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            弹幕 API 配置
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            B 站 / 腾讯 / 爱奇艺等平台弹幕聚合
+          </p>
+        </div>
+        <FluentBadge
+          variant={settings.enabled ? 'success' : 'default'}
+          size='sm'
+          rounded
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full inline-block ${settings.enabled ? 'bg-[#22c55e]' : 'bg-[#9ca3af]'}`}
+          />
+          {settings.enabled ? '已启用' : '已禁用'}
+        </FluentBadge>
       </div>
 
+      {/* Message */}
       {message && (
-        <div
-          className={`mb-4 p-4 rounded-lg flex items-center gap-2 ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-          }`}
+        <FluentCard
+          padding='12px'
+          className={`flex items-center gap-2 border ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className='h-5 w-5' />
+            <CheckCircle className='h-4 w-4 shrink-0' />
           ) : (
-            <AlertCircle className='h-5 w-5' />
+            <AlertCircle className='h-4 w-4 shrink-0' />
           )}
-          {message.text}
-        </div>
+          <span className='text-sm'>{message.text}</span>
+        </FluentCard>
       )}
 
-      <div className='space-y-6'>
-        {/* 功能说明 */}
-        <div className='bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4'>
-          <h4 className='text-sm font-semibold text-purple-900 dark:text-purple-300 mb-2'>
-            功能说明
-          </h4>
-          <p className='text-xs text-purple-800 dark:text-purple-300 mb-2'>
-            弹幕API用于从B站、腾讯、爱奇艺、优酷等平台获取弹幕数据。默认使用官方提供的弹幕服务，
-            你也可以自行部署弹幕API服务获得更好的稳定性。
+      {/* Info */}
+      <FluentCard
+        padding='12px'
+        className='flex gap-3 bg-purple-50/60 dark:bg-purple-900/10 border-purple-200/60 dark:border-purple-800/30'
+      >
+        <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center shrink-0'>
+          <MessageSquare className='w-3.5 h-3.5 text-[#8b5cf6]' />
+        </span>
+        <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+          <p className='font-semibold text-[#8b5cf6] mb-1'>功能说明</p>
+          <p className='text-[#6b7280] dark:text-gray-400'>
+            默认使用官方弹幕服务，可自建 <code className='px-1 py-0.5 bg-purple-100 dark:bg-purple-800/30 rounded text-[11px]'>danmu_api</code>{' '}
+            获得更好稳定性。
           </p>
           <a
             href='https://github.com/huangxd-/danmu_api'
             target='_blank'
             rel='noopener noreferrer'
-            className='inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:underline'
+            className='inline-flex items-center gap-1 mt-2 text-[#8b5cf6] hover:underline font-medium'
           >
-            <ExternalLink className='h-3 w-3' />
-            弹幕API开源项目 (支持Vercel一键部署)
+            <ExternalLink className='h-3 w-3' /> 弹幕 API 开源项目（Vercel 一键部署）
           </a>
         </div>
+      </FluentCard>
 
-        {/* 启用开关 */}
-        <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'>
-          <div className='mb-4'>
-            <Toggle
-              checked={settings.enabled}
-              onChange={(checked) =>
-                setSettings((prev) => ({
-                  ...prev,
-                  enabled: checked,
-                }))
-              }
-              label='启用弹幕功能'
-              description='启用后播放器可以加载外部弹幕数据'
-            />
+      {/* Settings */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center'>
+            <MessageSquare className='w-3.5 h-3.5 text-[#8b5cf6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            基础设置
+          </h4>
+          <FluentBadge variant='info' size='sm' rounded>
+            播放器弹幕
+          </FluentBadge>
+        </div>
+
+        <div className='flex items-center justify-between gap-4 p-3 rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
+          <div>
+            <span className='text-sm font-medium text-gray-900 dark:text-white'>
+              启用弹幕功能
+            </span>
+            <p className='text-xs text-[#9ca3af] mt-0.5'>播放器可加载外部弹幕</p>
           </div>
+          <Toggle
+            checked={settings.enabled}
+            onChange={(checked) =>
+              setSettings((prev) => ({
+                ...prev,
+                enabled: checked,
+              }))
+            }
+          />
+        </div>
 
-          {settings.enabled && (
-            <div className='space-y-4'>
-              {/* 当前使用的 API */}
-              <div className='bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3'>
-                <div className='text-xs text-gray-500 dark:text-gray-400 mb-1'>
-                  当前使用的API
-                </div>
-                <div className='font-mono text-sm text-gray-900 dark:text-gray-100 break-all'>
-                  {getCurrentApiConfig().url}
-                </div>
+        {settings.enabled && (
+          <div className='space-y-4'>
+            {/* Current API */}
+            <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
+              <div className='text-xs text-[#9ca3af] mb-1'>当前使用的 API</div>
+              <div className='font-mono text-sm text-gray-900 dark:text-white break-all'>
+                {current.url}
               </div>
+              <div className='flex items-center gap-1.5 mt-2'>
+                <FluentBadge variant={settings.useCustomApi ? 'warning' : 'success'} size='sm' rounded>
+                  {settings.useCustomApi ? '自定义' : '默认服务'}
+                </FluentBadge>
+                <span className='text-xs text-[#9ca3af] font-mono'>{current.token}</span>
+              </div>
+            </div>
 
-              {/* 使用自定义 API 开关 */}
+            <div className='flex items-center justify-between gap-4 p-3 rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
+              <div>
+                <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                  使用自定义 API
+                </span>
+                <p className='text-xs text-[#9ca3af] mt-0.5'>关闭则使用默认弹幕服务</p>
+              </div>
               <Toggle
                 checked={settings.useCustomApi}
                 onChange={(checked) =>
@@ -243,161 +301,132 @@ const DanmuApiConfig = ({ config, refreshConfig }: DanmuApiConfigProps) => {
                     useCustomApi: checked,
                   }))
                 }
-                label='使用自定义API'
-                description='关闭则使用默认弹幕服务'
               />
+            </div>
 
-              {/* 自定义 API 配置 */}
-              {settings.useCustomApi && (
-                <div className='space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4'>
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
-                      API 地址
-                    </label>
-                    <input
-                      type='url'
-                      value={settings.customApiUrl}
-                      onChange={(e) =>
-                        setSettings((prev) => ({
-                          ...prev,
-                          customApiUrl: e.target.value,
-                        }))
-                      }
-                      placeholder='https://your-danmu-api.vercel.app'
-                      className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm'
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
-                      API Token
-                    </label>
-                    <input
-                      type='text'
-                      value={settings.customToken}
-                      onChange={(e) =>
-                        setSettings((prev) => ({
-                          ...prev,
-                          customToken: e.target.value,
-                        }))
-                      }
-                      placeholder='your-token'
-                      className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm'
-                    />
-                    <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                      部署弹幕API时设置的 TOKEN 值
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* 超时设置 */}
-              <div>
-                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'>
-                  请求超时时间 (秒)
-                </label>
-                <input
-                  type='number'
-                  min={5}
-                  max={60}
-                  value={settings.timeout}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    // 允许空值输入，方便用户清空后重新输入
-                    if (val === '') {
-                      setSettings((prev) => ({
-                        ...prev,
-                        timeout: '' as unknown as number,
-                      }));
-                      return;
-                    }
-                    const num = parseInt(val);
-                    if (!isNaN(num)) {
-                      setSettings((prev) => ({ ...prev, timeout: num }));
-                    }
-                  }}
-                  onBlur={() => {
-                    // 失去焦点时验证范围
-                    const current = settings.timeout;
-                    const num =
-                      typeof current === 'number' && !isNaN(current)
-                        ? current
-                        : 30;
+            {settings.useCustomApi && (
+              <div className='space-y-3 border-t border-gray-200 dark:border-white/5 pt-4'>
+                <FluentInput
+                  label='API 地址'
+                  type='url'
+                  value={settings.customApiUrl}
+                  onChange={(e) =>
                     setSettings((prev) => ({
                       ...prev,
-                      timeout: Math.max(5, Math.min(60, num)),
-                    }));
-                  }}
-                  className='w-24 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm'
+                      customApiUrl: e.target.value,
+                    }))
+                  }
+                  placeholder='https://your-danmu-api.vercel.app'
+                  fullWidth
                 />
-                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                  范围 5-60 秒，建议 30 秒
-                </p>
+                <FluentInput
+                  label='API Token'
+                  value={settings.customToken}
+                  onChange={(e) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      customToken: e.target.value,
+                    }))
+                  }
+                  placeholder='your-token'
+                  fullWidth
+                />
+                <p className='text-xs text-[#9ca3af]'>部署弹幕 API 时设置的 TOKEN 值</p>
               </div>
+            )}
 
-              {/* 测试连接 */}
-              <div className='border-t border-gray-200 dark:border-gray-700 pt-4'>
-                <button
-                  type='button'
-                  onClick={testConnection}
-                  disabled={isTesting}
-                  className='px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-colors'
+            <FluentInput
+              label='请求超时时间（秒）'
+              type='number'
+              min={5}
+              max={60}
+              value={String(settings.timeout)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  setSettings((prev) => ({
+                    ...prev,
+                    timeout: '' as unknown as number,
+                  }));
+                  return;
+                }
+                const num = parseInt(val);
+                if (!isNaN(num)) {
+                  setSettings((prev) => ({ ...prev, timeout: num }));
+                }
+              }}
+              onBlur={() => {
+                const cur = settings.timeout;
+                const num =
+                  typeof cur === 'number' && !isNaN(cur) ? cur : 30;
+                setSettings((prev) => ({
+                  ...prev,
+                  timeout: Math.max(5, Math.min(60, num)),
+                }));
+              }}
+              className='max-w-[10rem]'
+            />
+            <p className='text-xs text-[#9ca3af] -mt-2'>范围 5–60 秒，建议 30 秒</p>
+
+            <div className='border-t border-gray-200 dark:border-white/5 pt-4 space-y-3'>
+              <FluentButton
+                variant='secondary'
+                size='sm'
+                loading={isTesting}
+                onClick={testConnection}
+              >
+                {isTesting ? '测试中...' : '测试连接'}
+              </FluentButton>
+              {testResult && (
+                <FluentCard
+                  padding='10px'
+                  className={`flex items-center gap-2 border ${testResult.success ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}
                 >
-                  {isTesting ? '测试中...' : '测试连接'}
-                </button>
+                  {testResult.success ? (
+                    <CheckCircle className='h-4 w-4 shrink-0' />
+                  ) : (
+                    <AlertCircle className='h-4 w-4 shrink-0' />
+                  )}
+                  <span className='text-sm'>{testResult.message}</span>
+                </FluentCard>
+              )}
+            </div>
 
-                {testResult && (
-                  <div
-                    className={`mt-3 p-3 rounded-lg flex items-center gap-2 ${
-                      testResult.success
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                        : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
-                    }`}
-                  >
-                    {testResult.success ? (
-                      <CheckCircle className='h-4 w-4 flex-shrink-0' />
-                    ) : (
-                      <AlertCircle className='h-4 w-4 flex-shrink-0' />
-                    )}
-                    <span className='text-sm'>{testResult.message}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* 默认 API 信息 */}
-              <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 overflow-hidden'>
-                <h4 className='text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2'>
-                  默认弹幕服务
-                </h4>
-                <div className='text-xs text-blue-800 dark:text-blue-300 space-y-1'>
-                  <div className='flex flex-col sm:flex-row sm:items-center gap-1'>
-                    <span className='font-medium shrink-0'>API地址：</span>
-                    <code className='bg-blue-100 dark:bg-blue-800/50 px-1 rounded break-all'>
-                      {DEFAULT_DANMU_API_URL}
-                    </code>
-                  </div>
-                  <div className='flex flex-col sm:flex-row sm:items-center gap-1'>
-                    <span className='font-medium shrink-0'>Token：</span>
-                    <code className='bg-blue-100 dark:bg-blue-800/50 px-1 rounded break-all'>
-                      {DEFAULT_DANMU_API_TOKEN}
-                    </code>
-                  </div>
+            <FluentCard
+              padding='12px'
+              className='bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30 space-y-1.5'
+            >
+              <h4 className='text-xs font-semibold text-[#3b82f6]'>默认弹幕服务</h4>
+              <div className='text-xs text-blue-800 dark:text-blue-300 space-y-1 font-mono'>
+                <div>
+                  <span className='font-medium'>API：</span>
+                  <code className='bg-blue-100 dark:bg-blue-800/30 px-1 rounded break-all'>
+                    {DEFAULT_DANMU_API_URL}
+                  </code>
+                </div>
+                <div>
+                  <span className='font-medium'>Token：</span>
+                  <code className='bg-blue-100 dark:bg-blue-800/30 px-1 rounded'>
+                    {DEFAULT_DANMU_API_TOKEN}
+                  </code>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
+            </FluentCard>
+          </div>
+        )}
+      </FluentCard>
 
-      {/* 保存按钮 */}
-      <div className='flex justify-end pt-4 sm:pt-6'>
-        <button
+      {/* Save bar */}
+      <div className='flex items-center gap-3 pt-1 sticky bottom-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur rounded-xl p-3 border border-gray-200 dark:border-white/5 shadow-sm'>
+        <FluentButton
+          variant='primary'
+          size='md'
+          icon={<Save className='h-4 w-4' />}
+          loading={isLoading}
           onClick={handleSave}
-          disabled={isLoading}
-          className='w-full sm:w-auto px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors'
         >
           {isLoading ? '保存中...' : '保存配置'}
-        </button>
+        </FluentButton>
       </div>
     </div>
   );

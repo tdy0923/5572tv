@@ -1,8 +1,16 @@
 'use client';
 
+import { Code2, Eye, RotateCcw, Save } from 'lucide-react';
 import { useState } from 'react';
 
-import { buttonStyles, showError, showSuccess } from '@/app/admin/admin-utils';
+import { showError, showSuccess } from '@/app/admin/admin-utils';
+
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentTextArea,
+} from '@/components/FluentUI';
 
 interface ThemeEditorProps {
   initialCustomCSS: string;
@@ -88,72 +96,139 @@ export default function ThemeEditor({
       .replace(/url\s*\(\s*['"]?data\s*:/gi, '/* blocked */');
   };
 
+  const hasPreview = Boolean(previewCSS);
+  const hasChanges = css !== initialCustomCSS;
+
   return (
     <div className='space-y-4'>
       <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(previewCSS) }} />
 
-      <div className='flex items-center justify-between'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
         <div>
-          <h4 className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-            自定义 CSS
-          </h4>
-          <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-            输入自定义 CSS 代码来修改站点主题，支持 CSS 变量
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            主题编辑器
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            自定义 CSS · 支持 CSS 变量覆盖
           </p>
         </div>
-        <button
-          onClick={() => setShowReference(!showReference)}
-          className='text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300'
-        >
-          {showReference ? '隐藏参考' : 'CSS 参考'}
-        </button>
+        <div className='flex items-center gap-2'>
+          {hasPreview && (
+            <FluentBadge variant='warning' size='sm' rounded>
+              预览中
+            </FluentBadge>
+          )}
+          {hasChanges && !hasPreview && (
+            <FluentBadge variant='info' size='sm' rounded>
+              未保存
+            </FluentBadge>
+          )}
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Code2 className='w-3.5 h-3.5' />}
+            onClick={() => setShowReference(!showReference)}
+          >
+            {showReference ? '隐藏参考' : 'CSS 参考'}
+          </FluentButton>
+        </div>
       </div>
 
+      {/* Description */}
+      <FluentCard
+        padding='12px'
+        className='flex gap-3 bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5'
+      >
+        <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center shrink-0'>
+          <Code2 className='w-3.5 h-3.5 text-[#8b5cf6]' />
+        </span>
+        <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+          <p className='font-medium'>自定义 CSS</p>
+          <p className='text-[#9ca3af] mt-0.5'>输入 CSS 覆盖站点主题，保存后全局生效；可先预览再保存。</p>
+        </div>
+      </FluentCard>
+
       {showReference && (
-        <div className='bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700'>
-          <pre className='text-xs text-gray-600 dark:text-gray-400 overflow-x-auto whitespace-pre-wrap'>
+        <FluentCard
+          padding='12px'
+          className='bg-gray-900 dark:bg-black border-gray-800 dark:border-white/10'
+        >
+          <div className='flex items-center justify-between mb-2'>
+            <span className='text-xs font-medium text-gray-300'>CSS 参考</span>
+            <FluentBadge variant='default' size='sm' rounded>
+              只读
+            </FluentBadge>
+          </div>
+          <pre className='text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto'>
             {DEFAULT_CSS_REFERENCE}
           </pre>
-        </div>
+        </FluentCard>
       )}
 
-      <textarea
-        value={css}
-        onChange={(e) => setCss(e.target.value)}
-        placeholder='/* 在此输入自定义 CSS */'
-        className='w-full h-64 p-3 font-mono text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y'
-        spellCheck={false}
-      />
+      {/* Editor */}
+      <FluentCard padding='16px' className='space-y-3'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+            <Code2 className='w-3.5 h-3.5 text-[#3b82f6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>CSS 代码</h4>
+          <FluentBadge variant='default' size='sm' rounded>
+            {css.length} 字符
+          </FluentBadge>
+        </div>
+        <FluentTextArea
+          value={css}
+          onChange={(e) => setCss(e.target.value)}
+          placeholder='/* 在此输入自定义 CSS */'
+          rows={14}
+          className='font-mono !text-[13px] leading-relaxed'
+          spellCheck={false}
+        />
+        <p className='text-xs text-[#9ca3af]'>
+          支持 :root 变量、body 背景、.ui-surface 等；危险表达式已自动拦截。
+        </p>
+      </FluentCard>
 
-      <div className='flex items-center gap-3'>
-        <button
+      {/* Actions bar */}
+      <div className='flex items-center gap-2 pt-1 sticky bottom-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur rounded-xl p-3 border border-gray-200 dark:border-white/5 shadow-sm flex-wrap'>
+        <FluentButton
+          variant='secondary'
+          size='md'
+          icon={<Eye className='w-4 h-4' />}
           onClick={handlePreview}
-          className={`px-4 py-2 text-sm font-medium ${buttonStyles.secondary}`}
         >
           预览效果
-        </button>
-        {previewCSS && (
-          <button
-            onClick={handleClearPreview}
-            className='px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-          >
+        </FluentButton>
+        {hasPreview && (
+          <FluentButton variant='ghost' size='md' onClick={handleClearPreview}>
             取消预览
-          </button>
+          </FluentButton>
         )}
         <div className='flex-1' />
-        <button
+        <FluentButton
+          variant='ghost'
+          size='md'
+          icon={<RotateCcw className='w-4 h-4' />}
           onClick={handleReset}
-          className='px-4 py-2 text-sm font-medium text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300'
         >
           重置
-        </button>
-        <button
+        </FluentButton>
+        <FluentButton
+          variant='primary'
+          size='md'
+          icon={<Save className='w-4 h-4' />}
+          loading={saving}
           onClick={handleSave}
-          disabled={saving}
-          className={`px-4 py-2 text-sm font-medium ${saving ? buttonStyles.disabled : buttonStyles.primary}`}
         >
           {saving ? '保存中...' : '保存'}
-        </button>
+        </FluentButton>
       </div>
     </div>
   );

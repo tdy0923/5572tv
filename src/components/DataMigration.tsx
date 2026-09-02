@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  AlertCircle,
   AlertTriangle,
   CheckCircle,
   Download,
@@ -11,6 +10,14 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+  FluentSpinner,
+} from '@/components/FluentUI';
 
 interface DataMigrationProps {
   onRefreshConfig?: () => Promise<void>;
@@ -80,7 +87,7 @@ const AlertModal = ({
       case 'success':
         return <CheckCircle className='w-12 h-12 text-green-500' />;
       case 'error':
-        return <AlertCircle className='w-12 h-12 text-red-500' />;
+        return <AlertTriangle className='w-12 h-12 text-red-500' />;
       case 'warning':
         return <AlertTriangle className='w-12 h-12 text-yellow-500' />;
       default:
@@ -128,32 +135,27 @@ const AlertModal = ({
             />
           )}
 
-          <div className='flex justify-center space-x-3'>
+          <div className='flex justify-center gap-2'>
             {showConfirm && onConfirm ? (
               <>
-                <button
-                  onClick={onClose}
-                  className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors'
-                >
+                <FluentButton variant='ghost' size='md' onClick={onClose}>
                   取消
-                </button>
-                <button
+                </FluentButton>
+                <FluentButton
+                  variant='primary'
+                  size='md'
                   onClick={() => {
                     onConfirm();
                     onClose();
                   }}
-                  className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors'
                 >
                   {confirmText}
-                </button>
+                </FluentButton>
               </>
             ) : (
-              <button
-                onClick={onClose}
-                className='px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors'
-              >
+              <FluentButton variant='primary' size='md' onClick={onClose}>
                 确定
-              </button>
+              </FluentButton>
             )}
           </div>
         </div>
@@ -359,177 +361,185 @@ const DataMigration = ({ onRefreshConfig }: DataMigrationProps) => {
 
   return (
     <>
-      <div className='max-w-6xl mx-auto space-y-6'>
-        {/* 简洁警告提示 */}
-        <div className='flex items-center gap-3 p-4 border border-amber-200 dark:border-amber-700 rounded-lg bg-amber-50/30 dark:bg-amber-900/5'>
-          <AlertTriangle className='w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0' />
-          <p className='text-sm text-amber-800 dark:text-amber-200'>
-            数据迁移操作请谨慎，确保已备份重要数据
+      <div className='space-y-4'>
+        {/* Header */}
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h3
+              className='text-[15px] font-semibold'
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              数据迁移
+            </h3>
+            <p
+              className='text-xs mt-0.5'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              加密备份 · 跨站恢复
+            </p>
+          </div>
+          <FluentBadge variant='warning' size='sm' rounded>
+            <AlertTriangle className='w-3 h-3' /> 谨慎操作
+          </FluentBadge>
+        </div>
+
+        <FluentCard
+          padding='12px'
+          className='flex gap-3 bg-amber-50/60 dark:bg-amber-900/10 border-amber-200/60 dark:border-amber-800/30'
+        >
+          <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center shrink-0'>
+            <AlertTriangle className='w-3.5 h-3.5 text-[#f59e0b]' />
+          </span>
+          <p className='text-xs leading-relaxed text-amber-800 dark:text-amber-200'>
+            数据迁移会覆盖现有数据，请提前备份重要数据并妥善保管密码。
           </p>
-        </div>
+        </FluentCard>
 
-        {/* 主要操作区域 - 响应式布局 */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          {/* 数据导出 */}
-          <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 hover:shadow-sm transition-shadow flex flex-col'>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center'>
-                <Download className='w-4 h-4 text-blue-600 dark:text-blue-400' />
-              </div>
+        {/* Grid */}
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+          {/* Export */}
+          <FluentCard padding='16px' className='space-y-4 flex flex-col'>
+            <div className='flex items-center gap-3'>
+              <span className='w-8 h-8 rounded-xl bg-[#3b82f6]/15 flex items-center justify-center'>
+                <Download className='w-4 h-4 text-[#3b82f6]' />
+              </span>
               <div>
-                <h3 className='font-semibold text-gray-900 dark:text-gray-100'>
+                <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
                   数据导出
-                </h3>
-                <p className='text-sm text-gray-600 dark:text-gray-400'>
-                  创建加密备份文件
+                </h4>
+                <p className='text-xs text-[#9ca3af]'>创建加密备份文件</p>
+              </div>
+              <FluentBadge variant='info' size='sm' rounded className='ml-auto'>
+                .dat
+              </FluentBadge>
+            </div>
+
+            <div className='space-y-3 flex-1'>
+              <FluentInput
+                label='加密密码'
+                type='password'
+                value={exportPassword}
+                onChange={(e) => setExportPassword(e.target.value)}
+                placeholder='设置强密码保护备份文件'
+                fullWidth
+                prefix={<Lock className='w-3.5 h-3.5' />}
+                disabled={isExporting}
+              />
+              <p className='text-xs text-[#9ca3af]'>导入时需使用相同密码</p>
+
+              <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
+                <p className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
+                  备份内容
                 </p>
+                <div className='grid grid-cols-2 gap-1 text-xs text-[#9ca3af]'>
+                  <span className='flex items-center gap-1'>
+                    <span className='w-1 h-1 rounded-full bg-[#3b82f6] inline-block' />
+                    管理配置
+                  </span>
+                  <span className='flex items-center gap-1'>
+                    <span className='w-1 h-1 rounded-full bg-[#3b82f6] inline-block' />
+                    用户数据
+                  </span>
+                  <span className='flex items-center gap-1'>
+                    <span className='w-1 h-1 rounded-full bg-[#3b82f6] inline-block' />
+                    播放记录
+                  </span>
+                  <span className='flex items-center gap-1'>
+                    <span className='w-1 h-1 rounded-full bg-[#3b82f6] inline-block' />
+                    收藏夹
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className='flex-1 flex flex-col'>
-              <div className='space-y-4'>
-                {/* 密码输入 */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    <Lock className='w-4 h-4' />
-                    加密密码
-                  </label>
-                  <input
-                    type='password'
-                    value={exportPassword}
-                    onChange={(e) => setExportPassword(e.target.value)}
-                    placeholder='设置强密码保护备份文件'
-                    className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors'
-                    disabled={isExporting}
-                  />
-                  <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                    导入时需要使用相同密码
-                  </p>
-                </div>
+            <FluentButton
+              variant='primary'
+              size='md'
+              fullWidth
+              icon={<Download className='w-4 h-4' />}
+              loading={isExporting}
+              disabled={!exportPassword.trim()}
+              onClick={handleExport}
+            >
+              {isExporting ? '导出中...' : '导出数据'}
+            </FluentButton>
+          </FluentCard>
 
-                {/* 备份内容列表 */}
-                <div className='text-xs text-gray-600 dark:text-gray-400 space-y-1'>
-                  <p className='font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    备份内容：
-                  </p>
-                  <div className='grid grid-cols-2 gap-1'>
-                    <div>• 管理配置</div>
-                    <div>• 用户数据</div>
-                    <div>• 播放记录</div>
-                    <div>• 收藏夹</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 导出按钮 */}
-              <button
-                onClick={handleExport}
-                disabled={isExporting || !exportPassword.trim()}
-                className={`w-full px-4 py-2.5 rounded-lg font-medium transition-colors mt-10 ${
-                  isExporting || !exportPassword.trim()
-                    ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-500 dark:text-gray-400'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
-                {isExporting ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                    导出中...
-                  </div>
-                ) : (
-                  <div className='flex items-center justify-center gap-2'>
-                    <Download className='w-4 h-4' />
-                    导出数据
-                  </div>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* 数据导入 */}
-          <div className='border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 hover:shadow-sm transition-shadow flex flex-col'>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center'>
-                <Upload className='w-4 h-4 text-red-600 dark:text-red-400' />
-              </div>
+          {/* Import */}
+          <FluentCard padding='16px' className='space-y-4 flex flex-col'>
+            <div className='flex items-center gap-3'>
+              <span className='w-8 h-8 rounded-xl bg-[#ef4444]/15 flex items-center justify-center'>
+                <Upload className='w-4 h-4 text-[#ef4444]' />
+              </span>
               <div>
-                <h3 className='font-semibold text-gray-900 dark:text-gray-100'>
+                <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
                   数据导入
-                </h3>
-                <p className='text-sm text-red-600 dark:text-red-400'>
-                  <AlertTriangle className='w-4 h-4 inline' /> 将清空现有数据
+                </h4>
+                <p className='text-xs text-[#ef4444] flex items-center gap-1'>
+                  <AlertTriangle className='w-3 h-3' /> 将清空现有数据
                 </p>
               </div>
+              <FluentBadge variant='error' size='sm' rounded className='ml-auto'>
+                覆盖
+              </FluentBadge>
             </div>
 
-            <div className='flex-1 flex flex-col'>
-              <div className='space-y-4'>
-                {/* 文件选择 */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    <FileCheck className='w-4 h-4' />
-                    备份文件
-                    {selectedFile && (
-                      <span className='ml-auto text-xs text-green-600 dark:text-green-400 font-normal'>
-                        {selectedFile.name} (
-                        {(selectedFile.size / 1024).toFixed(1)} KB)
-                      </span>
-                    )}
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='.dat'
-                    onChange={handleFileSelect}
-                    className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-gray-50 dark:file:bg-gray-600 file:text-gray-700 dark:file:text-gray-300 hover:file:bg-gray-100 dark:hover:file:bg-gray-500 transition-colors'
-                    disabled={isImporting}
-                  />
-                </div>
-
-                {/* 密码输入 */}
-                <div>
-                  <label className='flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    <Lock className='w-4 h-4' />
-                    解密密码
-                  </label>
-                  <input
-                    type='password'
-                    value={importPassword}
-                    onChange={(e) => setImportPassword(e.target.value)}
-                    placeholder='输入导出时的加密密码'
-                    className='w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors'
-                    disabled={isImporting}
-                  />
-                </div>
+            <div className='space-y-3 flex-1'>
+              <div className='space-y-1'>
+                <label className='text-sm font-medium text-[#9ca3af] flex items-center gap-2'>
+                  <FileCheck className='w-3.5 h-3.5' />
+                  备份文件
+                  {selectedFile && (
+                    <FluentBadge variant='success' size='sm' rounded className='ml-auto'>
+                      {(selectedFile.size / 1024).toFixed(1)} KB
+                    </FluentBadge>
+                  )}
+                </label>
+                {selectedFile && (
+                  <p className='text-xs text-[#22c55e] truncate'>{selectedFile.name}</p>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  accept='.dat'
+                  onChange={handleFileSelect}
+                  className='w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gray-100 dark:file:bg-white/10 file:text-gray-700 dark:file:text-gray-200 hover:file:bg-gray-200 dark:hover:file:bg-white/15 border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-white/5 text-gray-900 dark:text-white p-1.5 cursor-pointer'
+                  disabled={isImporting}
+                />
               </div>
 
-              {/* 导入按钮 */}
-              <button
-                onClick={handleImport}
-                disabled={
-                  isImporting || !selectedFile || !importPassword.trim()
-                }
-                className={`w-full px-4 py-2.5 rounded-lg font-medium transition-colors mt-10 ${
-                  isImporting || !selectedFile || !importPassword.trim()
-                    ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed text-gray-500 dark:text-gray-400'
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-                }`}
-              >
-                {isImporting ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-                    导入中...
-                  </div>
-                ) : (
-                  <div className='flex items-center justify-center gap-2'>
-                    <Upload className='w-4 h-4' />
-                    导入数据
-                  </div>
-                )}
-              </button>
+              <FluentInput
+                label='解密密码'
+                type='password'
+                value={importPassword}
+                onChange={(e) => setImportPassword(e.target.value)}
+                placeholder='输入导出时的加密密码'
+                fullWidth
+                prefix={<Lock className='w-3.5 h-3.5' />}
+                disabled={isImporting}
+              />
             </div>
-          </div>
+
+            <FluentButton
+              variant='danger'
+              size='md'
+              fullWidth
+              icon={<Upload className='w-4 h-4' />}
+              loading={isImporting}
+              disabled={!selectedFile || !importPassword.trim()}
+              onClick={handleImport}
+            >
+              {isImporting ? '导入中...' : '导入数据'}
+            </FluentButton>
+          </FluentCard>
         </div>
+
+        {(isExporting || isImporting) && (
+          <div className='flex items-center justify-center gap-2 text-sm text-[#3b82f6]'>
+            <FluentSpinner size='small' />
+            <span>{isExporting ? '正在导出...' : '正在导入...'}</span>
+          </div>
+        )}
       </div>
 
       {/* 弹窗组件 */}

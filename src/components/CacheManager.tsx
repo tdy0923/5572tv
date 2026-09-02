@@ -13,6 +13,14 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+  FluentSpinner,
+} from '@/components/FluentUI';
+
 interface CacheStats {
   douban: { count: number; size: number; types: Record<string, number> };
   shortdrama: { count: number; size: number; types: Record<string, number> };
@@ -178,265 +186,224 @@ export default function CacheManager() {
   }, []);
 
   return (
-    <div className='space-y-6'>
-      {/* 标题和刷新按钮 */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-3'>
-          <BarChart3 className='w-6 h-6 text-blue-600' />
-          <h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
-            缓存管理
-          </h2>
-        </div>
-
-        <div className='flex items-center space-x-2'>
-          {lastRefresh && (
-            <span className='text-sm text-gray-500 dark:text-gray-400'>
-              <Clock className='inline w-4 h-4 mr-1' />
-              {lastRefresh.toLocaleTimeString()}
-            </span>
-          )}
-          <button
-            onClick={fetchStats}
-            disabled={loading}
-            className='inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50'
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
           >
-            <RefreshCw
-              className={`h-4 w-4 mr-1.5 ${loading ? 'animate-spin' : ''}`}
-            />
-            刷新
-          </button>
+            缓存管理
+          </h3>
+          <p
+            className='text-xs mt-0.5 flex items-center gap-1.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            命中、大小与清理
+            {lastRefresh && (
+              <span className='inline-flex items-center gap-1 text-xs text-[#9ca3af]'>
+                <Clock className='w-3 h-3' />
+                {lastRefresh.toLocaleTimeString()}
+              </span>
+            )}
+          </p>
         </div>
+        <FluentButton
+          variant='secondary'
+          size='sm'
+          icon={<RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />}
+          loading={loading}
+          onClick={fetchStats}
+        >
+          刷新
+        </FluentButton>
       </div>
 
-      {/* 错误提示 */}
+      {/* Error */}
       {error && (
-        <div className='bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4'>
-          <div className='flex items-center'>
-            <AlertTriangle className='h-5 w-5 text-red-400 mr-3' />
-            <span className='text-red-800 dark:text-red-200'>{error}</span>
-          </div>
-        </div>
+        <FluentCard
+          padding='12px'
+          className='flex items-center gap-2 border bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'
+        >
+          <AlertTriangle className='h-4 w-4 shrink-0' />
+          <span className='text-sm'>{error}</span>
+        </FluentCard>
       )}
 
-      {/* 总览统计 */}
+      {/* Overview */}
       {stats && (
-        <div className='bg-linear-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white'>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-            <div className='text-center'>
-              <div className='text-3xl font-bold'>{stats.total.count}</div>
-              <div className='text-blue-100'>缓存项总数</div>
+        <FluentCard
+          padding='16px'
+          className='bg-gradient-to-r from-[#3b82f6] to-[#6366f1] !border-transparent text-white'
+        >
+          <div className='flex items-center gap-2 mb-3'>
+            <BarChart3 className='w-4 h-4 text-white/90' />
+            <span className='text-sm font-semibold text-white'>总览</span>
+            <FluentBadge variant='default' size='sm' rounded className='!bg-white/20 !text-white !border-white/20'>
+              {stats.timestamp ? new Date(stats.timestamp).toLocaleString() : ''}
+            </FluentBadge>
+          </div>
+          <div className='grid grid-cols-3 gap-4 text-center'>
+            <div>
+              <div className='text-2xl font-bold'>{stats.total.count}</div>
+              <div className='text-xs text-white/80'>缓存项总数</div>
             </div>
-            <div className='text-center'>
-              <div className='text-3xl font-bold'>
-                {stats.formattedSizes.total}
-              </div>
-              <div className='text-blue-100'>占用存储空间</div>
+            <div>
+              <div className='text-2xl font-bold'>{stats.formattedSizes.total}</div>
+              <div className='text-xs text-white/80'>占用存储</div>
             </div>
-            <div className='text-center'>
-              <div className='text-3xl font-bold'>
-                {Object.keys(CACHE_TYPES).length}
-              </div>
-              <div className='text-blue-100'>缓存类型</div>
+            <div>
+              <div className='text-2xl font-bold'>{CACHE_TYPES.length}</div>
+              <div className='text-xs text-white/80'>缓存类型</div>
             </div>
           </div>
-        </div>
+        </FluentCard>
       )}
 
-      {/* 缓存类型详情 */}
+      {/* Cache types */}
       {stats && (
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-3'>
           {CACHE_TYPES.map((cacheType) => {
             const typeStats = stats[cacheType.key as keyof typeof stats] as any;
             const Icon = cacheType.icon;
+            const isClearing = clearing === cacheType.key;
+            const count = typeStats?.count || 0;
+            const size =
+              stats.formattedSizes[
+                cacheType.key as keyof typeof stats.formattedSizes
+              ];
 
             return (
-              <div
-                key={cacheType.key}
-                className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6'
-              >
-                <div className='flex items-center justify-between mb-4'>
-                  <div className='flex items-center space-x-3'>
-                    <div className={`p-2 rounded-lg ${cacheType.color}`}>
-                      <Icon className='h-5 w-5' />
-                    </div>
+              <FluentCard key={cacheType.key} hoverable padding='16px' className='space-y-3'>
+                <div className='flex items-start justify-between gap-3'>
+                  <div className='flex items-start gap-3'>
+                    <span className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${cacheType.color}`}>
+                      <Icon className='h-4 w-4' />
+                    </span>
                     <div>
-                      <h3 className='font-medium text-gray-900 dark:text-gray-100'>
+                      <h4 className='text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-1.5'>
                         {cacheType.name}
-                      </h3>
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
+                        <FluentBadge
+                          variant={count > 0 ? 'info' : 'default'}
+                          size='sm'
+                          rounded
+                        >
+                          {count} 项
+                        </FluentBadge>
+                      </h4>
+                      <p className='text-xs text-[#9ca3af] mt-0.5 leading-relaxed'>
                         {cacheType.description}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className='grid grid-cols-2 gap-4 mb-4'>
-                  <div className='text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                    <div className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                      {typeStats?.count || 0}
+                <div className='grid grid-cols-2 gap-2'>
+                  <div className='text-center p-2.5 rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
+                    <div className='text-base font-semibold text-gray-900 dark:text-white'>
+                      {count}
                     </div>
-                    <div className='text-xs text-gray-500 dark:text-gray-400'>
-                      缓存项
-                    </div>
+                    <div className='text-[11px] text-[#9ca3af]'>缓存项</div>
                   </div>
-                  <div className='text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg'>
-                    <div className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
-                      {
-                        stats.formattedSizes[
-                          cacheType.key as keyof typeof stats.formattedSizes
-                        ]
-                      }
+                  <div className='text-center p-2.5 rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
+                    <div className='text-base font-semibold text-gray-900 dark:text-white'>
+                      {size}
                     </div>
-                    <div className='text-xs text-gray-500 dark:text-gray-400'>
-                      存储大小
-                    </div>
+                    <div className='text-[11px] text-[#9ca3af]'>存储大小</div>
                   </div>
                 </div>
 
-                {/* 豆瓣缓存子类型统计 */}
-                {cacheType.key === 'douban' && typeStats?.types && (
-                  <div className='mb-4 space-y-1'>
-                    <div className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      类型分布：
+                {typeStats?.types && Object.keys(typeStats.types).length > 0 && (
+                  <div className='space-y-1 rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
+                    <div className='text-xs font-medium text-gray-700 dark:text-gray-300'>
+                      类型分布
                     </div>
-                    {Object.entries(typeStats.types).map(([type, count]) => (
+                    {Object.entries(typeStats.types).map(([type, cnt]) => (
                       <div key={type} className='flex justify-between text-xs'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          {type}:
-                        </span>
-                        <span className='font-mono text-gray-900 dark:text-gray-100'>
-                          {count as number}
-                        </span>
+                        <span className='text-[#9ca3af]'>{type}</span>
+                        <FluentBadge variant='default' size='sm' rounded>
+                          {cnt as number}
+                        </FluentBadge>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* 短剧缓存子类型统计 */}
-                {cacheType.key === 'shortdrama' && typeStats?.types && (
-                  <div className='mb-4 space-y-1'>
-                    <div className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      类型分布：
-                    </div>
-                    {Object.entries(typeStats.types).map(([type, count]) => (
-                      <div key={type} className='flex justify-between text-xs'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          {type}:
-                        </span>
-                        <span className='font-mono text-gray-900 dark:text-gray-100'>
-                          {count as number}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* TMDB缓存子类型统计 */}
-                {cacheType.key === 'tmdb' && typeStats?.types && (
-                  <div className='mb-4 space-y-1'>
-                    <div className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                      类型分布：
-                    </div>
-                    {Object.entries(typeStats.types).map(([type, count]) => (
-                      <div key={type} className='flex justify-between text-xs'>
-                        <span className='text-gray-600 dark:text-gray-400'>
-                          {type}:
-                        </span>
-                        <span className='font-mono text-gray-900 dark:text-gray-100'>
-                          {count as number}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <button
+                <FluentButton
+                  variant='danger'
+                  size='sm'
+                  fullWidth
+                  icon={<Trash2 className='h-4 w-4' />}
+                  loading={isClearing}
+                  disabled={count === 0}
                   onClick={() => clearCache(cacheType.key)}
-                  disabled={
-                    clearing === cacheType.key || (typeStats?.count || 0) === 0
-                  }
-                  className='w-full inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  {clearing === cacheType.key ? (
-                    <>
-                      <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
-                      清理中...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className='h-4 w-4 mr-2' />
-                      清理缓存
-                    </>
-                  )}
-                </button>
-              </div>
+                  {isClearing ? '清理中...' : '清理缓存'}
+                </FluentButton>
+              </FluentCard>
             );
           })}
         </div>
       )}
 
-      {/* 批量操作 */}
+      {/* Batch */}
       {stats && (
-        <div className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6'>
-          <h3 className='text-lg font-medium text-gray-900 dark:text-gray-100 mb-4'>
-            批量操作
-          </h3>
+        <FluentCard padding='16px' className='space-y-3'>
+          <div className='flex items-center gap-2'>
+            <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center'>
+              <Trash2 className='w-3.5 h-3.5 text-[#f59e0b]' />
+            </span>
+            <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+              批量操作
+            </h4>
+            <FluentBadge variant='default' size='sm' rounded>
+              危险操作
+            </FluentBadge>
+          </div>
 
-          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-            <button
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <FluentButton
+              variant='secondary'
+              size='md'
+              icon={<Clock className='h-4 w-4' />}
+              loading={clearing === 'expired'}
               onClick={clearExpiredCache}
-              disabled={clearing === 'expired'}
-              className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md hover:bg-orange-100 dark:hover:bg-orange-900/30 disabled:opacity-50'
             >
-              {clearing === 'expired' ? (
-                <>
-                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
-                  清理中...
-                </>
-              ) : (
-                <>
-                  <Clock className='h-4 w-4 mr-2' />
-                  清理过期缓存
-                </>
-              )}
-            </button>
-
-            <button
+              {clearing === 'expired' ? '清理中...' : '清理过期缓存'}
+            </FluentButton>
+            <FluentButton
+              variant='danger'
+              size='md'
+              icon={<Trash2 className='h-4 w-4' />}
+              loading={clearing === 'all'}
               onClick={clearAllCache}
-              disabled={clearing === 'all'}
-              className='inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50'
             >
-              {clearing === 'all' ? (
-                <>
-                  <RefreshCw className='h-4 w-4 mr-2 animate-spin' />
-                  清理中...
-                </>
-              ) : (
-                <>
-                  <Trash2 className='h-4 w-4 mr-2' />
-                  清理所有缓存
-                </>
-              )}
-            </button>
+              {clearing === 'all' ? '清理中...' : '清理所有缓存'}
+            </FluentButton>
           </div>
 
-          <div className='mt-4 text-sm text-gray-500 dark:text-gray-400'>
-            <p className='flex items-start'>
-              <AlertTriangle className='h-4 w-4 mr-2 mt-0.5 shrink-0 text-orange-500' />
-              注意：清理缓存后，相应的数据将需要重新从源服务器获取，可能会影响加载速度。
+          <FluentCard
+            padding='10px'
+            className='flex gap-2 border bg-amber-50/60 dark:bg-amber-900/10 border-amber-200/60 dark:border-amber-800/30'
+          >
+            <AlertTriangle className='h-4 w-4 text-[#f59e0b] shrink-0 mt-0.5' />
+            <p className='text-xs leading-relaxed text-amber-800 dark:text-amber-200'>
+              清理后数据需重新从源服务器获取，可能影响加载速度。
             </p>
-          </div>
-        </div>
+          </FluentCard>
+        </FluentCard>
       )}
 
-      {/* 加载状态 */}
+      {/* Loading */}
       {loading && !stats && (
-        <div className='flex items-center justify-center py-12'>
-          <RefreshCw className='h-8 w-8 animate-spin text-blue-500 mr-3' />
-          <span className='text-gray-600 dark:text-gray-300'>
-            正在获取缓存统计...
-          </span>
-        </div>
+        <FluentCard padding='16px'>
+          <FluentEmptyState
+            icon={<FluentSpinner size='medium' />}
+            title='正在获取缓存统计...'
+            description='请稍候，正在汇总各类型缓存'
+          />
+        </FluentCard>
       )}
     </div>
   );

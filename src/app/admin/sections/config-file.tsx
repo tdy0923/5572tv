@@ -2,9 +2,18 @@
 
 'use client';
 
+import { Download, FileJson, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentSelect,
+  FluentTextArea,
+} from '@/components/FluentUI';
 
 import {
   showError,
@@ -23,7 +32,7 @@ export default function ConfigFileComponent({
   refreshConfig: _refreshConfig,
 }: ConfigFileProps) {
   const { showAlert } = useAlertModal();
-  const { withLoading } = useLoadingState();
+  const { isLoading, withLoading } = useLoadingState();
   const [showImportForm, setShowImportForm] = useState(false);
   const [importData, setImportData] = useState('');
   const [exportFormat, setExportFormat] = useState<'array' | 'config'>(
@@ -70,50 +79,146 @@ export default function ConfigFileComponent({
 
   return (
     <div className='space-y-4'>
-      <div className='flex gap-2'>
-        <button
-          onClick={() => handleExportConfig(exportFormat)}
-          className='px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors'
-        >
-          导出配置
-        </button>
-        <button
-          onClick={() => setShowImportForm(!showImportForm)}
-          className='px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 transition-colors'
-        >
-          {showImportForm ? '取消导入' : '导入配置'}
-        </button>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            配置文件
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            导入 · 导出 · 备份与迁移
+          </p>
+        </div>
+        <FluentBadge variant='info' size='sm' rounded>
+          <FileJson className='w-3 h-3' /> JSON
+        </FluentBadge>
       </div>
 
+      {/* Actions */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+            <FileJson className='w-3.5 h-3.5 text-[#3b82f6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>备份与恢复</h4>
+          <FluentBadge variant='default' size='sm' rounded>
+            本地文件
+          </FluentBadge>
+        </div>
+
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+          <FluentCard padding='12px' className='flex flex-col gap-3 bg-gray-50 dark:!bg-white/[0.02]'>
+            <div className='flex items-center gap-2'>
+              <span className='w-7 h-7 rounded-lg bg-[#22c55e]/15 flex items-center justify-center'>
+                <Download className='w-3.5 h-3.5 text-[#22c55e]' />
+              </span>
+              <span className='text-sm font-medium text-gray-900 dark:text-white'>导出配置</span>
+            </div>
+            <p className='text-xs text-[#9ca3af] leading-relaxed'>
+              将当前所有配置导出为 JSON 文件，便于备份或迁移到其他实例
+            </p>
+            <FluentSelect
+              label='导出格式'
+              value={exportFormat}
+              onChange={(e) => setExportFormat(e.target.value as 'array' | 'config')}
+              options={[
+                { value: 'config', label: '完整配置' },
+                { value: 'array', label: '数组格式' },
+              ]}
+            />
+            <FluentButton
+              variant='primary'
+              size='sm'
+              icon={<Download className='h-3.5 w-3.5' />}
+              loading={isLoading('exportConfig')}
+              onClick={() => handleExportConfig(exportFormat)}
+              fullWidth
+            >
+              {isLoading('exportConfig') ? '导出中…' : '导出配置'}
+            </FluentButton>
+          </FluentCard>
+
+          <FluentCard padding='12px' className='flex flex-col gap-3 bg-gray-50 dark:!bg-white/[0.02]'>
+            <div className='flex items-center gap-2'>
+              <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center'>
+                <Upload className='w-3.5 h-3.5 text-[#f59e0b]' />
+              </span>
+              <span className='text-sm font-medium text-gray-900 dark:text-white'>导入配置</span>
+              {showImportForm && (
+                <FluentBadge variant='warning' size='sm' rounded>
+                  编辑中
+                </FluentBadge>
+              )}
+            </div>
+            <p className='text-xs text-[#9ca3af] leading-relaxed'>
+              从 JSON 文件恢复配置，导入后将覆盖当前设置，请谨慎操作
+            </p>
+            <FluentButton
+              variant={showImportForm ? 'secondary' : 'primary'}
+              size='sm'
+              icon={<Upload className='h-3.5 w-3.5' />}
+              onClick={() => setShowImportForm(!showImportForm)}
+              fullWidth
+            >
+              {showImportForm ? '取消导入' : '导入配置'}
+            </FluentButton>
+          </FluentCard>
+        </div>
+      </FluentCard>
+
       {showImportForm && (
-        <div className='p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600'>
-          <h4 className='text-sm font-semibold mb-3'>导入配置</h4>
-          <textarea
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <span className='w-7 h-7 rounded-lg bg-[#f4c24d]/15 flex items-center justify-center'>
+              <Upload className='w-3.5 h-3.5 text-[#f4c24d]' />
+            </span>
+            <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>导入配置</h4>
+            <FluentBadge variant='warning' size='sm' rounded>
+              粘贴 JSON
+            </FluentBadge>
+          </div>
+          <FluentTextArea
+            label='配置 JSON'
             value={importData}
             onChange={(e) => setImportData(e.target.value)}
-            className='w-full h-48 p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-mono bg-white dark:bg-gray-800'
+            rows={10}
             placeholder='粘贴配置 JSON...'
+            className='font-mono'
           />
-          <div className='flex justify-end gap-2 mt-3'>
-            <button
+          <div className='flex justify-end gap-2'>
+            <FluentButton
+              variant='ghost'
+              size='sm'
               onClick={() => {
                 setShowImportForm(false);
                 setImportData('');
               }}
-              className='px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             >
               取消
-            </button>
-            <button
+            </FluentButton>
+            <FluentButton
+              variant='primary'
+              size='sm'
+              icon={<Upload className='h-3.5 w-3.5' />}
               onClick={handleImportConfig}
               disabled={!importData.trim()}
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50'
+              loading={isLoading('importConfig')}
             >
-              导入
-            </button>
+              {isLoading('importConfig') ? '导入中…' : '导入'}
+            </FluentButton>
           </div>
-        </div>
+        </FluentCard>
       )}
+
+      <span className='hidden' aria-hidden>
+        {config ? 'has-config' : 'no-config'}
+      </span>
     </div>
   );
 }

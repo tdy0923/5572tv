@@ -1,10 +1,18 @@
 'use client';
 
-import { AlertCircle, CheckCircle, Code, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle, Code, Info, RotateCcw, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
+
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+  FluentTextArea,
+} from '@/components/FluentUI';
 
 interface CustomAdFilterConfigProps {
   config: AdminConfig | null;
@@ -180,150 +188,167 @@ function filterAdsFromM3U8(type, m3u8Content) {
 }`;
 
   return (
-    <div className='space-y-6'>
-      {/* 标题和说明 */}
-      <div className='flex items-start gap-3'>
-        <Code className='w-6 h-6 text-purple-500 shrink-0 mt-1' />
-        <div className='flex-1'>
-          <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
             自定义去广告代码
           </h3>
-          <p className='text-sm text-gray-600 dark:text-gray-400 mt-1'>
-            编写自定义 JavaScript 代码来实现更强力的去广告功能
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            编写自定义 JavaScript 实现更强力的去广告
           </p>
         </div>
+        <FluentBadge variant='info' size='sm' rounded>
+          <Code className='w-3 h-3' /> JS 注入
+        </FluentBadge>
       </div>
 
-      {/* 信息提示 */}
-      <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
-        <div className='flex items-start gap-3'>
-          <Info className='w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5' />
-          <div className='text-sm text-blue-800 dark:text-blue-200'>
-            <p className='font-medium mb-2'>使用说明：</p>
-            <ul className='space-y-1 list-disc list-inside'>
-              <li>
-                函数名必须为{' '}
-                <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800 rounded'>
-                  filterAdsFromM3U8
-                </code>
-              </li>
-              <li>
-                接收两个参数：
-                <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800 rounded'>
-                  type
-                </code>
-                （播放源key）和{' '}
-                <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800 rounded'>
-                  m3u8Content
-                </code>
-                （m3u8内容）
-              </li>
-              <li>必须返回过滤后的 m3u8 内容字符串</li>
-              <li>如果代码执行失败，将自动降级使用默认去广告规则</li>
-              <li>修改代码后记得更新版本号，让浏览器刷新缓存</li>
-            </ul>
-          </div>
+      {/* Info */}
+      <FluentCard
+        padding='12px'
+        className='flex gap-3 bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30'
+      >
+        <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center shrink-0'>
+          <Info className='w-3.5 h-3.5 text-[#3b82f6]' />
+        </span>
+        <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+          <p className='font-semibold text-[#3b82f6] mb-1.5'>使用说明</p>
+          <ul className='space-y-1 list-disc list-inside text-[#6b7280] dark:text-gray-400'>
+            <li>
+              函数名必须为{' '}
+              <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800/30 rounded text-[11px]'>
+                filterAdsFromM3U8
+              </code>
+            </li>
+            <li>
+              接收{' '}
+              <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800/30 rounded text-[11px]'>
+                type
+              </code>{' '}
+              与{' '}
+              <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-800/30 rounded text-[11px]'>
+                m3u8Content
+              </code>
+            </li>
+            <li>必须返回过滤后的 m3u8 字符串</li>
+            <li>执行失败自动降级为默认规则</li>
+            <li>改动后递增版本号以刷新缓存</li>
+          </ul>
         </div>
-      </div>
+      </FluentCard>
 
-      {/* 版本号 */}
-      <div>
-        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-          代码版本号
-        </label>
-        <input
+      {/* Version */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center'>
+            <Code className='w-3.5 h-3.5 text-[#8b5cf6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            版本与代码
+          </h4>
+          <FluentBadge variant='default' size='sm' rounded>
+            v{filterSettings.customAdFilterVersion}
+          </FluentBadge>
+        </div>
+
+        <FluentInput
+          label='代码版本号'
           type='number'
-          min='1'
-          value={filterSettings.customAdFilterVersion}
+          min={1}
+          value={String(filterSettings.customAdFilterVersion)}
           onChange={(e) =>
             setFilterSettings({
               ...filterSettings,
               customAdFilterVersion: parseInt(e.target.value) || 1,
             })
           }
-          className='w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
           placeholder='1'
+          className='max-w-[10rem]'
         />
-        <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-          每次修改代码后建议递增版本号
-        </p>
-      </div>
+        <p className='text-xs text-[#9ca3af] -mt-2'>每次修改后建议递增</p>
 
-      {/* 代码编辑器 */}
-      <div>
-        <div className='flex items-center justify-between mb-2'>
-          <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
-            自定义代码
-          </label>
-          <button
-            onClick={() =>
+        <div className='space-y-2'>
+          <div className='flex items-center justify-between gap-2'>
+            <label className='text-sm font-medium text-[#9ca3af]'>自定义代码</label>
+            <FluentButton
+              variant='ghost'
+              size='sm'
+              onClick={() =>
+                setFilterSettings({
+                  ...filterSettings,
+                  customAdFilterCode: defaultExample,
+                })
+              }
+            >
+              载入示例代码
+            </FluentButton>
+          </div>
+          <FluentTextArea
+            value={filterSettings.customAdFilterCode}
+            onChange={(e) =>
               setFilterSettings({
                 ...filterSettings,
-                customAdFilterCode: defaultExample,
+                customAdFilterCode: e.target.value,
               })
             }
-            className='text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300'
-          >
-            载入示例代码
-          </button>
+            placeholder={defaultExample}
+            rows={14}
+            className='font-mono !text-[13px] leading-relaxed'
+          />
+          <p className='text-xs text-[#9ca3af]'>仅支持纯 JavaScript，不支持 TypeScript 类型</p>
         </div>
-        <textarea
-          value={filterSettings.customAdFilterCode}
-          onChange={(e) =>
-            setFilterSettings({
-              ...filterSettings,
-              customAdFilterCode: e.target.value,
-            })
-          }
-          className='w-full h-96 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none'
-          placeholder={defaultExample}
-        />
-        <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-          支持纯 JavaScript 代码，不支持 TypeScript 类型注解
-        </p>
-      </div>
+      </FluentCard>
 
-      {/* 消息提示 */}
+      {/* Message */}
       {message && (
-        <div
-          className={`flex items-center gap-2 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
-          }`}
+        <FluentCard
+          padding='12px'
+          className={`flex items-center gap-2 border ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}
         >
           {message.type === 'success' ? (
-            <CheckCircle className='w-5 h-5 shrink-0' />
+            <CheckCircle className='w-4 h-4 shrink-0' />
           ) : (
-            <AlertCircle className='w-5 h-5 shrink-0' />
+            <AlertCircle className='w-4 h-4 shrink-0' />
           )}
           <span className='text-sm'>{message.text}</span>
-        </div>
+        </FluentCard>
       )}
 
-      {/* 操作按钮 */}
-      <div className='flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700'>
-        <button
+      {/* Save bar */}
+      <div className='flex items-center gap-3 pt-1 sticky bottom-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur rounded-xl p-3 border border-gray-200 dark:border-white/5 shadow-sm flex-wrap'>
+        <FluentButton
+          variant='primary'
+          size='md'
+          icon={<Save className='h-4 w-4' />}
+          loading={isLoading}
           onClick={handleSave}
-          disabled={isLoading}
-          className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg font-medium transition-colors'
         >
           {isLoading ? '保存中...' : '保存配置'}
-        </button>
-        <button
-          onClick={handleReset}
+        </FluentButton>
+        <FluentButton
+          variant='secondary'
+          size='md'
+          icon={<RotateCcw className='h-4 w-4' />}
           disabled={isLoading}
-          className='px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors'
+          onClick={handleReset}
         >
           重置
-        </button>
-        <button
+        </FluentButton>
+        <FluentButton
+          variant='ghost'
+          size='md'
+          loading={isLoading}
           onClick={handleRestoreDefault}
-          disabled={isLoading}
-          className='px-4 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white rounded-lg font-medium transition-colors'
         >
-          {isLoading ? '恢复中...' : '恢复默认'}
-        </button>
+          恢复默认
+        </FluentButton>
       </div>
     </div>
   );

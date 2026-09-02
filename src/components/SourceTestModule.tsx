@@ -15,6 +15,15 @@ import { createPortal } from 'react-dom';
 
 import { SearchResult } from '@/lib/types';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentCheckbox,
+  FluentEmptyState,
+  FluentInput,
+  FluentSpinner,
+} from '@/components/FluentUI';
 import VideoCard from '@/components/VideoCard';
 
 // API源信息接口
@@ -422,21 +431,21 @@ export default function SourceTestModule() {
   const getStatusIcon = (status: string, disabled?: boolean) => {
     if (disabled) {
       return (
-        <div className='w-4 h-4 rounded-full bg-gray-400' title='已禁用' />
+        <span className='w-4 h-4 rounded-full bg-[#9ca3af] inline-block' title='已禁用' />
       );
     }
 
     switch (status) {
       case 'testing':
-        return <RefreshCw className='w-4 h-4 animate-spin text-blue-500' />;
+        return <RefreshCw className='w-4 h-4 animate-spin text-[#3b82f6]' />;
       case 'success':
-        return <CheckCircle className='w-4 h-4 text-green-500' />;
+        return <CheckCircle className='w-4 h-4 text-[#22c55e]' />;
       case 'error':
-        return <XCircle className='w-4 h-4 text-red-500' />;
+        return <XCircle className='w-4 h-4 text-[#ef4444]' />;
       case 'timeout':
-        return <Clock className='w-4 h-4 text-yellow-500' />;
+        return <Clock className='w-4 h-4 text-[#f59e0b]' />;
       default:
-        return <div className='w-4 h-4 rounded-full bg-gray-300' />;
+        return <span className='w-4 h-4 rounded-full bg-gray-300 dark:bg-white/20 inline-block' />;
     }
   };
 
@@ -509,178 +518,142 @@ export default function SourceTestModule() {
   };
 
   return (
-    <div className='max-w-7xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6'>
-      {/* 标题 */}
-      <div className='text-center'>
-        <h1 className='text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2'>
-          源检测工具
-        </h1>
-        <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400'>
-          测试各个源的搜索功能和响应速度，查看搜索结果质量
-        </p>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            源检测工具
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            测试各源搜索与响应，查看结果质量
+          </p>
+        </div>
+        <FluentBadge variant='info' size='sm' rounded>
+          {sources.length} 个源
+        </FluentBadge>
       </div>
 
-      {/* 搜索控制 */}
-      <div className='bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm'>
-        <div className='flex flex-col gap-3 sm:gap-4'>
+      {/* Search controls */}
+      <FluentCard padding='16px' className='space-y-3'>
+        <div className='flex flex-col sm:flex-row gap-3'>
           <div className='flex-1'>
-            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              搜索关键词
-            </label>
-            <div className='relative'>
-              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
-              <input
-                type='text'
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder='输入要搜索的内容...'
-                className='w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                         focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-              />
-            </div>
+            <FluentInput
+              label='搜索关键词'
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              placeholder='输入要搜索的内容...'
+              prefix={<Search className='w-4 h-4 text-[#9ca3af]' />}
+              fullWidth
+            />
           </div>
-
-          <div className='flex flex-col sm:flex-row items-stretch sm:items-end gap-3'>
-            <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 px-1'>
-              <input
-                type='checkbox'
-                className='w-4 h-4 rounded border-gray-300 dark:border-gray-600'
-                checked={onlyEnabled}
-                onChange={(e) => setOnlyEnabled(e.target.checked)}
-              />
-              仅测试启用源
-            </label>
-
-            <button
+          <div className='flex items-end gap-2'>
+            <FluentCheckbox
+              label='仅测试启用源'
+              checked={onlyEnabled}
+              onCheckedChange={(v) => setOnlyEnabled(v)}
+            />
+            <FluentButton
+              variant='primary'
+              size='md'
+              icon={isTestingAll ? <RefreshCw className='w-4 h-4 animate-spin' /> : <Play className='w-4 h-4' />}
+              loading={isTestingAll}
+              disabled={!searchKeyword.trim() || sources.length === 0}
               onClick={handleTestAll}
-              disabled={
-                isTestingAll || !searchKeyword.trim() || sources.length === 0
-              }
-              className='px-4 sm:px-6 py-2.5 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700
-                       disabled:bg-gray-400 disabled:cursor-not-allowed
-                       flex items-center justify-center gap-2 whitespace-nowrap transition-colors'
             >
-              {isTestingAll ? (
-                <RefreshCw className='w-4 h-4 animate-spin' />
-              ) : (
-                <Play className='w-4 h-4' />
-              )}
               测试所有源
-            </button>
+            </FluentButton>
           </div>
         </div>
-      </div>
+      </FluentCard>
 
-      {/* 统计信息 */}
+      {/* Stats */}
       {testResults.size > 0 && (
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm'>
-          <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4'>
-            测试统计
-          </h3>
-          <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4'>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+              <CheckCircle className='w-3.5 h-3.5 text-[#3b82f6]' />
+            </span>
+            <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+              测试统计
+            </h4>
+            <FluentBadge variant={stats.testing > 0 ? 'warning' : 'success'} size='sm' rounded>
+              {stats.success}/{stats.total} 成功
+            </FluentBadge>
+          </div>
+          <div className='grid grid-cols-5 gap-2 text-center'>
+            <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-2.5'>
+              <div className='text-lg font-bold text-gray-900 dark:text-white'>
                 {stats.total}
               </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>
-                总源数
-              </div>
+              <div className='text-[11px] text-[#9ca3af]'>总源数</div>
             </div>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-green-600'>
-                {stats.success}
-              </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>
-                成功
-              </div>
+            <div className='rounded-xl border bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20 p-2.5'>
+              <div className='text-lg font-bold text-[#22c55e]'>{stats.success}</div>
+              <div className='text-[11px] text-[#9ca3af]'>成功</div>
             </div>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-red-600'>
-                {stats.error}
-              </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>
-                失败
-              </div>
+            <div className='rounded-xl border bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20 p-2.5'>
+              <div className='text-lg font-bold text-[#ef4444]'>{stats.error}</div>
+              <div className='text-[11px] text-[#9ca3af]'>失败</div>
             </div>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-yellow-600'>
-                {stats.timeout}
-              </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>
-                超时
-              </div>
+            <div className='rounded-xl border bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/20 p-2.5'>
+              <div className='text-lg font-bold text-[#f59e0b]'>{stats.timeout}</div>
+              <div className='text-[11px] text-[#9ca3af]'>超时</div>
             </div>
-            <div className='text-center'>
-              <div className='text-2xl font-bold text-blue-600'>
-                {stats.testing}
-              </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>
-                测试中
-              </div>
+            <div className='rounded-xl border bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/20 p-2.5'>
+              <div className='text-lg font-bold text-[#3b82f6]'>{stats.testing}</div>
+              <div className='text-[11px] text-[#9ca3af]'>测试中</div>
             </div>
           </div>
 
-          {/* 详细统计 */}
-          <div className='mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
-              <div>
-                <h4 className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                  启用源 ({stats.enabledTotal})
-                </h4>
-                <div className='flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm'>
-                  <span className='text-green-600'>
-                    成功: {stats.enabledSuccess}
-                  </span>
-                  <span className='text-red-600'>
-                    失败: {stats.enabledError}
-                  </span>
-                  <span className='text-yellow-600'>
-                    超时: {stats.enabledTimeout}
-                  </span>
-                  <span className='text-blue-600'>
-                    测试中: {stats.enabledTesting}
-                  </span>
-                </div>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-200 dark:border-white/5'>
+            <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
+              <h4 className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
+                启用源 ({stats.enabledTotal})
+              </h4>
+              <div className='flex flex-wrap gap-1.5'>
+                <FluentBadge variant='success' size='sm' rounded>成功 {stats.enabledSuccess}</FluentBadge>
+                <FluentBadge variant='error' size='sm' rounded>失败 {stats.enabledError}</FluentBadge>
+                <FluentBadge variant='warning' size='sm' rounded>超时 {stats.enabledTimeout}</FluentBadge>
+                <FluentBadge variant='info' size='sm' rounded>测试中 {stats.enabledTesting}</FluentBadge>
               </div>
-              <div>
-                <h4 className='text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                  禁用源 ({stats.disabledTotal})
-                </h4>
-                <div className='flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm'>
-                  <span className='text-green-600'>
-                    成功: {stats.disabledSuccess}
-                  </span>
-                  <span className='text-red-600'>
-                    失败: {stats.disabledError}
-                  </span>
-                  <span className='text-yellow-600'>
-                    超时: {stats.disabledTimeout}
-                  </span>
-                  <span className='text-blue-600'>
-                    测试中: {stats.disabledTesting}
-                  </span>
-                </div>
+            </div>
+            <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
+              <h4 className='text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5'>
+                禁用源 ({stats.disabledTotal})
+              </h4>
+              <div className='flex flex-wrap gap-1.5'>
+                <FluentBadge variant='success' size='sm' rounded>成功 {stats.disabledSuccess}</FluentBadge>
+                <FluentBadge variant='error' size='sm' rounded>失败 {stats.disabledError}</FluentBadge>
+                <FluentBadge variant='warning' size='sm' rounded>超时 {stats.disabledTimeout}</FluentBadge>
+                <FluentBadge variant='info' size='sm' rounded>测试中 {stats.disabledTesting}</FluentBadge>
               </div>
             </div>
           </div>
-        </div>
+        </FluentCard>
       )}
 
-      {/* 源列表 */}
-      <div className='bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-sm'>
-        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4'>
-          <h3 className='text-base sm:text-lg font-semibold text-gray-900 dark:text-white'>
-            源列表 ({sources.length} 个源)
-          </h3>
-          <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
-            <label className='text-xs sm:text-sm text-gray-600 dark:text-gray-300'>
-              排序
-            </label>
+      {/* Source list */}
+      <FluentCard padding='16px' className='space-y-3'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
+            源列表
+            <FluentBadge variant='default' size='sm' rounded>
+              {getSortedSources().length} 个
+            </FluentBadge>
+          </h4>
+          <div className='flex items-center gap-2 flex-wrap'>
+            <label className='text-xs text-[#9ca3af]'>排序</label>
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as any)}
-              className='text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 sm:px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              className='text-xs border border-gray-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 bg-white dark:bg-white/5 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#f4c24d]'
             >
               <option value='default'>默认顺序</option>
               <option value='status'>状态</option>
@@ -689,55 +662,54 @@ export default function SourceTestModule() {
               <option value='matchRate'>相关率</option>
               <option value='name'>名称</option>
             </select>
-            <button
+            <FluentButton
+              variant='secondary'
+              size='sm'
               onClick={() =>
                 setSortOrder((p) => (p === 'asc' ? 'desc' : 'asc'))
               }
-              className='text-xs sm:text-sm px-2 sm:px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors'
-              title='切换升序/降序'
             >
               {sortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
-            </button>
+            </FluentButton>
           </div>
         </div>
 
-        <div className='space-y-3'>
+        <div className='space-y-2'>
           {getSortedSources().map((source) => {
             const result = testResults.get(source.key);
             return (
-              <div
+              <FluentCard
                 key={source.key}
-                className={`border rounded-lg p-4 transition-all hover:shadow-md ${
-                  source.disabled
-                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
-                }`}
+                hoverable
+                padding='12px'
+                className={`transition-all ${source.disabled ? 'bg-gray-50 dark:bg-white/[0.02] opacity-90' : ''}`}
               >
                 <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-3'>
-                  <div className='flex items-center gap-3 flex-1'>
+                  <div className='flex items-center gap-3 flex-1 min-w-0'>
                     {getStatusIcon(
                       result?.status || 'pending',
                       source.disabled,
                     )}
                     <div className='flex-1 min-w-0'>
-                      <div className='flex items-center gap-2 flex-wrap'>
+                      <div className='flex items-center gap-1.5 flex-wrap'>
                         <span
-                          className={`font-medium ${
-                            source.disabled
-                              ? 'text-gray-500 dark:text-gray-400'
-                              : 'text-gray-900 dark:text-white'
-                          }`}
+                          className={`text-sm font-medium truncate ${source.disabled ? 'text-[#9ca3af]' : 'text-gray-900 dark:text-white'}`}
                         >
                           {source.name}
                         </span>
                         {source.disabled && (
-                          <span className='px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded'>
+                          <FluentBadge variant='default' size='sm' rounded>
                             已禁用
-                          </span>
+                          </FluentBadge>
+                        )}
+                        {result?.responseTime && (
+                          <FluentBadge variant='info' size='sm' rounded>
+                            {result.responseTime}ms
+                          </FluentBadge>
                         )}
                       </div>
-                      <div className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
-                        <div className='font-mono text-xs'>{source.key}</div>
+                      <div className='text-xs text-[#9ca3af] mt-0.5'>
+                        <div className='font-mono text-[11px]'>{source.key}</div>
                         <div
                           className='truncate hover:whitespace-normal hover:break-all transition-all cursor-pointer'
                           title={source.api}
@@ -749,40 +721,31 @@ export default function SourceTestModule() {
 
                     {result && (
                       <div className='text-right min-w-0 hidden md:block'>
-                        <div className='text-sm text-gray-600 dark:text-gray-400'>
-                          {result.responseTime && `${result.responseTime}ms`}
-                        </div>
                         {result.status === 'success' && (
-                          <div className='text-sm text-green-600 font-medium'>
+                          <div className='text-sm text-[#22c55e] font-medium flex items-center justify-end gap-1.5'>
                             {typeof result.resultCount === 'number'
                               ? result.resultCount
                               : result.results.length}{' '}
                             个结果
                             {typeof result.matchRate === 'number' && (
-                              <span className='ml-2 text-gray-500'>
+                              <FluentBadge variant='default' size='sm' rounded>
                                 相关{Math.round((result.matchRate || 0) * 100)}%
-                              </span>
+                              </FluentBadge>
                             )}
                           </div>
                         )}
                         {result.status === 'error' && (
-                          <div className='text-sm text-red-600 font-medium'>
-                            请求失败
-                          </div>
+                          <FluentBadge variant='error' size='sm' rounded>请求失败</FluentBadge>
                         )}
                         {result.status === 'timeout' && (
-                          <div className='text-sm text-yellow-600 font-medium'>
-                            请求超时
-                          </div>
+                          <FluentBadge variant='warning' size='sm' rounded>请求超时</FluentBadge>
                         )}
                         {result.status === 'testing' && (
-                          <div className='text-sm text-blue-600 font-medium'>
-                            测试中...
-                          </div>
+                          <FluentBadge variant='info' size='sm' rounded>测试中...</FluentBadge>
                         )}
                         {result.topMatches && result.topMatches.length > 0 && (
                           <div
-                            className='text-xs text-gray-500 truncate max-w-xs'
+                            className='text-xs text-[#9ca3af] truncate max-w-xs mt-1'
                             title={result.topMatches.join(' | ')}
                           >
                             示例: {result.topMatches.join(' | ')}
@@ -792,83 +755,74 @@ export default function SourceTestModule() {
                     )}
                   </div>
 
-                  <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3 sm:mt-0 sm:ml-4'>
+                  <div className='flex items-center gap-1.5 flex-wrap'>
                     {result?.results && result.results.length > 0 && (
-                      <button
+                      <FluentButton
+                        variant='primary'
+                        size='sm'
                         onClick={() => handleViewResults(result.results)}
-                        className='px-3 py-2 sm:py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors'
                       >
                         查看结果
-                      </button>
+                      </FluentButton>
                     )}
 
-                    <button
+                    <FluentButton
+                      variant='secondary'
+                      size='sm'
+                      loading={result?.status === 'testing'}
                       onClick={() => handleTestSingle(source.key)}
-                      disabled={result?.status === 'testing'}
-                      className={`px-3 py-2 sm:py-1 text-sm rounded-lg disabled:cursor-not-allowed transition-colors whitespace-nowrap ${
-                        source.disabled
-                          ? 'bg-orange-600 text-white hover:bg-orange-700 disabled:bg-gray-400'
-                          : 'bg-gray-600 text-white hover:bg-gray-700 disabled:bg-gray-400'
-                      }`}
                     >
                       {result?.status === 'testing'
                         ? '测试中'
                         : source.disabled
                           ? '测试禁用源'
                           : '单独测试'}
-                    </button>
+                    </FluentButton>
 
-                    <button
+                    <FluentButton
+                      variant={source.disabled ? 'primary' : 'ghost'}
+                      size='sm'
                       onClick={() => toggleSource(source)}
-                      className={`px-3 py-2 sm:py-1 text-sm rounded-lg transition-colors ${
-                        source.disabled
-                          ? 'bg-green-600 hover:bg-green-700 text-white'
-                          : 'bg-red-600 hover:bg-red-700 text-white'
-                      }`}
+                      className={source.disabled ? '' : '!text-[#ef4444] hover:!bg-red-50 dark:hover:!bg-red-500/10'}
                     >
                       {source.disabled ? '启用' : '禁用'}
-                    </button>
+                    </FluentButton>
                   </div>
                 </div>
 
-                {/* 移动端结果信息显示 */}
+                {/* mobile */}
                 {result && (
-                  <div className='mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 md:hidden'>
-                    <div className='flex items-center justify-between text-sm'>
-                      <div className='text-gray-600 dark:text-gray-400'>
-                        {result.responseTime &&
-                          `响应时间: ${result.responseTime}ms`}
-                      </div>
+                  <div className='mt-3 pt-3 border-t border-gray-200 dark:border-white/5 md:hidden space-y-1'>
+                    <div className='flex items-center justify-between text-xs'>
+                      <span className='text-[#9ca3af]'>
+                        {result.responseTime && `响应 ${result.responseTime}ms`}
+                      </span>
                       {result.status === 'success' && (
-                        <div className='text-green-600 font-medium'>
+                        <span className='text-[#22c55e] font-medium'>
                           {typeof result.resultCount === 'number'
                             ? result.resultCount
                             : result.results.length}{' '}
                           个结果
                           {typeof result.matchRate === 'number' && (
-                            <span className='ml-2 text-gray-500'>
+                            <span className='ml-1 text-[#9ca3af]'>
                               (相关{Math.round((result.matchRate || 0) * 100)}%)
                             </span>
                           )}
-                        </div>
+                        </span>
                       )}
                       {result.status === 'error' && (
-                        <div className='text-red-600 font-medium'>请求失败</div>
+                        <FluentBadge variant='error' size='sm' rounded>失败</FluentBadge>
                       )}
                       {result.status === 'timeout' && (
-                        <div className='text-yellow-600 font-medium'>
-                          请求超时
-                        </div>
+                        <FluentBadge variant='warning' size='sm' rounded>超时</FluentBadge>
                       )}
                       {result.status === 'testing' && (
-                        <div className='text-blue-600 font-medium'>
-                          测试中...
-                        </div>
+                        <FluentBadge variant='info' size='sm' rounded>测试中</FluentBadge>
                       )}
                     </div>
                     {result.topMatches && result.topMatches.length > 0 && (
                       <div
-                        className='text-xs text-gray-500 mt-1'
+                        className='text-xs text-[#9ca3af]'
                         title={result.topMatches.join(' | ')}
                       >
                         示例: {result.topMatches.slice(0, 2).join(', ')}
@@ -878,34 +832,43 @@ export default function SourceTestModule() {
                 )}
 
                 {result?.error && (
-                  <div className='mt-2 pt-2 text-sm text-red-600 dark:text-red-400 border-t border-red-200 dark:border-red-800'>
-                    <span className='font-medium'>错误:</span> {result.error}
-                  </div>
+                  <FluentCard
+                    padding='10px'
+                    className='mt-2 border bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30'
+                  >
+                    <span className='text-xs text-red-700 dark:text-red-300'>
+                      <span className='font-medium'>错误:</span> {result.error}
+                    </span>
+                  </FluentCard>
                 )}
-              </div>
+              </FluentCard>
             );
           })}
         </div>
-      </div>
 
-      {/* 结果详情侧边抽屉 - 使用 Portal 渲染到 body */}
+        {sources.length === 0 && (
+          <FluentEmptyState
+            icon={<FluentSpinner size='medium' />}
+            title='正在加载源列表...'
+            description='首次加载会聚合可用采集源'
+          />
+        )}
+      </FluentCard>
+
+      {/* Results drawer */}
       {mounted &&
         showResultsModal &&
         createPortal(
           <>
             {/* 遮罩层 */}
             <div
-              className={`fixed inset-0 z-39 transition-opacity duration-300 ${
-                isDrawerAnimating ? 'bg-black/50' : 'bg-black/0'
-              }`}
+              className={`fixed inset-0 z-39 transition-opacity duration-300 ${isDrawerAnimating ? 'bg-black/50' : 'bg-black/0'}`}
               onClick={handleCloseDrawer}
             />
 
             {/* 侧边抽屉 */}
             <div
-              className={`fixed inset-y-0 right-0 z-40 w-full sm:w-3/4 md:w-2/3 lg:w-3/5 xl:w-1/2 bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${
-                isDrawerAnimating ? 'translate-x-0' : 'translate-x-full'
-              }`}
+              className={`fixed inset-y-0 right-0 z-40 w-full sm:w-3/4 md:w-2/3 lg:w-3/5 xl:w-1/2 bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${isDrawerAnimating ? 'translate-x-0' : 'translate-x-full'}`}
             >
               {/* 头部 */}
               <div className='flex justify-between items-center p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10 shadow-sm'>
@@ -914,9 +877,9 @@ export default function SourceTestModule() {
                     <h3 className='text-lg sm:text-xl font-semibold text-gray-900 dark:text-white'>
                       搜索结果
                     </h3>
-                    <span className='px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full'>
+                    <FluentBadge variant='primary' size='sm' rounded>
                       {selectedResults.length}
-                    </span>
+                    </FluentBadge>
                   </div>
                   {selectedResults.length > 0 && (
                     <div className='flex items-center gap-2 mt-1'>
@@ -932,13 +895,15 @@ export default function SourceTestModule() {
                     </div>
                   )}
                 </div>
-                <button
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
+                  icon={<X className='w-5 h-5' />}
                   onClick={handleCloseDrawer}
-                  className='shrink-0 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'
-                  title='关闭 (ESC)'
+                  aria-label='关闭'
                 >
-                  <X className='w-6 h-6' />
-                </button>
+                  关闭
+                </FluentButton>
               </div>
 
               {/* 内容区域 */}
@@ -962,26 +927,17 @@ export default function SourceTestModule() {
                     ))}
                   </div>
                 ) : (
-                  <div className='flex flex-col items-center justify-center h-full text-center py-12'>
-                    <Search className='w-16 h-16 text-gray-300 dark:text-gray-300 mb-4' />
-                    <p className='text-gray-500 dark:text-gray-400 text-lg'>
-                      暂无搜索结果
-                    </p>
-                  </div>
+                  <FluentEmptyState
+                    icon={<Search className='w-8 h-8 text-[#9ca3af]' />}
+                    title='暂无搜索结果'
+                    description='该源未返回匹配内容，试试其他关键词'
+                  />
                 )}
               </div>
             </div>
           </>,
           document.body,
         )}
-
-      {/* 空状态 */}
-      {sources.length === 0 && (
-        <div className='text-center py-12'>
-          <AlertTriangle className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-          <p className='text-gray-600 dark:text-gray-400'>正在加载源列表...</p>
-        </div>
-      )}
     </div>
   );
 }
