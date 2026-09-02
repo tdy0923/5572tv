@@ -375,7 +375,7 @@ function ShortDramaCard({
 
           <div className='absolute inset-0 flex items-center justify-center bg-linear-to-t from-black/72 via-black/14 to-transparent opacity-0 transition-all duration-300 group-hover:opacity-100'>
             <div className='flex h-12 w-12 items-center justify-center rounded-full border border-white/22 bg-white/88 text-black shadow-lg transition-transform duration-300 group-'>
-              <Play className='h-5 w-5 ml-0.5' fill='currentColor' />
+              <Play className='h-5 w-5 ml-0.5' />
             </div>
           </div>
 
