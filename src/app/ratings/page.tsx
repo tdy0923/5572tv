@@ -29,12 +29,16 @@ interface RatingEntry {
 const RATINGS_OPTIONS = {
   queryKey: ['ratings', 'leaderboard'],
   queryFn: async (): Promise<RatingEntry[]> => {
-    const res = await fetch('/api/reviews/leaderboard');
+    const res = await fetch('/api/reviews/leaderboard', {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return data.list || [];
   },
   staleTime: 5 * 60 * 1000,
+  retry: 1,
+  gcTime: 10 * 60 * 1000,
 };
 
 const DOUBAN_HIGH_OPTIONS = (type: string) => ({
@@ -42,6 +46,9 @@ const DOUBAN_HIGH_OPTIONS = (type: string) => ({
   queryFn: async (): Promise<RatingEntry[]> => {
     const res = await fetch(
       `/api/douban?type=${type}&tag=豆瓣高分&page=0&pageSize=12`,
+      {
+        signal: AbortSignal.timeout(5000),
+      },
     );
     if (!res.ok) return [];
     const json = await res.json();
@@ -62,6 +69,8 @@ const DOUBAN_HIGH_OPTIONS = (type: string) => ({
     }));
   },
   staleTime: 10 * 60 * 1000,
+  retry: 1,
+  gcTime: 10 * 60 * 1000,
 });
 
 function RatingCard({

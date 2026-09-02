@@ -17,13 +17,19 @@ import {
   getDoubanList,
   getDoubanRecommends,
 } from '@/lib/douban.client';
+import { radius, shadow } from '@/lib/fluent-tokens';
 import { DoubanItem, DoubanResult } from '@/lib/types';
 
 import DoubanCardSkeleton from '@/components/DoubanCardSkeleton';
 import DoubanCustomSelector from '@/components/DoubanCustomSelector';
 import DoubanSelector from '@/components/DoubanSelector';
-import { FluentBadge, FluentButton, FluentCard, FluentEmptyState } from '@/components/FluentUI';
 import { FluentSpinner } from '@/components/FluentSpinner';
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+} from '@/components/FluentUI';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
 import PosterGridSkeleton from '@/components/PosterGridSkeleton';
@@ -31,7 +37,6 @@ import SectionTitle from '@/components/SectionTitle';
 import Toggle from '@/components/Toggle';
 import VideoCard from '@/components/VideoCard';
 import VirtualGrid from '@/components/VirtualGrid';
-import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 
 // 🔧 统一分页常量 - 防止分页步长不一致导致重复数据
 const PAGE_SIZE = 25;
@@ -44,6 +49,12 @@ function DoubanPageClient() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [selectorsReady, setSelectorsReady] = useState(false);
+  // 骨架屏超时兜底：12s 后强制退出 loading
+  useEffect(() => {
+    if (!loading) return;
+    const t = setTimeout(() => setLoading(false), 12000);
+    return () => clearTimeout(t);
+  }, [loading]);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -938,7 +949,9 @@ function DoubanPageClient() {
               <FluentCard
                 variant='default'
                 className='!p-4 sm:!p-5 backdrop-blur-sm'
-                style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                style={
+                  { borderRadius: radius.xl, boxShadow: shadow.light } as any
+                }
               >
                 <DoubanSelector
                   type={type as 'movie' | 'tv' | 'show' | 'anime'}
@@ -954,7 +967,9 @@ function DoubanPageClient() {
               <FluentCard
                 variant='default'
                 className='!p-4 sm:!p-5 backdrop-blur-sm'
-                style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                style={
+                  { borderRadius: radius.xl, boxShadow: shadow.light } as any
+                }
               >
                 <DoubanCustomSelector
                   customCategories={customCategories}
@@ -1053,10 +1068,18 @@ function DoubanPageClient() {
                       <FluentCard
                         variant='default'
                         className='flex items-center gap-3 !px-6 !py-4'
-                        style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                        style={
+                          {
+                            borderRadius: radius.xl,
+                            boxShadow: shadow.light,
+                          } as any
+                        }
                       >
                         <FluentSpinner size='medium' />
-                        <span className='text-sm font-medium' style={{ color: 'var(--color-foreground-muted)' }}>
+                        <span
+                          className='text-sm font-medium'
+                          style={{ color: 'var(--color-foreground-muted)' }}
+                        >
                           加载中
                         </span>
                       </FluentCard>
@@ -1070,12 +1093,20 @@ function DoubanPageClient() {
                     <FluentCard
                       variant='default'
                       className='flex flex-col items-center gap-2 !px-8 !py-5'
-                      style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                      style={
+                        {
+                          borderRadius: radius.xl,
+                          boxShadow: shadow.light,
+                        } as any
+                      }
                     >
                       <FluentBadge variant='info' size='md' rounded>
                         已加载全部
                       </FluentBadge>
-                      <p className='text-xs' style={{ color: 'var(--color-foreground-muted)' }}>
+                      <p
+                        className='text-xs'
+                        style={{ color: 'var(--color-foreground-muted)' }}
+                      >
                         共 {doubanData.length} 项
                       </p>
                     </FluentCard>
@@ -1087,13 +1118,22 @@ function DoubanPageClient() {
                   <FluentCard
                     variant='default'
                     className='mt-8 flex justify-center py-10'
-                    style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                    style={
+                      {
+                        borderRadius: radius.xl,
+                        boxShadow: shadow.light,
+                      } as any
+                    }
                   >
                     <FluentEmptyState
                       title='暂无相关内容'
                       description='尝试调整筛选条件或切换其他分类查看更多内容'
                       action={
-                        <FluentButton variant='secondary' size='sm' onClick={() => window.location.reload()}>
+                        <FluentButton
+                          variant='secondary'
+                          size='sm'
+                          onClick={() => window.location.reload()}
+                        >
                           刷新重试
                         </FluentButton>
                       }
@@ -1166,13 +1206,21 @@ function DoubanPageClient() {
                       <FluentCard
                         variant='default'
                         className='flex items-center gap-3 !px-6 !py-4'
-                        style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                        style={
+                          {
+                            borderRadius: radius.xl,
+                            boxShadow: shadow.light,
+                          } as any
+                        }
                       >
                         <FluentSpinner size='medium' />
-                        <span className='text-sm font-medium' style={{ color: 'var(--color-foreground-muted)' }}>
+                        <span
+                          className='text-sm font-medium'
+                          style={{ color: 'var(--color-foreground-muted)' }}
+                        >
                           加载中
                         </span>
-                        </FluentCard>
+                      </FluentCard>
                     )}
                   </div>
                 )}
@@ -1183,15 +1231,23 @@ function DoubanPageClient() {
                     <FluentCard
                       variant='default'
                       className='flex flex-col items-center gap-2 !px-8 !py-5'
-                      style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                      style={
+                        {
+                          borderRadius: radius.xl,
+                          boxShadow: shadow.light,
+                        } as any
+                      }
                     >
                       <FluentBadge variant='info' size='md' rounded>
                         已加载全部
                       </FluentBadge>
 
-                        <p className='text-xs' style={{ color: 'var(--color-foreground-muted)' }}>
-                          共 {doubanData.length} 项
-                        </p>
+                      <p
+                        className='text-xs'
+                        style={{ color: 'var(--color-foreground-muted)' }}
+                      >
+                        共 {doubanData.length} 项
+                      </p>
                     </FluentCard>
                   </div>
                 )}
@@ -1201,13 +1257,22 @@ function DoubanPageClient() {
                   <FluentCard
                     variant='default'
                     className='mt-8 flex justify-center py-10'
-                    style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                    style={
+                      {
+                        borderRadius: radius.xl,
+                        boxShadow: shadow.light,
+                      } as any
+                    }
                   >
                     <FluentEmptyState
                       title='暂无相关内容'
                       description='尝试调整筛选条件或切换其他分类查看更多内容'
                       action={
-                        <FluentButton variant='secondary' size='sm' onClick={() => window.location.reload()}>
+                        <FluentButton
+                          variant='secondary'
+                          size='sm'
+                          onClick={() => window.location.reload()}
+                        >
                           刷新重试
                         </FluentButton>
                       }

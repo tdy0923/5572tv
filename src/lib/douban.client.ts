@@ -511,6 +511,7 @@ export async function getDoubanList(
     default:
       const response = await fetch(
         `/api/douban?tag=${tag}&type=${type}&pageSize=${pageLimit}&pageStart=${pageStart}`,
+        { signal: AbortSignal.timeout(8000) },
       );
       result = await response.json();
       break;
