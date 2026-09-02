@@ -78,7 +78,7 @@ export default function HomeContentView({
         hotVarietyShows.length > 0 ||
         hotShortDramas.length > 0) && (
         <section
-          className='mb-6 -mx-3 overflow-hidden sm:mx-0 md:mb-10'
+          className='mb-3 -mx-3 overflow-hidden sm:mx-0 md:mb-10'
           style={{
             borderRadius: radius.xl,
             boxShadow: shadow.deep,
@@ -152,10 +152,61 @@ export default function HomeContentView({
       {/* 猜你喜欢：基于播放历史的主流类型推荐（未登录/无记录自动隐藏） */}
       <PersonalRecommend />
 
+      <FluentCard
+        variant='default'
+        className='mb-4 md:mb-10 home-section !p-0 !overflow-hidden'
+        padding='0'
+      >
+        <section className='p-4 sm:p-5'>
+          <div className='mb-4 flex items-center justify-between'>
+            <SectionTitle
+              title='热门电影'
+              icon={Film}
+              iconColor='text-red-500'
+              kicker='Trending'
+              index='01'
+            />
+            <Link href='/douban?type=movie'>
+              <FluentButton
+                variant='ghost'
+                size='sm'
+                icon={<ChevronRight className='h-4 w-4' />}
+              >
+                更多内容
+              </FluentButton>
+            </Link>
+          </div>
+          <ScrollableRow enableVirtualization={true}>
+            {loading
+              ? Array.from({ length: 4 }).map((_, index) => (
+                  <SkeletonCard key={index} />
+                ))
+              : hotMovies.map((movie, index) => (
+                  <div
+                    key={movie.id}
+                    className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
+                  >
+                    <VideoCard
+                      from='douban'
+                      source='douban'
+                      id={movie.id}
+                      source_name='豆瓣'
+                      title={movie.title}
+                      poster={resolveCardPosterUrl(movie.poster)}
+                      douban_id={Number(movie.id)}
+                      year={movie.year}
+                      type='movie'
+                      priority={index < 3}
+                    />
+                  </div>
+                ))}
+          </ScrollableRow>
+        </section>
+      </FluentCard>
       <LazySection fallbackHeight={280}>
         <FluentCard
           variant='default'
-          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          className='mb-4 md:mb-10 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>
@@ -165,7 +216,7 @@ export default function HomeContentView({
                 icon={Calendar}
                 iconColor='text-orange-500'
                 kicker='Coming Soon'
-                index='01'
+                index='02'
               />
               <Link href='/release-calendar'>
                 <FluentButton
@@ -303,61 +354,10 @@ export default function HomeContentView({
           </section>
         </FluentCard>
       </LazySection>
-      <FluentCard
-        variant='default'
-        className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
-        padding='0'
-      >
-        <section className='p-4 sm:p-5'>
-          <div className='mb-4 flex items-center justify-between'>
-            <SectionTitle
-              title='热门电影'
-              icon={Film}
-              iconColor='text-red-500'
-              kicker='Trending'
-              index='02'
-            />
-            <Link href='/douban?type=movie'>
-              <FluentButton
-                variant='ghost'
-                size='sm'
-                icon={<ChevronRight className='h-4 w-4' />}
-              >
-                更多内容
-              </FluentButton>
-            </Link>
-          </div>
-          <ScrollableRow enableVirtualization={true}>
-            {loading
-              ? Array.from({ length: 4 }).map((_, index) => (
-                  <SkeletonCard key={index} />
-                ))
-              : hotMovies.map((movie, index) => (
-                  <div
-                    key={movie.id}
-                    className='min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-44'
-                  >
-                    <VideoCard
-                      from='douban'
-                      source='douban'
-                      id={movie.id}
-                      source_name='豆瓣'
-                      title={movie.title}
-                      poster={resolveCardPosterUrl(movie.poster)}
-                      douban_id={Number(movie.id)}
-                      year={movie.year}
-                      type='movie'
-                      priority={index < 3}
-                    />
-                  </div>
-                ))}
-          </ScrollableRow>
-        </section>
-      </FluentCard>
       <LazySection>
         <FluentCard
           variant='default'
-          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          className='mb-4 md:mb-10 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>
@@ -410,7 +410,7 @@ export default function HomeContentView({
       <LazySection>
         <FluentCard
           variant='default'
-          className='mb-8 home-section !p-0 !overflow-hidden'
+          className='mb-4 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>
@@ -453,7 +453,7 @@ export default function HomeContentView({
       <LazySection>
         <FluentCard
           variant='default'
-          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          className='mb-4 md:mb-10 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>
@@ -506,7 +506,7 @@ export default function HomeContentView({
       <LazySection>
         <FluentCard
           variant='default'
-          className='mb-8 md:mb-10 home-section !p-0 !overflow-hidden'
+          className='mb-4 md:mb-10 home-section !p-0 !overflow-hidden'
           padding='0'
         >
           <section className='p-4 sm:p-5'>

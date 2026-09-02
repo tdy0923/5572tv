@@ -950,6 +950,9 @@ html:not(.dark) .hover\:bg-slate-50:hover {
   .home-section > section {
     padding: 0.5rem 0.5rem !important;
   }
+  .home-section > section > div:first-child {
+    margin-bottom: 0.25rem !important;
+  }
 }
 
 /* ============================================

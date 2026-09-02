@@ -54,10 +54,10 @@ function ScrollableRow({
   );
 
   return (
-    <div className='ui-rail relative group px-1 py-1 sm:px-2 sm:py-2'>
+    <div className='ui-rail relative group px-1 py-0.5 sm:px-2 sm:py-2'>
       <div
         ref={containerRef}
-        className='flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory [&>*]:snap-start px-3 pb-6 pt-3 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
+        className='flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory [&>*]:snap-start px-2 pb-4 pt-1 sm:space-x-6 sm:px-5 sm:pb-12 sm:pt-4'
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <HorizontalRailProvider value={true}>{children}</HorizontalRailProvider>
