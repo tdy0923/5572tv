@@ -8,12 +8,20 @@ import {
   CheckCircle,
   Flame,
   Lightbulb,
+  Save,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+  FluentSpinner,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 interface AIRecommendConfigProps {
@@ -30,9 +38,9 @@ const AIRecommendConfig = ({
 
   const [aiSettings, setAiSettings] = useState({
     enabled: false,
-    apiUrl: '', // 🔥 不给默认值
+    apiUrl: '',
     apiKey: '',
-    model: '', // 🔥 不给默认值
+    model: '',
     temperature: 0.7,
     maxTokens: 3000,
     enableOrchestrator: false,
@@ -40,10 +48,8 @@ const AIRecommendConfig = ({
     tavilyApiKeys: [] as string[],
   });
 
-  // Tavily API Keys 原始输入（逗号分隔的字符串）
   const [tavilyKeysInput, setTavilyKeysInput] = useState('');
 
-  // Tavily API 用量状态
   const [tavilyUsage, setTavilyUsage] = useState<{
     loading: boolean;
     data: Array<{
@@ -64,7 +70,6 @@ const AIRecommendConfig = ({
     lastUpdated: null,
   });
 
-  // 常用模型参考（建议使用支持联网搜索的模型）
   const MODEL_EXAMPLES = [
     'gpt-5 (OpenAI)',
     'o3-mini (OpenAI)',
@@ -81,15 +86,14 @@ const AIRecommendConfig = ({
     'grok-4 (xAI)',
   ];
 
-  // 从config加载设置
   useEffect(() => {
     if (config?.AIRecommendConfig) {
       const keys = config.AIRecommendConfig.tavilyApiKeys || [];
       setAiSettings({
         enabled: config.AIRecommendConfig.enabled ?? false,
-        apiUrl: config.AIRecommendConfig.apiUrl || '', // 🔥 不给默认值，保持空字符串
+        apiUrl: config.AIRecommendConfig.apiUrl || '',
         apiKey: config.AIRecommendConfig.apiKey || '',
-        model: config.AIRecommendConfig.model || '', // 🔥 不给默认值，保持空字符串
+        model: config.AIRecommendConfig.model || '',
         temperature: config.AIRecommendConfig.temperature ?? 0.7,
         maxTokens: config.AIRecommendConfig.maxTokens ?? 3000,
         enableOrchestrator:
@@ -97,14 +101,11 @@ const AIRecommendConfig = ({
         enableWebSearch: config.AIRecommendConfig.enableWebSearch ?? false,
         tavilyApiKeys: keys,
       });
-      // 设置输入框的显示值
       setTavilyKeysInput(keys.join(', '));
     }
   }, [config]);
 
-  // 保存AI推荐配置
   const handleSave = async () => {
-    // 先分割Tavily Keys输入
     const keys = tavilyKeysInput
       .split(/[,\n]+/)
       .map((k) => k.trim())
@@ -115,9 +116,7 @@ const AIRecommendConfig = ({
       tavilyApiKeys: keys,
     };
 
-    // 基本验证
     if (settingsToSave.enabled) {
-      // 🔥 检查是否至少配置了一种模式
       const hasAIModel = !!(
         settingsToSave.apiUrl.trim() &&
         settingsToSave.apiKey.trim() &&
@@ -137,7 +136,6 @@ const AIRecommendConfig = ({
         return;
       }
 
-      // 如果配置了AI模型，验证参数
       if (hasAIModel) {
         if (settingsToSave.temperature < 0 || settingsToSave.temperature > 2) {
           showMessage('error', '温度参数应在0-2之间');
@@ -152,7 +150,6 @@ const AIRecommendConfig = ({
         }
       }
 
-      // 如果启用了联网搜索，验证Tavily API Keys
       if (
         settingsToSave.enableOrchestrator &&
         settingsToSave.enableWebSearch &&
@@ -186,7 +183,6 @@ const AIRecommendConfig = ({
     }
   };
 
-  // 测试API连接
   const handleTest = async () => {
     if (!aiSettings.apiUrl.trim() || !aiSettings.apiKey.trim()) {
       showMessage('error', '请先填写API地址和密钥');
@@ -218,16 +214,14 @@ const AIRecommendConfig = ({
 
       showMessage('success', 'API连接测试成功！');
     } catch (err) {
-      console.error('测试连接错误:', err);
       let errorMessage = 'API连接测试失败';
       if (err instanceof Error) {
         errorMessage = err.message;
       } else if (typeof err === 'string') {
         errorMessage = err;
       } else if (err && typeof err === 'object') {
-        // 处理对象错误，避免显示 [object Object]
         if ('message' in err) {
-          errorMessage = String(err.message);
+          errorMessage = String((err as any).message);
         } else {
           errorMessage = 'API连接失败，请检查网络或API配置';
         }
@@ -238,9 +232,7 @@ const AIRecommendConfig = ({
     }
   };
 
-  // 获取 Tavily API 用量
   const fetchTavilyUsage = async (singleKeyIndex?: number) => {
-    // 先保存输入到 state（如果用户刚输入还没失焦）
     const keys = tavilyKeysInput
       .split(/[,\n]+/)
       .map((k) => k.trim())
@@ -251,10 +243,8 @@ const AIRecommendConfig = ({
     let keysToCheck: string[];
 
     if (singleKeyIndex !== undefined) {
-      // 查询单个 Key
       keysToCheck = [keys[singleKeyIndex]];
     } else {
-      // 查询所有 Key
       keysToCheck = keys.filter((k) => k.trim().length > 0);
     }
 
@@ -309,7 +299,6 @@ const AIRecommendConfig = ({
       );
 
       if (singleKeyIndex !== undefined) {
-        // 单个查询：更新或添加该 Key 的数据
         setTavilyUsage((prev) => {
           const existingData = prev.data || [];
           const newData = [...existingData];
@@ -334,7 +323,6 @@ const AIRecommendConfig = ({
           '✅ 统计数据已更新！请点击下方"保存配置"按钮保存Key到配置文件',
         );
       } else {
-        // 全部查询：替换所有数据
         setTavilyUsage({
           loading: false,
           data: results,
@@ -346,281 +334,179 @@ const AIRecommendConfig = ({
         );
       }
     } catch (err) {
-      console.error('获取 Tavily 用量失败:', err);
       showMessage('error', '获取用量失败，请稍后重试');
       setTavilyUsage((prev) => ({ ...prev, loading: false }));
     }
   };
 
   return (
-    <div className='space-y-6'>
-      {/* 消息提示 */}
-      {message && (
-        <div
-          className={`flex items-center space-x-2 p-3 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle className='h-5 w-5' />
-          ) : (
-            <AlertCircle className='h-5 w-5' />
-          )}
-          <span>{message.text}</span>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold flex items-center gap-2'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            <Flame className='w-4 h-4 text-[#f59e0b]' />
+            AI 推荐配置
+          </h3>
+          <p className='text-xs mt-0.5' style={{ color: 'var(--color-foreground-muted)' }}>
+            OpenAI 兼容 API · 支持智能协调器与联网搜索
+          </p>
         </div>
+        <FluentBadge variant={aiSettings.enabled ? 'success' : 'default'} size='sm' rounded>
+          {aiSettings.enabled ? '已启用' : '已禁用'}
+        </FluentBadge>
+      </div>
+
+      {message && (
+        <FluentCard
+          padding='12px'
+          className={`flex items-center gap-2 border text-sm ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}
+        >
+          {message.type === 'success' ? <CheckCircle className='h-4 w-4 shrink-0' /> : <AlertCircle className='h-4 w-4 shrink-0' />}
+          <span className='whitespace-pre-wrap'>{message.text}</span>
+        </FluentCard>
       )}
 
-      {/* 基础设置 */}
-      <div className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm'>
-        <div className='mb-6'>
-          <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
-            基础设置
-          </h3>
-          <div className='space-y-2'>
-            <div className='flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg'>
-              <svg className='h-4 w-4' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span>
-                🤖 支持OpenAI兼容的API接口，包括ChatGPT、Claude、Gemini等模型
-              </span>
-            </div>
-            <div className='flex items-center space-x-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg'>
-              <svg className='h-4 w-4' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span>
-                🆓 <strong>新功能</strong>
-                ：可以只配置Tavily搜索（免费），无需AI模型！适合预算有限的用户
-              </span>
-            </div>
-            <div className='flex items-center space-x-2 text-sm text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-lg'>
-              <svg className='h-4 w-4' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span>
-                📋 <strong>配置说明</strong>：请至少配置一种模式（AI模型 或
-                Tavily搜索），或两者都配置以获得最佳体验
-              </span>
-            </div>
-          </div>
+      {/* Basic settings */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+            <Lightbulb className='w-3.5 h-3.5 text-[#3b82f6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>基础设置</h4>
+          <FluentBadge variant='info' size='sm' rounded>
+            AI 推荐
+          </FluentBadge>
         </div>
 
-        {/* 启用开关 */}
-        <div className='mb-6'>
-          <Toggle
-            checked={aiSettings.enabled}
-            onChange={(v) => setAiSettings((prev) => ({ ...prev, enabled: v }))}
-            label='启用AI推荐功能'
-            description='开启后用户可以在主页看到AI推荐按钮并与AI对话获取影视推荐'
-          />
+        <div className='space-y-2'>
+          <FluentCard padding='10px' className='flex gap-2 bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30'>
+            <span className='text-xs text-[#3b82f6] leading-relaxed'>🤖 支持 OpenAI 兼容 API，包括 ChatGPT、Claude、Gemini 等模型</span>
+          </FluentCard>
+          <FluentCard padding='10px' className='flex gap-2 bg-green-50/60 dark:bg-green-900/10 border-green-200/60 dark:border-green-800/30'>
+            <span className='text-xs text-[#22c55e] leading-relaxed'>🆓 <strong>新功能</strong>：可仅配置 Tavily 搜索（免费），无需 AI 模型</span>
+          </FluentCard>
         </div>
 
-        {/* API配置 */}
+        <Toggle
+          checked={aiSettings.enabled}
+          onChange={(v) => setAiSettings((prev) => ({ ...prev, enabled: v }))}
+          label='启用AI推荐功能'
+          description='开启后主页将显示 AI 推荐按钮并可对话获取影视推荐'
+        />
+
         {aiSettings.enabled && (
-          <div className='space-y-4'>
-            {/* 配置模式提示 */}
-            <div className='bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
-              <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-1.5'>
-                <Lightbulb className='w-4 h-4' /> 配置模式选择
+          <div className='space-y-4 pt-2'>
+            <FluentCard padding='10px' className='bg-gradient-to-r from-blue-50/60 to-purple-50/60 dark:from-blue-900/10 dark:to-purple-900/10 border-blue-200/60 dark:border-blue-800/30'>
+              <h4 className='text-xs font-semibold text-gray-900 dark:text-white flex items-center gap-1.5 mb-1.5'>
+                <Lightbulb className='w-3.5 h-3.5 text-[#3b82f6]' /> 配置模式选择
               </h4>
-              <div className='text-xs text-gray-700 dark:text-gray-300 space-y-1'>
-                <p>
-                  <strong>模式一：AI模型 + Tavily搜索（推荐）</strong> -
-                  配置以下所有选项，获得最佳体验
-                </p>
-                <p>
-                  <strong>模式二：仅AI模型</strong> -
-                  配置API地址/密钥/模型，跳过智能协调器
-                </p>
-                <p>
-                  <strong>模式三：仅Tavily搜索（免费）</strong> -
-                  跳过API配置，直接配置智能协调器和Tavily Keys
-                </p>
+              <div className='text-xs text-[#6b7280] dark:text-gray-400 space-y-1 leading-relaxed'>
+                <p><strong>模式一：AI模型 + Tavily搜索（推荐）</strong> - 配置所有选项，获得最佳体验</p>
+                <p><strong>模式二：仅AI模型</strong> - 配置 API 地址/密钥/模型</p>
+                <p><strong>模式三：仅Tavily搜索（免费）</strong> - 跳过 API 配置，直接配置智能协调器和 Tavily Keys</p>
               </div>
-            </div>
+            </FluentCard>
 
-            {/* API地址 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                API地址{' '}
-                <span className='text-xs text-gray-500 dark:text-gray-400'>
-                  (Tavily纯搜索模式可留空)
-                </span>
-              </label>
-              <div className='relative'>
-                <input
-                  type='url'
-                  value={aiSettings.apiUrl}
-                  onChange={(e) =>
-                    setAiSettings((prev) => ({
-                      ...prev,
-                      apiUrl: e.target.value,
-                    }))
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                  placeholder='https://api.openai.com/v1'
-                />
-                <button
-                  type='button'
-                  onClick={() => {
-                    const url = aiSettings.apiUrl.trim();
-                    if (
-                      url &&
-                      !url.endsWith('/v1') &&
-                      !url.includes('/chat/completions')
-                    ) {
-                      const newUrl = url.endsWith('/')
-                        ? url + 'v1'
-                        : url + '/v1';
-                      setAiSettings((prev) => ({ ...prev, apiUrl: newUrl }));
-                      showMessage('success', '已自动添加 /v1 后缀');
-                    }
-                  }}
-                  className='absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded transition-colors'
-                >
-                  +/v1
-                </button>
-              </div>
-              <div className='mt-2 space-y-2'>
-                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                  <span className='text-yellow-600 dark:text-yellow-400'>
-                    <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
-                    提示：
-                  </span>
-                  大多数OpenAI兼容API需要在地址末尾添加{' '}
-                  <code className='bg-gray-100 dark:bg-gray-800 px-1 rounded'>
-                    /v1
-                  </code>
-                </p>
-                <div className='grid grid-cols-1 gap-1 text-xs'>
-                  <details className='text-gray-500 dark:text-gray-400'>
-                    <summary className='cursor-pointer hover:text-gray-700 dark:hover:text-gray-300'>
-                      📝 常见API地址示例 (点击展开)
-                    </summary>
-                    <div className='mt-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700'>
-                      {[
-                        { name: 'OpenAI', url: 'https://api.openai.com/v1' },
-                        {
-                          name: 'DeepSeek',
-                          url: 'https://api.deepseek.com/v1',
-                        },
-                        {
-                          name: '硅基流动',
-                          url: 'https://api.siliconflow.cn/v1',
-                        },
-                        { name: '月之暗面', url: 'https://api.moonshot.cn/v1' },
-                        {
-                          name: '智谱AI',
-                          url: 'https://open.bigmodel.cn/api/paas/v4',
-                        },
-                        {
-                          name: '通义千问',
-                          url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-                        },
-                        {
-                          name: '百度文心',
-                          url: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1',
-                        },
-                        { name: '自部署', url: 'http://localhost:11434/v1' },
-                      ].map((provider) => (
-                        <div
-                          key={provider.name}
-                          className='flex items-center justify-between group'
-                        >
-                          <span>
-                            • {provider.name}: <code>{provider.url}</code>
-                          </span>
-                          <button
-                            type='button'
-                            onClick={() => {
-                              setAiSettings((prev) => ({
-                                ...prev,
-                                apiUrl: provider.url,
-                              }));
-                              showMessage(
-                                'success',
-                                `已设置为 ${provider.name} API地址`,
-                              );
-                            }}
-                            className='opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100 ml-2 px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded transition-all'
-                          >
-                            使用
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
+            <div className='space-y-3'>
+              <div className='space-y-2'>
+                <div className='flex gap-2 items-end'>
+                  <div className='flex-1'>
+                    <FluentInput
+                      label='API地址 (Tavily纯搜索模式可留空)'
+                      value={aiSettings.apiUrl}
+                      onChange={(e) =>
+                        setAiSettings((prev) => ({
+                          ...prev,
+                          apiUrl: e.target.value,
+                        }))
+                      }
+                      placeholder='https://api.openai.com/v1'
+                      fullWidth
+                    />
+                  </div>
+                  <FluentButton
+                    variant='secondary'
+                    size='md'
+                    onClick={() => {
+                      const url = aiSettings.apiUrl.trim();
+                      if (
+                        url &&
+                        !url.endsWith('/v1') &&
+                        !url.includes('/chat/completions')
+                      ) {
+                        const newUrl = url.endsWith('/') ? url + 'v1' : url + '/v1';
+                        setAiSettings((prev) => ({ ...prev, apiUrl: newUrl }));
+                        showMessage('success', '已自动添加 /v1 后缀');
+                      }
+                    }}
+                    className='shrink-0'
+                  >
+                    +/v1
+                  </FluentButton>
                 </div>
+                <details className='text-xs text-[#9ca3af]'>
+                  <summary className='cursor-pointer hover:text-gray-700 dark:hover:text-gray-300'>📝 常见API地址示例 (点击展开)</summary>
+                  <div className='mt-2 grid gap-1'>
+                    {[
+                      { name: 'OpenAI', url: 'https://api.openai.com/v1' },
+                      { name: 'DeepSeek', url: 'https://api.deepseek.com/v1' },
+                      { name: '硅基流动', url: 'https://api.siliconflow.cn/v1' },
+                      { name: '月之暗面', url: 'https://api.moonshot.cn/v1' },
+                      { name: '智谱AI', url: 'https://open.bigmodel.cn/api/paas/v4' },
+                      { name: '通义千问', url: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+                    ].map((p) => (
+                      <div key={p.name} className='flex items-center justify-between'>
+                        <span>• {p.name}: <code className='px-1 py-0.5 bg-gray-100 dark:bg-white/10 rounded text-[11px]'>{p.url}</code></span>
+                        <FluentButton
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => {
+                            setAiSettings((prev) => ({ ...prev, apiUrl: p.url }));
+                            showMessage('success', `已设置为 ${p.name} API地址`);
+                          }}
+                          className='!px-2 !py-0.5 !min-h-0'
+                        >
+                          使用
+                        </FluentButton>
+                      </div>
+                    ))}
+                  </div>
+                </details>
               </div>
-            </div>
 
-            {/* API密钥 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                API密钥{' '}
-                <span className='text-xs text-gray-500 dark:text-gray-400'>
-                  (Tavily纯搜索模式可留空)
-                </span>
-              </label>
-              <input
+              <FluentInput
+                label='API密钥 (Tavily纯搜索模式可留空)'
                 type='password'
                 value={aiSettings.apiKey}
                 onChange={(e) =>
                   setAiSettings((prev) => ({ ...prev, apiKey: e.target.value }))
                 }
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                 placeholder='sk-...'
+                fullWidth
               />
-              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                请妥善保管API密钥，不要泄露给他人
-              </p>
-            </div>
 
-            {/* 模型名称 */}
-            <div>
-              <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                模型名称{' '}
-                <span className='text-xs text-gray-500 dark:text-gray-400'>
-                  (Tavily纯搜索模式可留空)
-                </span>
-              </label>
-              <input
-                type='text'
-                value={aiSettings.model}
-                onChange={(e) =>
-                  setAiSettings((prev) => ({ ...prev, model: e.target.value }))
-                }
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                placeholder='请自行填入正确的官方API模型名称，如：gpt-5'
-              />
-              <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>
-                <p className='mb-1'>
-                  常用模型参考（建议使用支持联网搜索的模型）：
-                </p>
-                <p className='mb-2 text-orange-600 dark:text-orange-400 flex items-center gap-1'>
-                  <AlertTriangle className='w-4 h-4' />{' '}
-                  请确保填入的模型名称与API提供商的官方文档一致
-                </p>
-                <div className='flex flex-wrap gap-2'>
-                  {MODEL_EXAMPLES.map((example, index) => (
-                    <button
+              <div className='space-y-2'>
+                <FluentInput
+                  label='模型名称 (Tavily纯搜索模式可留空)'
+                  value={aiSettings.model}
+                  onChange={(e) =>
+                    setAiSettings((prev) => ({ ...prev, model: e.target.value }))
+                  }
+                  placeholder='请填入正确的官方模型名称，如：gpt-5'
+                  fullWidth
+                />
+                <div className='flex flex-wrap gap-1.5'>
+                  {MODEL_EXAMPLES.map((example) => (
+                    <FluentBadge
                       key={example}
-                      type='button'
+                      variant='default'
+                      size='sm'
+                      rounded
+                      className='cursor-pointer hover:!bg-gray-200 dark:hover:!bg-white/10'
                       onClick={() => {
                         const modelName = example.split(' (')[0];
                         setAiSettings((prev) => ({
@@ -628,135 +514,99 @@ const AIRecommendConfig = ({
                           model: modelName,
                         }));
                       }}
-                      className='inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors'
                     >
                       {example}
-                    </button>
+                    </FluentBadge>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* 高级参数 */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                  温度参数: {aiSettings.temperature}
-                </label>
-                <input
-                  type='range'
-                  min='0'
-                  max='2'
-                  step='0.1'
-                  value={aiSettings.temperature}
-                  onChange={(e) =>
-                    setAiSettings((prev) => ({
-                      ...prev,
-                      temperature: parseFloat(e.target.value),
-                    }))
-                  }
-                  className='w-full'
-                />
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  控制回复的随机性，0=确定性，2=最随机
-                </p>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                  最大Token数
-                </label>
-                <input
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 pt-2'>
+                <div className='space-y-2'>
+                  <label className='text-sm font-medium text-[#9ca3af]'>温度参数: {aiSettings.temperature}</label>
+                  <input
+                    type='range'
+                    min='0'
+                    max='2'
+                    step='0.1'
+                    value={aiSettings.temperature}
+                    onChange={(e) =>
+                      setAiSettings((prev) => ({
+                        ...prev,
+                        temperature: parseFloat(e.target.value),
+                      }))
+                    }
+                    className='w-full accent-[#3b82f6]'
+                  />
+                  <p className='text-xs text-[#9ca3af]'>控制随机性，0=确定性，2=最随机</p>
+                </div>
+                <FluentInput
+                  label='最大Token数'
                   type='number'
-                  min='1'
-                  max='4000'
-                  value={aiSettings.maxTokens}
+                  min={1}
+                  max={150000}
+                  value={String(aiSettings.maxTokens)}
                   onChange={(e) =>
                     setAiSettings((prev) => ({
                       ...prev,
-                      maxTokens: parseInt(e.target.value),
+                      maxTokens: parseInt(e.target.value) || 3000,
                     }))
                   }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  fullWidth
                 />
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  限制AI回复的最大长度。推荐设置：GPT-5/o1/o3/o4推理模型建议2000+，普通模型500-4000即可。
-                  <span className='text-yellow-600 dark:text-yellow-400'>
-                    <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
-                    设置过低可能导致空回复！
-                  </span>
-                </p>
               </div>
+              <p className='text-xs text-[#9ca3af] flex items-center gap-1'>
+                <AlertTriangle className='w-3.5 h-3.5 text-[#f59e0b]' /> 推理模型建议 2000+，过低可能导致空回复
+              </p>
             </div>
           </div>
         )}
-      </div>
+      </FluentCard>
 
-      {/* 智能协调器设置（高级） */}
+      {/* Orchestrator */}
       {aiSettings.enabled && (
-        <div className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 shadow-sm'>
-          <div className='mb-6'>
-            <h3 className='text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2'>
-              智能协调器设置（高级）
-            </h3>
-            <div className='flex items-center space-x-2 text-sm text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-lg'>
-              <svg className='h-4 w-4' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span>
-                <Flame className='inline-block w-4 h-4 align-text-bottom' />
-                开启后AI可自动判断是否需要联网搜索获取最新信息（如：最新上映、演员动态等）
-              </span>
-            </div>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center'>
+              <Flame className='w-3.5 h-3.5 text-[#8b5cf6]' />
+            </span>
+            <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>智能协调器设置（高级）</h4>
+            <FluentBadge variant='info' size='sm' rounded>
+              可选
+            </FluentBadge>
           </div>
+          <p className='text-xs text-[#9ca3af] leading-relaxed'>开启后 AI 可自动判断是否需要联网搜索获取最新信息（如最新上映、演员动态）</p>
 
-          {/* 启用智能协调器 */}
-          <div className='mb-6'>
-            <Toggle
-              checked={aiSettings.enableOrchestrator}
-              onChange={(v) =>
-                setAiSettings((prev) => ({ ...prev, enableOrchestrator: v }))
-              }
-              label='启用智能协调器（意图分析）'
-              description='开启后AI会自动分析用户问题，判断是否需要联网搜索最新信息'
-            />
-          </div>
+          <Toggle
+            checked={aiSettings.enableOrchestrator}
+            onChange={(v) =>
+              setAiSettings((prev) => ({ ...prev, enableOrchestrator: v }))
+            }
+            label='启用智能协调器（意图分析）'
+            description='自动分析用户问题，判断是否需要联网搜索'
+          />
 
-          {/* 联网搜索设置 */}
           {aiSettings.enableOrchestrator && (
-            <div className='space-y-4 pl-6 border-l-2 border-purple-200 dark:border-purple-800'>
-              {/* 启用联网搜索 */}
-              <div>
-                <Toggle
-                  checked={aiSettings.enableWebSearch}
-                  onChange={(v) =>
-                    setAiSettings((prev) => ({ ...prev, enableWebSearch: v }))
-                  }
-                  label='启用联网搜索（Tavily）'
-                  description='使用Tavily搜索引擎获取最新影视资讯、演员动态等实时信息'
-                />
-              </div>
+            <div className='space-y-4 pl-4 border-l-2 border-purple-200 dark:border-purple-800/50'>
+              <Toggle
+                checked={aiSettings.enableWebSearch}
+                onChange={(v) =>
+                  setAiSettings((prev) => ({ ...prev, enableWebSearch: v }))
+                }
+                label='启用联网搜索（Tavily）'
+                description='使用 Tavily 获取最新影视资讯'
+              />
 
-              {/* Tavily API Keys */}
               {aiSettings.enableWebSearch && (
-                <div>
-                  <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                    Tavily API Keys（每个账号1000次/月免费）
-                  </label>
-                  <input
-                    type='text'
+                <div className='space-y-3'>
+                  <FluentInput
+                    label='Tavily API Keys（每个账号1000次/月免费）'
                     value={tavilyKeysInput}
                     onChange={(e) => {
-                      // 直接保存原始输入，不做分割
                       setTavilyKeysInput(e.target.value);
                       setHasUnsavedChanges(true);
                     }}
                     onBlur={() => {
-                      // 失焦时分割并更新到settings（用于显示数量）
                       const keys = tavilyKeysInput
                         .split(/[,\n]+/)
                         .map((k) => k.trim())
@@ -766,261 +616,82 @@ const AIRecommendConfig = ({
                         tavilyApiKeys: keys,
                       }));
                     }}
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-sm'
-                    placeholder='tvly-xxxxxxxxxxxxxx, tvly-yyyyyyyyyyyyyy, tvly-zzzzzzzzzzzzzz'
+                    placeholder='tvly-xxxxxxxxxxxxxx, tvly-yyyyyyyyyyyyyy'
+                    fullWidth
                   />
-                  <div className='mt-2 space-y-2'>
-                    <p className='text-xs text-gray-500 dark:text-gray-400'>
-                      <span className='text-green-600 dark:text-green-400'>
-                        <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
-                        提示：
-                      </span>
-                      多个API Key用<strong>逗号</strong>
-                      分隔，系统会自动轮询使用以提高免费额度
-                    </p>
-                    <div className='text-xs bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg space-y-1'>
-                      <p className='font-semibold text-blue-700 dark:text-blue-300'>
-                        📊 免费额度说明：
-                      </p>
-                      <ul className='list-disc list-inside space-y-0.5 text-blue-600 dark:text-blue-400'>
-                        <li>
-                          每个Tavily账号提供 <strong>1000次</strong>{' '}
-                          免费API调用/月
-                        </li>
-                        <li>配置多个Key可实现轮询，失败时自动切换下一个Key</li>
-                        <li>例如：配置5个Key = 5000次/月免费额度</li>
-                        <li>
-                          免费注册地址：
-                          <a
-                            href='https://tavily.com'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='underline hover:text-blue-800 dark:hover:text-blue-200 ml-1'
-                          >
-                            https://tavily.com
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    {aiSettings.tavilyApiKeys.length > 0 && (
-                      <p className='text-xs text-green-600 dark:text-green-400'>
-                        <CheckCircle className='inline-block w-4 h-4 align-text-bottom' />{' '}
-                        已配置{' '}
-                        <strong>{aiSettings.tavilyApiKeys.length}</strong> 个API
-                        Key （预计每月{' '}
-                        <strong>
-                          {aiSettings.tavilyApiKeys.length * 1000}
-                        </strong>{' '}
-                        次免费调用）
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Tavily API 用量查询 */}
+                  <FluentCard padding='10px' className='bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30 space-y-1'>
+                    <p className='text-xs font-semibold text-[#3b82f6]'>📊 免费额度说明</p>
+                    <ul className='text-xs text-[#6b7280] dark:text-gray-400 list-disc list-inside space-y-0.5'>
+                      <li>每个账号 1000 次/月，多 Key 轮询</li>
+                      <li>例如 5 个 Key = 5000 次/月</li>
+                      <li>注册地址：<a href='https://tavily.com' target='_blank' rel='noopener noreferrer' className='underline text-[#3b82f6]'>https://tavily.com</a></li>
+                    </ul>
+                  </FluentCard>
                   {aiSettings.tavilyApiKeys.length > 0 && (
-                    <div className='mt-4 space-y-3'>
+                    <p className='text-xs text-[#22c55e] flex items-center gap-1'>
+                      <CheckCircle className='w-3.5 h-3.5' /> 已配置 {aiSettings.tavilyApiKeys.length} 个 Key（预计 {aiSettings.tavilyApiKeys.length * 1000} 次/月）
+                    </p>
+                  )}
+
+                  {aiSettings.tavilyApiKeys.length > 0 && (
+                    <div className='space-y-3 pt-2'>
                       <div className='flex items-center justify-between'>
-                        <h4 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
-                          📊 API 用量统计
-                        </h4>
-                        <div className='flex gap-2'>
-                          {aiSettings.tavilyApiKeys.length > 1 && (
-                            <button
-                              onClick={() => fetchTavilyUsage()}
-                              disabled={tavilyUsage.loading}
-                              className='px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md transition-colors flex items-center gap-1.5'
-                            >
-                              <svg
-                                className={`h-3.5 w-3.5 ${tavilyUsage.loading ? 'animate-spin' : ''}`}
-                                fill='none'
-                                stroke='currentColor'
-                                viewBox='0 0 24 24'
-                              >
-                                <path
-                                  strokeLinecap='round'
-                                  strokeLinejoin='round'
-                                  strokeWidth={2}
-                                  d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
-                                />
-                              </svg>
-                              查询全部
-                            </button>
-                          )}
-                        </div>
+                        <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>📊 API 用量统计</h4>
+                        <FluentButton variant='secondary' size='sm' loading={tavilyUsage.loading} onClick={() => fetchTavilyUsage()} disabled={tavilyUsage.loading}>
+                          {tavilyUsage.loading ? '查询中...' : '查询全部'}
+                        </FluentButton>
                       </div>
-
-                      {aiSettings.tavilyApiKeys.length > 1 && (
-                        <div className='text-xs bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2 rounded-lg text-yellow-700 dark:text-yellow-300 flex items-center gap-2'>
-                          <svg
-                            className='h-4 w-4 flex-shrink-0'
-                            fill='currentColor'
-                            viewBox='0 0 20 20'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                          <span>
-                            <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />
-                            提示：点击下方每个Key卡片的"查询"按钮可单独查询，或点击上方"查询全部"一次性查询所有Key
-                          </span>
+                      {tavilyUsage.loading && (
+                        <div className='flex items-center gap-2 py-2'>
+                          <FluentSpinner size='small' />
+                          <span className='text-xs text-[#9ca3af]'>正在查询用量...</span>
                         </div>
                       )}
-
                       {tavilyUsage.lastUpdated && (
-                        <p className='text-xs text-gray-500 dark:text-gray-400'>
-                          最后更新: {tavilyUsage.lastUpdated}
-                        </p>
+                        <p className='text-xs text-[#9ca3af]'>最后更新: {tavilyUsage.lastUpdated}</p>
                       )}
-
-                      {/* 显示所有配置的 Key（即使未查询） */}
                       <div className='space-y-2'>
                         {aiSettings.tavilyApiKeys.map((key, index) => {
-                          // 查找该 Key 的用量数据
-                          const usage = tavilyUsage.data?.find(
-                            (d) => d.index === index,
-                          );
-
+                          const usage = tavilyUsage.data?.find((d) => d.index === index);
                           return (
-                            <div
-                              key={key}
-                              className='bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/10 dark:to-blue-900/10 border border-purple-200 dark:border-purple-800 rounded-lg p-3'
-                            >
+                            <FluentCard key={key} padding='12px' className='bg-gradient-to-r from-purple-50/60 to-blue-50/60 dark:from-purple-900/10 dark:to-blue-900/10'>
                               <div className='flex items-center justify-between mb-2'>
-                                <span className='text-xs font-mono text-gray-600 dark:text-gray-400'>
-                                  Key #{index + 1}: {key.substring(0, 12)}...
-                                </span>
+                                <span className='text-xs font-mono text-[#6b7280] dark:text-gray-400'>Key #{index + 1}: {key.substring(0, 12)}...</span>
                                 <div className='flex items-center gap-2'>
-                                  {usage && (
-                                    <span className='text-xs font-semibold text-purple-700 dark:text-purple-300'>
-                                      {usage.currentPlan}
-                                    </span>
-                                  )}
-                                  <button
-                                    onClick={() => fetchTavilyUsage(index)}
-                                    disabled={tavilyUsage.loading}
-                                    className='px-2 py-1 text-xs bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded transition-colors'
-                                    title='查询此Key的用量'
-                                  >
+                                  {usage && <FluentBadge variant='info' size='sm' rounded>{usage.currentPlan}</FluentBadge>}
+                                  <FluentButton variant='secondary' size='sm' loading={tavilyUsage.loading} onClick={() => fetchTavilyUsage(index)} className='!px-2 !py-1 !min-h-[26px]'>
                                     {usage ? '刷新' : '查询'}
-                                  </button>
+                                  </FluentButton>
                                 </div>
                               </div>
-
                               {!usage ? (
-                                <div className='text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 py-2'>
-                                  <svg
-                                    className='h-3.5 w-3.5'
-                                    fill='currentColor'
-                                    viewBox='0 0 20 20'
-                                  >
-                                    <path
-                                      fillRule='evenodd'
-                                      d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                                      clipRule='evenodd'
-                                    />
-                                  </svg>
-                                  点击"查询"按钮获取用量信息
-                                </div>
+                                <p className='text-xs text-[#9ca3af] py-1'>点击查询获取用量信息</p>
                               ) : usage.error ? (
-                                <div className='text-xs text-red-600 dark:text-red-400 flex items-center gap-1'>
-                                  <svg
-                                    className='h-3.5 w-3.5'
-                                    fill='currentColor'
-                                    viewBox='0 0 20 20'
-                                  >
-                                    <path
-                                      fillRule='evenodd'
-                                      d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                                      clipRule='evenodd'
-                                    />
-                                  </svg>
-                                  {usage.error}
-                                </div>
+                                <p className='text-xs text-[#ef4444]'>{usage.error}</p>
                               ) : (
                                 <div className='space-y-2'>
-                                  {/* Key 用量 */}
                                   <div>
-                                    <div className='flex justify-between items-center mb-1'>
-                                      <span className='text-xs text-gray-600 dark:text-gray-400'>
-                                        Key 用量
-                                      </span>
-                                      <span className='text-xs font-semibold text-gray-900 dark:text-gray-100'>
-                                        {usage.keyUsage} / {usage.keyLimit}
-                                        <span className='text-gray-500 dark:text-gray-400 ml-1'>
-                                          (
-                                          {(
-                                            (usage.keyUsage / usage.keyLimit) *
-                                            100
-                                          ).toFixed(1)}
-                                          %)
-                                        </span>
-                                      </span>
+                                    <div className='flex justify-between text-xs mb-1'>
+                                      <span className='text-[#9ca3af]'>Key 用量</span>
+                                      <span className='font-semibold text-gray-900 dark:text-white'>{usage.keyUsage} / {usage.keyLimit} <span className='text-[#9ca3af]'>({((usage.keyUsage / usage.keyLimit) * 100).toFixed(1)}%)</span></span>
                                     </div>
-                                    <div className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
-                                      <div
-                                        className={`h-full rounded-full transition-all ${
-                                          usage.keyUsage / usage.keyLimit > 0.9
-                                            ? 'bg-red-500'
-                                            : usage.keyUsage / usage.keyLimit >
-                                                0.7
-                                              ? 'bg-yellow-500'
-                                              : 'bg-green-500'
-                                        }`}
-                                        style={{
-                                          width: `${Math.min((usage.keyUsage / usage.keyLimit) * 100, 100)}%`,
-                                        }}
-                                      />
+                                    <div className='h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
+                                      <div className={`h-full rounded-full transition-all ${usage.keyUsage / usage.keyLimit > 0.9 ? 'bg-[#ef4444]' : usage.keyUsage / usage.keyLimit > 0.7 ? 'bg-[#f59e0b]' : 'bg-[#22c55e]'}`} style={{ width: `${Math.min((usage.keyUsage / usage.keyLimit) * 100, 100)}%` }} />
                                     </div>
                                   </div>
-
-                                  {/* Plan 用量 */}
                                   <div>
-                                    <div className='flex justify-between items-center mb-1'>
-                                      <span className='text-xs text-gray-600 dark:text-gray-400'>
-                                        Plan 用量
-                                      </span>
-                                      <span className='text-xs font-semibold text-gray-900 dark:text-gray-100'>
-                                        {usage.planUsage} / {usage.planLimit}
-                                        <span className='text-gray-500 dark:text-gray-400 ml-1'>
-                                          (
-                                          {(
-                                            (usage.planUsage /
-                                              usage.planLimit) *
-                                            100
-                                          ).toFixed(1)}
-                                          %)
-                                        </span>
-                                      </span>
+                                    <div className='flex justify-between text-xs mb-1'>
+                                      <span className='text-[#9ca3af]'>Plan 用量</span>
+                                      <span className='font-semibold text-gray-900 dark:text-white'>{usage.planUsage} / {usage.planLimit} <span className='text-[#9ca3af]'>({((usage.planUsage / usage.planLimit) * 100).toFixed(1)}%)</span></span>
                                     </div>
-                                    <div className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
-                                      <div
-                                        className={`h-full rounded-full transition-all ${
-                                          usage.planUsage / usage.planLimit >
-                                          0.9
-                                            ? 'bg-red-500'
-                                            : usage.planUsage /
-                                                  usage.planLimit >
-                                                0.7
-                                              ? 'bg-yellow-500'
-                                              : 'bg-purple-500'
-                                        }`}
-                                        style={{
-                                          width: `${Math.min((usage.planUsage / usage.planLimit) * 100, 100)}%`,
-                                        }}
-                                      />
+                                    <div className='h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden'>
+                                      <div className={`h-full rounded-full transition-all ${usage.planUsage / usage.planLimit > 0.9 ? 'bg-[#ef4444]' : usage.planUsage / usage.planLimit > 0.7 ? 'bg-[#f59e0b]' : 'bg-[#8b5cf6]'}`} style={{ width: `${Math.min((usage.planUsage / usage.planLimit) * 100, 100)}%` }} />
                                     </div>
                                   </div>
-
-                                  {/* 剩余额度提示 */}
-                                  <div className='text-xs text-gray-600 dark:text-gray-400 pt-1'>
-                                    剩余: {usage.keyLimit - usage.keyUsage} 次
-                                  </div>
+                                  <div className='text-xs text-[#9ca3af]'>剩余: {usage.keyLimit - usage.keyUsage} 次</div>
                                 </div>
                               )}
-                            </div>
+                            </FluentCard>
                           );
                         })}
                       </div>
@@ -1030,70 +701,32 @@ const AIRecommendConfig = ({
               )}
             </div>
           )}
-        </div>
+        </FluentCard>
       )}
 
-      {/* 操作按钮 */}
-      <div className='flex flex-wrap gap-3'>
-        {/* 测试连接按钮 - 只在启用AI时显示 */}
+      <div className='flex flex-wrap gap-2 pt-1'>
         {aiSettings.enabled && (
-          <button
-            onClick={handleTest}
-            disabled={isLoading}
-            className='flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors'
-          >
-            <svg
-              className='h-4 w-4 mr-2'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-              />
-            </svg>
+          <FluentButton variant='secondary' size='md' loading={isLoading} onClick={handleTest}>
             {isLoading ? '测试中...' : '测试连接'}
-          </button>
+          </FluentButton>
         )}
-
-        {/* 保存按钮 - 始终显示 */}
-        <button
+        <FluentButton
+          variant={hasUnsavedChanges ? 'primary' : 'primary'}
+          size='md'
+          icon={<Save className='h-4 w-4' />}
+          loading={isLoading}
           onClick={handleSave}
-          disabled={isLoading}
-          className={`flex items-center px-4 py-2 ${
-            hasUnsavedChanges
-              ? 'bg-orange-600 hover:bg-orange-700 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
-              : 'bg-blue-600 hover:bg-blue-700'
-          } disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors`}
+          className={hasUnsavedChanges ? 'animate-pulse' : ''}
         >
-          <svg
-            className='h-4 w-4 mr-2'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M5 13l4 4L19 7'
-            />
-          </svg>
-          {isLoading ? (
-            '保存中...'
-          ) : hasUnsavedChanges ? (
-            <>
-              <AlertTriangle className='inline-block w-4 h-4 align-text-bottom' />{' '}
-              保存配置（有未保存更改）
-            </>
-          ) : (
-            '保存配置'
-          )}
-        </button>
+          {isLoading ? '保存中...' : hasUnsavedChanges ? '保存配置（有未保存更改）' : '保存配置'}
+        </FluentButton>
       </div>
+      {isLoading && (
+        <div className='flex items-center gap-2'>
+          <FluentSpinner size='small' />
+          <span className='text-xs text-[#9ca3af]'>处理中...</span>
+        </div>
+      )}
     </div>
   );
 };

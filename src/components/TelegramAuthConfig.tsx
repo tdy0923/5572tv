@@ -12,6 +12,12 @@ import { useEffect, useState } from 'react';
 
 import { useConfigMessage } from '@/hooks/useConfigMessage';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 interface TelegramAuthConfigProps {
@@ -65,206 +71,171 @@ export function TelegramAuthConfig({
   };
 
   return (
-    <div className='space-y-6'>
-      {/* 标题和说明 */}
-      <div className='border-b border-gray-200 dark:border-gray-700 pb-4'>
-        <h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
-          <Send className='w-5 h-5 text-blue-500' />
-          Telegram 登录配置
-        </h2>
-        <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
-          配置 Telegram Magic Link 登录，允许用户通过 Telegram 一键登录
-        </p>
-      </div>
-
-      {/* 配置提示 */}
-      <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4'>
-        <div className='flex gap-3'>
-          <AlertCircle className='w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5' />
-          <div className='text-sm text-blue-800 dark:text-blue-200 space-y-2'>
-            <p className='font-semibold'>配置步骤：</p>
-            <ol className='list-decimal list-inside space-y-1 ml-2'>
-              <li>
-                与{' '}
-                <a
-                  href='https://t.me/botfather'
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='underline hover:text-blue-600'
-                >
-                  @BotFather
-                </a>{' '}
-                对话创建 Bot
-              </li>
-              <li>复制 Bot Token 和 Bot Username 填入下方</li>
-              <li>启用自动注册（推荐）</li>
-              <li>启用配置并保存</li>
-            </ol>
-            <p className='text-xs text-blue-600 dark:text-blue-300 mt-2'>
-              <Lightbulb className='inline-block w-4 h-4 align-text-bottom' />{' '}
-              工作原理：用户输入 Telegram 用户名后，系统会通过 Bot
-              发送登录链接到用户的 Telegram，用户点击链接即可登录
-            </p>
-          </div>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold flex items-center gap-2'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            <Send className='w-4 h-4 text-[#2AABEE]' />
+            Telegram 登录配置
+          </h3>
+          <p className='text-xs mt-0.5' style={{ color: 'var(--color-foreground-muted)' }}>
+            配置 Telegram Magic Link 登录
+          </p>
         </div>
+        <FluentBadge variant={localConfig.enabled ? 'success' : 'default'} size='sm' rounded>
+          {localConfig.enabled ? '已启用' : '已禁用'}
+        </FluentBadge>
       </div>
 
-      {/* 重要提示：一个 Bot 只能绑定一个域名 */}
-      <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4'>
-        <div className='flex gap-3'>
-          <AlertCircle className='w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5' />
-          <div className='text-sm text-yellow-800 dark:text-yellow-200 space-y-2'>
-            <p className='font-semibold flex items-center gap-1.5'>
-              <AlertTriangle className='w-4 h-4' /> 重要提示：Webhook 绑定限制
-            </p>
-            <ul className='list-disc list-inside space-y-1 ml-2'>
-              <li>
-                <strong>
-                  一个 Telegram Bot 只能绑定一个 Webhook URL（域名）
-                </strong>
-              </li>
-              <li>
-                如果您有多个部署（如 Vercel、自建服务器等），它们
-                <strong>不能共用同一个 Bot</strong>
-              </li>
-              <li>
-                解决方案：为每个部署创建独立的 Bot，或只在一个域名上启用
-                Telegram 登录
-              </li>
-              <li>系统会自动将 Webhook 设置到当前访问的域名</li>
-            </ul>
-          </div>
+      {/* Steps */}
+      <FluentCard
+        padding='12px'
+        className='flex gap-3 bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30'
+      >
+        <span className='w-7 h-7 rounded-lg bg-[#2AABEE]/15 flex items-center justify-center shrink-0'>
+          <AlertCircle className='w-3.5 h-3.5 text-[#2AABEE]' />
+        </span>
+        <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+          <p className='font-semibold text-[#2AABEE] mb-1.5'>配置步骤</p>
+          <ol className='list-decimal list-inside space-y-1 ml-1 text-[#6b7280] dark:text-gray-400'>
+            <li>
+              与{' '}
+              <a
+                href='https://t.me/botfather'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='underline hover:text-[#2AABEE] text-[#2AABEE]'
+              >
+                @BotFather
+              </a>{' '}
+              对话创建 Bot
+            </li>
+            <li>复制 Bot Token 和 Bot Username 填入下方</li>
+            <li>启用自动注册（推荐）</li>
+            <li>启用配置并保存</li>
+          </ol>
+          <p className='text-xs text-[#2AABEE]/80 mt-2 flex items-center gap-1'>
+            <Lightbulb className='w-3.5 h-3.5' /> 用户输入 Telegram 用户名后，Bot 发送登录链接，点击即可登录
+          </p>
         </div>
-      </div>
+      </FluentCard>
 
-      {/* 启用开关 */}
-      <div className='p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
+      {/* Webhook warning */}
+      <FluentCard
+        padding='12px'
+        className='flex gap-3 bg-amber-50/60 dark:bg-amber-900/10 border-amber-200/60 dark:border-amber-800/30'
+      >
+        <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center shrink-0'>
+          <AlertTriangle className='w-3.5 h-3.5 text-[#f59e0b]' />
+        </span>
+        <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+          <p className='font-semibold text-[#f59e0b] mb-1.5 flex items-center gap-1.5'>
+            <AlertTriangle className='w-3.5 h-3.5' /> Webhook 绑定限制
+          </p>
+          <ul className='list-disc list-inside space-y-1 ml-1 text-[#6b7280] dark:text-gray-400'>
+            <li>
+              <strong>一个 Telegram Bot 只能绑定一个 Webhook URL（域名）</strong>
+            </li>
+            <li>多个部署不能共用同一个 Bot</li>
+            <li>解决方案：为每个部署创建独立 Bot，或仅在一个域名启用</li>
+            <li>系统自动将 Webhook 设置到当前域名</li>
+          </ul>
+        </div>
+      </FluentCard>
+
+      {/* Enable */}
+      <FluentCard padding='16px'>
         <Toggle
           checked={localConfig.enabled}
           onChange={(checked) =>
             setLocalConfig({ ...localConfig, enabled: checked })
           }
           label='启用 Telegram 登录'
-          description='开启后，登录页面将显示 Telegram 登录按钮'
+          description='开启后，登录页将显示 Telegram 登录按钮'
         />
-      </div>
+      </FluentCard>
 
-      {/* Bot 配置 */}
-      <div className='space-y-4'>
-        <div>
-          <label
-            htmlFor='botToken'
-            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-          >
-            Bot Token <span className='text-red-500'>*</span>
-          </label>
-          <input
-            type='password'
-            id='botToken'
-            value={localConfig.botToken}
-            onChange={(e) =>
-              setLocalConfig({ ...localConfig, botToken: e.target.value })
-            }
-            className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-            placeholder='1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
-          />
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            从 @BotFather 获取的 Bot Token
-          </p>
+      {/* Bot config */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#2AABEE]/15 flex items-center justify-center'>
+            <Send className='w-3.5 h-3.5 text-[#2AABEE]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>Bot 配置</h4>
+          <FluentBadge variant='default' size='sm' rounded>
+            必填
+          </FluentBadge>
         </div>
 
-        <div>
-          <label
-            htmlFor='botUsername'
-            className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'
-          >
-            Bot Username <span className='text-red-500'>*</span>
-          </label>
-          <input
-            type='text'
-            id='botUsername'
-            value={localConfig.botUsername}
-            onChange={(e) =>
-              setLocalConfig({ ...localConfig, botUsername: e.target.value })
-            }
-            className='w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-            placeholder='YourBotUsername'
-          />
-          <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-            Bot 的用户名（不含 @）
-          </p>
-        </div>
-      </div>
+        <FluentInput
+          label='Bot Token *'
+          type='password'
+          value={localConfig.botToken}
+          onChange={(e) => setLocalConfig({ ...localConfig, botToken: e.target.value })}
+          placeholder='1234567890:ABCdefGHIjklMNOpqrsTUVwxyz'
+          fullWidth
+        />
+        <p className='text-xs text-[#9ca3af] -mt-2'>从 @BotFather 获取</p>
 
-      {/* 用户管理配置 */}
-      <div className='space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
-        <h3 className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+        <FluentInput
+          label='Bot Username *'
+          value={localConfig.botUsername}
+          onChange={(e) => setLocalConfig({ ...localConfig, botUsername: e.target.value })}
+          placeholder='YourBotUsername'
+          fullWidth
+        />
+        <p className='text-xs text-[#9ca3af] -mt-2'>不含 @</p>
+      </FluentCard>
+
+      {/* User management */}
+      <FluentCard padding='16px' className='space-y-3'>
+        <h4 className='text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center'>
+            <CheckCircle2 className='w-3.5 h-3.5 text-[#8b5cf6]' />
+          </span>
           用户管理
-        </h3>
-
-        <div className='flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg'>
-          <div>
-            <label
-              htmlFor='autoRegister'
-              className='text-sm font-medium text-gray-900 dark:text-gray-100'
-            >
-              自动注册新用户
-            </label>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-              首次通过 Telegram 登录的用户将自动创建账号
-            </p>
-          </div>
-          <button
-            type='button'
-            onClick={() =>
-              setLocalConfig({
-                ...localConfig,
-                autoRegister: !localConfig.autoRegister,
-              })
+        </h4>
+        <div className='bg-gray-50 dark:bg-white/[0.03] border border-gray-200 dark:border-white/5 rounded-xl p-3'>
+          <Toggle
+            checked={localConfig.autoRegister}
+            onChange={(checked) =>
+              setLocalConfig({ ...localConfig, autoRegister: checked })
             }
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              localConfig.autoRegister
-                ? 'bg-blue-600'
-                : 'bg-gray-200 dark:bg-gray-700'
-            }`}
-          >
-            <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                localConfig.autoRegister ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
-          </button>
+            label='自动注册新用户'
+            description='首次通过 Telegram 登录的用户将自动创建账号'
+          />
         </div>
-      </div>
+      </FluentCard>
 
-      {/* 消息提示 */}
       {message && (
-        <div
-          className={`flex items-center gap-2 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
-              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
-          }`}
+        <FluentCard
+          padding='12px'
+          className={`flex items-center gap-2 border text-sm ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}
         >
           {message.type === 'success' ? (
-            <CheckCircle2 className='w-5 h-5 shrink-0' />
+            <CheckCircle2 className='w-4 h-4 shrink-0' />
           ) : (
-            <AlertCircle className='w-5 h-5 shrink-0' />
+            <AlertCircle className='w-4 h-4 shrink-0' />
           )}
-          <span className='text-sm'>{message.text}</span>
-        </div>
+          <span>{message.text}</span>
+        </FluentCard>
       )}
 
-      {/* 保存按钮 */}
-      <div className='flex justify-end pt-4'>
-        <button
+      <div className='flex justify-end pt-1'>
+        <FluentButton
+          variant='primary'
+          size='md'
+          icon={<Save className='w-4 h-4' />}
+          loading={saving}
+          disabled={!hasChanges}
           onClick={handleSave}
-          disabled={saving || !hasChanges}
-          className='flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 font-medium'
         >
-          <Save className='w-4 h-4' />
           {saving ? '保存中...' : '保存配置'}
-        </button>
+        </FluentButton>
       </div>
     </div>
   );

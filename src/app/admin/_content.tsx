@@ -413,7 +413,7 @@ function AdminPageClient() {
     return (
       <PageLayout activePath='/admin'>
         <div className='-mt-6 md:mt-0'>
-          <div className='max-w-7xl mx-auto px-4'>
+          <div className='mx-auto w-full max-w-[1440px] px-4 lg:px-6'>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8'>
               管理员设置
             </h1>
@@ -437,7 +437,7 @@ function AdminPageClient() {
     return (
       <PageLayout activePath='/admin'>
         <div className='-mt-6 md:mt-0'>
-          <div className='mx-auto max-w-7xl px-4 pb-40 md:pb-safe-bottom'>
+          <div className='mx-auto w-full max-w-[1440px] px-4 pb-40 md:pb-safe-bottom lg:px-6'>
             <div className='ui-surface p-8 text-center'>
               <div className='text-lg font-semibold text-gray-900 dark:text-gray-100'>
                 管理后台加载失败
@@ -464,7 +464,7 @@ function AdminPageClient() {
   return (
     <PageLayout activePath='/admin'>
       <div className='-mt-6 md:mt-0'>
-        <div className='mx-auto max-w-7xl px-4 pb-40 md:pb-safe-bottom'>
+        <div className='mx-auto w-full max-w-[1440px] px-4 pb-40 md:pb-safe-bottom lg:px-6'>
           <div className='mb-8 flex items-center gap-2'>
             <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100'>
               管理员设置

@@ -76,6 +76,18 @@ export default function VideoSourceConfig({
     weight: 50,
   });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredSources = (() => {
+    if (!searchQuery.trim()) return sources;
+    const q = searchQuery.toLowerCase();
+    return sources.filter(
+      (s) =>
+        s.name.toLowerCase().includes(q) ||
+        s.key.toLowerCase().includes(q) ||
+        s.api.toLowerCase().includes(q),
+    );
+  })();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -276,48 +288,51 @@ export default function VideoSourceConfig({
         </FluentCard>
       )}
 
+      {/* Search / Filter */}
+      {sources.length > 5 && (
+        <div className='relative'>
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder='搜索名称 / Key / API…'
+            className='w-full rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] py-2 pl-9 pr-8 text-sm focus:border-[var(--color-primary-400)] focus:outline-none'
+          />
+          <span className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-foreground-muted)]'>
+            <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'><circle cx='11' cy='11' r='8'/><path d='M21 21l-4.35-4.35'/></svg>
+          </span>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className='absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-[var(--color-foreground-muted)] hover:bg-[var(--color-background-subtle)]'
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Sortable List */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToParentElement, restrictToVerticalAxis]}
-      >
-        <SortableContext
-          items={sources.map((_, i) => `src-${i}`)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className='space-y-2'>
-            {sources.length === 0 ? (
-              <FluentCard padding='0'>
-                <FluentEmptyState
-                  icon={<Database className='h-6 w-6 text-[#9ca3af]' />}
-                  title='暂无视频源'
-                  description='点击“添加视频源”创建第一个数据源，支持拖拽排序与权重配置'
-                  action={
-                    <FluentButton
-                      variant='primary'
-                      size='sm'
-                      icon={<Plus className='h-3.5 w-3.5' />}
-                      onClick={() => {
-                        setShowAddForm(true);
-                        setEditingIndex(null);
-                        setNewSource({
-                          name: '',
-                          key: '',
-                          api: '',
-                          from: 'config',
-                          weight: 50,
-                        });
-                      }}
-                    >
-                      添加视频源
-                    </FluentButton>
-                  }
-                />
-              </FluentCard>
-            ) : (
-              sources.map((src, i) => (
+      {searchQuery ? (
+        <div className='space-y-2 max-h-[60vh] overflow-y-auto pr-1 -mr-1'>
+          <div className='mb-2 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400'>
+            <span>🔍 搜索结果（{filteredSources.length} 项）— 拖拽排序已暂停</span>
+            <button onClick={() => setSearchQuery('')} className='underline'>
+              清除筛选
+            </button>
+          </div>
+          {filteredSources.length === 0 ? (
+            <FluentCard padding='0'>
+              <FluentEmptyState
+                icon={<Database className='h-6 w-6 text-[#9ca3af]' />}
+                title='暂无匹配'
+                description='没有找到匹配的视频源，试试其他关键词'
+              />
+            </FluentCard>
+          ) : (
+            filteredSources.map((src) => {
+              const originalIndex = sources.indexOf(src);
+              const i = originalIndex !== -1 ? originalIndex : 0;
+              return (
                 <SortableItem
                   key={`src-${i}`}
                   id={`src-${i}`}
@@ -330,11 +345,70 @@ export default function VideoSourceConfig({
                   onDelete={() => handleDelete(i)}
                   onToggle={() => toggleDisabled(i)}
                 />
-              ))
-            )}
-          </div>
-        </SortableContext>
-      </DndContext>
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+        >
+          <SortableContext
+            items={sources.map((_, i) => `src-${i}`)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className='space-y-2 max-h-[60vh] overflow-y-auto pr-1 -mr-1'>
+              {sources.length === 0 ? (
+                <FluentCard padding='0'>
+                  <FluentEmptyState
+                    icon={<Database className='h-6 w-6 text-[#9ca3af]' />}
+                    title='暂无视频源'
+                    description='点击“添加视频源”创建第一个数据源，支持拖拽排序与权重配置'
+                    action={
+                      <FluentButton
+                        variant='primary'
+                        size='sm'
+                        icon={<Plus className='h-3.5 w-3.5' />}
+                        onClick={() => {
+                          setShowAddForm(true);
+                          setEditingIndex(null);
+                          setNewSource({
+                            name: '',
+                            key: '',
+                            api: '',
+                            from: 'config',
+                            weight: 50,
+                          });
+                        }}
+                      >
+                        添加视频源
+                      </FluentButton>
+                    }
+                  />
+                </FluentCard>
+              ) : (
+                sources.map((src, i) => (
+                  <SortableItem
+                    key={`src-${i}`}
+                    id={`src-${i}`}
+                    source={src}
+                    onEdit={() => {
+                      setEditingIndex(i);
+                      setNewSource(src);
+                      setShowAddForm(true);
+                    }}
+                    onDelete={() => handleDelete(i)}
+                    onToggle={() => toggleDisabled(i)}
+                  />
+                ))
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
 
       {/* Save bar */}
       {(orderChanged || hasChanges) && (

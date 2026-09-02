@@ -14,6 +14,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+  FluentInput,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 interface OIDCProvider {
@@ -25,7 +32,7 @@ interface OIDCProvider {
   authorizationEndpoint: string;
   tokenEndpoint: string;
   userInfoEndpoint: string;
-  jwksUri?: string; // JWKS endpoint for JWT signature verification (optional)
+  jwksUri?: string;
   clientId: string;
   clientSecret: string;
   buttonText: string;
@@ -100,22 +107,18 @@ export function OIDCAuthConfig({
       showMessage('error', '请先输入 Issuer URL');
       return;
     }
-
     setDiscovering(true);
     setMessage(null);
-
     try {
       const response = await fetch('/api/admin/oidc-discover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ issuerUrl: localConfig.issuer }),
       });
-
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || '自动发现失败');
       }
-
       const data = await response.json();
       setLocalConfig({
         ...localConfig,
@@ -236,494 +239,199 @@ export function OIDCAuthConfig({
   };
 
   return (
-    <div className='space-y-6'>
-      {/* 标题和说明 */}
-      <div className='border-b border-gray-200 dark:border-gray-700 pb-4'>
-        <h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2'>
-          <KeyRound className='w-5 h-5 text-purple-500' />
-          OIDC 登录配置
-        </h2>
-        <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
-          配置 OpenID Connect 登录，支持
-          Google、Microsoft、GitHub、Facebook、微信、Apple、LinuxDo 等提供商
-        </p>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold flex items-center gap-2'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            <KeyRound className='w-4 h-4 text-[#8b5cf6]' />
+            OIDC 登录配置
+          </h3>
+          <p className='text-xs mt-0.5' style={{ color: 'var(--color-foreground-muted)' }}>
+            支持 Google / Microsoft / GitHub / LinuxDo 等多提供商
+          </p>
+        </div>
+        <FluentBadge variant={mode === 'multi' ? 'info' : 'default'} size='sm' rounded>
+          {mode === 'multi' ? '多 Provider' : '单 Provider'}
+        </FluentBadge>
       </div>
 
-      {/* 模式切换 */}
-      <div className='flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg'>
-        <button
+      {/* Mode switch */}
+      <FluentCard padding='6px' className='flex gap-1'>
+        <FluentButton
+          variant={mode === 'legacy' ? 'primary' : 'secondary'}
+          size='sm'
+          fullWidth
           onClick={() => setMode('legacy')}
-          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            mode === 'legacy'
-              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-          }`}
         >
           单 Provider 模式（旧版）
-        </button>
-        <button
+        </FluentButton>
+        <FluentButton
+          variant={mode === 'multi' ? 'primary' : 'secondary'}
+          size='sm'
+          fullWidth
           onClick={() => setMode('multi')}
-          className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            mode === 'multi'
-              ? 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-          }`}
         >
           多 Provider 模式（推荐）
-        </button>
-      </div>
+        </FluentButton>
+      </FluentCard>
 
-      {/* 多 Provider 模式 UI */}
       {mode === 'multi' ? (
         <div className='space-y-4'>
-          {/* 迁移提示 */}
           {localProviders.length === 0 && localConfig.enabled && (
-            <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4'>
-              <div className='flex gap-3'>
-                <AlertCircle className='w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5' />
-                <div className='flex-1'>
-                  <p className='text-sm text-yellow-800 dark:text-yellow-200 font-semibold'>
-                    检测到旧版单 Provider 配置
-                  </p>
-                  <p className='text-sm text-yellow-700 dark:text-yellow-300 mt-1'>
-                    您可以将现有配置迁移到多 Provider
-                    模式，这样可以同时配置多个登录提供商。
-                  </p>
-                  <button
-                    onClick={handleMigrateToMulti}
-                    className='mt-3 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors'
-                  >
-                    立即迁移
-                  </button>
-                </div>
+            <FluentCard
+              padding='12px'
+              className='flex gap-3 bg-amber-50/60 dark:bg-amber-900/10 border-amber-200/60 dark:border-amber-800/30'
+            >
+              <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center shrink-0'>
+                <AlertCircle className='w-3.5 h-3.5 text-[#f59e0b]' />
+              </span>
+              <div className='flex-1'>
+                <p className='text-sm font-semibold text-[#f59e0b]'>检测到旧版单 Provider 配置</p>
+                <p className='text-xs text-[#6b7280] dark:text-gray-400 mt-1'>可迁移到多 Provider 模式同时配置多个登录提供商。</p>
+                <FluentButton variant='primary' size='sm' onClick={handleMigrateToMulti} className='mt-3'>
+                  立即迁移
+                </FluentButton>
               </div>
+            </FluentCard>
+          )}
+
+          {localProviders.length === 0 ? (
+            <FluentCard padding='0'>
+              <FluentEmptyState
+                icon={<KeyRound className='h-6 w-6 text-[#9ca3af]' />}
+                title='暂无 Provider'
+                description='点击下方按钮添加第一个 OIDC Provider'
+                action={
+                  <FluentButton variant='primary' size='sm' icon={<Plus className='w-3.5 h-3.5' />} onClick={handleAddProvider}>
+                    添加 Provider
+                  </FluentButton>
+                }
+              />
+            </FluentCard>
+          ) : (
+            <div className='space-y-3'>
+              {localProviders.map((provider) => (
+                <FluentCard key={provider.id} padding='14px' className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4'>
+                  <div className='flex-1 min-w-0'>
+                    <div className='flex items-center gap-2 flex-wrap'>
+                      <span className='font-medium text-gray-900 dark:text-white text-sm'>{provider.name}</span>
+                      <FluentBadge variant={provider.enabled ? 'success' : 'default'} size='sm' rounded>
+                        {provider.enabled ? '已启用' : '已禁用'}
+                      </FluentBadge>
+                    </div>
+                    <p className='text-xs text-[#9ca3af] mt-1 truncate'>ID: {provider.id} | {provider.issuer || '未配置 Issuer'}</p>
+                  </div>
+                  <div className='flex gap-2 self-end sm:self-auto shrink-0'>
+                    <FluentButton variant='secondary' size='sm' onClick={() => setEditingProvider(provider)} icon={<Edit2 className='w-3.5 h-3.5' />}>
+                      编辑
+                    </FluentButton>
+                    <FluentButton variant='danger' size='sm' onClick={() => handleDeleteProvider(provider.id)} icon={<Trash2 className='w-3.5 h-3.5' />}>
+                      删除
+                    </FluentButton>
+                  </div>
+                </FluentCard>
+              ))}
             </div>
           )}
 
-          {/* Provider 列表 */}
-          <div className='space-y-3'>
-            {localProviders.map((provider) => (
-              <div
-                key={provider.id}
-                className='flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700'
-              >
-                <div className='flex-1 min-w-0'>
-                  <div className='flex items-center gap-2 flex-wrap'>
-                    <h3 className='font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base'>
-                      {provider.name}
-                    </h3>
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${
-                        provider.enabled
-                          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                      }`}
-                    >
-                      {provider.enabled ? '已启用' : '已禁用'}
-                    </span>
-                  </div>
-                  <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 truncate'>
-                    ID: {provider.id} | {provider.issuer || '未配置 Issuer'}
-                  </p>
-                </div>
-                <div className='flex gap-2 self-end sm:self-auto'>
-                  <button
-                    onClick={() => setEditingProvider(provider)}
-                    className='p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors'
-                    title='编辑'
-                  >
-                    <Edit2 className='w-4 h-4' />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProvider(provider.id)}
-                    className='p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors'
-                    title='删除'
-                  >
-                    <Trash2 className='w-4 h-4' />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 添加 Provider 按钮 */}
-          <button
-            onClick={handleAddProvider}
-            className='w-full py-2.5 sm:py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm sm:text-base text-gray-600 dark:text-gray-400 hover:border-purple-500 dark:hover:border-purple-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center justify-center gap-2 font-medium'
-          >
-            <Plus className='w-4 h-4 sm:w-5 sm:h-5' />
+          <FluentButton variant='secondary' size='md' fullWidth onClick={handleAddProvider} icon={<Plus className='w-4 h-4' />}>
             添加新 Provider
-          </button>
+          </FluentButton>
         </div>
       ) : (
-        /* 单 Provider 模式 UI（原有代码） */
-        <div className='space-y-6'>
-          {/* 配置提示 */}
-          <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 md:p-4'>
-            <div className='flex gap-2 md:gap-3'>
-              <AlertCircle className='w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5' />
-              <div className='text-xs md:text-sm text-blue-800 dark:text-blue-200 space-y-2 overflow-x-auto'>
-                <p className='font-semibold'>常见 OIDC 提供商：</p>
-                <ul className='list-disc list-inside space-y-1 ml-2'>
-                  <li className='break-all'>
-                    <strong>Google</strong>:{' '}
-                    <span className='text-xs'>https://accounts.google.com</span>
-                  </li>
-                  <li className='break-all'>
-                    <strong>Microsoft</strong>:{' '}
-                    <span className='text-xs'>
-                      https://login.microsoftonline.com/common/v2.0
-                    </span>
-                  </li>
-                  <li>
-                    <strong>GitHub</strong>: 需要使用 OAuth + OIDC 扩展
-                  </li>
-                  <li>
-                    <strong>Facebook</strong>: ID 设为{' '}
-                    <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-900 rounded text-xs whitespace-nowrap'>
-                      facebook
-                    </code>
-                  </li>
-                  <li>
-                    <strong>微信</strong>: ID 设为{' '}
-                    <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-900 rounded text-xs whitespace-nowrap'>
-                      wechat
-                    </code>
-                    ，参考 OIDC_SETUP.md
-                  </li>
-                  <li>
-                    <strong>Apple</strong>: ID 设为{' '}
-                    <code className='px-1 py-0.5 bg-blue-100 dark:bg-blue-900 rounded text-xs whitespace-nowrap'>
-                      apple
-                    </code>
-                    ，参考 OIDC_SETUP.md
-                  </li>
-                  <li className='break-all'>
-                    <strong>LinuxDo</strong>:{' '}
-                    <span className='text-xs'>https://connect.linux.do</span>
-                  </li>
-                  <li className='break-all'>
-                    <strong>自建 Keycloak</strong>:{' '}
-                    <span className='text-xs'>
-                      https://your-domain/realms/your-realm
-                    </span>
-                  </li>
-                </ul>
-                <p className='text-xs text-blue-600 dark:text-blue-300 mt-2'>
-                  <Lightbulb className='w-4 h-4 inline' /> 填写 Issuer URL
-                  后点击"自动发现"可自动获取端点配置
-                </p>
-              </div>
+        <div className='space-y-4'>
+          <FluentCard padding='12px' className='flex gap-3 bg-blue-50/60 dark:bg-blue-900/10 border-blue-200/60 dark:border-blue-800/30'>
+            <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center shrink-0'>
+              <AlertCircle className='w-3.5 h-3.5 text-[#3b82f6]' />
+            </span>
+            <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300'>
+              <p className='font-semibold text-[#3b82f6] mb-1'>常见 OIDC 提供商</p>
+              <ul className='list-disc list-inside space-y-1 ml-1 text-[#6b7280] dark:text-gray-400'>
+                <li>Google: https://accounts.google.com</li>
+                <li>Microsoft: https://login.microsoftonline.com/common/v2.0</li>
+                <li>LinuxDo: https://connect.linux.do</li>
+                <li>自建 Keycloak: https://your-domain/realms/your-realm</li>
+              </ul>
+              <p className='text-xs text-[#3b82f6]/80 mt-2 flex items-center gap-1'>
+                <Lightbulb className='w-3.5 h-3.5' /> 填写 Issuer 后点击“自动发现”自动获取端点
+              </p>
             </div>
-          </div>
+          </FluentCard>
 
-          <Toggle
-            checked={localConfig.enabled}
-            onChange={(v) => setLocalConfig({ ...localConfig, enabled: v })}
-            label='启用 OIDC 登录'
-            description='开启后，登录页面将显示 OIDC 登录按钮'
-          />
+          <FluentCard padding='16px' className='space-y-4'>
+            <div className='space-y-3'>
+              <Toggle checked={localConfig.enabled} onChange={(v) => setLocalConfig({ ...localConfig, enabled: v })} label='启用 OIDC 登录' description='登录页将显示 OIDC 登录按钮' />
+              <Toggle checked={localConfig.enableRegistration} onChange={(v) => setLocalConfig({ ...localConfig, enableRegistration: v })} label='启用 OIDC 注册' description='允许通过 OIDC 自动注册新用户' />
+            </div>
 
-          <Toggle
-            checked={localConfig.enableRegistration}
-            onChange={(v) =>
-              setLocalConfig({ ...localConfig, enableRegistration: v })
-            }
-            label='启用 OIDC 注册'
-            description='允许通过 OIDC 登录时自动注册新用户'
-          />
-
-          {/* OIDC Issuer */}
-          <div>
-            <label
-              htmlFor='oidcIssuer'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              OIDC Issuer URL（可选）
-            </label>
-            <div className='flex flex-col sm:flex-row gap-2'>
-              <input
-                id='oidcIssuer'
-                type='text'
-                placeholder='https://accounts.google.com'
-                value={localConfig.issuer || ''}
-                onChange={(e) =>
-                  setLocalConfig({ ...localConfig, issuer: e.target.value })
-                }
-                className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-              />
-              <button
-                type='button'
-                onClick={handleDiscover}
-                disabled={discovering || !localConfig.issuer}
-                className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap'
-              >
-                <Globe className='w-4 h-4' />
-                <span className='hidden sm:inline'>
+            <div className='space-y-3 pt-2 border-t border-gray-200 dark:border-white/5'>
+              <div className='flex flex-col sm:flex-row gap-2 items-end'>
+                <div className='flex-1 w-full'>
+                  <FluentInput label='OIDC Issuer URL（可选）' value={localConfig.issuer || ''} onChange={(e) => setLocalConfig({ ...localConfig, issuer: e.target.value })} placeholder='https://accounts.google.com' fullWidth />
+                </div>
+                <FluentButton variant='secondary' size='md' icon={<Globe className='w-3.5 h-3.5' />} loading={discovering} disabled={!localConfig.issuer} onClick={handleDiscover} className='shrink-0'>
                   {discovering ? '发现中...' : '自动发现'}
-                </span>
-                <span className='sm:hidden'>
-                  {discovering ? '发现中' : '发现'}
-                </span>
-              </button>
+                </FluentButton>
+              </div>
+              <FluentInput label='Authorization Endpoint *' value={localConfig.authorizationEndpoint || ''} onChange={(e) => setLocalConfig({ ...localConfig, authorizationEndpoint: e.target.value })} placeholder='https://accounts.google.com/o/oauth2/v2/auth' fullWidth />
+              <FluentInput label='Token Endpoint *' value={localConfig.tokenEndpoint || ''} onChange={(e) => setLocalConfig({ ...localConfig, tokenEndpoint: e.target.value })} placeholder='https://oauth2.googleapis.com/token' fullWidth />
+              <FluentInput label='UserInfo Endpoint *' value={localConfig.userInfoEndpoint || ''} onChange={(e) => setLocalConfig({ ...localConfig, userInfoEndpoint: e.target.value })} placeholder='https://openidconnect.googleapis.com/v1/userinfo' fullWidth />
+              <FluentInput label='Client ID *' value={localConfig.clientId || ''} onChange={(e) => setLocalConfig({ ...localConfig, clientId: e.target.value })} placeholder='your-client-id.apps.googleusercontent.com' fullWidth />
+              <FluentInput label='Client Secret *' type='password' value={localConfig.clientSecret || ''} onChange={(e) => setLocalConfig({ ...localConfig, clientSecret: e.target.value })} placeholder='••••••••••••••••' fullWidth />
+
+              <div className='space-y-2'>
+                <label className='text-sm font-medium text-[#9ca3af]'>Redirect URI（回调地址）</label>
+                <div className='flex gap-2'>
+                  <div className='flex-1'>
+                    <FluentInput value={typeof window !== 'undefined' ? `${window.location.origin}/api/auth/oidc/callback` : ''} readOnly fullWidth />
+                  </div>
+                  <FluentButton
+                    variant='secondary'
+                    size='md'
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        navigator.clipboard.writeText(`${window.location.origin}/api/auth/oidc/callback`);
+                        showMessage('success', '已复制到剪贴板');
+                      }
+                    }}
+                  >
+                    复制
+                  </FluentButton>
+                </div>
+                <p className='text-xs text-[#9ca3af]'>在 OIDC 提供商中添加此地址为允许的重定向 URI</p>
+              </div>
+
+              <FluentInput label='登录按钮文字' value={localConfig.buttonText || ''} onChange={(e) => setLocalConfig({ ...localConfig, buttonText: e.target.value })} placeholder='使用 Google 登录' fullWidth />
+              <FluentInput label='最低信任等级（LinuxDo 专用）' type='number' value={String(localConfig.minTrustLevel || 0)} onChange={(e) => setLocalConfig({ ...localConfig, minTrustLevel: parseInt(e.target.value) || 0 })} placeholder='0' className='max-w-[12rem]' />
             </div>
-            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              填写后可点击"自动发现"按钮自动获取端点配置
-            </p>
-          </div>
-
-          {/* Authorization Endpoint */}
-          <div>
-            <label
-              htmlFor='authEndpoint'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              Authorization Endpoint *
-            </label>
-            <input
-              id='authEndpoint'
-              type='text'
-              placeholder='https://accounts.google.com/o/oauth2/v2/auth'
-              value={localConfig.authorizationEndpoint || ''}
-              onChange={(e) =>
-                setLocalConfig({
-                  ...localConfig,
-                  authorizationEndpoint: e.target.value,
-                })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-          </div>
-
-          {/* Token Endpoint */}
-          <div>
-            <label
-              htmlFor='tokenEndpoint'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              Token Endpoint *
-            </label>
-            <input
-              id='tokenEndpoint'
-              type='text'
-              placeholder='https://oauth2.googleapis.com/token'
-              value={localConfig.tokenEndpoint || ''}
-              onChange={(e) =>
-                setLocalConfig({
-                  ...localConfig,
-                  tokenEndpoint: e.target.value,
-                })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-          </div>
-
-          {/* UserInfo Endpoint */}
-          <div>
-            <label
-              htmlFor='userinfoEndpoint'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              UserInfo Endpoint *
-            </label>
-            <input
-              id='userinfoEndpoint'
-              type='text'
-              placeholder='https://openidconnect.googleapis.com/v1/userinfo'
-              value={localConfig.userInfoEndpoint || ''}
-              onChange={(e) =>
-                setLocalConfig({
-                  ...localConfig,
-                  userInfoEndpoint: e.target.value,
-                })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-          </div>
-
-          {/* Client ID */}
-          <div>
-            <label
-              htmlFor='clientId'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              Client ID *
-            </label>
-            <input
-              id='clientId'
-              type='text'
-              placeholder='your-client-id.apps.googleusercontent.com'
-              value={localConfig.clientId || ''}
-              onChange={(e) =>
-                setLocalConfig({ ...localConfig, clientId: e.target.value })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-          </div>
-
-          {/* Client Secret */}
-          <div>
-            <label
-              htmlFor='clientSecret'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              Client Secret *
-            </label>
-            <input
-              id='clientSecret'
-              type='password'
-              placeholder='••••••••••••••••'
-              value={localConfig.clientSecret || ''}
-              onChange={(e) =>
-                setLocalConfig({ ...localConfig, clientSecret: e.target.value })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-          </div>
-
-          {/* Redirect URI 显示 */}
-          <div>
-            <label
-              htmlFor='redirectUri'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              Redirect URI（回调地址）
-            </label>
-            <div className='relative'>
-              <input
-                id='redirectUri'
-                type='text'
-                readOnly
-                value={
-                  typeof window !== 'undefined'
-                    ? `${window.location.origin}/api/auth/oidc/callback`
-                    : ''
-                }
-                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 cursor-default'
-              />
-              <button
-                type='button'
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    navigator.clipboard.writeText(
-                      `${window.location.origin}/api/auth/oidc/callback`,
-                    );
-                    showMessage('success', '已复制到剪贴板');
-                  }
-                }}
-                className='absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors'
-              >
-                复制
-              </button>
-            </div>
-            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              请在 OIDC 提供商的应用配置中添加此地址作为允许的重定向 URI
-            </p>
-          </div>
-
-          {/* Button Text */}
-          <div>
-            <label
-              htmlFor='buttonText'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              登录按钮文字
-            </label>
-            <input
-              id='buttonText'
-              type='text'
-              placeholder='使用 Google 登录'
-              value={localConfig.buttonText || ''}
-              onChange={(e) =>
-                setLocalConfig({ ...localConfig, buttonText: e.target.value })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              自定义登录按钮显示的文字，留空则根据提供商自动识别
-            </p>
-          </div>
-
-          {/* Min Trust Level */}
-          <div>
-            <label
-              htmlFor='minTrustLevel'
-              className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'
-            >
-              最低信任等级（LinuxDo 专用）
-            </label>
-            <input
-              id='minTrustLevel'
-              type='number'
-              min='0'
-              placeholder='0'
-              value={localConfig.minTrustLevel || 0}
-              onChange={(e) =>
-                setLocalConfig({
-                  ...localConfig,
-                  minTrustLevel: parseInt(e.target.value) || 0,
-                })
-              }
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-            />
-            <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-              仅对 LinuxDo 有效，0 表示不限制。其他提供商请保持为 0
-            </p>
-          </div>
+          </FluentCard>
         </div>
       )}
 
-      {/* 消息提示 */}
       {message && (
-        <div
-          className={`flex items-center gap-2 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-              : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle2 className='w-5 h-5 text-green-600 dark:text-green-400' />
-          ) : (
-            <AlertCircle className='w-5 h-5 text-red-600 dark:text-red-400' />
-          )}
-          <span
-            className={`text-sm ${
-              message.type === 'success'
-                ? 'text-green-800 dark:text-green-200'
-                : 'text-red-800 dark:text-red-200'
-            }`}
-          >
-            {message.text}
-          </span>
-        </div>
+        <FluentCard padding='12px' className={`flex items-center gap-2 border text-sm ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}>
+          {message.type === 'success' ? <CheckCircle2 className='w-4 h-4 shrink-0' /> : <AlertCircle className='w-4 h-4 shrink-0' />}
+          <span>{message.text}</span>
+        </FluentCard>
       )}
 
-      {/* 保存按钮 */}
-      <div className='flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700'>
-        <button
-          onClick={handleSave}
-          disabled={saving || !hasChanges}
-          className='px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2'
-        >
-          <Save className='w-4 h-4' />
+      <div className='flex justify-end pt-1'>
+        <FluentButton variant='primary' size='md' icon={<Save className='w-4 h-4' />} loading={saving} disabled={!hasChanges} onClick={handleSave}>
           {saving ? '保存中...' : '保存配置'}
-        </button>
+        </FluentButton>
       </div>
 
-      {/* Provider 编辑模态框 */}
       {editingProvider && (
-        <ProviderEditModal
-          provider={editingProvider}
-          onSave={handleSaveProvider}
-          onCancel={() => setEditingProvider(null)}
-        />
+        <ProviderEditModal provider={editingProvider} onSave={handleSaveProvider} onCancel={() => setEditingProvider(null)} />
       )}
     </div>
   );
 }
 
-// Provider 编辑模态框组件
 function ProviderEditModal({
   provider,
   onSave,
@@ -735,32 +443,25 @@ function ProviderEditModal({
 }) {
   const [localProvider, setLocalProvider] = useState(provider);
   const [discovering, setDiscovering] = useState(false);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleDiscover = async () => {
     if (!localProvider.issuer) {
       setMessage({ type: 'error', text: '请先输入 Issuer URL' });
       return;
     }
-
     setDiscovering(true);
     setMessage(null);
-
     try {
       const response = await fetch('/api/admin/oidc-discover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ issuerUrl: localProvider.issuer }),
       });
-
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.error || '自动发现失败');
       }
-
       const data = await response.json();
       setLocalProvider({
         ...localProvider,
@@ -772,10 +473,7 @@ function ProviderEditModal({
       setMessage({ type: 'success', text: '自动发现成功' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: `自动发现失败: ${(error as Error).message}`,
-      });
+      setMessage({ type: 'error', text: `自动发现失败: ${(error as Error).message}` });
     } finally {
       setDiscovering(false);
     }
@@ -784,438 +482,92 @@ function ProviderEditModal({
   return (
     <div className='fixed inset-0 z-50 overflow-y-auto'>
       <div className='flex items-end md:items-center justify-center min-h-screen md:min-h-full p-0 md:p-4'>
-        {/* 背景遮罩 */}
-        <div
-          className='fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity'
-          onClick={onCancel}
-        />
-
-        {/* 模态框内容 */}
-        <div className='relative bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-xl shadow-2xl w-full md:w-auto md:min-w-[min(600px,90vw)] md:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden'>
-          {/* Header - Fixed */}
-          <div className='flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 shrink-0'>
-            <h3 className='text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100'>
-              {provider.name === '新 Provider'
-                ? '添加 Provider'
-                : '编辑 Provider'}
-            </h3>
-            <button
-              onClick={onCancel}
-              className='p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors'
-              aria-label='关闭'
-            >
-              <svg
-                className='w-5 h-5 text-gray-500 dark:text-gray-400'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
-            </button>
+        <div className='fixed inset-0 bg-black/50 backdrop-blur-sm' onClick={onCancel} />
+        <FluentCard padding='0' className='relative w-full md:min-w-[min(600px,90vw)] md:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden !rounded-t-2xl md:!rounded-xl'>
+          <div className='flex items-center justify-between p-4 md:p-5 border-b border-gray-200 dark:border-white/5 shrink-0'>
+            <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>{provider.name === '新 Provider' ? '添加 Provider' : '编辑 Provider'}</h3>
+            <FluentButton variant='ghost' size='sm' onClick={onCancel} className='!p-1.5 !min-h-0'>
+              ✕
+            </FluentButton>
           </div>
 
-          {/* Body - Scrollable */}
-          <div className='overflow-y-auto flex-1 p-4 md:p-6'>
-            <div className='space-y-4'>
-              {/* Provider ID */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Provider ID *
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.id}
-                  onChange={(e) =>
-                    setLocalProvider({ ...localProvider, id: e.target.value })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='google, github, linuxdo, custom, etc.'
-                />
-                <div className='mt-1 text-xs text-gray-500 dark:text-gray-400 space-y-2'>
-                  <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-2'>
-                    <p className='font-semibold text-yellow-800 dark:text-yellow-200'>
-                      <AlertTriangle className='w-4 h-4 inline' /> ID 规则说明：
-                    </p>
-                  </div>
-                  <div>
-                    <strong>
-                      已知提供商（显示专属logo）- 必须使用以下固定ID：
-                    </strong>
-                    <br />• Google:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      google
-                    </code>
-                    <br />• GitHub:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      github
-                    </code>
-                    <br />• Microsoft:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      microsoft
-                    </code>
-                    <br />• Facebook:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      facebook
-                    </code>
-                    <br />• 微信:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      wechat
-                    </code>
-                    <br />• Apple:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      apple
-                    </code>
-                    <br />• LinuxDo:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      linuxdo
-                    </code>
-                  </div>
-                  <div>
-                    <strong>自定义OIDC提供商（显示通用图标）：</strong>
-                    <br />• 每个提供商必须有<strong>唯一的ID</strong>
-                    <br />• 示例:{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      authing
-                    </code>
-                    ,{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      keycloak-1
-                    </code>
-                    ,{' '}
-                    <code className='px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded'>
-                      keycloak-2
-                    </code>
-                    <br />• 如果有多个Keycloak等，每个都要不同的ID
-                  </div>
-                </div>
-              </div>
+          <div className='overflow-y-auto flex-1 p-4 md:p-5 space-y-4'>
+            <FluentInput label='Provider ID *' value={localProvider.id} onChange={(e) => setLocalProvider({ ...localProvider, id: e.target.value })} placeholder='google, github, linuxdo, custom...' fullWidth />
+            <FluentCard padding='10px' className='bg-amber-50/60 dark:bg-amber-900/10 border-amber-200/60 dark:border-amber-800/30'>
+              <p className='text-xs font-semibold text-[#f59e0b] flex items-center gap-1 mb-1'>
+                <AlertTriangle className='w-3.5 h-3.5' /> ID 规则
+              </p>
+              <p className='text-xs text-[#6b7280] dark:text-gray-400 leading-relaxed'>已知提供商需用固定 ID：<code className='px-1 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded text-[11px]'>google</code> <code className='px-1 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded text-[11px]'>github</code> <code className='px-1 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded text-[11px]'>microsoft</code> <code className='px-1 py-0.5 bg-amber-100 dark:bg-amber-800/30 rounded text-[11px]'>linuxdo</code> 等；自定义需唯一。</p>
+            </FluentCard>
 
-              {/* Provider Name */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  显示名称 *
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.name}
-                  onChange={(e) =>
-                    setLocalProvider({ ...localProvider, name: e.target.value })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='Google'
-                />
-              </div>
+            <FluentInput label='显示名称 *' value={localProvider.name} onChange={(e) => setLocalProvider({ ...localProvider, name: e.target.value })} placeholder='Google' fullWidth />
 
-              <Toggle
-                checked={localProvider.enabled}
-                onChange={(v) =>
-                  setLocalProvider({ ...localProvider, enabled: v })
-                }
-                label='启用此 Provider'
-                description='开启后，登录页面将显示此 Provider'
-              />
-
-              <Toggle
-                checked={localProvider.enableRegistration}
-                onChange={(v) =>
-                  setLocalProvider({ ...localProvider, enableRegistration: v })
-                }
-                label='允许注册'
-                description='允许通过此 Provider 自动注册新用户'
-              />
-
-              {/* Issuer */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Issuer URL（可选）
-                </label>
-                <div className='flex flex-col sm:flex-row gap-2'>
-                  <input
-                    type='text'
-                    value={localProvider.issuer}
-                    onChange={(e) =>
-                      setLocalProvider({
-                        ...localProvider,
-                        issuer: e.target.value,
-                      })
-                    }
-                    className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                    placeholder='https://accounts.google.com'
-                  />
-                  <button
-                    type='button'
-                    onClick={handleDiscover}
-                    disabled={discovering || !localProvider.issuer}
-                    className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap'
-                  >
-                    <Globe className='w-4 h-4' />
-                    <span className='hidden sm:inline'>
-                      {discovering ? '发现中...' : '自动发现'}
-                    </span>
-                    <span className='sm:hidden'>
-                      {discovering ? '发现中' : '发现'}
-                    </span>
-                  </button>
-                </div>
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  填写后可点击"自动发现"按钮自动获取端点配置
-                </p>
-              </div>
-
-              {/* Authorization Endpoint */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Authorization Endpoint *
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.authorizationEndpoint}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      authorizationEndpoint: e.target.value,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='https://accounts.google.com/o/oauth2/v2/auth'
-                />
-              </div>
-
-              {/* Token Endpoint */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Token Endpoint *
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.tokenEndpoint}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      tokenEndpoint: e.target.value,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='https://oauth2.googleapis.com/token'
-                />
-              </div>
-
-              {/* UserInfo Endpoint - 除了 Apple 外的其他 provider 需要 */}
-              {localProvider.id.toLowerCase() !== 'apple' && (
-                <div>
-                  <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                    UserInfo Endpoint *
-                  </label>
-                  <input
-                    type='text'
-                    value={localProvider.userInfoEndpoint}
-                    onChange={(e) =>
-                      setLocalProvider({
-                        ...localProvider,
-                        userInfoEndpoint: e.target.value,
-                      })
-                    }
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                    placeholder='https://openidconnect.googleapis.com/v1/userinfo'
-                  />
-                </div>
-              )}
-
-              {/* JWKS URI - 只有 Apple 需要 */}
-              {localProvider.id.toLowerCase() === 'apple' && (
-                <div>
-                  <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                    JWKS URI *
-                  </label>
-                  <input
-                    type='text'
-                    value={localProvider.jwksUri || ''}
-                    onChange={(e) =>
-                      setLocalProvider({
-                        ...localProvider,
-                        jwksUri: e.target.value,
-                      })
-                    }
-                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                    placeholder='https://appleid.apple.com/auth/keys'
-                  />
-                  <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                    用于验证 Apple id_token 签名的公钥端点
-                  </p>
-                </div>
-              )}
-
-              {/* Client ID */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Client ID *
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.clientId}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      clientId: e.target.value,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='your-client-id.apps.googleusercontent.com'
-                />
-              </div>
-
-              {/* Client Secret */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Client Secret *
-                </label>
-                <input
-                  type='password'
-                  value={localProvider.clientSecret}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      clientSecret: e.target.value,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='••••••••••••••••'
-                />
-              </div>
-
-              {/* Redirect URI 显示 - 新增 */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  Redirect URI（回调地址）
-                </label>
-                <div className='relative'>
-                  <input
-                    type='text'
-                    readOnly
-                    value={
-                      typeof window !== 'undefined'
-                        ? `${window.location.origin}/api/auth/oidc/callback`
-                        : ''
-                    }
-                    className='w-full px-3 py-2 pr-16 sm:pr-20 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 text-xs sm:text-sm cursor-default'
-                  />
-                  <button
-                    type='button'
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        navigator.clipboard.writeText(
-                          `${window.location.origin}/api/auth/oidc/callback`,
-                        );
-                        setMessage({ type: 'success', text: '已复制到剪贴板' });
-                        setTimeout(() => setMessage(null), 2000);
-                      }
-                    }}
-                    className='absolute right-2 top-1/2 -translate-y-1/2 px-2 sm:px-3 py-1 text-xs bg-purple-600 hover:bg-purple-700 text-white rounded transition-colors'
-                  >
-                    复制
-                  </button>
-                </div>
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  请在 OIDC 提供商的应用配置中添加此地址作为允许的重定向 URI
-                </p>
-              </div>
-
-              {/* Button Text */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  登录按钮文字
-                </label>
-                <input
-                  type='text'
-                  value={localProvider.buttonText}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      buttonText: e.target.value,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='使用 Google 登录'
-                />
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  自定义登录按钮显示的文字，留空则根据提供商自动识别
-                </p>
-              </div>
-
-              {/* Min Trust Level */}
-              <div>
-                <label className='block text-sm font-medium text-gray-900 dark:text-gray-100 mb-2'>
-                  最低信任等级（LinuxDo 专用）
-                </label>
-                <input
-                  type='number'
-                  min='0'
-                  value={localProvider.minTrustLevel}
-                  onChange={(e) =>
-                    setLocalProvider({
-                      ...localProvider,
-                      minTrustLevel: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                  placeholder='0'
-                />
-                <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                  仅对 LinuxDo 有效，0 表示不限制。其他提供商请保持为 0
-                </p>
-              </div>
-
-              {/* Message */}
-              {message && (
-                <div
-                  className={`flex items-center gap-2 p-4 rounded-lg ${
-                    message.type === 'success'
-                      ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                      : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
-                  }`}
-                >
-                  {message.type === 'success' ? (
-                    <CheckCircle2 className='w-5 h-5 text-green-600 dark:text-green-400' />
-                  ) : (
-                    <AlertCircle className='w-5 h-5 text-red-600 dark:text-red-400' />
-                  )}
-                  <span
-                    className={`text-sm ${
-                      message.type === 'success'
-                        ? 'text-green-800 dark:text-green-200'
-                        : 'text-red-800 dark:text-red-200'
-                    }`}
-                  >
-                    {message.text}
-                  </span>
-                </div>
-              )}
+            <div className='space-y-3'>
+              <Toggle checked={localProvider.enabled} onChange={(v) => setLocalProvider({ ...localProvider, enabled: v })} label='启用此 Provider' description='登录页将显示此 Provider' />
+              <Toggle checked={localProvider.enableRegistration} onChange={(v) => setLocalProvider({ ...localProvider, enableRegistration: v })} label='允许注册' description='允许通过此 Provider 自动注册新用户' />
             </div>
+
+            <div className='flex gap-2 items-end'>
+              <div className='flex-1'>
+                <FluentInput label='Issuer URL（可选）' value={localProvider.issuer} onChange={(e) => setLocalProvider({ ...localProvider, issuer: e.target.value })} placeholder='https://accounts.google.com' fullWidth />
+              </div>
+              <FluentButton variant='secondary' size='md' loading={discovering} disabled={!localProvider.issuer} onClick={handleDiscover} icon={<Globe className='w-3.5 h-3.5' />} className='shrink-0'>
+                {discovering ? '发现中...' : '自动发现'}
+              </FluentButton>
+            </div>
+
+            <FluentInput label='Authorization Endpoint *' value={localProvider.authorizationEndpoint} onChange={(e) => setLocalProvider({ ...localProvider, authorizationEndpoint: e.target.value })} placeholder='https://accounts.google.com/o/oauth2/v2/auth' fullWidth />
+            <FluentInput label='Token Endpoint *' value={localProvider.tokenEndpoint} onChange={(e) => setLocalProvider({ ...localProvider, tokenEndpoint: e.target.value })} placeholder='https://oauth2.googleapis.com/token' fullWidth />
+            {localProvider.id.toLowerCase() !== 'apple' ? (
+              <FluentInput label='UserInfo Endpoint *' value={localProvider.userInfoEndpoint} onChange={(e) => setLocalProvider({ ...localProvider, userInfoEndpoint: e.target.value })} placeholder='https://openidconnect.googleapis.com/v1/userinfo' fullWidth />
+            ) : (
+              <FluentInput label='JWKS URI *' value={localProvider.jwksUri || ''} onChange={(e) => setLocalProvider({ ...localProvider, jwksUri: e.target.value })} placeholder='https://appleid.apple.com/auth/keys' fullWidth />
+            )}
+            <FluentInput label='Client ID *' value={localProvider.clientId} onChange={(e) => setLocalProvider({ ...localProvider, clientId: e.target.value })} placeholder='your-client-id' fullWidth />
+            <FluentInput label='Client Secret *' type='password' value={localProvider.clientSecret} onChange={(e) => setLocalProvider({ ...localProvider, clientSecret: e.target.value })} placeholder='••••••••••••••••' fullWidth />
+
+            <div className='space-y-2'>
+              <label className='text-sm font-medium text-[#9ca3af]'>Redirect URI（回调地址）</label>
+              <div className='flex gap-2'>
+                <div className='flex-1'>
+                  <FluentInput value={typeof window !== 'undefined' ? `${window.location.origin}/api/auth/oidc/callback` : ''} readOnly fullWidth />
+                </div>
+                <FluentButton
+                  variant='secondary'
+                  size='md'
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      navigator.clipboard.writeText(`${window.location.origin}/api/auth/oidc/callback`);
+                      setMessage({ type: 'success', text: '已复制到剪贴板' });
+                      setTimeout(() => setMessage(null), 2000);
+                    }
+                  }}
+                >
+                  复制
+                </FluentButton>
+              </div>
+            </div>
+
+            <FluentInput label='登录按钮文字' value={localProvider.buttonText} onChange={(e) => setLocalProvider({ ...localProvider, buttonText: e.target.value })} placeholder='使用 Google 登录' fullWidth />
+            <FluentInput label='最低信任等级（LinuxDo 专用）' type='number' value={String(localProvider.minTrustLevel)} onChange={(e) => setLocalProvider({ ...localProvider, minTrustLevel: parseInt(e.target.value) || 0 })} placeholder='0' className='max-w-[12rem]' />
+
+            {message && (
+              <FluentCard padding='10px' className={`flex items-center gap-2 border text-sm ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-300'}`}>
+                {message.type === 'success' ? <CheckCircle2 className='w-4 h-4 shrink-0' /> : <AlertCircle className='w-4 h-4 shrink-0' />}
+                <span>{message.text}</span>
+              </FluentCard>
+            )}
           </div>
 
-          {/* Footer - Fixed */}
-          <div className='flex gap-3 p-4 md:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 shrink-0'>
-            <button
-              onClick={onCancel}
-              className='flex-1 px-4 md:px-6 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 rounded-lg font-medium transition-colors'
-            >
+          <div className='flex gap-3 p-4 border-t border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-white/[0.03] shrink-0'>
+            <FluentButton variant='secondary' size='md' fullWidth onClick={onCancel}>
               取消
-            </button>
-            <button
-              onClick={() => onSave(localProvider)}
-              className='flex-1 px-4 md:px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2'
-            >
-              <Save className='w-4 h-4' />
+            </FluentButton>
+            <FluentButton variant='primary' size='md' fullWidth icon={<Save className='w-4 h-4' />} onClick={() => onSave(localProvider)}>
               保存
-            </button>
+            </FluentButton>
           </div>
-        </div>
+        </FluentCard>
       </div>
     </div>
   );
