@@ -131,33 +131,16 @@ function AdminModulePanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className='ui-surface rounded-[var(--radius-2xl)] shadow-[var(--shadow-4)] overflow-hidden'>
-      <div className='flex items-center gap-3 border-b border-[var(--color-stroke-subtle)] bg-[var(--color-background-subtle)] px-6 py-4'>
-        <div className='flex items-center justify-center w-10 h-10 rounded-[var(--radius-xl)] bg-[var(--color-primary-50)] dark:bg-[var(--color-primary-900)]/30 text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)]'>
+    <div className='space-y-4'>
+      <div className='flex items-center gap-3 px-1'>
+        <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--color-primary-50)] text-[var(--color-primary-600)] dark:bg-[var(--color-primary-500)]/15 dark:text-[var(--color-primary-300)]'>
           {icon}
         </div>
-        <div>
-          <h3 className='text-lg font-semibold text-[var(--color-foreground)]'>
-            {title}
-          </h3>
-          <p className='mt-0.5 text-xs uppercase tracking-[0.18em] text-[var(--color-foreground-muted)]'>
-            Module Workspace
-          </p>
-        </div>
+        <h3 className='text-[15px] font-semibold tracking-tight text-[var(--color-foreground)]'>
+          {title}
+        </h3>
       </div>
-
-      <div className='border-b border-[var(--color-stroke-subtle)] bg-[var(--color-background)] px-6 py-3'>
-        <div className='flex flex-wrap items-center gap-2 text-xs text-[var(--color-foreground-muted)]'>
-          <span className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-2.5 py-1'>
-            Single Module
-          </span>
-          <span className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-2.5 py-1'>
-            Admin Workspace
-          </span>
-        </div>
-      </div>
-
-      <div className='px-6 py-5'>{children}</div>
+      <div>{children}</div>
     </div>
   );
 }
