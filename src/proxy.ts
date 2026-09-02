@@ -515,6 +515,7 @@ function shouldSkipAuth(pathname: string): boolean {
     '/live', // 直播页（公共访问）
     '/tvbox', // TVBox 配置页（接口自行处理 token/认证）
     '/api/search', // 聚合搜索 API（匿名可用默认源，接口内限流）
+    '/play', // 播放页（公共访问，可匿名浏览内容）
     '/favorites', // 收藏页面（客户端重定向）
     '/history', // 历史页面（客户端重定向）
     '/profile', // 个人中心（客户端重定向）
