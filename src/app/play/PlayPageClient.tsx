@@ -299,6 +299,8 @@ function PlayPageClient() {
   const fatalHandledRef = useRef(false);
   // 连续 NETWORK_ERROR 计数器：连续 3 次 m3u8 网络错误后升级为致命恢复，避免死循环
   const consecutiveNetErrorRef = useRef(0);
+  // 连续 FRAG_LOAD_ERROR 计数器：分片持续加载失败时升级换源，避免 startLoad 死循环卡死
+  const consecutiveFragErrorRef = useRef(0);
   const safetyNetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 短剧下一集预取URL缓存：播放当前集时提前解析下一集URL，实现"秒开"
@@ -1526,6 +1528,7 @@ function PlayPageClient() {
     nextShortDramaPrefetchRef.current = null;
     fatalHandledRef.current = false;
     consecutiveNetErrorRef.current = 0;
+    consecutiveFragErrorRef.current = 0;
 
     // 清理弹幕状态引用
     danmuPluginStateRef.current = null;
@@ -1847,6 +1850,7 @@ function PlayPageClient() {
       nextShortDramaUrlRef.current = null;
       nextShortDramaPrefetchRef.current = null;
       consecutiveNetErrorRef.current = 0;
+      consecutiveFragErrorRef.current = 0;
       earlyStartedRef.current = false;
       setStreamingTimedOut(false);
       setLoadingStage(
@@ -3217,10 +3221,27 @@ function PlayPageClient() {
                 }
 
                 // 片段加载失败（网络波动/临时 403/CDN 限流）：尝试重启加载
-                // 如果多次失败（密钥 403、段文件 502/504），升级为致命恢复
+                // 如果多次失败（密钥 403、段文件 502/504），升级为致命恢复，避免 startLoad 死循环
                 if (data.details === HlsModule.ErrorDetails.FRAG_LOAD_ERROR) {
-                  if (video.currentTime > 3) {
-                    hls.startLoad();
+                  consecutiveFragErrorRef.current++;
+                  // 已稳定播放时允许轻微重试，但连续失败仍升级（阈值略宽松）
+                  const threshold =
+                    (video.currentTime || 0) > 3 ? (isMobile ? 8 : 10) : 4;
+                  if (consecutiveFragErrorRef.current >= threshold) {
+                    console.warn(
+                      `[HLS] 分片连续失败 ${consecutiveFragErrorRef.current} 次，升级为自动换源`,
+                    );
+                    const hlsFailSource = currentSourceRef.current;
+                    const hlsFailId = currentIdRef.current;
+                    if (hlsFailSource && hlsFailId) {
+                      markSourceFailed(
+                        getSourceIdentityKey(hlsFailSource, hlsFailId),
+                      );
+                    }
+                    consecutiveFragErrorRef.current = 0;
+                    hls.destroy();
+                    fatalHandledRef.current = true;
+                    autoRecoveryFnRef.current?.();
                     return;
                   }
                   hls.startLoad();
@@ -4698,6 +4719,7 @@ function PlayPageClient() {
         artPlayerRef.current.on('video:playing', () => {
           fatalHandledRef.current = false;
           consecutiveNetErrorRef.current = 0;
+          consecutiveFragErrorRef.current = 0;
           if (safetyNetTimer.current) {
             clearTimeout(safetyNetTimer.current);
             safetyNetTimer.current = null;
