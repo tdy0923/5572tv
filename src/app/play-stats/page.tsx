@@ -285,7 +285,7 @@ const PlayStatsPage: React.FC = () => {
   if (isAdmin && statsData && userStats) {
     return (
       <PageLayout activePath='/play-stats'>
-        <div className='max-w-7xl mx-auto px-4 py-8'>
+        <div className='ui-page-width py-8'>
           {/* 页面标题和描述 */}
           <div className='mb-6'>
             <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>

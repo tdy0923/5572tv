@@ -208,6 +208,28 @@
     @apply relative overflow-x-hidden;
   }
 
+  /* ===== 统一页面宽度系统（全站同宽，自适应 8K） ===== */
+  /* 流式容器：小屏全宽+内边距，大屏 1600px 居中，8K 屏 1920-2200px */
+  .ui-page-width {
+    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1600px;
+  }
+  @media (min-width: 1920px) {
+    .ui-page-width {
+      max-width: 1800px;
+    }
+  }
+  @media (min-width: 2560px) {
+    .ui-page-width {
+      max-width: 2000px;
+    }
+  }
+  @media (min-width: 3840px) {
+    .ui-page-width {
+      max-width: 2200px;
+    }
+  }
+
   @media (min-width: 768px) {
     .ui-shell::before {
       content: '';

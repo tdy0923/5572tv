@@ -101,7 +101,7 @@ const PageLayout = ({
             }}
           >
             <div
-              className={`ui-page-frame ${
+              className={`ui-page-frame ui-page-width ${
                 noPadding
                   ? 'px-0'
                   : 'px-3 sm:px-5 md:px-8 lg:px-12 xl:px-16 2xl:px-20'

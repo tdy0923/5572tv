@@ -288,7 +288,7 @@ export default function ReleaseCalendarPage() {
             }}
           ></div>
         </div>
-        <div className='max-w-7xl mx-auto relative'>
+        <div className='ui-page-width relative'>
           {/* 页面标题 */}
           <div className='mb-8'>
             <div className='flex items-center gap-3 mb-4'>

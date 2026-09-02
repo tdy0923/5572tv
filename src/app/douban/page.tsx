@@ -22,6 +22,8 @@ import { DoubanItem, DoubanResult } from '@/lib/types';
 import DoubanCardSkeleton from '@/components/DoubanCardSkeleton';
 import DoubanCustomSelector from '@/components/DoubanCustomSelector';
 import DoubanSelector from '@/components/DoubanSelector';
+import { FluentBadge, FluentCard, FluentEmptyState } from '@/components/FluentUI';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
 import PosterGridSkeleton from '@/components/PosterGridSkeleton';
@@ -29,6 +31,7 @@ import SectionTitle from '@/components/SectionTitle';
 import Toggle from '@/components/Toggle';
 import VideoCard from '@/components/VideoCard';
 import VirtualGrid from '@/components/VirtualGrid';
+import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 
 // 🔧 统一分页常量 - 防止分页步长不一致导致重复数据
 const PAGE_SIZE = 25;
@@ -930,11 +933,12 @@ function DoubanPageClient() {
               }
             />
 
-            {/* 选择器组件 */}
+            {/* 选择器 — FluentCard with Fluent 2 depth */}
             {type !== 'custom' ? (
-              <div
-                className='relative rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03] backdrop-blur-sm'
-                style={{ borderColor: 'var(--color-stroke-subtle)' }}
+              <FluentCard
+                variant='default'
+                className='!p-4 sm:!p-5 backdrop-blur-sm'
+                style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
               >
                 <DoubanSelector
                   type={type as 'movie' | 'tv' | 'show' | 'anime'}
@@ -945,11 +949,12 @@ function DoubanPageClient() {
                   onMultiLevelChange={handleMultiLevelChange}
                   onWeekdayChange={handleWeekdayChange}
                 />
-              </div>
+              </FluentCard>
             ) : (
-              <div
-                className='relative rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03] backdrop-blur-sm'
-                style={{ borderColor: 'var(--color-stroke-subtle)' }}
+              <FluentCard
+                variant='default'
+                className='!p-4 sm:!p-5 backdrop-blur-sm'
+                style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
               >
                 <DoubanCustomSelector
                   customCategories={customCategories}
@@ -958,7 +963,7 @@ function DoubanPageClient() {
                   onPrimaryChange={handlePrimaryChange}
                   onSecondaryChange={handleSecondaryChange}
                 />
-              </div>
+              </FluentCard>
             )}
 
             {/* 虚拟化开关 */}
@@ -972,7 +977,7 @@ function DoubanPageClient() {
           </div>
 
           {/* 内容展示区域 */}
-          <div className='max-w-[95%] mx-auto mt-8 overflow-visible'>
+          <div className='ui-page-width mt-8 overflow-visible'>
             {/* 条件渲染：虚拟化 vs 传统网格 */}
             {useVirtualization ? (
               <>
@@ -1032,7 +1037,7 @@ function DoubanPageClient() {
                   />
                 )}
 
-                {/* 加载更多指示器 / sentinel */}
+                {/* 加载更多 — FluentSpinner + Fluent 2 motion */}
                 {hasMore && !loading && (
                   <div
                     ref={(el) => {
@@ -1045,119 +1050,50 @@ function DoubanPageClient() {
                     className='flex justify-center mt-12 py-8'
                   >
                     {isLoadingMore && (
-                      <div className='relative px-8 py-4 rounded-2xl bg-linear-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200/50 dark:border-green-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                        <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                        <div className='relative flex items-center gap-3'>
-                          <div className='relative'>
-                            <div className='animate-spin rounded-full h-8 w-8 border-[3px] border-green-200 dark:border-green-800'></div>
-                            <div className='absolute inset-0 animate-spin rounded-full h-8 w-8 border-[3px] border-transparent border-t-green-500 dark:border-t-green-400'></div>
-                          </div>
-                          <div className='flex items-center gap-1'>
-                            <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                              加载中
-                            </span>
-                            <span className='flex gap-0.5'>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '0ms' }}
-                              >
-                                .
-                              </span>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '150ms' }}
-                              >
-                                .
-                              </span>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '300ms' }}
-                              >
-                                .
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      <FluentCard
+                        variant='default'
+                        className='flex items-center gap-3 !px-6 !py-4'
+                        style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                      >
+                        <FluentSpinner size='medium' />
+                        <span className='text-sm font-medium' style={{ color: 'var(--color-foreground-muted)' }}>
+                          加载中
+                        </span>
+                      </FluentCard>
                     )}
                   </div>
                 )}
 
-                {/* 没有更多数据提示 */}
+                {/* 已加载全部 — FluentBadge + FluentCard */}
                 {!hasMore && doubanData.length > 0 && (
                   <div className='flex justify-center mt-8 py-8'>
-                    <div className='relative px-8 py-5 rounded-2xl bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                      <div className='absolute inset-0 bg-linear-to-br from-blue-100/20 to-purple-100/20 dark:from-blue-800/10 dark:to-purple-800/10'></div>
-                      <div className='relative flex flex-col items-center gap-2'>
-                        <div className='relative'>
-                          <div className='w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg'>
-                            <svg
-                              className='w-7 h-7 text-white'
-                              fill='none'
-                              stroke='currentColor'
-                              viewBox='0 0 24 24'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth='2.5'
-                                d='M5 13l4 4L19 7'
-                              ></path>
-                            </svg>
-                          </div>
-                          <div className='absolute inset-0 rounded-full bg-blue-400/30 animate-ping'></div>
-                        </div>
-                        <div className='text-center'>
-                          <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
-                            已加载全部内容
-                          </p>
-                          <p className='text-xs text-gray-600 dark:text-gray-400'>
-                            共 {doubanData.length} 项
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <FluentCard
+                      variant='default'
+                      className='flex flex-col items-center gap-2 !px-8 !py-5'
+                      style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                    >
+                      <FluentBadge variant='info' size='md' rounded>
+                        已加载全部
+                      </FluentBadge>
+                      <p className='text-xs' style={{ color: 'var(--color-foreground-muted)' }}>
+                        共 {doubanData.length} 项
+                      </p>
+                    </FluentCard>
                   </div>
                 )}
 
-                {/* 空状态 */}
+                {/* 空状态 — FluentEmptyState */}
                 {!loading && selectorsReady && doubanData.length === 0 && (
-                  <div className='flex justify-center py-16'>
-                    <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-                      <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl'></div>
-                      <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-pink-200/20 to-orange-200/20 rounded-full blur-3xl'></div>
-                      <div className='relative flex flex-col items-center gap-4'>
-                        <div className='relative'>
-                          <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                            <svg
-                              className='w-12 h-12 text-gray-400 dark:text-gray-400'
-                              fill='none'
-                              stroke='currentColor'
-                              viewBox='0 0 24 24'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth='1.5'
-                                d='M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4'
-                              ></path>
-                            </svg>
-                          </div>
-                          <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                          <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                        </div>
-                        <div className='text-center space-y-2'>
-                          <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                            暂无相关内容
-                          </h3>
-                          <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
-                            尝试调整筛选条件或切换其他分类查看更多内容
-                          </p>
-                        </div>
-                        <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
-                      </div>
-                    </div>
-                  </div>
+                  <FluentCard
+                    variant='default'
+                    className='mt-8 flex justify-center py-10'
+                    style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                  >
+                    <FluentEmptyState
+                      title='暂无相关内容'
+                      description='尝试调整筛选条件或切换其他分类查看更多内容'
+                    />
+                  </FluentCard>
                 )}
               </>
             ) : (
@@ -1209,7 +1145,7 @@ function DoubanPageClient() {
                       })}
                 </div>
 
-                {/* 加载更多指示器 */}
+                {/* 加载更多指示器 — FluentSpinner */}
                 {hasMore && !loading && (
                   <div
                     ref={(el) => {
@@ -1222,141 +1158,51 @@ function DoubanPageClient() {
                     className='flex justify-center mt-12 py-8'
                   >
                     {isLoadingMore && (
-                      <div className='relative px-8 py-4 rounded-2xl bg-linear-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border border-green-200/50 dark:border-green-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                        {/* 动画背景 */}
-                        <div className='absolute inset-0 bg-linear-to-r from-green-400/10 via-emerald-400/10 to-teal-400/10 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-
-                        {/* 内容 */}
-                        <div className='relative flex items-center gap-3'>
-                          {/* 旋转圈 */}
-                          <div className='relative'>
-                            <div className='animate-spin rounded-full h-8 w-8 border-[3px] border-green-200 dark:border-green-800'></div>
-                            <div className='absolute inset-0 animate-spin rounded-full h-8 w-8 border-[3px] border-transparent border-t-green-500 dark:border-t-green-400'></div>
-                          </div>
-
-                          {/* 文字和点动画 */}
-                          <div className='flex items-center gap-1'>
-                            <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                              加载中
-                            </span>
-                            <span className='flex gap-0.5'>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '0ms' }}
-                              >
-                                .
-                              </span>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '150ms' }}
-                              >
-                                .
-                              </span>
-                              <span
-                                className='animate-bounce'
-                                style={{ animationDelay: '300ms' }}
-                              >
-                                .
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      <FluentCard
+                        variant='default'
+                        className='flex items-center gap-3 !px-6 !py-4'
+                        style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                      >
+                        <FluentSpinner size='medium' />
+                        <span className='text-sm font-medium' style={{ color: 'var(--color-foreground-muted)' }}>
+                          加载中
+                        </span>
+                        </FluentCard>
                     )}
                   </div>
                 )}
 
-                {/* 没有更多数据提示 */}
+                {/* 没有更多数据提示 — FluentCard */}
                 {!hasMore && doubanData.length > 0 && (
                   <div className='flex justify-center mt-12 py-8'>
-                    <div className='relative px-8 py-5 rounded-2xl bg-linear-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 border border-blue-200/50 dark:border-blue-700/50 shadow-lg backdrop-blur-sm overflow-hidden'>
-                      {/* 装饰性背景 */}
-                      <div className='absolute inset-0 bg-linear-to-br from-blue-100/20 to-purple-100/20 dark:from-blue-800/10 dark:to-purple-800/10'></div>
+                    <FluentCard
+                      variant='default'
+                      className='flex flex-col items-center gap-2 !px-8 !py-5'
+                      style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                    >
+                      <FluentBadge variant='info' size='md' rounded>
+                        已加载全部
+                      </FluentBadge>
 
-                      {/* 内容 */}
-                      <div className='relative flex flex-col items-center gap-2'>
-                        {/* 完成图标 */}
-                        <div className='relative'>
-                          <div className='w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg'>
-                            <svg
-                              className='w-7 h-7 text-white'
-                              fill='none'
-                              stroke='currentColor'
-                              viewBox='0 0 24 24'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth='2.5'
-                                d='M5 13l4 4L19 7'
-                              ></path>
-                            </svg>
-                          </div>
-                          {/* 光圈效果 */}
-                          <div className='absolute inset-0 rounded-full bg-blue-400/30 animate-ping'></div>
-                        </div>
-
-                        {/* 文字 */}
-                        <div className='text-center'>
-                          <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
-                            已加载全部内容
-                          </p>
-                          <p className='text-xs text-gray-600 dark:text-gray-400'>
-                            共 {doubanData.length} 项
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                        <p className='text-xs' style={{ color: 'var(--color-foreground-muted)' }}>
+                          共 {doubanData.length} 项
+                        </p>
+                    </FluentCard>
                   </div>
                 )}
 
-                {/* 空状态 */}
+                {/* 空状态 — FluentEmptyState */}
                 {!loading && doubanData.length === 0 && (
-                  <div className='flex justify-center py-16'>
-                    <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-                      {/* 装饰性元素 */}
-                      <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl'></div>
-                      <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-pink-200/20 to-orange-200/20 rounded-full blur-3xl'></div>
-
-                      {/* 内容 */}
-                      <div className='relative flex flex-col items-center gap-4'>
-                        {/* 插图图标 */}
-                        <div className='relative'>
-                          <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                            <svg
-                              className='w-12 h-12 text-gray-400 dark:text-gray-400'
-                              fill='none'
-                              stroke='currentColor'
-                              viewBox='0 0 24 24'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth='1.5'
-                                d='M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4'
-                              ></path>
-                            </svg>
-                          </div>
-                          {/* 浮动小点装饰 */}
-                          <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                          <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                        </div>
-
-                        {/* 文字内容 */}
-                        <div className='text-center space-y-2'>
-                          <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                            暂无相关内容
-                          </h3>
-                          <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
-                            尝试调整筛选条件或切换其他分类查看更多内容
-                          </p>
-                        </div>
-
-                        {/* 装饰线 */}
-                        <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
-                      </div>
-                    </div>
-                  </div>
+                  <FluentCard
+                    variant='default'
+                    className='mt-8 flex justify-center py-10'
+                    style={{ borderRadius: radius.xl, boxShadow: shadow.light } as any}
+                  >
+                    <FluentEmptyState
+                      title='暂无相关内容'
+                      description='尝试调整筛选条件或切换其他分类查看更多内容'
+                    />
+                  </FluentCard>
                 )}
               </>
             )}

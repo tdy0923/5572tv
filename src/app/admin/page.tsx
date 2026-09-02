@@ -7,7 +7,7 @@ const AdminContent = dynamic(() => import('./_content'));
 
 function AdminPageSkeleton() {
   return (
-    <div className='mx-auto w-full max-w-[1440px] px-4 lg:px-6 py-6'>
+    <div className='ui-page-width py-6'>
       <div className='mb-6 flex items-center gap-3'>
         <div className='h-7 w-32 rounded-full bg-[var(--color-background-muted)] animate-pulse' />
         <div className='h-6 w-20 rounded-full bg-[var(--color-background-muted)] animate-pulse opacity-60' />
