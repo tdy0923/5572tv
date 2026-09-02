@@ -107,13 +107,13 @@ const ShortDramaVerticalPlayer = dynamic(
   { ssr: false },
 );
 
+import { FluentSpinner } from '@/components/FluentSpinner';
 import {
   FluentBadge,
   FluentButton,
   FluentCard,
   FluentEmptyState,
 } from '@/components/FluentUI';
-import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
@@ -1821,21 +1821,15 @@ function PlayPageClient() {
           console.warn('获取视频详情已取消:', err);
           return [];
         }
-        const msg =
-          err instanceof Error ? err.message : '获取视频详情失败';
+        const msg = err instanceof Error ? err.message : '获取视频详情失败';
         const isTimeout =
           msg.includes('Timeout') ||
           msg.includes('timeout') ||
           (err as any)?.name === 'TimeoutError';
-        console.warn(
-          `获取视频详情失败${isTimeout ? '(超时)' : ''}:`,
-          err,
-        );
+        console.warn(`获取视频详情失败${isTimeout ? '(超时)' : ''}:`, err);
         // P5: 不再静默吞错，记录到 sourceSearchError 供 UI 重试提示
         try {
-          setSourceSearchError(
-            isTimeout ? '详情加载超时，请重试' : msg,
-          );
+          setSourceSearchError(isTimeout ? '详情加载超时，请重试' : msg);
         } catch {}
         return [];
       } finally {
@@ -5391,7 +5385,8 @@ function PlayPageClient() {
                     availableSources.find(
                       (s) => s.source !== currentSource || s.id !== currentId,
                     ) || availableSources[0];
-                  if (next) handleSourceChange(next.source, next.id, next.title);
+                  if (next)
+                    handleSourceChange(next.source, next.id, next.title);
                 }
               : undefined
           }
@@ -5533,7 +5528,7 @@ function PlayPageClient() {
               </div>
 
               <div
-                className={`grid gap-4 -mx-3 sm:-mx-5 lg:mx-0 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] lg:grid-rows-[minmax(0,1fr)] transition-all duration-300 ease-in-out ${
+                className={`grid gap-4 -mx-4 sm:-mx-6 lg:mx-0 lg:h-[calc(100vh-12rem)] xl:h-[calc(100vh-11rem)] 2xl:h-[calc(100vh-10rem)] lg:max-h-[880px] lg:grid-rows-[minmax(0,1fr)] transition-all duration-300 ease-in-out ${
                   isEpisodeSelectorCollapsed
                     ? 'grid-cols-1'
                     : 'grid-cols-1 md:grid-cols-4'
@@ -5541,7 +5536,7 @@ function PlayPageClient() {
               >
                 {/* 播放器 */}
                 <div
-                  className={`h-full transition-all duration-300 ease-in-out rounded-xl border border-white/0 dark:border-white/30 ${
+                  className={`h-full transition-all duration-300 ease-in-out rounded-none sm:rounded-xl border-0 sm:border sm:border-white/0 dark:sm:border-white/30 ${
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
@@ -5558,7 +5553,7 @@ function PlayPageClient() {
                     >
                       <div
                         ref={artRef}
-                        className='bg-black w-full h-full rounded-xl shadow-lg overflow-hidden'
+                        className='bg-black w-full h-full rounded-none sm:rounded-xl shadow-lg overflow-hidden'
                         onDoubleClick={() => {
                           const player = artPlayerRef.current;
                           if (player) {
@@ -6311,7 +6306,11 @@ function PlayPageClient() {
                       </span>
                       <div className='flex gap-2'>
                         <FluentButton
-                          variant={netdiskResourceType === 'netdisk' ? 'primary' : 'secondary'}
+                          variant={
+                            netdiskResourceType === 'netdisk'
+                              ? 'primary'
+                              : 'secondary'
+                          }
                           size='sm'
                           onClick={() => {
                             setNetdiskResourceType('netdisk');
@@ -6322,7 +6321,11 @@ function PlayPageClient() {
                           网盘资源
                         </FluentButton>
                         <FluentButton
-                          variant={netdiskResourceType === 'acg' ? 'primary' : 'secondary'}
+                          variant={
+                            netdiskResourceType === 'acg'
+                              ? 'primary'
+                              : 'secondary'
+                          }
                           size='sm'
                           onClick={() => {
                             setNetdiskResourceType('acg');

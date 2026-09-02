@@ -19,16 +19,23 @@
 
 /* ===== Mobile Screen (all phones) ===== */
 @media (max-width: 768px) {
-  /* 控制栏不换行、横向滚动兜底，防止窄屏挤压错乱 */
+  /* 控制栏不换行、横向可滑（隐藏滚动条），防止窄屏挤压错乱 */
   .art-controls {
     flex-wrap: nowrap !important;
-    overflow: hidden !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
     padding: 0 4px !important;
+  }
+  .art-controls::-webkit-scrollbar {
+    display: none !important;
   }
   .art-controls-left,
   .art-controls-right {
     flex-shrink: 0 !important;
     gap: 0 !important;
+    flex-wrap: nowrap !important;
   }
 
   /* 控制按钮至少44px触控目标 (Apple HIG) */
@@ -38,15 +45,6 @@
     padding: 6px 6px !important;
     font-size: 13px !important;
     flex-shrink: 0 !important;
-  }
-
-  /* 窄屏时隐藏可在设置面板中访问的次要控件，避免控制条溢出被边缘裁掉 */
-  .art-control-pip,
-  .art-control-flip,
-  .art-control-playbackRate,
-  .art-control-aspectRatio,
-  .art-control-lock {
-    display: none !important;
   }
 
   /* 控制栏稳定深色半透明背景：浅色主题下白色图标也不至于消失成"白色方块" */
@@ -101,7 +99,7 @@
   }
 }
 
-/* 超窄屏 (< 380px) 进一步压缩，保证按钮不重叠 */
+/* 超窄屏 (< 380px) 进一步压缩，保证按钮不重叠；隐藏次要控件 */
 @media (max-width: 380px) {
   .art-controls button,
   .art-control {
@@ -110,6 +108,13 @@
   }
   .art-control-time {
     font-size: 10px !important;
+  }
+  .art-control-pip,
+  .art-control-flip,
+  .art-control-playbackRate,
+  .art-control-aspectRatio,
+  .art-control-lock {
+    display: none !important;
   }
 }
 
