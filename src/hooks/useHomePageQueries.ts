@@ -29,7 +29,9 @@ async function fetchTrending(): Promise<{
   anime: SearchResult[];
 }> {
   try {
-    const response = await fetch('/api/trending');
+    const response = await fetch('/api/trending', {
+      signal: AbortSignal.timeout(5000),
+    });
     if (!response.ok) throw new Error('获取热门内容失败');
     const data = await response.json();
 
@@ -151,6 +153,10 @@ export function useHomePageQueries(
     queryKey: ['trending-homepage'],
     queryFn: fetchTrending,
     staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+    retryDelay: 1000,
+    networkMode: 'offlineFirst',
     initialData: initialData
       ? {
           movies: initialData.hotMovies,
@@ -165,6 +171,10 @@ export function useHomePageQueries(
     queryKey: ['short-dramas-homepage'],
     queryFn: () => getRecommendedShortDramas(20),
     staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 1,
+    retryDelay: 1000,
+    networkMode: 'offlineFirst',
     initialData: initialData?.hotShortDramas,
   });
 

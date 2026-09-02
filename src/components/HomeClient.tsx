@@ -314,8 +314,20 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     return !!getAuthInfoFromBrowserCookie()?.username;
   }, []);
 
-  // 🚀 计算 loading 状态：首次加载时显示 loading
-  const loading = homeLoading;
+  // 🚀 计算 loading 状态：首次加载时显示 loading，8s 超时兜底防骨架屏卡死
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  useEffect(() => {
+    if (!homeLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoadingTimedOut(false);
+      return;
+    }
+    const t = setTimeout(() => {
+      setLoadingTimedOut(true);
+    }, 8000);
+    return () => clearTimeout(t);
+  }, [homeLoading]);
+  const loading = homeLoading && !loadingTimedOut;
 
   // 🚀 Web Worker引用
   const workerRef = useRef<Worker | null>(null);
@@ -547,15 +559,19 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   // 首页数据加载失败时弹出非阻塞错误提示（每次失败仅提示一次，成功后重置）
   const hasShownHomeErrorRef = useRef(false);
   useEffect(() => {
-    if (homeHasError) {
+    if (homeHasError || loadingTimedOut) {
       if (!hasShownHomeErrorRef.current) {
         hasShownHomeErrorRef.current = true;
-        triggerGlobalError('热门内容加载失败，请稍后重试');
+        triggerGlobalError(
+          loadingTimedOut
+            ? '加载超时，请检查网络后重试'
+            : '热门内容加载失败，请稍后重试',
+        );
       }
     } else {
       hasShownHomeErrorRef.current = false;
     }
-  }, [homeHasError]);
+  }, [homeHasError, loadingTimedOut]);
 
   // 如果首页数据加载完成但热门短剧为空，强制刷新（可能之前缓存了空数据）
   // Only refetch once, not repeatedly - track if we've already tried
@@ -959,18 +975,49 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
                 favoritesLoading={favoritesLoading}
               />
             ) : (
-              <HomeContentView
-                hotMovies={hotMovies as DoubanItem[]}
-                hotTvShows={hotTvShows as DoubanItem[]}
-                hotVarietyShows={hotVarietyShows as DoubanItem[]}
-                hotAnime={hotAnime as DoubanItem[]}
-                hotShortDramas={hotShortDramas as ShortDramaItem[]}
-                upcomingReleases={upcomingReleases}
-                loading={loading}
-                upcomingFilter={upcomingFilter}
-                setUpcomingFilter={setUpcomingFilter}
-                today={today}
-              />
+              (() => {
+                const hasEmptyHomeData =
+                  !loading &&
+                  hotMovies.length === 0 &&
+                  hotTvShows.length === 0 &&
+                  hotVarietyShows.length === 0 &&
+                  hotAnime.length === 0 &&
+                  hotShortDramas.length === 0;
+                if (hasEmptyHomeData && (homeHasError || loadingTimedOut)) {
+                  return (
+                    <div className='py-10 text-center'>
+                      <p className='mb-4 text-sm text-gray-500 dark:text-gray-400'>
+                        {loadingTimedOut
+                          ? '加载超时，请检查网络'
+                          : '热门内容加载失败'}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setLoadingTimedOut(false);
+                          refetchHomeData();
+                        }}
+                        className='rounded-lg bg-[#f4c24d] px-6 py-2 text-sm font-medium text-[#171717] hover:bg-[#f9c94e]'
+                      >
+                        重试
+                      </button>
+                    </div>
+                  );
+                }
+                return (
+                  <HomeContentView
+                    hotMovies={hotMovies as DoubanItem[]}
+                    hotTvShows={hotTvShows as DoubanItem[]}
+                    hotVarietyShows={hotVarietyShows as DoubanItem[]}
+                    hotAnime={hotAnime as DoubanItem[]}
+                    hotShortDramas={hotShortDramas as ShortDramaItem[]}
+                    upcomingReleases={upcomingReleases}
+                    loading={loading}
+                    upcomingFilter={upcomingFilter}
+                    setUpcomingFilter={setUpcomingFilter}
+                    today={today}
+                  />
+                );
+              })()
             )}
           </div>
         </div>
