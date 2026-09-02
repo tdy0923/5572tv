@@ -302,6 +302,11 @@ function PlayPageClient() {
   // 连续 FRAG_LOAD_ERROR 计数器：分片持续加载失败时升级换源，避免 startLoad 死循环卡死
   const consecutiveFragErrorRef = useRef(0);
   const safetyNetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 起播后停滞看门狗：video 已 playing 后若 currentTime 长期不前进（断流卡死），
+  // 且用户处于非暂停态，触发自动换源（覆盖安全网只查 readyState<3 的盲区）
+  const stallWatchdogTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stallLastTimeRef = useRef(0);
+  const stallLastCurrentTimeRef = useRef(0);
 
   // 短剧下一集预取URL缓存：播放当前集时提前解析下一集URL，实现"秒开"
   const nextShortDramaUrlRef = useRef<{
@@ -1523,6 +1528,11 @@ function PlayPageClient() {
     if (safetyNetTimer.current) {
       clearTimeout(safetyNetTimer.current);
       safetyNetTimer.current = null;
+    }
+    // 清理停滞看门狗
+    if (stallWatchdogTimer.current) {
+      clearInterval(stallWatchdogTimer.current);
+      stallWatchdogTimer.current = null;
     }
     nextShortDramaUrlRef.current = null;
     nextShortDramaPrefetchRef.current = null;
@@ -4700,6 +4710,11 @@ function PlayPageClient() {
 
         artPlayerRef.current.on('pause', () => {
           releaseWakeLock();
+          // 用户暂停时停掉停滞看门狗，避免误判卡死
+          if (stallWatchdogTimer.current) {
+            clearInterval(stallWatchdogTimer.current);
+            stallWatchdogTimer.current = null;
+          }
           // 🔥 关键修复：暂停时也检查是否在片尾，避免保存错误的进度
           const currentTime = artPlayerRef.current?.currentTime || 0;
           const duration = artPlayerRef.current?.duration || 0;
@@ -4724,6 +4739,52 @@ function PlayPageClient() {
             clearTimeout(safetyNetTimer.current);
             safetyNetTimer.current = null;
           }
+          // 启动停滞看门狗：记录基线，周期检查 currentTime 是否前进
+          stallLastTimeRef.current = Date.now();
+          stallLastCurrentTimeRef.current =
+            artPlayerRef.current?.currentTime || 0;
+          if (stallWatchdogTimer.current) {
+            clearInterval(stallWatchdogTimer.current);
+          }
+          stallWatchdogTimer.current = setInterval(() => {
+            const art = artPlayerRef.current;
+            if (!art || art.paused) return;
+            const now = Date.now();
+            const cur = art.currentTime || 0;
+            const video = art.video;
+            // 正常缓冲中（buffered 仍前进）或已接近片尾时不判定卡死
+            if (
+              video &&
+              video.readyState === 4 &&
+              cur > stallLastCurrentTimeRef.current
+            ) {
+              stallLastTimeRef.current = now;
+              stallLastCurrentTimeRef.current = cur;
+              return;
+            }
+            // 停滞阈值：起播后 20s 无前进（短剧用更短阈值）
+            const isShort =
+              currentSourceRef.current === 'shortdrama' || isShortDramaMode;
+            const stallMs = isShort ? 12000 : 20000;
+            if (now - stallLastTimeRef.current >= stallMs) {
+              console.warn(
+                `[停滞看门狗] ${stallMs / 1000}s 无播放进度，触发自动换源`,
+              );
+              if (stallWatchdogTimer.current) {
+                clearInterval(stallWatchdogTimer.current);
+                stallWatchdogTimer.current = null;
+              }
+              // 标记当前源失败，避免再次选中
+              const stallSource = currentSourceRef.current;
+              const stallId = currentIdRef.current;
+              if (stallSource && stallId) {
+                markSourceFailed(getSourceIdentityKey(stallSource, stallId));
+              }
+              art.destroy();
+              fatalHandledRef.current = true;
+              autoRecoveryFnRef.current?.();
+            }
+          }, 1000);
         });
         artPlayerRef.current.on('video:volumechange', () => {
           lastVolumeRef.current = artPlayerRef.current.volume;
