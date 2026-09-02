@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
-  Loader2,
   Save,
   Shield,
   Trash2,
@@ -17,6 +16,11 @@ import { useEffect, useState } from 'react';
 
 import type { AdminConfig } from '@/lib/admin.types';
 
+import { FluentBadge } from '@/components/FluentBadge';
+import { FluentButton } from '@/components/FluentButton';
+import { FluentCard } from '@/components/FluentCard';
+import { FluentEmptyState } from '@/components/FluentEmptyState';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 
 export default function GroupEditPage() {
@@ -38,7 +42,7 @@ export default function GroupEditPage() {
       if (!res.ok) throw new Error('Failed to fetch config');
       const result = await res.json();
       // API returns { Role, Config } - extract Config
-      return (result.Config || result) as AdminConfig;
+      return (result.Config || result.config || result) as AdminConfig;
     },
   });
 
@@ -48,7 +52,7 @@ export default function GroupEditPage() {
   // Initialize state from config
   useEffect(() => {
     if (!config) return;
-    const group = config.UserConfig?.Tags?.find(
+    const group = (config.UserConfig as any)?.Tags?.find(
       (t: any) => t.name === groupName,
     );
     if (group) {
@@ -134,22 +138,38 @@ export default function GroupEditPage() {
   };
 
   const users = config?.UserConfig?.Users || [];
-  const getRoleBadge = (role: string) => {
+  const getRoleVariant = (role: string): 'error' | 'info' | 'default' => {
     switch (role) {
       case 'owner':
-        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+        return 'error';
       case 'admin':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        return 'info';
       default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400';
+        return 'default';
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'owner':
+        return '站长';
+      case 'admin':
+        return '管理员';
+      default:
+        return '用户';
     }
   };
 
   if (isLoading) {
     return (
       <PageLayout activePath='/admin'>
-        <div className='flex items-center justify-center py-20'>
-          <Loader2 className='w-8 h-8 animate-spin text-blue-500' />
+        <div className='max-w-4xl mx-auto p-6'>
+          <FluentCard padding='24px' className='flex flex-col items-center justify-center py-16'>
+            <FluentSpinner size='large' label='加载中...' />
+            <p className='mt-3 text-sm' style={{ color: 'var(--color-foreground-muted)' }}>
+              正在加载分组信息
+            </p>
+          </FluentCard>
         </div>
       </PageLayout>
     );
@@ -157,125 +177,148 @@ export default function GroupEditPage() {
 
   return (
     <PageLayout activePath='/admin'>
-      <div className='max-w-4xl mx-auto p-6'>
+      <div className='max-w-4xl mx-auto p-6 space-y-6'>
         {/* Header */}
-        <div className='flex items-center justify-between mb-6'>
-          <div className='flex items-center gap-4'>
+        <FluentCard padding='16px' className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+          <div className='flex items-center gap-4 min-w-0'>
             <Link
               href='/admin?section=user-config'
-              className='p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors'
+              className='p-2 rounded-lg border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0'
+              aria-label='返回'
             >
               <ArrowLeft className='w-5 h-5' />
             </Link>
-            <div>
-              <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
-                编辑分组: {groupName}
+            <div className='min-w-0'>
+              <h1 className='text-xl font-semibold tracking-tight text-gray-900 dark:text-white truncate'>
+                编辑分组: <span style={{ color: 'var(--color-primary-500)' }}>{groupName}</span>
               </h1>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
+              <p className='text-sm mt-0.5' style={{ color: 'var(--color-foreground-muted)' }}>
                 管理分组成员、权限和视频源访问
               </p>
             </div>
           </div>
-          <div className='flex items-center gap-3'>
-            <button
+          <div className='flex items-center gap-2 shrink-0'>
+            <FluentButton
+              variant='danger'
+              size='md'
+              icon={<Trash2 className='w-4 h-4' />}
+              loading={deleteMutation.isPending}
               onClick={() => {
                 if (confirm('确定要删除此分组吗？')) {
                   deleteMutation.mutate();
                 }
               }}
-              className='px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2'
             >
-              <Trash2 className='w-4 h-4' />
               删除分组
-            </button>
-            <button
-              onClick={() => saveMutation.mutate()}
+            </FluentButton>
+            <FluentButton
+              variant='primary'
+              size='md'
+              icon={<Save className='w-4 h-4' />}
+              loading={saveMutation.isPending}
               disabled={!hasChanges || saveMutation.isPending}
-              className='px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 disabled:opacity-50'
+              onClick={() => saveMutation.mutate()}
             >
-              {saveMutation.isPending ? (
-                <Loader2 className='w-4 h-4 animate-spin' />
-              ) : (
-                <Save className='w-4 h-4' />
-              )}
-              保存
-            </button>
+              {saveMutation.isPending ? '保存中…' : '保存'}
+            </FluentButton>
           </div>
-        </div>
+        </FluentCard>
+
+        {hasChanges && (
+          <div className='flex items-center gap-2 text-xs px-1' style={{ color: 'var(--color-foreground-muted)' }}>
+            <span className='w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block animate-pulse' />
+            有未保存的更改
+          </div>
+        )}
 
         {/* Member Management */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6'>
-          <div className='flex items-center justify-between mb-4'>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
             <div className='flex items-center gap-2'>
-              <Users className='w-5 h-5 text-blue-500' />
-              <h2 className='text-lg font-semibold'>成员管理</h2>
+              <span className='w-8 h-8 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+                <Users className='w-4 h-4 text-[#3b82f6]' />
+              </span>
+              <h2 className='text-sm font-semibold text-gray-900 dark:text-white'>成员管理</h2>
+              <FluentBadge variant='info' size='sm' rounded>
+                {selectedUsers.length} / {users.length} 个成员
+              </FluentBadge>
             </div>
-            <span className='text-sm text-gray-500'>
-              {selectedUsers.length} / {users.length} 个成员
-            </span>
           </div>
-          <p className='text-sm text-gray-500 mb-4'>
+          <p className='text-xs leading-relaxed' style={{ color: 'var(--color-foreground-muted)' }}>
             勾选用户 = 加入此分组。取消勾选 = 从分组移除。
           </p>
-          <div className='flex gap-2 mb-4'>
-            <button
+          <div className='flex gap-2'>
+            <FluentButton
+              variant='secondary'
+              size='sm'
               onClick={() => {
                 setSelectedUsers(users.map((u: any) => u.username));
                 setHasChanges(true);
               }}
-              className='px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800/30'
             >
               全选
-            </button>
-            <button
+            </FluentButton>
+            <FluentButton
+              variant='ghost'
+              size='sm'
               onClick={() => {
                 setSelectedUsers([]);
                 setHasChanges(true);
               }}
-              className='px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600'
             >
               全不选
-            </button>
+            </FluentButton>
           </div>
-          <div className='max-h-[50vh] overflow-y-auto space-y-2 pr-1'>
-            {users.map((u: any) => (
-              <label
-                key={u.username}
-                className='flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg cursor-pointer transition-colors'
-              >
-                <input
-                  type='checkbox'
-                  checked={selectedUsers.includes(u.username)}
-                  onChange={() => toggleUser(u.username)}
-                  className='w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500'
-                />
-                <div className='w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold shrink-0'>
-                  {u.username.charAt(0).toUpperCase()}
-                </div>
-                <div className='flex-1'>
-                  <span className='text-sm font-medium'>{u.username}</span>
-                  <span
-                    className={`ml-2 text-xs px-2 py-0.5 rounded-full ${getRoleBadge(u.role)}`}
-                  >
-                    {u.role}
-                  </span>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
+          {users.length === 0 ? (
+            <FluentEmptyState
+              icon={<Users className='h-6 w-6 text-[#9ca3af]' />}
+              title='暂无用户'
+              description='请先在用户管理中添加用户'
+            />
+          ) : (
+            <div className='max-h-[50vh] overflow-y-auto space-y-1.5 pr-1 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] p-2'>
+              {users.map((u: any) => (
+                <label
+                  key={u.username}
+                  className='flex items-center gap-3 p-3 bg-white dark:bg-white/[0.03] hover:bg-gray-50 dark:hover:bg-white/[0.05] rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5'
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedUsers.includes(u.username)}
+                    onChange={() => toggleUser(u.username)}
+                    className='w-4 h-4 rounded border-gray-300 text-[#f4c24d] focus:ring-[#f4c24d] shrink-0'
+                  />
+                  <div className='w-8 h-8 rounded-full bg-gradient-to-br from-[#f4c24d] to-[#e78a2f] flex items-center justify-center text-black text-xs font-bold shrink-0 shadow-sm'>
+                    {u.username.charAt(0).toUpperCase()}
+                  </div>
+                  <div className='flex-1 flex items-center gap-2 min-w-0'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-white truncate'>{u.username}</span>
+                    <FluentBadge variant={getRoleVariant(u.role)} size='sm' rounded>
+                      {getRoleLabel(u.role)}
+                    </FluentBadge>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </FluentCard>
 
         {/* Adult Content Permission */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6'>
-          <div className='flex items-center gap-2 mb-4'>
-            {showAdultContent ? (
-              <Eye className='w-5 h-5 text-red-500' />
-            ) : (
-              <EyeOff className='w-5 h-5 text-gray-400' />
-            )}
-            <h2 className='text-lg font-semibold'>成人内容权限</h2>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${showAdultContent ? 'bg-[#ef4444]/15' : 'bg-gray-100 dark:bg-white/5'}`}>
+              {showAdultContent ? (
+                <Eye className='w-4 h-4 text-[#ef4444]' />
+              ) : (
+                <EyeOff className='w-4 h-4 text-[#9ca3af]' />
+              )}
+            </span>
+            <h2 className='text-sm font-semibold text-gray-900 dark:text-white'>成人内容权限</h2>
+            <FluentBadge variant={showAdultContent ? 'warning' : 'success'} size='sm' rounded>
+              {showAdultContent ? '已允许' : '已禁止'}
+            </FluentBadge>
           </div>
-          <label className='flex items-center gap-4 cursor-pointer'>
+          <label className='flex items-center gap-4 cursor-pointer p-3 rounded-xl border bg-gray-50 dark:bg-white/[0.02] border-gray-200 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/[0.04] transition-colors'>
             <input
               type='checkbox'
               checked={showAdultContent}
@@ -283,55 +326,85 @@ export default function GroupEditPage() {
                 setShowAdultContent(e.target.checked);
                 setHasChanges(true);
               }}
-              className='w-5 h-5 rounded border-gray-300 text-red-500 focus:ring-red-500'
+              className='w-5 h-5 rounded border-gray-300 text-[#ef4444] focus:ring-[#ef4444] shrink-0'
             />
-            <div>
-              <div className='text-sm font-medium'>允许查看成人内容</div>
-              <div className='text-xs text-gray-500'>
+            <div className='flex-1 min-w-0'>
+              <div className='text-sm font-medium text-gray-900 dark:text-white'>允许查看成人内容</div>
+              <div className='text-xs mt-0.5' style={{ color: 'var(--color-foreground-muted)' }}>
                 开启后此分组的用户可以查看成人影片
               </div>
             </div>
           </label>
-        </div>
+        </FluentCard>
 
         {/* Video Source Permissions */}
-        <div className='bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6'>
-          <div className='flex items-center justify-between mb-4'>
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='flex items-center justify-between gap-3'>
             <div className='flex items-center gap-2'>
-              <Shield className='w-5 h-5 text-purple-500' />
-              <h2 className='text-lg font-semibold'>视频源权限</h2>
+              <span className='w-8 h-8 rounded-lg bg-[#8b5cf6]/15 flex items-center justify-center'>
+                <Shield className='w-4 h-4 text-[#8b5cf6]' />
+              </span>
+              <h2 className='text-sm font-semibold text-gray-900 dark:text-white'>视频源权限</h2>
             </div>
-            <span className='text-sm text-gray-500'>
-              {selectedApis.length === 0
-                ? '全部源'
-                : `已选 ${selectedApis.length} 个源`}
-            </span>
+            <FluentBadge variant={selectedApis.length === 0 ? 'success' : 'info'} size='sm' rounded>
+              {selectedApis.length === 0 ? '全部源' : `已选 ${selectedApis.length} 个源`}
+            </FluentBadge>
           </div>
-          <p className='text-sm text-gray-500 mb-4'>
+          <p className='text-xs leading-relaxed' style={{ color: 'var(--color-foreground-muted)' }}>
             不勾选 = 全部源。勾选 = 仅勾选的源。
           </p>
-          <div className='max-h-[40vh] overflow-y-auto space-y-2 pr-1'>
-            {sources.map((s: any) => (
-              <label
-                key={s.key}
-                className='flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg cursor-pointer transition-colors'
-              >
-                <input
-                  type='checkbox'
-                  checked={selectedApis.includes(s.key)}
-                  onChange={() => toggleApi(s.key)}
-                  className='w-4 h-4 rounded border-gray-300 text-purple-500 focus:ring-purple-500'
-                />
-                <span className='text-sm'>{s.name}</span>
-                {s.is_adult && (
-                  <span className='text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'>
-                    成人
-                  </span>
-                )}
-              </label>
-            ))}
+          {sources.length === 0 ? (
+            <FluentEmptyState
+              icon={<Shield className='h-6 w-6 text-[#9ca3af]' />}
+              title='暂无视频源'
+              description='请先配置视频源后再分配权限'
+            />
+          ) : (
+            <div className='max-h-[40vh] overflow-y-auto space-y-1.5 pr-1 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02] p-2'>
+              {sources.map((s: any) => (
+                <label
+                  key={s.key}
+                  className='flex items-center gap-3 p-3 bg-white dark:bg-white/[0.03] hover:bg-gray-50 dark:hover:bg-white/[0.05] rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5'
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedApis.includes(s.key)}
+                    onChange={() => toggleApi(s.key)}
+                    className='w-4 h-4 rounded border-gray-300 text-[#8b5cf6] focus:ring-[#8b5cf6] shrink-0'
+                  />
+                  <span className='text-sm text-gray-900 dark:text-white flex-1 min-w-0 truncate'>{s.name}</span>
+                  {s.is_adult && (
+                    <FluentBadge variant='error' size='sm' rounded>
+                      成人
+                    </FluentBadge>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+        </FluentCard>
+
+        {/* Bottom sticky save bar - mobile friendly */}
+        <FluentCard padding='12px' className='flex items-center justify-between gap-3 sticky bottom-4 shadow-lg backdrop-blur bg-white/80 dark:bg-[#1a1a1a]/80'>
+          <div className='text-xs' style={{ color: 'var(--color-foreground-muted)' }}>
+            {hasChanges ? '有未保存的更改' : '已同步'}
           </div>
-        </div>
+          <div className='flex gap-2'>
+            <FluentButton variant='ghost' size='sm' onClick={() => router.push('/admin?section=user-config')}>
+              取消
+            </FluentButton>
+            <FluentButton
+              variant='primary'
+              size='sm'
+              icon={<Save className='w-3.5 h-3.5' />}
+              loading={saveMutation.isPending}
+              disabled={!hasChanges || saveMutation.isPending}
+              onClick={() => saveMutation.mutate()}
+            >
+              保存
+            </FluentButton>
+          </div>
+        </FluentCard>
       </div>
     </PageLayout>
   );
