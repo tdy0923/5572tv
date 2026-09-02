@@ -27,6 +27,13 @@ import { useLiveSync } from '@/hooks/useLiveSync';
 import { useTabsDragScroll } from '@/hooks/useTabsDragScroll';
 
 import EpgScrollableRow from '@/components/EpgScrollableRow';
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+} from '@/components/FluentUI';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 
 import ChannelSidebar from './components/ChannelSidebar';
@@ -1831,79 +1838,41 @@ function LivePageClient() {
   if (loading) {
     return (
       <PageLayout activePath='/live'>
-        <div className='flex items-center justify-center min-h-screen bg-transparent'>
-          <div className='text-center max-w-md mx-auto px-6'>
-            {/* 动画直播图标 */}
-            <div className='relative mb-8'>
-              <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                <Tv className='w-12 h-12 text-white' />
-                {/* 旋转光环 */}
-                <div className='absolute -inset-2 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl opacity-20 animate-spin'></div>
-              </div>
-
-              {/* 浮动粒子效果 */}
-              <div className='absolute top-0 left-0 w-full h-full pointer-events-none'>
-                <div className='absolute top-2 left-2 w-2 h-2 bg-green-400 rounded-full animate-bounce'></div>
-                <div
-                  className='absolute top-4 right-4 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-bounce'
-                  style={{ animationDelay: '0.5s' }}
-                ></div>
-                <div
-                  className='absolute bottom-3 left-6 w-1 h-1 bg-lime-400 rounded-full animate-bounce'
-                  style={{ animationDelay: '1s' }}
-                ></div>
-              </div>
+        <div className='flex min-h-[50vh] flex-col items-center justify-center gap-8 p-6'>
+          <FluentCard variant='default' className='flex w-full max-w-md flex-col items-center gap-5 !p-8'>
+            <FluentSpinner size='large' label={loadingMessage} />
+            <div className='flex items-center gap-2'>
+              <span
+                className={`h-2 w-2 rounded-full transition-all ${loadingStage === 'loading' ? 'bg-green-500 scale-125' : 'bg-green-500/40'}`}
+              />
+              <span
+                className={`h-2 w-2 rounded-full transition-all ${loadingStage === 'fetching' ? 'bg-green-500 scale-125' : 'bg-green-500/40'}`}
+              />
+              <span
+                className={`h-2 w-2 rounded-full transition-all ${loadingStage === 'ready' ? 'bg-green-500 scale-125' : 'bg-gray-300 dark:bg-white/20'}`}
+              />
             </div>
-
-            {/* 进度指示器 */}
-            <div className='mb-6 w-80 mx-auto'>
-              <div className='flex justify-center space-x-2 mb-4'>
-                <div
-                  className={`w-3 h-3 rounded-full transition-all duration-500 ${
+            <div className='h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-white/10'>
+              <div
+                className='h-full rounded-full bg-green-500 transition-all duration-700'
+                style={{
+                  width:
                     loadingStage === 'loading'
-                      ? 'bg-green-500 scale-125'
-                      : 'bg-green-500'
-                  }`}
-                ></div>
-                <div
-                  className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                    loadingStage === 'fetching'
-                      ? 'bg-green-500 scale-125'
-                      : 'bg-green-500'
-                  }`}
-                ></div>
-                <div
-                  className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                    loadingStage === 'ready'
-                      ? 'bg-green-500 scale-125'
-                      : 'bg-gray-300'
-                  }`}
-                ></div>
-              </div>
-
-              {/* 进度条 */}
-              <div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden'>
-                <div
-                  className='h-full bg-linear-to-r from-green-500 to-emerald-600 rounded-full transition-all duration-1000 ease-out'
-                  style={{
-                    width:
-                      loadingStage === 'loading'
-                        ? '33%'
-                        : loadingStage === 'fetching'
-                          ? '66%'
-                          : '100%',
-                  }}
-                ></div>
-              </div>
+                      ? '33%'
+                      : loadingStage === 'fetching'
+                        ? '66%'
+                        : '100%',
+                }}
+              />
             </div>
-
-            {/* 加载消息 */}
-            <div className='space-y-2'>
-              <p className='text-xl font-semibold text-gray-800 dark:text-gray-200 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
-                {loadingMessage}
-              </p>
-            </div>
-          </div>
+            <p className='text-xs text-gray-500 dark:text-gray-400'>
+              {loadingStage === 'loading'
+                ? '初始化直播源'
+                : loadingStage === 'fetching'
+                  ? '拉取频道列表'
+                  : '准备就绪'}
+            </p>
+          </FluentCard>
         </div>
       </PageLayout>
     );
@@ -1912,42 +1881,19 @@ function LivePageClient() {
   if (error) {
     return (
       <PageLayout activePath='/live'>
-        <div className='flex items-center justify-center min-h-screen bg-transparent'>
-          <div className='text-center max-w-md mx-auto px-6'>
-            {/* 错误图标 */}
-            <div className='relative mb-8'>
-              <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                <AlertCircle className='text-white w-12 h-12' />
-                {/* 脉冲效果 */}
-                <div className='absolute -inset-2 bg-linear-to-r from-red-500 to-orange-500 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-              </div>
-            </div>
-
-            {/* 错误信息 */}
-            <div className='space-y-4 mb-8'>
-              <h2 className='text-2xl font-bold text-gray-800 dark:text-gray-200'>
-                哎呀，出现了一些问题
-              </h2>
-              <div className='bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4'>
-                <p className='text-red-600 dark:text-red-400 font-medium'>
-                  {error}
-                </p>
-              </div>
-              <p className='text-sm text-gray-500 dark:text-gray-400'>
-                请检查网络连接或尝试刷新页面
-              </p>
-            </div>
-
-            {/* 操作按钮 */}
-            <div className='space-y-3'>
-              <button
-                onClick={() => window.location.reload()}
-                className='w-full px-6 py-3 bg-linear-to-r from-blue-500 to-cyan-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-cyan-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl'
-              >
-                🔄 重新尝试
-              </button>
-            </div>
-          </div>
+        <div className='flex min-h-[50vh] items-center justify-center p-6'>
+          <FluentCard variant='default' className='w-full max-w-md !p-0'>
+            <FluentEmptyState
+              icon={<AlertCircle className='h-6 w-6 text-red-500' />}
+              title='加载失败'
+              description={error || '请检查网络连接或尝试刷新页面'}
+              action={
+                <FluentButton variant='primary' onClick={() => window.location.reload()}>
+                  重新尝试
+                </FluentButton>
+              }
+            />
+          </FluentCard>
         </div>
       </PageLayout>
     );
@@ -2006,90 +1952,79 @@ function LivePageClient() {
                   </div>
                 )}
               </div>
-              {/* 播放模式切换按钮 - 显示开关状态和实际播放模式 */}
+              {/* 播放模式切换 — FluentBadge */}
               {currentChannel && (
-                <button
+                <FluentBadge
+                  variant={directPlaybackEnabled ? 'success' : 'default'}
+                  size='sm'
+                  rounded
+                  className='cursor-pointer shrink-0 whitespace-nowrap'
                   onClick={() => {
                     const newValue = !directPlaybackEnabled;
                     setDirectPlaybackEnabled(newValue);
-                    // 保存到 localStorage
                     if (typeof window !== 'undefined') {
                       localStorage.setItem(
                         'live-direct-playback-enabled',
                         JSON.stringify(newValue),
                       );
                     }
-                    // useEffect 会自动检测 directPlaybackEnabled 的变化并重新加载播放器
                   }}
-                  className='inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full shrink-0 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40 border border-blue-200 dark:border-blue-700 whitespace-nowrap cursor-pointer hover:opacity-80 active:scale-95 transition-all duration-150'
-                  title={
-                    directPlaybackEnabled
-                      ? playbackMode === 'direct'
-                        ? '直连模式已开启，当前使用直连播放。点击关闭。'
-                        : '直连模式已开启，但当前视频源不支持CORS，使用代理播放。点击关闭。'
-                      : '直连模式已关闭，使用代理播放。点击开启。'
-                  }
                 >
-                  {directPlaybackEnabled ? (
-                    <>
-                      <span className='text-green-600 dark:text-green-400'>
-                        ⚡
-                      </span>
-                      <span className='text-green-700 dark:text-green-300'>
-                        直连{playbackMode === 'proxy' ? '(降级)' : ''}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className='w-4 h-4 text-gray-600 dark:text-gray-400' />
-                      <span className='text-gray-700 dark:text-gray-300'>
-                        代理
-                      </span>
-                    </>
-                  )}
-                </button>
+                  <span
+                    title={
+                      directPlaybackEnabled
+                        ? playbackMode === 'direct'
+                          ? '直连模式已开启，当前使用直连播放。点击关闭。'
+                          : '直连模式已开启，但当前视频源不支持CORS，使用代理播放。点击关闭。'
+                        : '直连模式已关闭，使用代理播放。点击开启。'
+                    }
+                    className='inline-flex items-center gap-1'
+                  >
+                    {directPlaybackEnabled ? (
+                      <>
+                        <span>⚡</span>
+                        <span>直连{playbackMode === 'proxy' ? '(降级)' : ''}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className='h-3 w-3' />
+                        <span>代理</span>
+                      </>
+                    )}
+                  </span>
+                </FluentBadge>
               )}
             </div>
           </h1>
         </div>
 
         {/* 第二行：播放器和频道列表 */}
-        <div className='space-y-2'>
-          {/* 折叠控制 - 仅在 lg 及以上屏幕显示 */}
+        <div className='space-y-3'>
+          {/* 折叠控制 — FluentButton */}
           <div className='hidden lg:flex justify-end'>
-            <button
+            <FluentButton
+              variant='ghost'
+              size='sm'
               onClick={() => setIsChannelListCollapsed(!isChannelListCollapsed)}
-              className='group relative flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md transition-all duration-200'
-              title={isChannelListCollapsed ? '显示频道列表' : '隐藏频道列表'}
+              aria-label={isChannelListCollapsed ? '显示频道列表' : '隐藏频道列表'}
+              className='!rounded-full'
             >
-              <svg
-                className={`w-3.5 h-3.5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
-                  isChannelListCollapsed ? 'rotate-180' : 'rotate-0'
-                }`}
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth='2'
-                  d='M9 5l7 7-7 7'
-                />
-              </svg>
-              <span className='text-xs font-medium text-gray-600 dark:text-gray-300'>
+              <span className='inline-flex items-center gap-1.5'>
+                <svg
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${isChannelListCollapsed ? 'rotate-180' : 'rotate-0'}`}
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M9 5l7 7-7 7' />
+                </svg>
                 {isChannelListCollapsed ? '显示' : '隐藏'}
+                <span
+                  className={`h-2 w-2 rounded-full ${isChannelListCollapsed ? 'bg-orange-400' : 'bg-green-500'}`}
+                  aria-hidden
+                />
               </span>
-
-              {/* 精致的状态指示点 */}
-              <div
-                className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-all duration-200 ${
-                  isChannelListCollapsed
-                    ? 'bg-orange-400 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'
-                    : 'bg-green-400'
-                }`}
-              ></div>
-            </button>
+            </FluentButton>
           </div>
 
           <div
@@ -2109,31 +2044,22 @@ function LivePageClient() {
                   className='bg-black w-full h-full rounded-xl overflow-hidden shadow-lg border border-white/0 dark:border-white/30'
                 ></div>
 
-                {/* 不支持的直播类型提示 */}
+                {/* 不支持的直播类型提示 — FluentCard + FluentEmptyState */}
                 {unsupportedType && (
-                  <div className='absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-white/0 dark:border-white/30 flex items-center justify-center z-60 transition-all duration-300'>
-                    <div className='text-center max-w-md mx-auto px-6'>
-                      <div className='relative mb-8'>
-                        <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                          <div className='text-white text-4xl'>
-                            {unsupportedType === 'network-error' ? (
-                              '🌐'
-                            ) : unsupportedType === 'channel-unavailable' ? (
-                              <Lock className='w-12 h-12 text-white' />
-                            ) : unsupportedType === 'decode-error' ? (
-                              '🔧'
-                            ) : unsupportedType === 'format-not-supported' ? (
-                              '📼'
-                            ) : (
-                              <AlertTriangle className='w-12 h-12 text-white' />
-                            )}
-                          </div>
-                          <div className='absolute -inset-2 bg-linear-to-r from-orange-500 to-red-600 rounded-2xl opacity-20 animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                        </div>
-                      </div>
-                      <div className='space-y-4'>
-                        <h3 className='text-xl font-semibold text-white'>
-                          {unsupportedType === 'channel-unavailable'
+                  <div className='absolute inset-0 bg-black/85 backdrop-blur-sm rounded-xl flex items-center justify-center z-60 p-4'>
+                    <FluentCard variant='default' className='w-full max-w-md !p-0 bg-white dark:bg-gray-900'>
+                      <FluentEmptyState
+                        icon={
+                          unsupportedType === 'channel-unavailable' ? (
+                            <Lock className='h-6 w-6 text-orange-500' />
+                          ) : unsupportedType === 'network-error' ? (
+                            <span className='text-lg'>🌐</span>
+                          ) : (
+                            <AlertTriangle className='h-6 w-6 text-orange-500' />
+                          )
+                        }
+                        title={
+                          unsupportedType === 'channel-unavailable'
                             ? '该频道暂时不可用'
                             : unsupportedType === 'network-error'
                               ? '网络连接失败'
@@ -2147,116 +2073,89 @@ function LivePageClient() {
                                       ? '编解码器不兼容'
                                       : unsupportedType === 'fatal-error'
                                         ? '播放器错误'
-                                        : '暂不支持的直播流类型'}
-                        </h3>
-                        <div className='bg-orange-500/20 border border-orange-500/30 rounded-lg p-4'>
-                          <p className='text-orange-300 font-medium'>
-                            {unsupportedType === 'channel-unavailable'
-                              ? '频道可能需要特殊访问权限或链接已过期'
-                              : unsupportedType === 'network-error'
-                                ? '无法连接到直播源服务器'
-                                : unsupportedType === 'media-error'
-                                  ? '视频流无法正常播放'
-                                  : unsupportedType === 'decode-error'
-                                    ? '浏览器无法解码此视频格式'
-                                    : unsupportedType === 'format-not-supported'
-                                      ? '当前浏览器不支持此视频格式'
-                                      : unsupportedType === 'codec-incompatible'
-                                        ? '视频编解码器与播放器不兼容'
-                                        : unsupportedType === 'fatal-error'
-                                          ? '播放器遇到无法恢复的错误'
-                                          : `当前频道直播流类型：${unsupportedType.toUpperCase()}`}
-                          </p>
-                          <p className='text-sm text-orange-200 mt-2'>
-                            {unsupportedType === 'channel-unavailable'
-                              ? '请联系IPTV提供商或尝试其他频道'
-                              : unsupportedType === 'network-error'
-                                ? '请检查网络连接或尝试其他频道'
-                                : unsupportedType === 'decode-error' ||
-                                    unsupportedType === 'format-not-supported'
-                                  ? '请尝试使用其他浏览器或更换频道'
-                                  : '请尝试其他频道或刷新页面'}
-                          </p>
+                                        : '暂不支持的直播流类型'
+                        }
+                        description={
+                          unsupportedType === 'channel-unavailable'
+                            ? '频道可能需要特殊访问权限或链接已过期'
+                            : unsupportedType === 'network-error'
+                              ? '无法连接到直播源服务器'
+                              : unsupportedType === 'media-error'
+                                ? '视频流无法正常播放'
+                                : unsupportedType === 'decode-error'
+                                  ? '浏览器无法解码此视频格式'
+                                  : unsupportedType === 'format-not-supported'
+                                    ? '当前浏览器不支持此视频格式'
+                                    : unsupportedType === 'codec-incompatible'
+                                      ? '视频编解码器与播放器不兼容'
+                                      : unsupportedType === 'fatal-error'
+                                        ? '播放器遇到无法恢复的错误'
+                                        : `当前频道直播流类型：${unsupportedType.toUpperCase()}`
+                        }
+                        action={
+                          <FluentButton
+                            variant='primary'
+                            onClick={() => {
+                              setUnsupportedType(null);
+                              if (currentChannel) {
+                                const newUrl = currentChannel.url;
+                                setVideoUrl('');
+                                setTimeout(() => setVideoUrl(newUrl), 100);
+                              }
+                            }}
+                          >
+                            重试
+                          </FluentButton>
+                        }
+                      />
+                    </FluentCard>
+                  </div>
+                )}
+
+                {/* DVR 回放支持提示 — FluentCard */}
+                {dvrDetected && (
+                  <FluentCard variant='glass' className='absolute top-4 left-4 right-4 !p-3 z-60 bg-white/95 dark:bg-gray-800/95'>
+                    <div className='flex items-center justify-between gap-3'>
+                      <div className='flex items-center gap-3 min-w-0 flex-1'>
+                        <div className='h-8 w-8 shrink-0 rounded-full bg-blue-500 flex items-center justify-center'>
+                          <Play className='h-4 w-4 text-white' />
                         </div>
-                        <button
+                        <div className='min-w-0 flex-1'>
+                          <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>此频道支持回放功能</p>
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>可拖动范围: {Math.floor(dvrSeekableRange / 60)} 分钟</p>
+                        </div>
+                      </div>
+                      <div className='flex items-center gap-2 shrink-0'>
+                        <FluentButton
+                          variant='primary'
+                          size='sm'
                           onClick={() => {
-                            setUnsupportedType(null);
-                            // 重试当前频道
+                            setEnableDvrMode(true);
+                            setDvrDetected(false);
                             if (currentChannel) {
-                              const newUrl = currentChannel.url;
+                              const currentUrl = currentChannel.url;
                               setVideoUrl('');
-                              setTimeout(() => setVideoUrl(newUrl), 100);
+                              setTimeout(() => setVideoUrl(currentUrl), 100);
                             }
                           }}
-                          className='mt-4 px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors duration-200'
                         >
-                          重试
-                        </button>
+                          启用进度条
+                        </FluentButton>
+                        <FluentButton variant='ghost' size='sm' onClick={() => setDvrDetected(false)} aria-label='关闭提示'>
+                          <X className='h-4 w-4' />
+                        </FluentButton>
                       </div>
                     </div>
-                  </div>
+                  </FluentCard>
                 )}
 
-                {/* DVR 回放支持提示 */}
-                {dvrDetected && (
-                  <div className='absolute top-4 left-4 right-4 bg-linear-to-r from-blue-500/90 to-cyan-500/90 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg z-60 animate-in fade-in slide-in-from-top-2 duration-300'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-3 flex-1'>
-                        <div className='shrink-0'>
-                          <div className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center'>
-                            <Play className='w-5 h-5 text-white' />
-                          </div>
-                        </div>
-                        <div className='flex-1 min-w-0'>
-                          <p className='text-sm font-semibold text-white'>
-                            此频道支持回放功能
-                          </p>
-                          <p className='text-xs text-white/90 mt-0.5'>
-                            可拖动范围: {Math.floor(dvrSeekableRange / 60)} 分钟
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          // 启用DVR模式并重新加载播放器
-                          setEnableDvrMode(true);
-                          setDvrDetected(false); // 隐藏提示
-                          if (currentChannel) {
-                            const currentUrl = currentChannel.url;
-                            setVideoUrl('');
-                            setTimeout(() => setVideoUrl(currentUrl), 100);
-                          }
-                        }}
-                        className='ml-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-medium rounded transition-colors whitespace-nowrap'
-                      >
-                        启用进度条
-                      </button>
-                      <button
-                        onClick={() => setDvrDetected(false)}
-                        className='ml-2 p-1 hover:bg-white/20 rounded transition-colors'
-                      >
-                        <X className='w-4 h-4 text-white' />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 视频加载蒙层 */}
+                {/* 视频加载蒙层 — FluentSpinner */}
                 {isVideoLoading && (
-                  <div className='absolute inset-0 bg-black/85 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-white/0 dark:border-white/30 flex items-center justify-center z-60 transition-all duration-300'>
-                    <div className='text-center max-w-md mx-auto px-6'>
-                      <div className='relative mb-8'>
-                        <div className='relative mx-auto w-24 h-24 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center transform hover:scale-105 transition-transform duration-300'>
-                          <Tv className='w-12 h-12 text-white' />
-                          <div className='absolute -inset-2 bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl opacity-20 animate-spin'></div>
-                        </div>
-                      </div>
-                      <div className='space-y-2'>
-                        <p className='text-xl font-semibold text-white animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'>
-                          🔄 IPTV 加载中...
-                        </p>
-                      </div>
-                    </div>
+                  <div className='absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-60'>
+                    <FluentCard variant='glass' className='!px-8 !py-6 flex flex-col items-center gap-3 bg-white/90 dark:bg-gray-800/90'>
+                      <FluentSpinner size='large' />
+                      <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>IPTV 加载中…</span>
+                    </FluentCard>
                   </div>
                 )}
               </div>
@@ -2304,14 +2203,14 @@ function LivePageClient() {
           </div>
         </div>
 
-        {/* 当前频道信息 */}
+        {/* 当前频道信息 — FluentCard */}
         {currentChannel && (
-          <div className='pt-4 pb-24 md:pb-0'>
-            <div className='flex flex-col lg:flex-row gap-4'>
-              {/* 频道图标+名称 - 在小屏幕上占100%，大屏幕占20% */}
+          <FluentCard variant='default' className='!p-4 mt-4'>
+            <div className='flex flex-col gap-4'>
+              {/* 频道图标+名称 */}
               <div className='w-full shrink-0'>
                 <div className='flex items-center gap-4'>
-                  <div className='w-20 h-20 bg-gray-300 dark:bg-gray-700 rounded-lg flex items-center justify-center shrink-0 overflow-hidden'>
+                  <div className='w-20 h-20 bg-gray-100 dark:bg-white/5 rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-gray-200 dark:border-white/5'>
                     {epgData?.logo || currentChannel.logo ? (
                       <img
                         src={
@@ -2403,15 +2302,15 @@ function LivePageClient() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* EPG节目单 */}
-            <EpgScrollableRow
-              programs={epgData?.programs || []}
-              currentTime={new Date()}
-              isLoading={isEpgLoading}
-            />
-          </div>
+              {/* EPG节目单 */}
+              <EpgScrollableRow
+                programs={epgData?.programs || []}
+                currentTime={new Date()}
+                isLoading={isEpgLoading}
+              />
+            </div>
+          </FluentCard>
         )}
       </div>
 
@@ -2478,16 +2377,26 @@ function LivePageGuard() {
   }, []);
 
   if (enabled === null) {
-    return <div>Loading...</div>;
+    return (
+      <PageLayout>
+        <div className='flex min-h-[40vh] items-center justify-center p-4'>
+          <FluentSpinner size='large' label='加载中...' />
+        </div>
+      </PageLayout>
+    );
   }
 
   if (!enabled) {
     return (
       <PageLayout>
-        <div className='flex flex-col items-center justify-center min-h-[60vh] text-gray-500 dark:text-gray-400'>
-          <Radio className='h-16 w-16 mb-4 opacity-30' />
-          <h2 className='text-xl font-semibold mb-2'>直播功能未开启</h2>
-          <p className='text-sm opacity-70'>请联系管理员开启直播功能</p>
+        <div className='flex min-h-[50vh] items-center justify-center p-6'>
+          <FluentCard variant='default' className='w-full max-w-md !p-0'>
+            <FluentEmptyState
+              icon={<Radio className='h-6 w-6 text-gray-400' />}
+              title='直播功能未开启'
+              description='请联系管理员开启直播功能'
+            />
+          </FluentCard>
         </div>
       </PageLayout>
     );

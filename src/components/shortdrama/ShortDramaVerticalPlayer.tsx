@@ -22,6 +22,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 
+import { FluentButton } from '@/components/FluentButton';
+import { FluentEmptyState } from '@/components/FluentEmptyState';
+import { FluentSpinner } from '@/components/FluentSpinner';
+
 import { getHlsModule } from '@/app/play/utils';
 
 interface ShortDramaVerticalPlayerProps {
@@ -710,68 +714,79 @@ export default function ShortDramaVerticalPlayer({
             </div>
           )}
 
-          {/* 加载指示器 */}
+          {/* 加载指示器 — FluentSpinner */}
           {videoLoading && currentUrl && !videoError && (
             <div className='absolute inset-0 flex items-center justify-center bg-black/30 pointer-events-none'>
-              <div className='w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin' />
+              <FluentSpinner size='large' />
             </div>
           )}
 
-          {/* 播完全部集数 */}
+          {/* 播完全部集数 — FluentButton */}
           {playFinished && !videoError && (
-            <div className='absolute inset-0 flex items-center justify-center bg-black/70 z-30'>
-              <div className='text-center'>
-                <Film className='w-10 h-10 mx-auto mb-3 text-white/80' />
-                <p className='text-white text-sm mb-5'>
-                  已播完本剧全部 {episodes.length} 集
-                </p>
-                <div className='flex items-center gap-3 justify-center'>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPlayFinished(false);
-                      if (videoRef.current) {
-                        videoRef.current.currentTime = 0;
-                        videoRef.current.play().catch(() => {});
-                      }
-                    }}
-                    className='flex items-center gap-1.5 px-5 py-2.5 bg-white text-black rounded-full text-sm font-medium'
-                  >
-                    <RotateCcw className='w-4 h-4' />
-                    重新播放
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push('/shortdrama');
-                    }}
-                    className='px-5 py-2.5 bg-white/20 text-white rounded-full text-sm backdrop-blur-sm'
-                  >
-                    返回选剧
-                  </button>
-                </div>
+            <div className='absolute inset-0 flex items-center justify-center bg-black/70 z-30 p-4'>
+              <div className='w-full max-w-xs rounded-xl bg-white dark:bg-gray-900 overflow-hidden'>
+                <FluentEmptyState
+                  icon={<Film className='h-6 w-6 text-gray-400' />}
+                  title='已播完'
+                  description={`已播完本剧全部 ${episodes.length} 集`}
+                  action={
+                    <div className='flex items-center gap-2'>
+                      <FluentButton
+                        variant='primary'
+                        size='sm'
+                        icon={<RotateCcw className='h-4 w-4' />}
+                        onClick={(e: any) => {
+                          e.stopPropagation();
+                          setPlayFinished(false);
+                          if (videoRef.current) {
+                            videoRef.current.currentTime = 0;
+                            videoRef.current.play().catch(() => {});
+                          }
+                        }}
+                      >
+                        重新播放
+                      </FluentButton>
+                      <FluentButton
+                        variant='ghost'
+                        size='sm'
+                        onClick={(e: any) => {
+                          e.stopPropagation();
+                          router.push('/shortdrama');
+                        }}
+                      >
+                        返回选剧
+                      </FluentButton>
+                    </div>
+                  }
+                />
               </div>
             </div>
           )}
 
-          {/* 错误重试 */}
+          {/* 错误重试 — FluentEmptyState + FluentButton */}
           {videoError && (
-            <div className='absolute inset-0 flex items-center justify-center bg-black/60 z-30'>
-              <div className='text-center'>
-                <Frown className='text-4xl mb-3 text-gray-500' />
-                <p className='text-white text-sm mb-4'>视频加载失败</p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setVideoError(false);
-                    setVideoLoading(true);
-                    videoRef.current?.load();
-                    videoRef.current?.play().catch(() => {});
-                  }}
-                  className='px-6 py-2 bg-white text-black rounded-full text-sm font-medium'
-                >
-                  点击重试
-                </button>
+            <div className='absolute inset-0 flex items-center justify-center bg-black/60 z-30 p-4'>
+              <div className='w-full max-w-xs rounded-xl bg-white dark:bg-gray-900 overflow-hidden'>
+                <FluentEmptyState
+                  icon={<Frown className='h-6 w-6 text-gray-400' />}
+                  title='视频加载失败'
+                  description='请检查网络或尝试其他播放源'
+                  action={
+                    <FluentButton
+                      variant='primary'
+                      size='sm'
+                      onClick={(e: any) => {
+                        e.stopPropagation();
+                        setVideoError(false);
+                        setVideoLoading(true);
+                        videoRef.current?.load();
+                        videoRef.current?.play().catch(() => {});
+                      }}
+                    >
+                      点击重试
+                    </FluentButton>
+                  }
+                />
               </div>
             </div>
           )}

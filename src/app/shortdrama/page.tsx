@@ -11,11 +11,19 @@ import {
 import { cleanExpiredCache } from '@/lib/shortdrama-cache';
 import { ShortDramaCategory, ShortDramaItem } from '@/lib/types';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+} from '@/components/FluentUI';
+import { FluentInput } from '@/components/FluentInput';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
 import ShortDramaCard from '@/components/ShortDramaCard';
 import { SiteAdSlot } from '@/components/SiteAdSlot';
-import { PanelField, PillButton, PillGroup } from '@/components/ui-surface';
+import { PillButton, PillGroup } from '@/components/ui-surface';
 import VirtualGrid from '@/components/VirtualGrid';
 
 export default function ShortDramaPage() {
@@ -237,84 +245,77 @@ export default function ShortDramaPage() {
               </p>
             </div>
 
-            {/* 搜索栏 */}
-            <div className='mb-6'>
-              <div className='relative group'>
-                <Search className='absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-400 transition-all duration-300 group-focus-within:text-purple-500 dark:group-focus-within:text-purple-400 group-focus-within:scale-110' />
-                <PanelField
-                  type='text'
-                  placeholder='搜索短剧名称...'
-                  className='pl-11 pr-4 focus:ring-purple-400 dark:focus:ring-purple-500'
-                  value={searchQuery}
-                  onFocus={() => setIsSearchInputFocused(true)}
-                  onBlur={() =>
-                    setTimeout(() => setIsSearchInputFocused(false), 200)
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setSearchQuery(value);
-                    if (searchTimerRef.current)
-                      clearTimeout(searchTimerRef.current);
-                    searchTimerRef.current = setTimeout(() => {
-                      if (value.trim()) {
-                        handleSearch(value.trim());
-                      } else {
-                        setIsSearchMode(false);
-                      }
-                    }, 300);
-                  }}
-                />
-              </div>
+            {/* 搜索栏 — FluentInput */}
+            <FluentCard variant='default' className='mb-6 !p-4'>
+              <FluentInput
+                placeholder='搜索短剧名称...'
+                value={searchQuery}
+                prefix={<Search className='h-4 w-4 text-gray-400' />}
+                onFocus={() => setIsSearchInputFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchInputFocused(false), 200)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchQuery(value);
+                  if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                  searchTimerRef.current = setTimeout(() => {
+                    if (value.trim()) {
+                      handleSearch(value.trim());
+                    } else {
+                      setIsSearchMode(false);
+                    }
+                  }, 300);
+                }}
+              />
               {/* 搜索历史 */}
               {isSearchInputFocused &&
                 !searchQuery &&
                 searchHistory.length > 0 && (
                   <div className='mt-3'>
                     <div className='flex items-center justify-between mb-2'>
-                      <span className='text-xs text-gray-500 dark:text-gray-400'>
-                        搜索历史
-                      </span>
-                      <button
+                      <span className='text-xs font-medium text-gray-500 dark:text-gray-400'>搜索历史</span>
+                      <FluentButton
+                        variant='ghost'
+                        size='sm'
                         onClick={() => {
                           setSearchHistory([]);
                           localStorage.removeItem('shortdrama-search-history');
                         }}
-                        className='text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                       >
                         清除
-                      </button>
+                      </FluentButton>
                     </div>
                     <div className='flex flex-wrap gap-2'>
-                      {searchHistory.map((item, _index) => (
-                        <button
+                      {searchHistory.map((item) => (
+                        <FluentBadge
                           key={item}
+                          variant='default'
+                          size='sm'
+                          rounded
+                          className='cursor-pointer'
                           onClick={() => {
                             setSearchQuery(item);
                             handleSearch(item);
                           }}
-                          className='px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors'
                         >
                           {item}
-                        </button>
+                        </FluentBadge>
                       ))}
                     </div>
                   </div>
                 )}
-            </div>
+            </FluentCard>
 
-            {/* 分类筛选 */}
+            {/* 分类筛选 — FluentCard + FluentBadge */}
             {!isSearchMode && categories.length > 0 && (
-              <div className='mb-6'>
-                <div className='mb-4 flex items-center justify-between gap-4'>
+              <FluentCard variant='default' className='mb-6 !p-4'>
+                <div className='mb-3 flex items-center justify-between gap-4'>
                   <div className='flex items-center gap-2'>
                     <Filter className='h-4 w-4 text-gray-500' />
-                    <span className='text-base font-semibold text-gray-900 dark:text-gray-100'>
-                      分类
-                    </span>
+                    <span className='text-sm font-semibold text-gray-900 dark:text-gray-100'>分类</span>
                   </div>
-                  <span className='text-xs px-2.5 py-1 rounded-full border border-black/6 bg-white/75 text-gray-600 dark:border-white/8 dark:bg-gray-800 dark:text-gray-300 font-medium'>
+                  <FluentBadge variant='info' size='sm' rounded>
                     {categories.length}
-                  </span>
+                  </FluentBadge>
                 </div>
                 <PillGroup className='flex flex-wrap gap-2.5 rounded-[24px] p-2'>
                   {categories.map((category, index) => (
@@ -333,7 +334,7 @@ export default function ShortDramaPage() {
                     </PillButton>
                   ))}
                 </PillGroup>
-              </div>
+              </FluentCard>
             )}
 
             {/* 排序选项 */}
@@ -423,53 +424,26 @@ export default function ShortDramaPage() {
               </div>
             )}
 
-            {/* 加载更多按钮 - 虚拟化模式下隐藏（由滚动自动加载） */}
+            {/* 加载更多按钮 — FluentButton */}
             {!useVirtualization &&
               hasMore &&
               !loading &&
               sortedDramas.length > 0 && (
                 <div className='flex justify-center mt-8'>
-                  <button
-                    onClick={() => setPage((prevPage) => prevPage + 1)}
-                    className='px-8 py-3 bg-[#f0b938] hover:bg-[#d89c18] text-white rounded-full font-medium transition-colors shadow-lg'
-                  >
+                  <FluentButton variant='primary' onClick={() => setPage((prevPage) => prevPage + 1)}>
                     加载更多
-                  </button>
+                  </FluentButton>
                 </div>
               )}
 
-            {/* 加载状态 */}
+            {/* 加载状态 — FluentSpinner */}
             {loading && (isInitialLoad || page > 1) && (
               <div className='mt-8'>
-                {/* Fluent 2 动态加载指示器 */}
                 <div className='flex justify-center mb-6'>
-                  <div
-                    className='flex items-center gap-3 px-6 py-3 rounded-full'
-                    style={{
-                      background: 'var(--color-background-subtle)',
-                      border: '1px solid var(--color-stroke-subtle)',
-                      boxShadow: 'var(--shadow-2)',
-                    }}
-                  >
-                    {/* 品牌色脉冲圆点动画 */}
-                    <div className='relative flex items-center gap-1'>
-                      <span
-                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                        style={{ animationDelay: '0ms' }}
-                      ></span>
-                      <span
-                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                        style={{ animationDelay: '160ms' }}
-                      ></span>
-                      <span
-                        className='block w-2 h-2 rounded-full bg-[#f4c24d] animate-[bounce_1.4s_infinite_ease-in-out]'
-                        style={{ animationDelay: '320ms' }}
-                      ></span>
-                    </div>
-                    <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                      加载更多短剧...
-                    </span>
-                  </div>
+                  <FluentCard variant='default' className='flex items-center gap-3 !px-6 !py-3'>
+                    <FluentSpinner size='medium' />
+                    <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>加载更多短剧…</span>
+                  </FluentCard>
                 </div>
                 <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
                   {Array.from({ length: 12 }).map((_, index) => (
@@ -486,8 +460,7 @@ export default function ShortDramaPage() {
                           background:
                             'linear-gradient(135deg, var(--color-background-muted), var(--color-background-subtle), var(--color-background-muted))',
                           backgroundSize: '200% 100%',
-                          animation:
-                            'fluent2-shimmer 1.5s ease-in-out infinite',
+                          animation: 'fluent2-shimmer 1.5s ease-in-out infinite',
                         }}
                       />
                       <div
@@ -510,123 +483,57 @@ export default function ShortDramaPage() {
               </div>
             )}
 
-            {/* 无更多数据提示 */}
+            {/* 无更多数据提示 — FluentCard + FluentBadge */}
             {!loading && !hasMore && sortedDramas.length > 0 && (
-              <div className='flex justify-center mt-12 py-8'>
-                <div className='relative px-8 py-5 rounded-2xl bg-white/70 dark:bg-gray-800 border border-black/6 dark:border-white/8 shadow-md  overflow-hidden'>
-                  <div className='absolute inset-0 bg-linear-to-r from-white/[0.03] via-transparent to-transparent'></div>
-
-                  {/* 内容 */}
-                  <div className='relative flex flex-col items-center gap-2'>
-                    {/* 完成图标 */}
-                    <div className='relative'>
-                      <div className='w-12 h-12 rounded-full bg-linear-to-br from-[#f4c24d] via-[#f0b938] to-[#d89c18] flex items-center justify-center shadow-[0_10px_24px_rgba(244,194,77,0.24)]'>
-                        <svg
-                          className='w-7 h-7 text-white'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2.5'
-                            d='M5 13l4 4L19 7'
-                          ></path>
-                        </svg>
-                      </div>
-                      {/* 光圈效果 */}
-                      <div className='absolute inset-0 rounded-full bg-purple-400/30 animate-ping'></div>
-                    </div>
-
-                    {/* 文字 */}
-                    <div className='text-center'>
-                      <p className='text-base font-semibold text-gray-800 dark:text-gray-200 mb-1'>
-                        已经到底了～
-                      </p>
-                      <p className='text-xs text-gray-600 dark:text-gray-400'>
-                        共 {sortedDramas.length} 部短剧
-                      </p>
-                    </div>
-                  </div>
-                </div>
+              <div className='flex justify-center mt-8 py-6'>
+                <FluentCard variant='default' className='flex flex-col items-center gap-2 !px-8 !py-5'>
+                  <FluentBadge variant='info' size='md' rounded>
+                    已经到底了
+                  </FluentBadge>
+                  <p className='text-xs text-gray-500 dark:text-gray-400'>共 {sortedDramas.length} 部短剧</p>
+                </FluentCard>
               </div>
             )}
 
-            {/* 无搜索结果 */}
+            {/* 无搜索结果 — FluentEmptyState */}
             {!loading && sortedDramas.length === 0 && isSearchMode && (
-              <div className='flex justify-center py-16'>
-                <div className='relative px-12 py-10 rounded-3xl bg-linear-to-br from-gray-50 via-slate-50 to-gray-100 dark:from-gray-800/40 dark:via-slate-800/40 dark:to-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-xl backdrop-blur-sm overflow-hidden max-w-md'>
-                  {/* 装饰性元素 */}
-                  <div className='absolute top-0 left-0 w-32 h-32 bg-linear-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl'></div>
-                  <div className='absolute bottom-0 right-0 w-32 h-32 bg-linear-to-br from-blue-200/20 to-teal-200/20 rounded-full blur-3xl'></div>
-
-                  {/* 内容 */}
-                  <div className='relative flex flex-col items-center gap-4'>
-                    {/* 搜索图标 */}
-                    <div className='relative'>
-                      <div className='w-24 h-24 rounded-full bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 flex items-center justify-center shadow-lg'>
-                        <svg
-                          className='w-12 h-12 text-gray-400 dark:text-gray-400'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='1.5'
-                            d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-                          ></path>
-                        </svg>
-                      </div>
-                      {/* 浮动小点装饰 */}
-                      <div className='absolute -top-1 -right-1 w-3 h-3 bg-purple-400 rounded-full animate-ping'></div>
-                      <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                    </div>
-
-                    {/* 文字内容 */}
-                    <div className='text-center space-y-2'>
-                      <h3 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
-                        没有找到相关短剧
-                      </h3>
-                      <p className='text-sm text-gray-600 dark:text-gray-400 max-w-xs'>
-                        换个关键词试试，或者浏览其他分类
-                      </p>
-                    </div>
-
-                    {/* 按钮 */}
-                    <button
-                      onClick={() => {
-                        handleSearch('');
-                      }}
-                      className='mt-2 px-6 py-2.5 bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105'
-                    >
+              <FluentCard variant='default' className='mt-8 !p-0 max-w-md mx-auto'>
+                <FluentEmptyState
+                  icon={<Search className='h-6 w-6 text-gray-400' />}
+                  title='没有找到相关短剧'
+                  description='换个关键词试试，或者浏览其他分类'
+                  action={
+                    <FluentButton variant='secondary' onClick={() => handleSearch('')}>
                       清除搜索条件
-                    </button>
-
-                    {/* 装饰线 */}
-                    <div className='w-16 h-1 bg-linear-to-r from-transparent via-gray-300 to-transparent dark:via-gray-600 rounded-full'></div>
-                  </div>
-                </div>
-              </div>
+                    </FluentButton>
+                  }
+                />
+              </FluentCard>
+            )}
+            {/* 初始空状态 — 未搜索且无数据 */}
+            {!loading && sortedDramas.length === 0 && !isSearchMode && categories.length === 0 && (
+              <FluentCard variant='default' className='mt-8 !p-0'>
+                <FluentEmptyState
+                  icon={<Search className='h-6 w-6 text-gray-400' />}
+                  title='暂无短剧'
+                  description='短剧分类加载中或暂无数据，请稍后重试'
+                />
+              </FluentCard>
             )}
           </div>
         </div>
       </MountAnimation>
 
-      {/* 返回顶部悬浮按钮 */}
-      <button
-        onClick={scrollToTop}
-        className={`fixed bottom-[calc(80px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-70 w-12 h-12 bg-purple-500/90 hover:bg-purple-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${
-          showBackToTop
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 translate-y-4 pointer-events-none'
+      {/* 返回顶部悬浮按钮 — FluentButton */}
+      <div
+        className={`fixed bottom-[calc(80px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-70 transition-all duration-300 ease-in-out ${
+          showBackToTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
-        aria-label='返回顶部'
       >
-        <ChevronUp className='w-6 h-6 transition-transform group-hover:scale-110' />
-      </button>
+        <FluentButton variant='primary' size='lg' onClick={scrollToTop} aria-label='返回顶部' className='!rounded-full !w-12 !h-12 !p-0 shadow-lg'>
+          <ChevronUp className='h-6 w-6' />
+        </FluentButton>
+      </div>
     </PageLayout>
   );
 }

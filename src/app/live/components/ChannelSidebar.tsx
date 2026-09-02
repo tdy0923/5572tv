@@ -14,6 +14,14 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+} from '@/components/FluentUI';
+import { FluentInput } from '@/components/FluentInput';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import VirtualList from '@/components/VirtualList';
 
 import type { ChannelHealthInfo, LiveChannel, LiveSource } from '../types';
@@ -295,58 +303,54 @@ export default function ChannelSidebar({
         {activeTab === 'channels' && (
           <>
             <div className='mb-4 -mx-6 px-6 shrink-0'>
-              <div className='relative'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
-                <input
-                  type='text'
-                  placeholder='搜索频道...'
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => handleSearchChange('')}
-                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                  >
-                    <X className='w-4 h-4' />
-                  </button>
-                )}
-              </div>
+              <FluentInput
+                placeholder='搜索频道...'
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                prefix={<Search className='h-4 w-4 text-gray-400' />}
+                suffix={
+                  searchQuery ? (
+                    <button
+                      type='button'
+                      onClick={() => handleSearchChange('')}
+                      className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      aria-label='清除搜索'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  ) : undefined
+                }
+              />
             </div>
 
             {!searchQuery.trim() ? (
               <>
                 <div className='mb-4 -mx-6 shrink-0'>
                   {isSwitchingSource && (
-                    <div className='flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 px-6 mb-2'>
-                      <div className='w-2 h-2 bg-amber-500 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                      切换直播源中...
+                    <div className='flex items-center gap-2 px-6 mb-2'>
+                      <FluentSpinner size='small' />
+                      <span className='text-sm text-amber-600 dark:text-amber-400'>切换直播源中…</span>
                     </div>
                   )}
 
                   <div className='flex items-center gap-3 px-6'>
-                    <button
+                    <FluentButton
+                      variant='secondary'
+                      size='sm'
+                      icon={<Menu className='h-4 w-4' />}
                       onClick={() => setIsGroupSelectorOpen(true)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all shrink-0 ${
-                        isSwitchingSource
-                          ? 'opacity-50 cursor-not-allowed border-gray-300 dark:border-gray-600'
-                          : 'border-green-500 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
-                      }`}
                       disabled={isSwitchingSource}
+                      className='shrink-0'
                     >
-                      <Menu className='w-4 h-4 text-green-600 dark:text-green-400' />
-                      <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-                        全部分类
-                      </span>
-                      <span className='text-xs text-gray-500 dark:text-gray-400'>
-                        ({Object.keys(groupedChannels).length})
-                      </span>
-                    </button>
+                      全部分类
+                      <FluentBadge variant='default' size='sm' rounded className='ml-1'>
+                        {Object.keys(groupedChannels).length}
+                      </FluentBadge>
+                    </FluentButton>
 
-                    <div className='flex-1 min-w-0 border-b border-gray-200 dark:border-gray-700'>
+                    <div className='flex-1 min-w-0 border-b border-gray-200 dark:border-white/5'>
                       <div
-                        className='flex overflow-x-auto scrollbar-hide gap-1 py-2 px-1'
+                        className='flex overflow-x-auto scrollbar-hide gap-1.5 py-2 px-1'
                         {...dragHandlers}
                         style={{
                           cursor: isDragging ? 'grabbing' : 'grab',
@@ -356,25 +360,16 @@ export default function ChannelSidebar({
                         {Object.keys(groupedChannels).map((group) => {
                           const isSelected = group === selectedGroup;
                           return (
-                            <button
+                            <FluentBadge
                               key={group}
-                              onClick={() =>
-                                !isSwitchingSource && handleGroupChange(group)
-                              }
-                              disabled={isSwitchingSource}
-                              data-group={group}
-                              className={`
-                                flex-shrink-0 px-4 py-1.5 text-sm font-medium rounded-full transition-colors
-                                ${
-                                  isSelected
-                                    ? 'bg-green-500 text-white'
-                                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                }
-                                ${isSwitchingSource ? 'opacity-50 cursor-not-allowed' : ''}
-                              `}
+                              variant={isSelected ? 'success' : 'default'}
+                              size='sm'
+                              rounded
+                              className={`shrink-0 cursor-pointer transition-colors ${isSwitchingSource ? 'opacity-50 pointer-events-none' : ''}`}
+                              onClick={() => !isSwitchingSource && handleGroupChange(group)}
                             >
-                              {group}
-                            </button>
+                              <span data-group={group}>{group}</span>
+                            </FluentBadge>
                           );
                         })}
                       </div>
@@ -410,21 +405,13 @@ export default function ChannelSidebar({
                       )}
                     />
                   ) : (
-                    <div className='flex flex-col items-center justify-center py-12 text-center'>
-                      <div className='relative mb-6'>
-                        <div className='w-20 h-20 bg-linear-to-br from-gray-100 to-slate-200 dark:from-gray-700 dark:to-slate-700 rounded-2xl flex items-center justify-center shadow-lg'>
-                          <Tv className='w-10 h-10 text-gray-400 dark:text-gray-400' />
-                        </div>
-                        <div className='absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-purple-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                      </div>
-                      <p className='text-base font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-                        暂无可用频道
-                      </p>
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
-                        请选择其他直播源或稍后再试
-                      </p>
-                    </div>
+                    <FluentCard variant='default' className='!p-0 mx-2'>
+                      <FluentEmptyState
+                        icon={<Tv className='h-6 w-6 text-gray-400' />}
+                        title='暂无可用频道'
+                        description='请选择其他直播源或稍后再试'
+                      />
+                    </FluentCard>
                   )}
                 </div>
               </>
@@ -569,18 +556,13 @@ export default function ChannelSidebar({
                     }}
                   />
                 ) : (
-                  <div className='flex flex-col items-center justify-center py-12 text-center'>
-                    <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>
-                      <Search className='w-8 h-8 text-gray-400 dark:text-gray-300' />
-                    </div>
-                    <p className='text-gray-500 dark:text-gray-400 font-medium'>
-                      未找到匹配的频道
-                    </p>
-                    <p className='text-sm text-gray-400 dark:text-gray-400 mt-1'>
-                      在当前直播源 &quot;{currentSource?.name}&quot;
-                      中未找到匹配结果
-                    </p>
-                  </div>
+                  <FluentCard variant='default' className='!p-0 mx-2'>
+                    <FluentEmptyState
+                      icon={<Search className='h-6 w-6 text-gray-400' />}
+                      title='未找到匹配的频道'
+                      description={`在当前直播源 "${currentSource?.name}" 中未找到匹配结果`}
+                    />
+                  </FluentCard>
                 )}
               </div>
             )}
@@ -590,38 +572,39 @@ export default function ChannelSidebar({
         {activeTab === 'sources' && (
           <div className='flex flex-col h-full mt-4'>
             <div className='mb-4 -mx-6 px-6 shrink-0'>
-              <div className='relative'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400' />
-                <input
-                  type='text'
-                  placeholder='搜索直播源...'
-                  value={sourceSearchQuery}
-                  onChange={(e) => handleSourceSearchChange(e.target.value)}
-                  className='w-full pl-10 pr-8 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent'
-                />
-                {sourceSearchQuery && (
-                  <button
-                    onClick={() => handleSourceSearchChange('')}
-                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                  >
-                    <X className='w-4 h-4' />
-                  </button>
-                )}
-              </div>
+              <FluentInput
+                placeholder='搜索直播源...'
+                value={sourceSearchQuery}
+                onChange={(e) => handleSourceSearchChange(e.target.value)}
+                prefix={<Search className='h-4 w-4 text-gray-400' />}
+                suffix={
+                  sourceSearchQuery ? (
+                    <button
+                      type='button'
+                      onClick={() => handleSourceSearchChange('')}
+                      className='text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                      aria-label='清除搜索'
+                    >
+                      <X className='h-4 w-4' />
+                    </button>
+                  ) : undefined
+                }
+              />
             </div>
 
             <div className='mb-4 -mx-6 px-6 shrink-0 space-y-3'>
               <div className='flex gap-2'>
-                <button
+                <FluentButton
+                  variant='primary'
+                  size='sm'
+                  fullWidth
+                  loading={isRefreshingSource}
+                  icon={<RefreshCw className='h-4 w-4' />}
                   onClick={refreshLiveSources}
                   disabled={isRefreshingSource}
-                  className='flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white text-sm rounded-lg transition-colors flex-1'
                 >
-                  <RefreshCw
-                    className={`w-4 h-4 ${isRefreshingSource ? 'animate-spin' : ''}`}
-                  />
                   {isRefreshingSource ? '刷新中...' : '刷新源'}
-                </button>
+                </FluentButton>
               </div>
 
               <div className='flex items-center gap-3'>
@@ -693,9 +676,9 @@ export default function ChannelSidebar({
 
             {sourceSearchQuery.trim() && filteredSources.length > 0 && (
               <div className='mb-2 -mx-6 px-6 shrink-0'>
-                <div className='text-xs text-gray-500 dark:text-gray-400'>
+                <FluentBadge variant='info' size='sm' rounded>
                   找到 {filteredSources.length} 个直播源
-                </div>
+                </FluentBadge>
               </div>
             )}
 
@@ -757,37 +740,21 @@ export default function ChannelSidebar({
                   );
                 })
               ) : (
-                <div className='flex flex-col items-center justify-center py-12 text-center'>
+                <FluentCard variant='default' className='!p-0 mt-2'>
                   {sourceSearchQuery.trim() ? (
-                    <>
-                      <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>
-                        <Search className='w-8 h-8 text-gray-400 dark:text-gray-300' />
-                      </div>
-                      <p className='text-gray-500 dark:text-gray-400 font-medium'>
-                        未找到匹配的直播源
-                      </p>
-                      <p className='text-sm text-gray-400 dark:text-gray-400 mt-1'>
-                        搜索 &quot;{sourceSearchQuery}&quot; 无结果
-                      </p>
-                    </>
+                    <FluentEmptyState
+                      icon={<Search className='h-6 w-6 text-gray-400' />}
+                      title='未找到匹配的直播源'
+                      description={`搜索 "${sourceSearchQuery}" 无结果`}
+                    />
                   ) : (
-                    <>
-                      <div className='relative mb-6'>
-                        <div className='w-20 h-20 bg-linear-to-br from-orange-100 to-red-200 dark:from-orange-900/40 dark:to-red-900/40 rounded-2xl flex items-center justify-center shadow-lg'>
-                          <Radio className='w-10 h-10 text-orange-500 dark:text-orange-400' />
-                        </div>
-                        <div className='absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full animate-ping'></div>
-                        <div className='absolute -bottom-1 -left-1 w-2 h-2 bg-red-400 rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-                      </div>
-                      <p className='text-base font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-                        暂无可用直播源
-                      </p>
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
-                        请检查网络连接或联系管理员添加直播源
-                      </p>
-                    </>
+                    <FluentEmptyState
+                      icon={<Radio className='h-6 w-6 text-orange-400' />}
+                      title='暂无可用直播源'
+                      description='请检查网络连接或联系管理员添加直播源'
+                    />
                   )}
-                </div>
+                </FluentCard>
               )}
             </div>
           </div>
