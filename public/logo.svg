@@ -1,34 +1,42 @@
 <svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="gold" x1="112" y1="86" x2="886" y2="220" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF4D0"/>
-      <stop offset="0.52" stop-color="#EBC66A"/>
-      <stop offset="1" stop-color="#D18B1F"/>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F9C94E"/>
+      <stop offset="55%" stop-color="#F4C24D"/>
+      <stop offset="100%" stop-color="#D19018"/>
     </linearGradient>
-    <linearGradient id="line" x1="106" y1="240" x2="900" y2="240" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#C99735" stop-opacity="0"/>
-      <stop offset="0.15" stop-color="#C99735" stop-opacity="0.8"/>
-      <stop offset="0.85" stop-color="#C99735" stop-opacity="0.8"/>
-      <stop offset="1" stop-color="#C99735" stop-opacity="0"/>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F9C94E"/>
+      <stop offset="100%" stop-color="#D19018"/>
+    </linearGradient>
+    <linearGradient id="line" x1="120" y1="250" x2="900" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F4C24D" stop-opacity="0"/>
+      <stop offset="0.15" stop-color="#F4C24D" stop-opacity="0.85"/>
+      <stop offset="0.85" stop-color="#F4C24D" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#F4C24D" stop-opacity="0"/>
     </linearGradient>
   </defs>
 
   <rect x="20" y="28" width="1160" height="264" rx="30" fill="#0D121B"/>
-  <rect x="20" y="28" width="1160" height="264" rx="30" stroke="#C99735" stroke-opacity="0.18" stroke-width="2"/>
+  <rect x="20" y="28" width="1160" height="264" rx="30" stroke="#F4C24D" stroke-opacity="0.20" stroke-width="2"/>
 
-  <g opacity="0.16">
-    <rect x="48" y="86" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="48" y="120" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="48" y="154" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="48" y="188" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="1144" y="86" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="1144" y="120" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="1144" y="154" width="8" height="18" rx="4" fill="#D7A94A"/>
-    <rect x="1144" y="188" width="8" height="18" rx="4" fill="#D7A94A"/>
+  <!-- 几何 "5" 徽标 -->
+  <g transform="translate(146 160)">
+    <rect x="-88" y="-88" width="176" height="176" rx="40" fill="url(#tile)"/>
+    <g transform="translate(0 -4)" stroke="#171717" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M-52 -42 H52"/>
+      <path d="M-52 -42 V-6"/>
+      <path d="M-52 -6 H22"/>
+      <path d="M52 -42 V-22"/>
+      <path d="M-52 -6 V40"/>
+      <path d="M-52 40 H26"/>
+      <path d="M26 40 V-2"/>
+    </g>
+    <polygon points="-30,12 -30,32 -10,22" fill="#FFF6DE"/>
   </g>
 
-  <text x="96" y="194" fill="url(#gold)" font-family="'Baskerville', 'Georgia', 'Times New Roman', serif" font-size="152" font-style="italic" font-weight="700" letter-spacing="6">5572</text>
-  <path d="M108 236H896" stroke="url(#line)" stroke-width="3" stroke-linecap="round"/>
-  <text x="920" y="188" fill="#E8DEC0" font-family="'Baskerville', 'Georgia', 'Times New Roman', serif" font-size="46" font-weight="700" letter-spacing="8">TV</text>
-  <text x="920" y="226" fill="#8D98A8" font-family="'Helvetica Neue', 'Arial', sans-serif" font-size="18" font-weight="500" letter-spacing="4">CINEMA</text>
+  <text x="280" y="196" fill="url(#gold)" font-family="'Baskerville','Georgia','Times New Roman',serif" font-size="150" font-weight="700" letter-spacing="4">5572</text>
+  <path d="M280 238H900" stroke="url(#line)" stroke-width="3" stroke-linecap="round"/>
+  <text x="916" y="190" fill="#F4C24D" font-family="'Baskerville','Georgia','Times New Roman',serif" font-size="46" font-weight="700" letter-spacing="8">TV</text>
+  <text x="916" y="228" fill="#8D98A8" font-family="'Helvetica Neue','Arial',sans-serif" font-size="18" font-weight="500" letter-spacing="4">CINEMA</text>
 </svg>
