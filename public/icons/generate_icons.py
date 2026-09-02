@@ -66,10 +66,6 @@ def main():
     for s in WEB_SIZES:
         render(SRC, os.path.join(BASE, f"icon-{s}x{s}.png"), s)
 
-    print("== public/icon-192.png & icon-512.png ==")
-    render(SRC, os.path.join(PUBLIC, "public", "icon-192.png"), 192)
-    render(SRC, os.path.join(PUBLIC, "public", "icon-512.png"), 512)
-
     # ── Android adaptive foreground (glyph-only, transparent bg) ──
     print("== Android adaptive foreground ==")
     for dpi, s in ANDROID_FG.items():
