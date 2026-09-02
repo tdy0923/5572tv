@@ -273,7 +273,7 @@ function HeroBanner({
 
   return (
     <div
-      className='relative w-full h-[32vh] sm:h-[44vh] md:h-[56vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
+      className='relative w-full h-[36vh] sm:h-[46vh] md:h-[56vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
       style={{
         borderRadius: radius.xl,
         boxShadow: shadow.deep,
@@ -440,7 +440,7 @@ function HeroBanner({
       {/* 内容叠加层 */}
       <div className='absolute bottom-0 left-0 right-0 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 pb-10 sm:pb-12 md:pb-14 lg:pb-16'>
         <div className='max-w-3xl space-y-3 sm:space-y-4'>
-          <h1 className='break-words bg-linear-to-b from-[#ffffff] via-[#f7ecd7] to-[#e6c27e] bg-clip-text text-2xl font-bold leading-tight text-transparent drop-shadow-[0_1px_0_rgba(0,0,0,0.5)] drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)] drop-shadow-[0_5px_8px_rgba(0,0,0,0.35)] sm:text-3xl md:text-4xl lg:text-5xl'>
+          <h1 className='break-words bg-linear-to-b from-[#ffffff] via-[#f7ecd7] to-[#e6c27e] bg-clip-text text-xl font-bold leading-tight text-transparent drop-shadow-[0_1px_0_rgba(0,0,0,0.5)] drop-shadow-[0_2px_2px_rgba(0,0,0,0.45)] drop-shadow-[0_5px_8px_rgba(0,0,0,0.35)] sm:text-3xl md:text-4xl lg:text-5xl'>
             {currentItem.title}
           </h1>
 
@@ -482,24 +482,21 @@ function HeroBanner({
           )}
 
           {/* 操作按钮 — Fluent primary + glass secondary */}
-          <div className='flex gap-3 sm:gap-4 pt-2'>
+          <div className='flex gap-3 sm:gap-4 pt-2 shrink-0'>
             <Link
               href={
                 currentItem.type === 'shortdrama'
                   ? `/play?title=${encodeURIComponent(currentItem.title)}&shortdrama_id=${currentItem.id}`
                   : `/play?title=${encodeURIComponent(currentItem.title)}${currentItem.year ? `&year=${currentItem.year}` : ''}${currentItem.douban_id ? `&douban_id=${currentItem.douban_id}` : ''}${currentItem.type ? `&stype=${currentItem.type}` : ''}`
               }
-              className='flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-base font-semibold text-black active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              className='flex shrink-0 items-center gap-2 rounded-full bg-white px-6 py-2.5 text-base font-semibold text-black active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
               style={{
                 borderRadius: radius.full,
                 boxShadow: shadow.brand,
                 transition: `all ${duration.fast} ${easing.standard}`,
               }}
             >
-              <Play
-                className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'
-                fill='currentColor'
-              />
+              <Play className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7' />
               <span>播放</span>
             </Link>
             <Link
@@ -512,7 +509,7 @@ function HeroBanner({
                         : currentItem.type || 'movie'
                     }`
               }
-              className='flex items-center gap-2 rounded-full border border-white/16 bg-black/30 px-6 py-2.5 text-base font-semibold text-white backdrop-blur-[8px] active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              className='flex shrink-0 items-center gap-2 rounded-full border border-white/16 bg-black/30 px-6 py-2.5 text-base font-semibold text-white backdrop-blur-[8px] active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
               style={{
                 borderRadius: radius.full,
                 boxShadow: shadow.medium,
