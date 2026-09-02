@@ -16,7 +16,14 @@ import React, {
 import { isAdSettingRenderable } from '@/lib/ad-settings';
 
 import AcgSearch from '@/components/AcgSearch';
-import { FluentEmptyState } from '@/components/FluentUI';
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentEmptyState,
+  FluentSpinner,
+} from '@/components/FluentUI';
+import { FluentInput } from '@/components/FluentInput';
 import ImageViewer from '@/components/ImageViewer';
 import MountAnimation from '@/components/MountAnimation';
 import NetDiskSearchResults from '@/components/NetDiskSearchResults';
@@ -101,12 +108,10 @@ function SearchPageClient() {
     return `/play?source=${params.source}&id=${params.id}&title=${encodeURIComponent(params.title.trim())}${yearParam}${preferParam}${queryParam}${typeParam}${doubanParam}${reload}`;
   };
 
-  const renderTag = (label: string, className: string) => (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-1 text-[11px] font-medium ${className}`}
-    >
+  const renderTag = (label: string, variant: 'success' | 'default' | 'info' | 'warning' | 'primary' = 'default') => (
+    <FluentBadge variant={variant} size='sm' rounded>
       {label}
-    </span>
+    </FluentBadge>
   );
 
   const renderListItem = (item: {
@@ -154,19 +159,20 @@ function SearchPageClient() {
     });
 
     return (
-      <div
+      <FluentCard
         key={item.key}
+        hoverable
+        className='group w-full !p-3 text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
         role='button'
         tabIndex={0}
         onClick={() => router.push(itemUrl)}
-        onKeyDown={(e) => {
+        onKeyDown={(e: any) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             router.push(itemUrl);
           }
         }}
         aria-label={`查看 ${item.title} 详情`}
-        className='group w-full rounded-2xl border border-gray-200/80 bg-white dark:bg-gray-800 p-3 text-left shadow-sm transition-all hover:border-green-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-900/70 dark:hover:border-green-700 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
       >
         <div className='flex items-start gap-4'>
           <div className='relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800'>
@@ -195,32 +201,11 @@ function SearchPageClient() {
                   {item.title}
                 </h3>
                 <div className='mt-2 flex flex-wrap gap-2'>
-                  {renderTag(
-                    item.type === 'movie' ? '电影' : '剧集',
-                    'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-                  )}
-                  {yearText &&
-                    renderTag(
-                      yearText,
-                      'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-                    )}
-                  {item.episodes &&
-                    item.episodes > 0 &&
-                    renderTag(
-                      `${item.episodes}集`,
-                      'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-                    )}
-                  {item.vodRemarks &&
-                    renderTag(
-                      item.vodRemarks,
-                      'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-                    )}
-                  {item.doubanId &&
-                    item.doubanId > 0 &&
-                    renderTag(
-                      '豆瓣',
-                      'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-                    )}
+                  {renderTag(item.type === 'movie' ? '电影' : '剧集', 'success')}
+                  {yearText && renderTag(yearText, 'default')}
+                  {item.episodes && item.episodes > 0 && renderTag(`${item.episodes}集`, 'info')}
+                  {item.vodRemarks && renderTag(item.vodRemarks, 'warning')}
+                  {item.doubanId && item.doubanId > 0 && renderTag('豆瓣', 'primary')}
                 </div>
                 {description && (
                   <p className='mt-3 line-clamp-3 text-sm leading-6 text-gray-600 dark:text-gray-400'>
@@ -244,32 +229,29 @@ function SearchPageClient() {
             className={`mt-3 flex gap-2 ${isExpanded ? 'flex-wrap' : 'flex-nowrap overflow-hidden'}`}
           >
             {visibleSourceTags.map((sourceName) => (
-              <span
-                key={`${item.key}-${sourceName}`}
-                className='inline-flex max-w-full shrink-0 items-center truncate rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                title={sourceName}
-              >
+              <FluentBadge key={`${item.key}-${sourceName}`} variant='default' size='sm' rounded>
                 {sourceName}
-              </span>
+              </FluentBadge>
             ))}
             {hiddenSourceCount > 0 && (
-              <button
-                type='button'
-                onClick={(e) => {
+              <FluentBadge
+                variant='success'
+                size='sm'
+                rounded
+                onClick={(e: any) => {
                   e.stopPropagation();
                   setExpandedSourceTags((prev) => ({
                     ...prev,
                     [item.key]: true,
                   }));
                 }}
-                className='inline-flex shrink-0 items-center rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 transition-colors hover:bg-green-100 dark:border-green-800 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2'
               >
                 +{hiddenSourceCount}
-              </button>
+              </FluentBadge>
             )}
           </div>
         )}
-      </div>
+      </FluentCard>
     );
   };
 
@@ -907,9 +889,7 @@ function SearchPageClient() {
 
               <form onSubmit={handleSearch} className='w-full'>
                 <div className='relative group'>
-                  <Search className='absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-400 transition-all duration-300 group-focus-within:text-green-500 dark:group-focus-within:text-green-400 group-focus-within:scale-110' />
-
-                  <PanelField
+                                    <FluentInput
                     id='searchInput'
                     type='text'
                     value={searchQuery}
@@ -937,6 +917,7 @@ function SearchPageClient() {
                     }
                     aria-invalid={!!validationMessage}
                     className='h-12 py-3 pl-12 pr-14 text-sm sm:text-base'
+                    prefix={<Search className='h-4 w-4 text-gray-400' />}
                   />
 
                   {searchQuery && (
@@ -1064,12 +1045,11 @@ function SearchPageClient() {
                         <div>
                           <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
                             资源搜索
-                            {netdiskLoading &&
-                              netdiskResourceType === 'netdisk' && (
-                                <span className='ml-2 inline-block align-middle'>
-                                  <span className='inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-green-500'></span>
-                                </span>
-                              )}
+                            {netdiskLoading && netdiskResourceType === 'netdisk' && (
+                              <span className='ml-2 inline-block align-middle'>
+                                <FluentSpinner size='small' />
+                              </span>
+                            )}
                           </h2>
                           <div className='mt-2 text-xs text-gray-500 dark:text-gray-400'>
                             {searchQuery.trim() || searchParams?.get('q')
@@ -1146,7 +1126,7 @@ function SearchPageClient() {
                             TMDB演员搜索结果
                             {tmdbActorLoading && (
                               <span className='ml-2 inline-block align-middle'>
-                                <span className='inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500'></span>
+                                <FluentSpinner size='small' />
                               </span>
                             )}
                           </h2>
@@ -1217,14 +1197,15 @@ function SearchPageClient() {
                     </GlassPanel>
 
                     {tmdbActorError ? (
-                      <div className='rounded-xl border border-red-200 bg-red-50/90 p-8 text-center shadow-sm dark:border-red-800/50 dark:bg-red-900/20'>
-                        <div className='mb-2 text-red-500'>
-                          {tmdbActorError}
-                        </div>
-                        <p className='mb-4 text-sm text-red-400 dark:text-red-300'>
-                          可以重试一次，或切换筛选条件后重新搜索。
-                        </p>
-                        <button
+                      <FluentCard variant='default' className='!p-0 border-red-200 dark:border-red-800/50'>
+                        <FluentEmptyState
+                          icon={<Search className='w-6 h-6' style={{ color: '#ef4444' }} />}
+                          title={tmdbActorError}
+                          description='可以重试一次，或切换筛选条件后重新搜索。'
+                          action={
+                            <FluentButton
+                          variant='primary'
+                          size='sm'
                           onClick={() => {
                             const currentQuery =
                               searchQuery.trim() || searchParams?.get('q');
@@ -1236,11 +1217,12 @@ function SearchPageClient() {
                               );
                             }
                           }}
-                          className='ui-control rounded-full px-4 py-2 text-red-700 hover:bg-red-100 dark:text-red-300 dark:hover:bg-red-950/20'
                         >
-                          重试
-                        </button>
-                      </div>
+                              重试
+                            </FluentButton>
+                          }
+                        />
+                      </FluentCard>
                     ) : tmdbActorResults && tmdbActorResults.length > 0 ? (
                       <div className='grid grid-cols-[repeat(auto-fill,_minmax(9.5rem,_1fr))] gap-x-3 gap-y-12 px-0 sm:px-2 sm:grid-cols-[repeat(auto-fill,_minmax(11rem,_1fr))] sm:gap-x-8 sm:gap-y-20'>
                         {tmdbActorResults.map((item, index) => (
@@ -1257,14 +1239,12 @@ function SearchPageClient() {
                         ))}
                       </div>
                     ) : !tmdbActorLoading ? (
-                      <div className='rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-black/[0.02] p-8 text-center dark:border-gray-700 dark:bg-gray-800'>
-                        <div className='text-gray-500 dark:text-gray-400'>
-                          未找到相关演员作品
-                        </div>
-                        <p className='mt-2 text-sm text-gray-400 dark:text-gray-400'>
-                          换个演员名字，或切换电影 / 电视剧后再试一次。
-                        </p>
-                      </div>
+                      <FluentCard variant='default' className='!p-0'>
+                        <FluentEmptyState
+                          title='未找到相关演员作品'
+                          description='换个演员名字，或切换电影 / 电视剧后再试一次。'
+                        />
+                      </FluentCard>
                     ) : null}
                   </>
                 ) : (
@@ -1272,7 +1252,7 @@ function SearchPageClient() {
                   <>
                     <div className='grid gap-8'>
                       <div className='min-w-0 space-y-6'>
-                        <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
+                        <FluentCard variant='default' className='!p-4 sm:!p-5'>
                           <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
                             <div className='min-w-0 flex-1'>
                               <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
@@ -1289,7 +1269,7 @@ function SearchPageClient() {
                                 )}
                                 {isLoading && !searchError && useFluidSearch && (
                                   <span className='ml-2 inline-block align-middle'>
-                                    <span className='inline-block h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-green-500'></span>
+                                    <FluentSpinner size='small' />
                                   </span>
                                 )}
                               </h2>
@@ -1369,11 +1349,11 @@ function SearchPageClient() {
                               </PillButton>
                             </div>
                           </div>
-                        </div>
+                        </FluentCard>
                         {/* 搜索结果网格/列表 */}
                         <div className='pt-1'>
                           {isLoading && !searchError && searchResults.length === 0 ? (
-                            <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-black/[0.02] p-4 dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
+                            <FluentCard variant='default' className='!p-4 sm:!p-5'>
                               <div className='mb-4 flex items-center justify-between px-1 text-sm text-gray-500 dark:text-gray-400'>
                                 <span>正在整理搜索结果...</span>
                                 <span className='text-xs'>
@@ -1390,7 +1370,7 @@ function SearchPageClient() {
                                   </div>
                                 ))}
                               </div>
-                            </div>
+                            </FluentCard>
                           ) : searchError ? (
                             <FluentEmptyState
                               icon={
@@ -1402,26 +1382,25 @@ function SearchPageClient() {
                               title='搜索失败'
                               description={searchError}
                               action={
-                                <button
-                                  onClick={() => refetch()}
-                                  className='rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700'
-                                >
+                                <FluentButton variant='primary' size='md' onClick={() => refetch()}>
                                   重试
-                                </button>
+                                </FluentButton>
                               }
                               className='rounded-xl border border-red-200 bg-red-50/90 dark:border-red-800/50 dark:bg-red-900/20'
                             />
                           ) : searchResults.length === 0 ? (
-                            <FluentEmptyState
-                              icon={
-                                <Search
-                                  className='w-6 h-6'
-                                  style={{ color: '#9ca3af' }}
-                                />
-                              }
-                              title='未找到相关影视结果'
-                              description='可以尝试更短的关键词，或关闭精确搜索后再试一次。'
-                            />
+                            <FluentCard variant='default' className='!p-0'>
+                              <FluentEmptyState
+                                icon={
+                                  <Search
+                                    className='w-6 h-6'
+                                    style={{ color: '#9ca3af' }}
+                                  />
+                                }
+                                title='未找到相关影视结果'
+                                description='可以尝试更短的关键词，或关闭精确搜索后再试一次。'
+                              />
+                            </FluentCard>
                           ) : useVirtualization &&
                             resultDisplayMode === 'card' ? (
                             <div key={`search-results-${viewMode}`}>
@@ -1655,24 +1634,26 @@ function SearchPageClient() {
                         (filteredAggResults.length > 0 ||
                           filteredAllResults.length > 0) ? (
                           <div className='fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3'>
-                            <div className='rounded-full border border-gray-200 dark:border-gray-700 bg-white/78 px-4 py-2 shadow-sm  dark:border-gray-700 dark:bg-gray-800'>
+                            <FluentCard variant='default' className='!px-4 !py-2 rounded-full'>
                               <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
-                                <div className='animate-spin rounded-full h-5 w-5 border-2 border-gray-300 dark:border-gray-600 border-t-green-500 dark:border-t-green-400'></div>
+                                <FluentSpinner size='small' />
                                 <span>正在搜索更多结果...</span>
                               </div>
-                            </div>
+                            </FluentCard>
                           </div>
                         ) : !isLoading &&
                           (filteredAggResults.length > 0 ||
                             filteredAllResults.length > 0) ? (
                           <div className='mt-8 flex justify-center py-6'>
-                            <div className='rounded-xl border border-gray-200 dark:border-gray-700 bg-white/72 px-6 py-3 text-sm font-medium text-gray-700 shadow-sm  dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300'>
-                              搜索完成 · 共找到{' '}
-                              {viewMode === 'agg'
-                                ? filteredAggResults.length
-                                : filteredAllResults.length}{' '}
-                              个结果
-                            </div>
+                            <FluentCard variant='default' className='!px-6 !py-3 text-center'>
+                              <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                搜索完成 · 共找到{' '}
+                                {viewMode === 'agg'
+                                  ? filteredAggResults.length
+                                  : filteredAllResults.length}{' '}
+                                个结果
+                              </span>
+                            </FluentCard>
                           </div>
                         ) : null}
                       </div>
@@ -1691,19 +1672,14 @@ function SearchPageClient() {
               <>
                 {/* 搜索历史 - 优先显示 */}
                 {searchHistory.length > 0 && (
-                  <section className='mb-12 rounded-2xl sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white/34 p-4 shadow-sm  dark:border-gray-700 dark:bg-gray-800 sm:p-5'>
+                  <FluentCard variant='default' className='mb-12 !p-4 sm:!p-5'>
                     <div className='mb-4 flex items-center justify-between'>
                       <h2 className='text-xl font-bold text-gray-800 text-left dark:text-gray-200'>
                         搜索历史
                       </h2>
-                      <button
-                        onClick={() => {
-                          clearSearchHistory();
-                        }}
-                        className='inline-flex items-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:text-red-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:text-red-500'
-                      >
+                      <FluentButton variant='ghost' size='sm' onClick={() => clearSearchHistory()}>
                         清空
-                      </button>
+                      </FluentButton>
                     </div>
                     <div className='flex flex-wrap gap-2'>
                       {searchHistory.map((item) => (
@@ -1742,21 +1718,22 @@ function SearchPageClient() {
                         </div>
                       ))}
                     </div>
-                  </section>
+                  </FluentCard>
                 )}
 
                 {searchHistory.length === 0 && (
-                  <FluentEmptyState
-                    icon={
-                      <Search
-                        className='w-6 h-6'
-                        style={{ color: '#9ca3af' }}
-                      />
-                    }
-                    title='还没有搜索历史'
-                    description='输入关键词开始搜索，常用内容会显示在这里。'
-                    className='mb-12 rounded-2xl border border-dashed'
-                  />
+                  <FluentCard variant='default' className='mb-12 !p-0 border-dashed'>
+                    <FluentEmptyState
+                      icon={
+                        <Search
+                          className='w-6 h-6'
+                          style={{ color: '#9ca3af' }}
+                        />
+                      }
+                      title='还没有搜索历史'
+                      description='输入关键词开始搜索，常用内容会显示在这里。'
+                    />
+                  </FluentCard>
                 )}
               </>
             )}
@@ -1793,14 +1770,8 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className='flex min-h-[200px] flex-col items-center justify-center gap-3'>
-          <div className='w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary-500 animate-spin' />
-          <p
-            className='text-sm'
-            style={{ color: 'var(--color-foreground-muted)' }}
-          >
-            加载中...
-          </p>
+        <div className='flex min-h-[200px] flex-col items-center justify-center gap-4 p-4'>
+          <FluentSpinner size='large' label='加载中...' />
         </div>
       }
     >

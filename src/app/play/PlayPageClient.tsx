@@ -108,10 +108,12 @@ const ShortDramaVerticalPlayer = dynamic(
 );
 
 import {
+  FluentBadge,
   FluentButton,
   FluentCard,
   FluentEmptyState,
 } from '@/components/FluentUI';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 import BackToTopButton from '@/components/play/BackToTopButton';
 import CollapseButton from '@/components/play/CollapseButton';
@@ -6263,13 +6265,15 @@ function PlayPageClient() {
                     )}
                   </div>
                   {netdiskLoading && netdiskResourceType === 'netdisk' && (
-                    <span className='inline-block ml-2'>
-                      <span className='inline-block h-5 w-5 sm:h-5 sm:w-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin'></span>
+                    <span className='inline-block ml-2 align-middle'>
+                      <FluentSpinner size='small' />
                     </span>
                   )}
                   {netdiskTotal > 0 && netdiskResourceType === 'netdisk' && (
-                    <span className='inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 ml-2'>
-                      {netdiskTotal} 个资源
+                    <span className='ml-2'>
+                      <FluentBadge variant='info' size='md' rounded>
+                        {netdiskTotal} 个资源
+                      </FluentBadge>
                     </span>
                   )}
                 </div>
@@ -6306,21 +6310,20 @@ function PlayPageClient() {
                         资源类型：
                       </span>
                       <div className='flex gap-2'>
-                        <button
+                        <FluentButton
+                          variant={netdiskResourceType === 'netdisk' ? 'primary' : 'secondary'}
+                          size='sm'
                           onClick={() => {
                             setNetdiskResourceType('netdisk');
                             setNetdiskResults(null);
                             setNetdiskError(null);
                           }}
-                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
-                            netdiskResourceType === 'netdisk'
-                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-md'
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-                          }`}
                         >
                           网盘资源
-                        </button>
-                        <button
+                        </FluentButton>
+                        <FluentButton
+                          variant={netdiskResourceType === 'acg' ? 'primary' : 'secondary'}
+                          size='sm'
                           onClick={() => {
                             setNetdiskResourceType('acg');
                             setNetdiskResults(null);
@@ -6329,14 +6332,9 @@ function PlayPageClient() {
                               setAcgTriggerSearch((prev) => !prev);
                             }
                           }}
-                          className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all sm:px-3 sm:py-1.5 sm:text-sm ${
-                            netdiskResourceType === 'acg'
-                              ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] border-transparent text-[#171717] shadow-md'
-                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600'
-                          }`}
                         >
                           动漫磁力
-                        </button>
+                        </FluentButton>
                       </div>
                     </div>
                   )
@@ -6375,13 +6373,15 @@ function PlayPageClient() {
                         <p className='text-sm sm:text-base text-gray-600 dark:text-gray-400'>
                           点击搜索按钮开始查找网盘资源
                         </p>
-                        <button
+                        <FluentButton
+                          variant='primary'
+                          size='md'
                           onClick={() => handleNetDiskSearch(videoTitle)}
                           disabled={netdiskLoading}
-                          className='mt-4 rounded-full bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] px-4 py-2 text-sm font-medium text-[#171717] shadow-md transition-transform hover:scale-[1.02] disabled:opacity-50 sm:px-6 sm:py-2.5 sm:text-base'
+                          className='mt-4'
                         >
                           开始搜索
-                        </button>
+                        </FluentButton>
                       </div>
                     )}
 

@@ -22,7 +22,7 @@ import { DoubanItem, DoubanResult } from '@/lib/types';
 import DoubanCardSkeleton from '@/components/DoubanCardSkeleton';
 import DoubanCustomSelector from '@/components/DoubanCustomSelector';
 import DoubanSelector from '@/components/DoubanSelector';
-import { FluentBadge, FluentCard, FluentEmptyState } from '@/components/FluentUI';
+import { FluentBadge, FluentButton, FluentCard, FluentEmptyState } from '@/components/FluentUI';
 import { FluentSpinner } from '@/components/FluentSpinner';
 import MountAnimation from '@/components/MountAnimation';
 import PageLayout from '@/components/PageLayout';
@@ -1082,7 +1082,7 @@ function DoubanPageClient() {
                   </div>
                 )}
 
-                {/* 空状态 — FluentEmptyState */}
+                {/* 空状态 — FluentEmptyState with FluentButton */}
                 {!loading && selectorsReady && doubanData.length === 0 && (
                   <FluentCard
                     variant='default'
@@ -1092,6 +1092,11 @@ function DoubanPageClient() {
                     <FluentEmptyState
                       title='暂无相关内容'
                       description='尝试调整筛选条件或切换其他分类查看更多内容'
+                      action={
+                        <FluentButton variant='secondary' size='sm' onClick={() => window.location.reload()}>
+                          刷新重试
+                        </FluentButton>
+                      }
                     />
                   </FluentCard>
                 )}
@@ -1191,7 +1196,7 @@ function DoubanPageClient() {
                   </div>
                 )}
 
-                {/* 空状态 — FluentEmptyState */}
+                {/* 空状态 — FluentEmptyState with FluentButton */}
                 {!loading && doubanData.length === 0 && (
                   <FluentCard
                     variant='default'
@@ -1201,6 +1206,11 @@ function DoubanPageClient() {
                     <FluentEmptyState
                       title='暂无相关内容'
                       description='尝试调整筛选条件或切换其他分类查看更多内容'
+                      action={
+                        <FluentButton variant='secondary' size='sm' onClick={() => window.location.reload()}>
+                          刷新重试
+                        </FluentButton>
+                      }
                     />
                   </FluentCard>
                 )}
@@ -1210,18 +1220,24 @@ function DoubanPageClient() {
         </div>
       </MountAnimation>
 
-      {/* 返回顶部悬浮按钮 */}
-      <button
-        onClick={scrollToTop}
-        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-70 w-12 h-12 bg-green-500/90 hover:bg-green-500 text-white rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 ease-in-out flex items-center justify-center group ${
+      {/* 返回顶部悬浮按钮 — FluentButton */}
+      <div
+        className={`fixed bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6 right-6 z-70 transition-all duration-300 ease-in-out ${
           showBackToTop
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
-        aria-label='返回顶部'
       >
-        <ChevronUp className='w-6 h-6 transition-transform group-hover:scale-110' />
-      </button>
+        <FluentButton
+          variant='primary'
+          size='lg'
+          onClick={scrollToTop}
+          aria-label='返回顶部'
+          className='!rounded-full !w-12 !h-12 !p-0 shadow-lg'
+        >
+          <ChevronUp className='w-6 h-6' />
+        </FluentButton>
+      </div>
     </PageLayout>
   );
 }
