@@ -29,7 +29,7 @@ interface ConfigFileProps {
 
 export default function ConfigFileComponent({
   config,
-  refreshConfig: _refreshConfig,
+  refreshConfig,
 }: ConfigFileProps) {
   const { showAlert } = useAlertModal();
   const { isLoading, withLoading } = useLoadingState();
@@ -61,7 +61,17 @@ export default function ConfigFileComponent({
   const handleImportConfig = async () => {
     await withLoading('importConfig', async () => {
       try {
+        if (!window.confirm('将覆盖全站配置，确定？')) return;
         const data = JSON.parse(importData);
+        if (
+          !data ||
+          typeof data !== 'object' ||
+          !('SiteConfig' in data) ||
+          !data.SiteConfig ||
+          typeof data.SiteConfig !== 'object'
+        ) {
+          throw new Error('配置格式错误：缺少 SiteConfig');
+        }
         const response = await fetch('/api/admin/config/import', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -71,6 +81,7 @@ export default function ConfigFileComponent({
         setShowImportForm(false);
         setImportData('');
         showSuccess('配置已导入', showAlert);
+        if (refreshConfig) await refreshConfig();
       } catch (err) {
         showError('导入失败: ' + (err as Error).message, showAlert);
       }

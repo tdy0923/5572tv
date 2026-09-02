@@ -102,10 +102,43 @@ export default function SiteConfigComponent({
   const handleSiteSave = async () => {
     await withLoading('saveSiteConfig', async () => {
       try {
+        // Proxy-mode validation: when type is proxy, URL must be non-empty and valid
+        if (section !== 'ads') {
+          const validateProxyUrl = (type: string, url: string, label: string) => {
+            if (type === 'proxy') {
+              const trimmed = String(url || '').trim();
+              if (!trimmed) {
+                showError(`${label}不能为空：代理模式需填写有效 URL`, showAlert);
+                return false;
+              }
+              try {
+                const u = new URL(trimmed);
+                if (!['http:', 'https:'].includes(u.protocol)) throw new Error('invalid protocol');
+              } catch {
+                showError(`${label}不是有效 URL（需 http/https）: ${trimmed}`, showAlert);
+                return false;
+              }
+            }
+            return true;
+          };
+          if (!validateProxyUrl(siteSettings.DoubanProxyType, siteSettings.DoubanProxy, '豆瓣代理地址')) return;
+          if (!validateProxyUrl(siteSettings.DoubanImageProxyType, siteSettings.DoubanImageProxy, '图片代理地址')) return;
+        }
+        const clampedSiteSettings = {
+          ...siteSettings,
+          SearchDownstreamMaxPage: Math.min(
+            5,
+            Math.max(1, siteSettings.SearchDownstreamMaxPage ?? 1),
+          ),
+          SiteInterfaceCacheTime: Math.min(
+            86400,
+            Math.max(60, siteSettings.SiteInterfaceCacheTime ?? 7200),
+          ),
+        };
         const body =
           section === 'ads'
             ? { key: 'SiteConfig.AdSettings', value: adSettings }
-            : { key: 'SiteConfig', value: siteSettings };
+            : { key: 'SiteConfig', value: clampedSiteSettings };
         const resp = await fetch('/api/admin/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -293,6 +326,23 @@ export default function SiteConfigComponent({
                   })
                 }
               />
+              {/* 警告：广告 HTML 按纯文本渲染为安全转义，禁止直接 dangerouslySetInnerHTML；如需 HTML 需经 DOMPurify 清洗 */}
+              <div className='rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300'>
+                提示：广告内容在前台以纯文本/受控组件渲染，HTML 标签将被转义而非直接执行。
+                请勿粘贴不受信任的脚本；如需富文本 HTML，请先经 DOMPurify 等库消毒后再用
+                dangerouslySetInnerHTML（当前 SiteAdSlot 已做纯文本转义，无需 HTML 注入）。
+              </div>
+              {/* 纯文本预览（转义显示） */}
+              {editDialog.ad?.content && (
+                <div className='rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/[0.03] p-3'>
+                  <div className='text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400 mb-1'>
+                    纯文本预览（已转义）
+                  </div>
+                  <div className='text-xs leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words'>
+                    {editDialog.ad.content.slice(0, 500)}
+                  </div>
+                </div>
+              )}
               <label className='flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors'>
                 <input
                   type='checkbox'
@@ -423,19 +473,27 @@ export default function SiteConfigComponent({
             label='搜索最大页数'
             type='number'
             min={1}
+            max={5}
             value={String(S.SearchDownstreamMaxPage)}
             onChange={(e) =>
-              setS('SearchDownstreamMaxPage', parseInt(e.target.value) || 1)
+              setS(
+                'SearchDownstreamMaxPage',
+                Math.min(5, Math.max(1, parseInt(e.target.value) || 1)),
+              )
             }
             placeholder='1'
           />
           <FluentInput
             label='接口缓存时间（秒）'
             type='number'
-            min={0}
+            min={60}
+            max={86400}
             value={String(S.SiteInterfaceCacheTime)}
             onChange={(e) =>
-              setS('SiteInterfaceCacheTime', parseInt(e.target.value) || 7200)
+              setS(
+                'SiteInterfaceCacheTime',
+                Math.min(86400, Math.max(60, parseInt(e.target.value) || 7200)),
+              )
             }
             placeholder='7200'
           />

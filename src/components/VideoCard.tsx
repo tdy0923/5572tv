@@ -52,6 +52,7 @@ import { FluentBadge } from '@/components/FluentUI';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import MobileActionSheet from '@/components/MobileActionSheet';
 import { useIsHorizontalRail } from '@/components/rail-context';
+import { duration, easing, radius, shadow } from '@/lib/fluent-tokens';
 
 export interface VideoCardProps {
   id?: string;
@@ -979,7 +980,19 @@ function VideoCard({
   return (
     <>
       <div
-        className='@container group relative w-full overflow-hidden rounded-xl bg-transparent cursor-pointer transition-all duration-300 ease-in-out hover:z-30 '
+        className='@container group relative w-full overflow-hidden bg-transparent cursor-pointer hover:z-30'
+        style={
+          {
+            borderRadius: radius.xl,
+            transition: `transform ${duration.normal} ${easing.decelerate}, box-shadow ${duration.normal} ${easing.standard}`,
+            WebkitUserSelect: 'none',
+            userSelect: 'none',
+            WebkitTouchCallout: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            pointerEvents: 'auto',
+          } as React.CSSProperties
+        }
         role='button'
         tabIndex={0}
         onClick={handleClick}
@@ -995,18 +1008,6 @@ function VideoCard({
         onMouseEnter={handlePrefetch}
         onFocus={handlePrefetch}
         {...longPressProps}
-        style={
-          {
-            // 禁用所有默认的长按和选择效果
-            WebkitUserSelect: 'none',
-            userSelect: 'none',
-            WebkitTouchCallout: 'none',
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            // 禁用右键菜单和长按菜单
-            pointerEvents: 'auto',
-          } as React.CSSProperties
-        }
         onContextMenu={(e) => {
           // 阻止默认右键菜单
           e.preventDefault();
@@ -1034,18 +1035,26 @@ function VideoCard({
           return false;
         }}
       >
-        {/* 海报容器 */}
+        {/* 海报容器 — Fluent 2 depth + motion */}
         <div
-          className={`relative aspect-[2/3] overflow-hidden rounded-xl border bg-white dark:bg-gray-800 transition-all duration-250 ease-out group-hover:-translate-y-1 group-hover:border-primary-300/70 dark:group-hover:border-primary-500/40 group-hover:shadow-[0_18px_38px_-10px_rgba(244,194,77,0.35)] ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
+          className={`relative aspect-[2/3] overflow-hidden border bg-white dark:bg-gray-800 group-hover:-translate-y-1 group-hover:border-[#f4c24d]/50 dark:group-hover:border-[#f4c24d]/30 ${origin === 'live' ? 'ring-1 ring-gray-300/80 dark:ring-gray-600/80' : ''}`}
           style={
             {
+              borderRadius: radius.xl,
               borderColor: 'var(--color-stroke-subtle)',
-              boxShadow: 'var(--shadow-2)',
+              boxShadow: shadow.light,
+              transition: `transform ${duration.normal} ${easing.decelerate}, box-shadow ${duration.normal} ${easing.standard}, border-color ${duration.fast} ${easing.standard}`,
               WebkitUserSelect: 'none',
               userSelect: 'none',
               WebkitTouchCallout: 'none',
             } as React.CSSProperties
           }
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLDivElement).style.boxShadow = shadow.brand;
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLDivElement).style.boxShadow = shadow.light;
+          }}
           onContextMenu={(e) => {
             e.preventDefault();
             return false;

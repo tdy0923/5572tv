@@ -79,6 +79,22 @@ export default function SourceScripts() {
   }, []);
 
   const handleSave = async () => {
+    if (!form.name?.trim()) {
+      showError('脚本名称不能为空', showAlert);
+      return;
+    }
+    if (!form.targetSource?.trim()) {
+      showError('目标源不能为空', showAlert);
+      return;
+    }
+    if (
+      scripts.some(
+        (s) => s.targetSource === form.targetSource!.trim() && s.id !== editingId,
+      )
+    ) {
+      showError('目标源已存在，请使用唯一的目标源', showAlert);
+      return;
+    }
     await withLoading('saveScript', async () => {
       try {
         const body: any = {
@@ -109,6 +125,7 @@ export default function SourceScripts() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('确认删除？')) return;
     await withLoading(`delete_${id}`, async () => {
       try {
         const resp = await fetch(`/api/source-script?id=${id}`, {

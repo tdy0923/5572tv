@@ -5,6 +5,8 @@ import { Bell, BellOff, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 import { requestNotificationPermission } from '@/lib/reminder-notification';
+import { FluentButton, FluentEmptyState, FluentTag } from '@/components/FluentUI';
+import { radius, shadow } from '@/lib/fluent-tokens';
 
 const VideoCard = dynamic(() => import('@/components/VideoCard'), {
   ssr: false,
@@ -59,10 +61,13 @@ export default function RemindersView({
   requireClearConfirmation,
 }: RemindersViewProps) {
   return (
-    <section className='mb-8 rounded-xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-md backdrop-blur-sm sm:p-5'>
+    <section
+      className='mb-8 overflow-hidden rounded-2xl border bg-white p-4 backdrop-blur-sm sm:p-5 dark:bg-white/[0.03] sm:rounded-2xl'
+      style={{ borderColor: 'var(--color-stroke-subtle)', boxShadow: shadow.light, borderRadius: radius.xl }}
+    >
       <div className='mb-6 flex items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <h2 className='text-xl font-bold text-gray-800 dark:text-gray-200'>
+          <h2 className='text-[15px] font-semibold' style={{ color: 'var(--color-foreground)' }}>
             我想看
           </h2>
           {notifPermission !== 'unsupported' && (
@@ -92,8 +97,10 @@ export default function RemindersView({
           )}
         </div>
         {reminderItems.length > 0 && (
-          <button
-            className='ui-control flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-600 hover:text-white dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white'
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Trash2 className='h-4 w-4' />}
             onClick={() => {
               if (requireClearConfirmation) {
                 setShowClearRemindersDialog(true);
@@ -101,10 +108,10 @@ export default function RemindersView({
                 clearRemindersMutation();
               }
             }}
+            className='rounded-full border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
           >
-            <Trash2 className='w-4 h-4' />
-            <span>清空想看</span>
-          </button>
+            清空想看
+          </FluentButton>
         )}
       </div>
 
@@ -116,17 +123,13 @@ export default function RemindersView({
             { key: 'today' as const, label: '今日上映' },
             { key: 'released' as const, label: '已上映' },
           ].map(({ key, label }) => (
-            <button
+            <FluentTag
               key={key}
+              label={label}
+              active={reminderFilter === key}
+              variant='primary'
               onClick={() => setReminderFilter(key)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
-                reminderFilter === key
-                  ? 'bg-linear-to-r from-[#f4c24d] via-[#f0b938] to-[#d89c18] text-[#171717] shadow-md'
-                  : 'border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white dark:bg-gray-800'
-              }`}
-            >
-              {label}
-            </button>
+            />
           ))}
         </div>
       )}
@@ -210,46 +213,12 @@ export default function RemindersView({
           });
         })()}
         {reminderItems.length === 0 && (
-          <div className='col-span-full flex flex-col items-center justify-center py-16 px-4'>
-            <div className='mb-6 relative'>
-              <div className='absolute inset-0 bg-linear-to-r from-primary-300 to-primary-400 dark:from-primary-500/40 dark:to-primary-600/40 opacity-20 blur-3xl rounded-full animate-[fluent2-shimmer_1.5s_ease-in-out_infinite]'></div>
-              <svg
-                className='w-32 h-32 relative z-10'
-                viewBox='0 0 200 200'
-                fill='none'
-                xmlns='http://www.w3.org/2000/svg'
-              >
-                <path
-                  d='M100 50 L100 120 M100 50 L130 80'
-                  className='stroke-gray-400 dark:stroke-gray-500'
-                  strokeWidth='8'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-                <circle
-                  cx='100'
-                  cy='100'
-                  r='70'
-                  className='fill-gray-300 dark:fill-gray-600 stroke-gray-400 dark:stroke-gray-500'
-                  strokeWidth='3'
-                />
-                <path
-                  d='M100 50 L100 120 M100 50 L130 80'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  strokeDasharray='5,5'
-                  className='text-gray-400 dark:text-gray-400'
-                />
-              </svg>
-            </div>
-
-            <h3 className='text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2'>
-              暂无想看内容
-            </h3>
-            <p className='text-sm text-gray-500 dark:text-gray-400 text-center max-w-xs'>
-              发现即将上映的内容，点击 🔔 标记想看吧！
-            </p>
+          <div className='col-span-full'>
+            <FluentEmptyState
+              icon={<Bell className='h-6 w-6' style={{ color: '#9ca3af' }} />}
+              title='暂无想看内容'
+              description='发现即将上映的内容，点击 🔔 标记想看吧！'
+            />
           </div>
         )}
       </div>

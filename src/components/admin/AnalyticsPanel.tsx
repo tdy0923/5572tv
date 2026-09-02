@@ -82,10 +82,12 @@ function FluentEmptyState({
   icon,
   title,
   description,
+  action,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  action?: React.ReactNode;
 }) {
   return (
     <div className='ui-surface rounded-[var(--radius-2xl)] px-6 py-10 text-center shadow-[var(--shadow-2)]'>
@@ -98,6 +100,7 @@ function FluentEmptyState({
       <p className='mx-auto mt-1 max-w-[32ch] text-xs leading-relaxed text-[var(--color-foreground-muted)]'>
         {description}
       </p>
+      {action && <div className='mt-4 flex justify-center'>{action}</div>}
     </div>
   );
 }
@@ -278,6 +281,7 @@ export default function AnalyticsPanel({
 }: AnalyticsPanelProps) {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [fallbackVideos, setFallbackVideos] = useState<
     { videoId: string; title: string; count: number }[] | null
   >(null);
@@ -286,54 +290,55 @@ export default function AnalyticsPanel({
   >(null);
 
   const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/admin/analytics?days=${DAYS}`);
-      if (res.ok) {
-        const json = await res.json();
-        setData(json.data);
-        if (
-          json.data &&
-          (json.data.totals.plays === 0 || json.data.topVideos.length === 0)
-        ) {
-          try {
-            const r2 = await fetch('/api/admin/play-stats');
-            if (r2.ok) {
-              const j2 = await r2.json();
-              const list: { videoId: string; title: string; count: number }[] =
-                [];
-              const src = j2.data || j2;
-              const rawList = src?.topVideos || src?.topContents || [];
-              if (Array.isArray(rawList)) {
-                for (const v of rawList.slice(0, 10)) {
-                  list.push({
-                    videoId: String(
-                      (v as Record<string, unknown>).videoId ||
-                        (v as Record<string, unknown>).id ||
-                        (v as Record<string, unknown>).title ||
-                        '',
-                    ),
-                    title: String(
+      if (!res.ok) throw new Error(`请求失败: ${res.status}`);
+      const json = await res.json();
+      setData(json.data);
+      if (
+        json.data &&
+        (json.data.totals.plays === 0 || json.data.topVideos.length === 0)
+      ) {
+        try {
+          const r2 = await fetch('/api/admin/play-stats');
+          if (r2.ok) {
+            const j2 = await r2.json();
+            const list: { videoId: string; title: string; count: number }[] =
+              [];
+            const src = j2.data || j2;
+            const rawList = src?.topVideos || src?.topContents || [];
+            if (Array.isArray(rawList)) {
+              for (const v of rawList.slice(0, 10)) {
+                list.push({
+                  videoId: String(
+                    (v as Record<string, unknown>).videoId ||
+                      (v as Record<string, unknown>).id ||
                       (v as Record<string, unknown>).title ||
-                        (v as Record<string, unknown>).videoId ||
-                        '',
-                    ),
-                    count: Number(
-                      (v as Record<string, unknown>).playCount ||
-                        (v as Record<string, unknown>).count ||
-                        1,
-                    ),
-                  });
-                }
+                      '',
+                  ),
+                  title: String(
+                    (v as Record<string, unknown>).title ||
+                      (v as Record<string, unknown>).videoId ||
+                      '',
+                  ),
+                  count: Number(
+                    (v as Record<string, unknown>).playCount ||
+                      (v as Record<string, unknown>).count ||
+                      1,
+                  ),
+                });
               }
-              if (list.length > 0) setFallbackVideos(list);
             }
-          } catch {}
-        } else {
-          setFallbackVideos(null);
-        }
+            if (list.length > 0) setFallbackVideos(list);
+          }
+        } catch {}
+      } else {
+        setFallbackVideos(null);
       }
-    } catch {
-      // 静默失败
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败');
     } finally {
       setLoading(false);
     }
@@ -407,6 +412,24 @@ export default function AnalyticsPanel({
           ))}
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <FluentEmptyState
+        icon={<Activity size={20} />}
+        title='加载失败'
+        description={error}
+        action={
+          <button
+            onClick={fetchData}
+            className='inline-flex items-center gap-1.5 rounded-full bg-[var(--color-foreground)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/90 transition-colors'
+          >
+            重试
+          </button>
+        }
+      />
     );
   }
 

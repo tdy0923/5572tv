@@ -232,7 +232,7 @@ export default function CategoryConfig({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            key: 'CategoryConfig.Categories',
+            key: 'CustomCategories',
             value: categories,
           }),
         });
@@ -247,6 +247,16 @@ export default function CategoryConfig({
   };
 
   const handleAdd = () => {
+    if (!newCategory.query.trim()) {
+      showError('搜索关键词不能为空', showAlert);
+      return;
+    }
+    if (
+      categories.some((c, i) => c.query === newCategory.query.trim() && i !== editingIndex)
+    ) {
+      showError('关键词已存在，请使用唯一的关键词', showAlert);
+      return;
+    }
     setCategories([...categories, newCategory]);
     setNewCategory({
       name: '',
@@ -260,6 +270,16 @@ export default function CategoryConfig({
   };
 
   const handleUpdate = () => {
+    if (!newCategory.query.trim()) {
+      showError('搜索关键词不能为空', showAlert);
+      return;
+    }
+    if (
+      categories.some((c, i) => c.query === newCategory.query.trim() && i !== editingIndex)
+    ) {
+      showError('关键词已存在，请使用唯一的关键词', showAlert);
+      return;
+    }
     if (editingIndex !== null) {
       const updated = [...categories];
       updated[editingIndex] = newCategory;
@@ -445,6 +465,7 @@ export default function CategoryConfig({
                     setShowAddForm(true);
                   }}
                   onDelete={(id) => {
+                    if (!window.confirm('确认删除？')) return;
                     const idx = parseInt(id.replace('cat-', ''), 10);
                     setCategories(categories.filter((_, i) => i !== idx));
                     setOrderChanged(true);
@@ -467,7 +488,7 @@ export default function CategoryConfig({
       </DndContext>
 
       {/* Save bar */}
-      {orderChanged && categories.length > 0 && (
+      {orderChanged && (
         <div className='flex items-center gap-3 pt-1'>
           <FluentButton
             variant='primary'

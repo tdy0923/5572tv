@@ -102,6 +102,32 @@ export default function LiveSourceConfig({
   };
 
   const handleAdd = () => {
+    if (!newSource.name?.trim()) {
+      showError('名称不能为空', showAlert);
+      return;
+    }
+    if (!newSource.key?.trim()) {
+      showError('Key 不能为空', showAlert);
+      return;
+    }
+    if (!newSource.url?.trim()) {
+      showError('URL 不能为空', showAlert);
+      return;
+    }
+    if (
+      liveSources.some(
+        (s, i) => s.key === newSource.key.trim() && i !== editingIndex,
+      )
+    ) {
+      showError('Key 已存在，请使用唯一的 Key', showAlert);
+      return;
+    }
+    try {
+      new URL(newSource.url.trim());
+    } catch {
+      showError('URL 必须是有效的 URL', showAlert);
+      return;
+    }
     const updated =
       editingIndex !== null
         ? liveSources.map((s, i) => (i === editingIndex ? { ...newSource } : s))
@@ -124,6 +150,7 @@ export default function LiveSourceConfig({
   };
 
   const handleDelete = (index: number) => {
+    if (!window.confirm('确认删除？')) return;
     setLiveSources(liveSources.filter((_, i) => i !== index));
     setOrderChanged(true);
     setHasChanges(true);

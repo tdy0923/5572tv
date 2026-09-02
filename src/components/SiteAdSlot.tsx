@@ -8,6 +8,34 @@ import { type AdPosition, isAdSettingRenderable } from '@/lib/ad-settings';
 
 import { useSite } from './SiteProvider';
 
+// 安全说明：广告字段（title/content/imageUrl/linkUrl 等）在前台一律按纯文本渲染
+// React 会自动转义文本，禁止使用 dangerouslySetInnerHTML 直接渲染 HTML。
+// 如未来需支持富文本 HTML，必须先用 DOMPurify 等库消毒后再渲染。
+function isSafeHttpUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url, 'http://dummy-base');
+    // 仅允许 http/https；相对路径（无协议）视为不安全，交给调用方判断
+    // 若 url 为相对路径，new URL 会以 dummy-base 补全为 http，需额外判断原串是否以 / 或 http 开头
+    if (url.startsWith('/') && !url.startsWith('//')) return true;
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeHref(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  // 拒绝 javascript:, data:, vbscript: 等危险协议
+  if (/^\s*javascript:/i.test(trimmed) || /^\s*data:/i.test(trimmed) || /^\s*vbscript:/i.test(trimmed)) return undefined;
+  if (isSafeHttpUrl(trimmed)) return trimmed;
+  // 允许站内相对路径 /xxx
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+  return undefined;
+}
+
 type SiteAdSlotProps = {
   position: AdPosition;
   className?: string;
@@ -61,16 +89,19 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
     .filter(Boolean)
     .slice(0, 8);
 
+  const safeLinkUrl = sanitizeHref(linkUrl);
+  const safeImageUrl = isSafeHttpUrl(imageUrl) || (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('//')) ? imageUrl : undefined;
+
   const wrap = (node: ReactNode) => {
-    if (!linkUrl) return node;
+    if (!safeLinkUrl) return node;
     return (
-      <Link href={linkUrl} target={target} rel={rel} className='block'>
+      <Link href={safeLinkUrl} target={target} rel={rel} className='block'>
         {node}
       </Link>
     );
   };
 
-  if (style === 'image' && imageUrl) {
+  if (style === 'image' && safeImageUrl) {
     return wrap(
       <div
         className={`${imageContainerClass} ${className}`}
@@ -87,7 +118,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={imageUrl}
+          src={safeImageUrl}
           alt={altText || title || '广告'}
           className='h-full w-full object-cover'
           style={{ maxHeight, width: '100%' }}
@@ -117,6 +148,7 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
               const [label, maybeUrl, desc] = line
                 .split('|')
                 .map((v) => v.trim());
+              const safeMaybeUrl = sanitizeHref(maybeUrl);
               const node = (
                 <div className='w-full rounded-2xl border border-gray-200 dark:border-gray-700 bg-white px-3 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100'>
                   <div className='text-sm font-medium'>
@@ -129,11 +161,11 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
                   )}
                 </div>
               );
-              if (maybeUrl) {
+              if (safeMaybeUrl) {
                 return (
                   <Link
                     key={`${label}-${index}`}
-                    href={maybeUrl}
+                    href={safeMaybeUrl}
                     target={target}
                     rel={rel}
                     className='block w-full'
@@ -165,13 +197,13 @@ export function SiteAdSlot({ position, className = '' }: SiteAdSlotProps) {
       <div
         className={`flex ${isFooterSlot ? 'items-center' : 'items-start'} gap-4`}
       >
-        {imageUrl && (
+        {safeImageUrl && (
           <div
             className={`${isFooterSlot ? 'h-16 w-24' : 'h-20 w-28'} shrink-0 overflow-hidden rounded-xl bg-black/5`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={imageUrl}
+              src={safeImageUrl}
               alt={altText || title || '广告'}
               className='h-full w-full object-cover'
             />

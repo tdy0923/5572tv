@@ -990,11 +990,19 @@ function AdminPageClient() {
                       <ThemeEditor
                         initialCustomCSS={config?.SiteConfig?.CustomCSS || ''}
                         onSave={async (css) => {
-                          await fetch('/api/theme/css', {
+                          const response = await fetch('/api/theme/css', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ CustomCSS: css }),
                           });
+                          if (!response.ok) {
+                            let msg = `保存失败: ${response.status}`;
+                            try {
+                              const data = (await response.json()) as { error?: string };
+                              if (data?.error) msg = data.error;
+                            } catch {}
+                            throw new Error(msg);
+                          }
                           await fetchConfig();
                         }}
                       />

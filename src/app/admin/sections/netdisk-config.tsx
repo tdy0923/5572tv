@@ -93,10 +93,14 @@ export default function NetDiskConfig({
   const handleSave = async () => {
     await withLoading('saveNetDiskConfig', async () => {
       try {
+        const clampedSettings = {
+          ...netDiskSettings,
+          timeout: Math.min(120, Math.max(10, netDiskSettings.timeout)),
+        };
         const response = await fetch('/api/admin/netdisk', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(netDiskSettings),
+          body: JSON.stringify(clampedSettings),
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -242,7 +246,10 @@ export default function NetDiskConfig({
               onChange={(e) =>
                 setNetDiskSettings((p) => ({
                   ...p,
-                  timeout: parseInt(e.target.value) || 30,
+                  timeout: Math.min(
+                    120,
+                    Math.max(10, parseInt(e.target.value) || 30),
+                  ),
                 }))
               }
               placeholder='30'

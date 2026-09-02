@@ -19,6 +19,8 @@ import {
   useRefreshTrailerUrlMutation,
 } from '@/hooks/useHeroBannerQueries';
 
+import { brandColor, duration, easing, radius, shadow } from '@/lib/fluent-tokens';
+
 import { useAutoplay } from './hooks/useAutoplay';
 import { useSwipeGesture } from './hooks/useSwipeGesture';
 
@@ -273,6 +275,11 @@ function HeroBanner({
   return (
     <div
       className='relative w-full h-[42vh] sm:h-[52vh] md:h-[60vh] overflow-hidden group rounded-none sm:rounded-xl md:rounded-xl'
+      style={{
+        borderRadius: radius.xl,
+        boxShadow: shadow.deep,
+        transition: `box-shadow ${duration.normal} ${easing.standard}`,
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       {...swipeHandlers}
@@ -475,7 +482,7 @@ function HeroBanner({
             </p>
           )}
 
-          {/* 操作按钮 */}
+          {/* 操作按钮 — Fluent primary + glass secondary */}
           <div className='flex gap-3 sm:gap-4 pt-2'>
             <Link
               href={
@@ -483,7 +490,12 @@ function HeroBanner({
                   ? `/play?title=${encodeURIComponent(currentItem.title)}&shortdrama_id=${currentItem.id}`
                   : `/play?title=${encodeURIComponent(currentItem.title)}${currentItem.year ? `&year=${currentItem.year}` : ''}${currentItem.douban_id ? `&douban_id=${currentItem.douban_id}` : ''}${currentItem.type ? `&stype=${currentItem.type}` : ''}`
               }
-              className='flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-base font-semibold text-black shadow-[0_18px_40px_rgba(0,0,0,0.22)] transition-all  hover:bg-white/95 active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              className='flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-base font-semibold text-black active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              style={{
+                borderRadius: radius.full,
+                boxShadow: shadow.brand,
+                transition: `all ${duration.fast} ${easing.standard}`,
+              }}
             >
               <Play
                 className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'
@@ -501,7 +513,12 @@ function HeroBanner({
                         : currentItem.type || 'movie'
                     }`
               }
-              className='flex items-center gap-2 rounded-full border border-white/16 bg-black/24 px-6 py-2.5 text-base font-semibold text-white shadow-[0_18px_40px_rgba(0,0,0,0.18)] backdrop-blur-[6px] transition-all  hover:bg-black/32 active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              className='flex items-center gap-2 rounded-full border border-white/16 bg-black/30 px-6 py-2.5 text-base font-semibold text-white backdrop-blur-[8px] active:scale-95 sm:px-8 sm:py-3 sm:text-lg md:px-10 md:py-4 md:text-xl'
+              style={{
+                borderRadius: radius.full,
+                boxShadow: shadow.medium,
+                transition: `all ${duration.fast} ${easing.standard}`,
+              }}
             >
               <Info className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7' />
               <span>更多信息</span>
@@ -510,11 +527,16 @@ function HeroBanner({
         </div>
       </div>
 
-      {/* 音量控制按钮（仅视频模式） - 底部右下角，避免遮挡简介 */}
+      {/* 音量控制 — FluentButton ghost circle with tokens */}
       {enableVideo && getEffectiveTrailerUrl(currentItem) && (
         <button
           onClick={toggleMute}
-          className='absolute bottom-6 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white backdrop-blur-sm transition-all hover:bg-black/55 sm:bottom-8 sm:right-8 sm:h-12 sm:w-12 md:right-12 lg:right-16'
+          className='absolute bottom-6 right-4 z-10 flex h-10 w-10 items-center justify-center border border-white/15 bg-black/35 text-white backdrop-blur-md hover:bg-black/55 sm:bottom-8 sm:right-8 sm:h-12 sm:w-12 md:right-12 lg:right-16'
+          style={{
+            borderRadius: radius.full,
+            boxShadow: shadow.medium,
+            transition: `all ${duration.fast} ${easing.standard}`,
+          }}
           aria-label={isMuted ? '取消静音' : '静音'}
         >
           {isMuted ? (
@@ -525,19 +547,29 @@ function HeroBanner({
         </button>
       )}
 
-      {/* 导航按钮 - 桌面端显示 */}
+      {/* 导航 — Fluent circular ghost buttons */}
       {showControls && items.length > 1 && (
         <>
           <button
             onClick={handlePrev}
-            className='absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all  hover:bg-black/55 group-hover:opacity-100 md:flex lg:left-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
+            className='absolute left-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center border border-white/15 bg-black/35 text-white opacity-0 backdrop-blur-md hover:bg-black/55 group-hover:opacity-100 md:flex lg:left-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
+            style={{
+              borderRadius: radius.full,
+              boxShadow: shadow.medium,
+              transition: `all ${duration.fast} ${easing.standard}`,
+            }}
             aria-label='上一张'
           >
             <ChevronLeft className='w-7 h-7 lg:w-8 lg:h-8' />
           </button>
           <button
             onClick={handleNext}
-            className='absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/16 bg-black/35 text-white opacity-0 backdrop-blur-sm transition-all  hover:bg-black/55 group-hover:opacity-100 md:flex lg:right-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
+            className='absolute right-4 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center border border-white/15 bg-black/35 text-white opacity-0 backdrop-blur-md hover:bg-black/55 group-hover:opacity-100 md:flex lg:right-8 lg:h-14 lg:w-14 pointer-coarse:opacity-100'
+            style={{
+              borderRadius: radius.full,
+              boxShadow: shadow.medium,
+              transition: `all ${duration.fast} ${easing.standard}`,
+            }}
             aria-label='下一张'
           >
             <ChevronRight className='w-7 h-7 lg:w-8 lg:h-8' />

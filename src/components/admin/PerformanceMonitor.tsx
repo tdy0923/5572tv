@@ -116,10 +116,12 @@ function FluentEmpty({
   icon,
   title,
   description,
+  action,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  action?: React.ReactNode;
 }) {
   return (
     <div className='flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-dashed border-[var(--color-stroke)] bg-[var(--color-background-subtle)] px-6 py-10 text-center'>
@@ -130,6 +132,7 @@ function FluentEmpty({
       <p className='mt-1 max-w-[36ch] text-xs leading-relaxed text-[var(--color-foreground-muted)]'>
         {description}
       </p>
+      {action && <div className='mt-4 flex justify-center'>{action}</div>}
     </div>
   );
 }
@@ -184,6 +187,7 @@ export default function PerformanceMonitor() {
     topVideos?: TopVideoItem[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'1' | '24'>('1');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [apiFilter, setApiFilter] = useState<string>('all');
@@ -344,19 +348,20 @@ export default function PerformanceMonitor() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/admin/performance?hours=${timeRange}`);
       const playStatsResponse = await fetch('/api/admin/play-stats');
-      if (response.ok) {
-        const result = await response.json();
-        setData(result.data);
-      }
+      if (!response.ok) throw new Error(`性能数据请求失败: ${response.status}`);
+      const result = await response.json();
+      setData(result.data);
       if (playStatsResponse.ok) {
         const statsResult = await playStatsResponse.json();
         setPlayStats(statsResult);
       }
-    } catch (error) {
-      console.error('获取性能数据失败:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败');
+      console.error('获取性能数据失败:', err);
     } finally {
       setLoading(false);
     }
@@ -415,6 +420,25 @@ export default function PerformanceMonitor() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <FluentEmpty
+        icon={<Activity size={20} />}
+        title='加载失败'
+        description={error}
+        action={
+          <button
+            onClick={fetchData}
+            className='inline-flex items-center gap-1.5 rounded-full bg-[var(--color-foreground)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black/85 dark:bg-white dark:text-black dark:hover:bg-white/90 transition-colors'
+          >
+            <RefreshCw className='h-4 w-4' />
+            重试
+          </button>
+        }
+      />
     );
   }
 

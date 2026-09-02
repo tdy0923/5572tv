@@ -104,10 +104,14 @@ export default function VideoSourceConfig({
   const handleSaveAll = async () => {
     await withLoading('saveSources', async () => {
       try {
+        const clampedSources = sources.map((s) => ({
+          ...s,
+          weight: Math.min(100, Math.max(0, s.weight ?? 50)),
+        }));
         const resp = await fetch('/api/admin/config', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'SourceConfig', value: sources }),
+          body: JSON.stringify({ key: 'SourceConfig', value: clampedSources }),
         });
         if (!resp.ok) throw new Error('保存失败');
         setOrderChanged(false);
@@ -121,6 +125,32 @@ export default function VideoSourceConfig({
   };
 
   const handleAdd = () => {
+    if (!newSource.name.trim()) {
+      showError('名称不能为空', showAlert);
+      return;
+    }
+    if (!newSource.key.trim()) {
+      showError('Key 不能为空', showAlert);
+      return;
+    }
+    if (!newSource.api.trim()) {
+      showError('API 不能为空', showAlert);
+      return;
+    }
+    if (
+      sources.some(
+        (s, i) => s.key === newSource.key.trim() && i !== editingIndex,
+      )
+    ) {
+      showError('Key 已存在，请使用唯一的 Key', showAlert);
+      return;
+    }
+    try {
+      new URL(newSource.api.trim());
+    } catch {
+      showError('API 必须是有效的 URL', showAlert);
+      return;
+    }
     const updated =
       editingIndex !== null
         ? sources.map((s, i) => (i === editingIndex ? { ...newSource } : s))
@@ -134,6 +164,7 @@ export default function VideoSourceConfig({
   };
 
   const handleDelete = (index: number) => {
+    if (!window.confirm('确认删除？')) return;
     setSources(sources.filter((_, i) => i !== index));
     setOrderChanged(true);
     setHasChanges(true);
@@ -246,7 +277,10 @@ export default function VideoSourceConfig({
               onChange={(e) =>
                 setNewSource({
                   ...newSource,
-                  weight: parseInt(e.target.value) || 50,
+                  weight: Math.min(
+                    100,
+                    Math.max(0, parseInt(e.target.value) || 50),
+                  ),
                 })
               }
             />
