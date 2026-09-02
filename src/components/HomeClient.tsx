@@ -843,10 +843,10 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
         threshold={100}
       >
         <div className='overflow-visible mt-0 pb-20 md:pb-safe-bottom'>
-          <div className='mb-8 space-y-4'>
+          <div className='mb-5 space-y-3 md:mb-8 md:space-y-4'>
             {/* 欢迎横幅 - 现代化精简设计 */}
-            <div className='flex flex-wrap items-center gap-3 py-1 sm:gap-4'>
-              <h2 className='flex flex-wrap items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl'>
+            <div className='flex flex-wrap items-center gap-3 py-0.5 sm:gap-4'>
+              <h2 className='flex flex-wrap items-center gap-2 text-base font-semibold text-gray-900 dark:text-white sm:text-2xl'>
                 <span>
                   {greeting}
                   {username && '，'}
@@ -861,9 +861,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
             {/* 顶部公告横幅 - 非阻塞，仅公告内容变化时展示一次 */}
             {typeof document !== 'undefined' && showAnnouncementBanner && (
-              <div className='flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2.5 dark:border-green-800 dark:bg-green-900/20'>
+              <div className='flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-1.5 dark:border-green-800 dark:bg-green-900/20'>
                 <div className='relative mt-0.5 h-2 w-2 shrink-0 rounded-full bg-green-500 ring-2 ring-green-200 dark:ring-green-700' />
-                <p className='flex-1 whitespace-pre-line text-sm leading-relaxed text-gray-700 dark:text-gray-200'>
+                <p
+                  className='flex-1 truncate text-xs leading-relaxed text-gray-700 dark:text-gray-200 sm:text-sm'
+                  title={announcement}
+                >
                   <span className='mr-1 font-semibold text-green-700 dark:text-green-400'>
                     {announcementTitle || '站点公告'}：
                   </span>
