@@ -2,6 +2,14 @@
 
 'use client';
 
+import {
+  ExternalLink,
+  Globe,
+  Megaphone,
+  Save,
+  Settings2,
+  Shield,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import {
@@ -13,10 +21,17 @@ import {
 } from '@/lib/ad-settings';
 import { AdminConfig } from '@/lib/admin.types';
 
+import {
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentInput,
+  FluentSelect,
+  FluentTextArea,
+} from '@/components/FluentUI';
 import Toggle from '@/components/Toggle';
 
 import {
-  buttonStyles,
   showError,
   showSuccess,
   useAlertModal,
@@ -55,6 +70,7 @@ export default function SiteConfigComponent({
   });
   const [adSettings, setAdSettings] = useState<AdSettings>(DEFAULT_AD_SETTINGS);
   const [openAsDialog, setOpenAsDialog] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [editDialog, setEditDialog] = useState<{
     isOpen: boolean;
     slot: string;
@@ -96,6 +112,7 @@ export default function SiteConfigComponent({
           body: JSON.stringify(body),
         });
         if (!resp.ok) throw new Error('保存失败');
+        setHasChanges(false);
         showSuccess('保存成功', showAlert);
         await refreshConfig();
       } catch (err) {
@@ -119,6 +136,7 @@ export default function SiteConfigComponent({
         ),
       };
     });
+    setHasChanges(true);
     setEditDialog({ isOpen: false, slot: '', ad: null });
   };
 
@@ -129,65 +147,131 @@ export default function SiteConfigComponent({
 
   if (section === 'ads') {
     return (
-      <div className='space-y-6'>
-        <div className='flex flex-wrap gap-2'>
+      <div className='space-y-4'>
+        {/* Header */}
+        <div className='flex items-center justify-between gap-3'>
+          <div>
+            <h3
+              className='text-[15px] font-semibold'
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              广告位配置
+            </h3>
+            <p
+              className='text-xs mt-0.5'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              {activeAdMeta.description}
+            </p>
+          </div>
+          <FluentBadge variant='info' size='sm' rounded>
+            {AD_POSITIONS.length} 个位置
+          </FluentBadge>
+        </div>
+
+        <div className='flex flex-wrap gap-2 p-1 rounded-xl border bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/5'>
           {adSlotTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveAdSlot(tab.key as any)}
-              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${activeAdSlot === tab.key ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-250 ease-out ${
+                activeAdSlot === tab.key
+                  ? 'bg-[#f4c24d] text-black shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+              }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        <p className='text-sm text-gray-500'>
-          位置: {activeAdMeta.description}
-        </p>
+
         <div className='space-y-3'>
           {[adSettings[activeAdSlot]]
             .flat()
             .filter(Boolean)
             .map((ad: any, i: number) => (
-              <div
+              <FluentCard
                 key={ad.id || i}
-                className='p-4 border rounded-lg bg-white dark:bg-gray-800 space-y-2'
+                hoverable
+                padding='16px'
+                className='space-y-3 transition-all duration-250 ease-out hover:-translate-y-[1px]'
               >
-                <div className='flex items-center justify-between'>
-                  <span className='text-sm font-medium'>
+                <div className='flex items-center justify-between gap-2'>
+                  <span className='text-sm font-semibold text-gray-900 dark:text-white truncate'>
                     {ad.name || `广告 ${i + 1}`}
                   </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded ${ad.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
+                  <FluentBadge
+                    variant={ad.enabled ? 'success' : 'default'}
+                    size='sm'
+                    rounded
                   >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full inline-block ${ad.enabled ? 'bg-[#22c55e]' : 'bg-[#9ca3af]'}`}
+                    />
                     {ad.enabled ? '启用' : '禁用'}
-                  </span>
+                  </FluentBadge>
                 </div>
-                <p className='text-xs text-gray-500'>
-                  {ad.content?.slice(0, 80)}...
+                <p className='text-xs leading-relaxed text-[#9ca3af] line-clamp-2 bg-gray-50 dark:bg-white/[0.03] rounded-lg px-3 py-2 border border-gray-200 dark:border-white/5'>
+                  {ad.content?.slice(0, 120) || '暂无内容'}
                 </p>
-                <button
+                <FluentButton
+                  variant='secondary'
+                  size='sm'
                   onClick={() => handleAdEdit(activeAdSlot, ad)}
-                  className={buttonStyles.primarySmall}
                 >
-                  编辑
-                </button>
-              </div>
+                  编辑广告
+                </FluentButton>
+              </FluentCard>
             ))}
+          {[adSettings[activeAdSlot]].flat().filter(Boolean).length === 0 && (
+            <FluentCard padding='0'>
+              <div className='py-8 text-center text-sm text-[#9ca3af]'>
+                该位置暂无广告
+              </div>
+            </FluentCard>
+          )}
         </div>
-        <button
-          onClick={handleSiteSave}
-          className={`px-4 py-2 ${buttonStyles.success} rounded-lg`}
-        >
-          保存广告配置
-        </button>
+
+        {/* Save bar */}
+        <div className='flex items-center gap-3 pt-2 sticky bottom-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur rounded-xl p-3 border border-gray-200 dark:border-white/5 shadow-sm'>
+          <FluentButton
+            variant='primary'
+            size='md'
+            icon={<Save className='h-4 w-4' />}
+            loading={isLoading('saveSiteConfig')}
+            onClick={handleSiteSave}
+          >
+            保存广告配置
+          </FluentButton>
+          {hasChanges && (
+            <span
+              className='text-xs'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              有未保存的更改
+            </span>
+          )}
+          <span className='hidden' aria-hidden>
+            {alertModal.isOpen ? 'open' : 'closed'} {String(openAsDialog)}
+          </span>
+        </div>
 
         {editDialog.isOpen && (
-          <div className='fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'>
-            <div className='bg-white dark:bg-gray-800 rounded-lg max-w-lg w-full p-6 space-y-3'>
-              <h3 className='text-lg font-semibold'>编辑广告</h3>
-              <input
-                className='w-full px-3 py-2 border rounded text-sm'
+          <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4'>
+            <FluentCard
+              padding='20px'
+              className='max-w-lg w-full space-y-4 !bg-white dark:!bg-[#1a1a1a] shadow-2xl max-h-[85vh] overflow-y-auto'
+            >
+              <div className='flex items-center justify-between'>
+                <h3 className='text-[15px] font-semibold text-gray-900 dark:text-white'>
+                  编辑广告
+                </h3>
+                <FluentBadge variant='info' size='sm' rounded>
+                  {editDialog.slot}
+                </FluentBadge>
+              </div>
+              <FluentInput
+                label='广告名称'
                 placeholder='广告名称'
                 value={editDialog.ad?.name || ''}
                 onChange={(e) =>
@@ -197,9 +281,10 @@ export default function SiteConfigComponent({
                   })
                 }
               />
-              <textarea
-                className='w-full h-24 px-3 py-2 border rounded text-sm font-mono'
+              <FluentTextArea
+                label='广告内容 (HTML)'
                 placeholder='广告内容 (HTML)'
+                rows={6}
                 value={editDialog.ad?.content || ''}
                 onChange={(e) =>
                   setEditDialog({
@@ -208,7 +293,7 @@ export default function SiteConfigComponent({
                   })
                 }
               />
-              <label className='flex items-center gap-2 text-sm'>
+              <label className='flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors'>
                 <input
                   type='checkbox'
                   checked={editDialog.ad?.enabled || false}
@@ -218,26 +303,40 @@ export default function SiteConfigComponent({
                       ad: { ...editDialog.ad, enabled: e.target.checked },
                     })
                   }
+                  className='w-4 h-4 rounded border-gray-300 text-[#f4c24d] focus:ring-[#f4c24d]'
                 />
-                启用
+                <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                  启用此广告
+                </span>
+                <FluentBadge
+                  variant={editDialog.ad?.enabled ? 'success' : 'default'}
+                  size='sm'
+                  rounded
+                  className='ml-auto'
+                >
+                  {editDialog.ad?.enabled ? '已启用' : '已禁用'}
+                </FluentBadge>
               </label>
-              <div className='flex justify-end gap-2'>
-                <button
+              <div className='flex justify-end gap-2 pt-2'>
+                <FluentButton
+                  variant='ghost'
+                  size='sm'
                   onClick={() =>
                     setEditDialog({ isOpen: false, slot: '', ad: null })
                   }
-                  className={buttonStyles.secondarySmall}
                 >
                   取消
-                </button>
-                <button
+                </FluentButton>
+                <FluentButton
+                  variant='primary'
+                  size='sm'
+                  icon={<Save className='h-3.5 w-3.5' />}
                   onClick={handleAdSave}
-                  className={buttonStyles.primarySmall}
                 >
                   保存
-                </button>
+                </FluentButton>
               </div>
-            </div>
+            </FluentCard>
           </div>
         )}
       </div>
@@ -245,129 +344,242 @@ export default function SiteConfigComponent({
   }
 
   const S = siteSettings;
-  const setS = (key: string, value: any) =>
+  const setS = (key: string, value: any) => {
     setSiteSettings((prev: any) => ({ ...prev, [key]: value }));
-  const inp =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm';
-  const lbl = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+    setHasChanges(true);
+  };
 
   return (
-    <div className='space-y-6'>
-      <div className='space-y-4'>
+    <div className='space-y-4'>
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
         <div>
-          <label className={lbl}>站点名称</label>
-          <input
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            站点配置
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            品牌、公告、代理与播放器设置
+          </p>
+        </div>
+        <FluentBadge variant='default' size='sm' rounded>
+          <Settings2 className='w-3 h-3' /> 基础设置
+        </FluentBadge>
+      </div>
+
+      {/* 基础信息 */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#f4c24d]/15 flex items-center justify-center'>
+            <Globe className='w-3.5 h-3.5 text-[#f4c24d]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            基础信息
+          </h4>
+          <FluentBadge variant='info' size='sm' rounded>
+            品牌与公告
+          </FluentBadge>
+        </div>
+        <div className='grid gap-4'>
+          <FluentInput
+            label='站点名称'
             value={S.SiteName}
             onChange={(e) => setS('SiteName', e.target.value)}
-            className={inp}
+            placeholder='例如：5572TV'
           />
-        </div>
-        <div>
-          <label className={lbl}>公告标题</label>
-          <input
+          <FluentInput
+            label='公告标题'
             value={S.AnnouncementTitle}
             onChange={(e) => setS('AnnouncementTitle', e.target.value)}
-            className={inp}
+            placeholder='站点公告'
           />
-        </div>
-        <div>
-          <label className={lbl}>公告内容</label>
-          <textarea
+          <FluentTextArea
+            label='公告内容'
             value={S.Announcement}
             onChange={(e) => setS('Announcement', e.target.value)}
             rows={4}
-            className={inp}
+            placeholder='输入公告内容，支持换行...'
           />
         </div>
-        <div className='grid grid-cols-2 gap-4'>
-          <div>
-            <label className={lbl}>搜索最大页数</label>
-            <input
-              type='number'
-              value={S.SearchDownstreamMaxPage}
-              onChange={(e) =>
-                setS('SearchDownstreamMaxPage', parseInt(e.target.value) || 1)
-              }
-              className={inp}
-            />
-          </div>
-          <div>
-            <label className={lbl}>接口缓存时间（秒）</label>
-            <input
-              type='number'
-              value={S.SiteInterfaceCacheTime}
-              onChange={(e) =>
-                setS('SiteInterfaceCacheTime', parseInt(e.target.value) || 7200)
-              }
-              className={inp}
-            />
-          </div>
+      </FluentCard>
+
+      {/* 搜索与缓存 */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#3b82f6]/15 flex items-center justify-center'>
+            <Settings2 className='w-3.5 h-3.5 text-[#3b82f6]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            搜索与缓存
+          </h4>
         </div>
-        <div>
-          <label className={lbl}>豆瓣数据代理类型</label>
-          <select
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+          <FluentInput
+            label='搜索最大页数'
+            type='number'
+            min={1}
+            value={String(S.SearchDownstreamMaxPage)}
+            onChange={(e) =>
+              setS('SearchDownstreamMaxPage', parseInt(e.target.value) || 1)
+            }
+            placeholder='1'
+          />
+          <FluentInput
+            label='接口缓存时间（秒）'
+            type='number'
+            min={0}
+            value={String(S.SiteInterfaceCacheTime)}
+            onChange={(e) =>
+              setS('SiteInterfaceCacheTime', parseInt(e.target.value) || 7200)
+            }
+            placeholder='7200'
+          />
+        </div>
+        <p className='text-xs text-[#9ca3af]'>
+          搜索页数越大覆盖越全但速度越慢；缓存时间影响采集源接口的刷新频率。
+        </p>
+      </FluentCard>
+
+      {/* 代理设置 */}
+      <FluentCard padding='16px' className='space-y-4'>
+        <div className='flex items-center gap-2'>
+          <span className='w-7 h-7 rounded-lg bg-[#22c55e]/15 flex items-center justify-center'>
+            <Shield className='w-3.5 h-3.5 text-[#22c55e]' />
+          </span>
+          <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            豆瓣代理
+          </h4>
+          <FluentBadge variant='default' size='sm' rounded>
+            可选代理
+          </FluentBadge>
+        </div>
+
+        <div className='space-y-4'>
+          <FluentSelect
+            label='豆瓣数据代理类型'
             value={S.DoubanProxyType}
             onChange={(e) => setS('DoubanProxyType', e.target.value)}
-            className={inp}
-          >
-            <option value='direct'>直连</option>
-            <option value='proxy'>代理</option>
-          </select>
-        </div>
-        {S.DoubanProxyType === 'proxy' && (
-          <div>
-            <label className={lbl}>豆瓣代理地址</label>
-            <input
+            options={[
+              { value: 'direct', label: '直连' },
+              { value: 'proxy', label: '代理' },
+            ]}
+          />
+          {S.DoubanProxyType === 'proxy' && (
+            <FluentInput
+              label='豆瓣代理地址'
               value={S.DoubanProxy}
               onChange={(e) => setS('DoubanProxy', e.target.value)}
-              className={inp}
               placeholder='https://your-proxy.com'
             />
-          </div>
-        )}
-        <div>
-          <label className={lbl}>豆瓣图片代理类型</label>
-          <select
+          )}
+          <FluentSelect
+            label='豆瓣图片代理类型'
             value={S.DoubanImageProxyType}
             onChange={(e) => setS('DoubanImageProxyType', e.target.value)}
-            className={inp}
-          >
-            <option value='direct'>直连</option>
-            <option value='proxy'>代理</option>
-          </select>
-        </div>
-        {S.DoubanImageProxyType === 'proxy' && (
-          <div>
-            <label className={lbl}>图片代理地址</label>
-            <input
+            options={[
+              { value: 'direct', label: '直连' },
+              { value: 'proxy', label: '代理' },
+            ]}
+          />
+          {S.DoubanImageProxyType === 'proxy' && (
+            <FluentInput
+              label='图片代理地址'
               value={S.DoubanImageProxy}
               onChange={(e) => setS('DoubanImageProxy', e.target.value)}
-              className={inp}
+              placeholder='https://img-proxy.example.com'
             />
-          </div>
-        )}
-        <div className='flex items-center justify-between py-2'>
-          <div>
-            <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
-              外部播放器
-            </label>
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-              开启后，用户可在播放页面使用外部播放器（PotPlayer、VLC、MPV等）打开视频
-            </p>
+          )}
+        </div>
+      </FluentCard>
+
+      {/* 播放器 */}
+      <FluentCard padding='16px'>
+        <div className='flex items-center justify-between gap-4'>
+          <div className='flex items-start gap-3'>
+            <span className='w-7 h-7 rounded-lg bg-[#f59e0b]/15 flex items-center justify-center shrink-0 mt-0.5'>
+              <ExternalLink className='w-3.5 h-3.5 text-[#f59e0b]' />
+            </span>
+            <div>
+              <div className='flex items-center gap-2'>
+                <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                  外部播放器
+                </span>
+                <FluentBadge
+                  variant={S.EnableExternalPlayer ? 'success' : 'default'}
+                  size='sm'
+                  rounded
+                >
+                  {S.EnableExternalPlayer ? '已开启' : '已关闭'}
+                </FluentBadge>
+              </div>
+              <p className='text-xs text-[#9ca3af] mt-1 leading-relaxed max-w-[36rem]'>
+                开启后，用户可在播放页面使用外部播放器（PotPlayer、VLC、MPV
+                等）打开视频，提升大屏与本地播放体验。
+              </p>
+            </div>
           </div>
           <Toggle
             checked={S.EnableExternalPlayer}
             onChange={(v) => setS('EnableExternalPlayer', v)}
           />
         </div>
-      </div>
-      <button
-        onClick={handleSiteSave}
-        disabled={isLoading('saveSiteConfig')}
-        className={`px-4 py-2 ${isLoading('saveSiteConfig') ? buttonStyles.disabled : buttonStyles.success} rounded-lg transition-colors`}
+      </FluentCard>
+
+      {/* 额外公告卡片点缀 */}
+      <FluentCard
+        padding='12px'
+        className='flex items-center gap-3 bg-gradient-to-r from-[#f4c24d]/10 to-transparent dark:from-[#f4c24d]/5'
       >
-        {isLoading('saveSiteConfig') ? '保存中…' : '保存配置'}
-      </button>
+        <span className='w-8 h-8 rounded-xl bg-[#f4c24d]/20 flex items-center justify-center shrink-0'>
+          <Megaphone className='w-4 h-4 text-[#f4c24d]' />
+        </span>
+        <div className='flex-1 min-w-0'>
+          <p className='text-xs font-medium text-gray-900 dark:text-white truncate'>
+            公告将展示在首页顶部
+          </p>
+          <p className='text-xs text-[#9ca3af] truncate'>
+            标题：{S.AnnouncementTitle || '站点公告'} · 内容长度
+            {S.Announcement?.length || 0} 字符
+          </p>
+        </div>
+        <FluentBadge variant='warning' size='sm' rounded>
+          预览
+        </FluentBadge>
+      </FluentCard>
+
+      {/* Save bar */}
+      <div className='flex items-center gap-3 pt-1 sticky bottom-0 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur rounded-xl p-3 border border-gray-200 dark:border-white/5 shadow-sm'>
+        <FluentButton
+          variant='primary'
+          size='md'
+          icon={<Save className='h-4 w-4' />}
+          loading={isLoading('saveSiteConfig')}
+          onClick={handleSiteSave}
+        >
+          {isLoading('saveSiteConfig') ? '保存中…' : '保存配置'}
+        </FluentButton>
+        {hasChanges ? (
+          <span
+            className='text-xs'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            有未保存的更改
+          </span>
+        ) : (
+          <span className='text-xs text-[#22c55e] flex items-center gap-1'>
+            <span className='w-1.5 h-1.5 rounded-full bg-[#22c55e] inline-block' />
+            已同步
+          </span>
+        )}
+        <span className='hidden' aria-hidden>
+          {alertModal.isOpen ? 'open' : 'closed'} {String(openAsDialog)}
+        </span>
+      </div>
     </div>
   );
 }

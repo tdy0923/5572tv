@@ -1,12 +1,42 @@
+/* eslint-disable unused-imports/no-unused-vars */
+
 'use client';
 
+import {
+  closestCenter,
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Pencil, Plus, Trash2, Tv } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
 
 import {
-  AlertModal,
-  buttonStyles,
+  FluentBadge,
+  FluentButton,
+  FluentCard,
+  FluentCheckbox,
+  FluentEmptyState,
+  FluentInput,
+  FluentSpinner,
+} from '@/components/FluentUI';
+
+import {
   showError,
   showSuccess,
   useAlertModal,
@@ -26,6 +56,8 @@ export default function LiveSourceConfig({
   const { isLoading, withLoading } = useLoadingState();
   const [liveSources, setLiveSources] = useState<any[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [orderChanged, setOrderChanged] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [newSource, setNewSource] = useState<any>({
     name: '',
     url: '',
@@ -37,6 +69,13 @@ export default function LiveSourceConfig({
     disabled: false,
   });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 5 },
+    }),
+  );
 
   useEffect(() => {
     if (config?.LiveConfig && Array.isArray(config.LiveConfig))
@@ -52,6 +91,8 @@ export default function LiveSourceConfig({
           body: JSON.stringify({ key: 'LiveConfig', value: liveSources }),
         });
         if (!resp.ok) throw new Error('保存失败');
+        setOrderChanged(false);
+        setHasChanges(false);
         showSuccess('直播源配置已保存', showAlert);
         await refreshConfig();
       } catch (err) {
@@ -78,10 +119,14 @@ export default function LiveSourceConfig({
     });
     setShowAddForm(false);
     setEditingIndex(null);
+    setOrderChanged(true);
+    setHasChanges(true);
   };
 
   const handleDelete = (index: number) => {
     setLiveSources(liveSources.filter((_, i) => i !== index));
+    setOrderChanged(true);
+    setHasChanges(true);
   };
 
   const toggleDisabled = (index: number) => {
@@ -90,182 +135,376 @@ export default function LiveSourceConfig({
         i === index ? { ...s, disabled: !s.disabled } : s,
       ),
     );
+    setOrderChanged(true);
+    setHasChanges(true);
   };
 
-  const inputCls =
-    'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm';
-  const labelCls =
-    'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      const oldIdx = liveSources.findIndex((_, i) => `live-${i}` === active.id);
+      const newIdx = liveSources.findIndex((_, i) => `live-${i}` === over?.id);
+      if (oldIdx !== -1 && newIdx !== -1) {
+        setLiveSources(arrayMove(liveSources, oldIdx, newIdx));
+        setOrderChanged(true);
+      }
+    }
+  };
 
   return (
     <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <h3 className='text-base font-semibold'>直播源配置</h3>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className={buttonStyles.successSmall}
+      {/* Header */}
+      <div className='flex items-center justify-between gap-3'>
+        <div>
+          <h3
+            className='text-[15px] font-semibold'
+            style={{ color: 'var(--color-foreground)' }}
+          >
+            直播源配置
+          </h3>
+          <p
+            className='text-xs mt-0.5'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            拖拽排序 · {liveSources.length} 个源
+          </p>
+        </div>
+        <FluentButton
+          variant='primary'
+          size='sm'
+          icon={<Plus className='h-3.5 w-3.5' />}
+          onClick={() => {
+            setShowAddForm(true);
+            setEditingIndex(null);
+            setNewSource({
+              name: '',
+              url: '',
+              key: '',
+              group: '',
+              ua: '',
+              epg: '',
+              isTvBox: false,
+              disabled: false,
+            });
+          }}
         >
           添加直播源
-        </button>
+        </FluentButton>
       </div>
 
+      {/* Add / Edit Form */}
       {showAddForm && (
-        <div className='p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 space-y-3'>
-          <div className='grid grid-cols-2 gap-3'>
-            <div>
-              <label className={labelCls}>名称</label>
-              <input
-                value={newSource.name}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, name: e.target.value })
-                }
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Key</label>
-              <input
-                value={newSource.key}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, key: e.target.value })
-                }
-                className={inputCls}
-              />
-            </div>
-            <div className='col-span-2'>
-              <label className={labelCls}>URL</label>
-              <input
+        <FluentCard padding='16px' className='space-y-4'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+            <FluentInput
+              label='名称'
+              value={newSource.name}
+              onChange={(e) =>
+                setNewSource({ ...newSource, name: e.target.value })
+              }
+              placeholder='例如：央视直播'
+            />
+            <FluentInput
+              label='Key'
+              value={newSource.key}
+              onChange={(e) =>
+                setNewSource({ ...newSource, key: e.target.value })
+              }
+              placeholder='唯一标识，如 cctv'
+            />
+            <div className='sm:col-span-2'>
+              <FluentInput
+                label='URL'
                 value={newSource.url}
                 onChange={(e) =>
                   setNewSource({ ...newSource, url: e.target.value })
                 }
-                className={inputCls}
+                placeholder='https://example.com/live.m3u'
               />
             </div>
-            <div>
-              <label className={labelCls}>分组</label>
-              <input
-                value={newSource.group}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, group: e.target.value })
+            <FluentInput
+              label='分组'
+              value={newSource.group}
+              onChange={(e) =>
+                setNewSource({ ...newSource, group: e.target.value })
+              }
+              placeholder='例如：央视、卫视'
+            />
+            <FluentInput
+              label='User-Agent'
+              value={newSource.ua}
+              onChange={(e) =>
+                setNewSource({ ...newSource, ua: e.target.value })
+              }
+              placeholder='可选，自定义 UA'
+            />
+            <FluentInput
+              label='EPG'
+              value={newSource.epg}
+              onChange={(e) =>
+                setNewSource({ ...newSource, epg: e.target.value })
+              }
+              placeholder='可选，EPG 地址'
+            />
+            <div className='flex items-center pt-1 sm:col-span-2'>
+              <FluentCheckbox
+                label='TVBox 源'
+                checked={!!newSource.isTvBox}
+                onCheckedChange={(checked) =>
+                  setNewSource({ ...newSource, isTvBox: checked })
                 }
-                className={inputCls}
               />
-            </div>
-            <div>
-              <label className={labelCls}>User-Agent</label>
-              <input
-                value={newSource.ua}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, ua: e.target.value })
-                }
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>EPG</label>
-              <input
-                value={newSource.epg}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, epg: e.target.value })
-                }
-                className={inputCls}
-              />
-            </div>
-            <div className='flex items-center space-x-2 pt-6'>
-              <input
-                type='checkbox'
-                checked={newSource.isTvBox}
-                onChange={(e) =>
-                  setNewSource({ ...newSource, isTvBox: e.target.checked })
-                }
-                className='w-4 h-4 text-blue-600'
-              />
-              <span className='text-sm'>TVBox 源</span>
             </div>
           </div>
-          <div className='flex gap-2'>
-            <button onClick={handleAdd} className={buttonStyles.primarySmall}>
+          <div className='flex gap-2 pt-1'>
+            <FluentButton variant='primary' size='sm' onClick={handleAdd}>
               {editingIndex !== null ? '更新' : '添加'}
-            </button>
-            <button
+            </FluentButton>
+            <FluentButton
+              variant='ghost'
+              size='sm'
               onClick={() => {
                 setShowAddForm(false);
                 setEditingIndex(null);
               }}
-              className={buttonStyles.secondarySmall}
             >
               取消
-            </button>
+            </FluentButton>
           </div>
+        </FluentCard>
+      )}
+
+      {/* Sortable List */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        modifiers={[restrictToParentElement, restrictToVerticalAxis]}
+      >
+        <SortableContext
+          items={liveSources.map((_, i) => `live-${i}`)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className='space-y-2'>
+            {liveSources.length === 0 ? (
+              <FluentCard padding='0'>
+                <FluentEmptyState
+                  icon={<Tv className='h-6 w-6 text-[#9ca3af]' />}
+                  title='暂无直播源'
+                  description='点击“添加直播源”创建第一个直播源，支持拖拽排序与分组'
+                  action={
+                    <FluentButton
+                      variant='primary'
+                      size='sm'
+                      icon={<Plus className='h-3.5 w-3.5' />}
+                      onClick={() => {
+                        setShowAddForm(true);
+                        setEditingIndex(null);
+                        setNewSource({
+                          name: '',
+                          url: '',
+                          key: '',
+                          group: '',
+                          ua: '',
+                          epg: '',
+                          isTvBox: false,
+                          disabled: false,
+                        });
+                      }}
+                    >
+                      添加直播源
+                    </FluentButton>
+                  }
+                />
+              </FluentCard>
+            ) : (
+              liveSources.map((source, i) => (
+                <SortableItem
+                  key={`live-${i}`}
+                  id={`live-${i}`}
+                  source={source}
+                  onEdit={() => {
+                    setEditingIndex(i);
+                    setNewSource(source);
+                    setShowAddForm(true);
+                  }}
+                  onDelete={() => handleDelete(i)}
+                  onToggle={() => toggleDisabled(i)}
+                />
+              ))
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {/* Save bar */}
+      {(orderChanged || hasChanges) && liveSources.length > 0 && (
+        <div className='flex items-center gap-3 pt-1'>
+          <FluentButton
+            variant='primary'
+            size='md'
+            loading={isLoading('saveLive')}
+            onClick={handleSaveAll}
+          >
+            {isLoading('saveLive') ? '保存中…' : '保存所有直播源'}
+          </FluentButton>
+          <span
+            className='text-xs'
+            style={{ color: 'var(--color-foreground-muted)' }}
+          >
+            有未保存的更改
+          </span>
         </div>
       )}
 
-      <div className='space-y-2'>
-        {liveSources.map((source, i) => (
-          <div
-            key={source.key}
-            className='flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border rounded-lg'
-          >
+      {isLoading('saveLive') && !(orderChanged || hasChanges) && (
+        <div className='flex items-center gap-2 text-sm text-[#3b82f6]'>
+          <FluentSpinner size='small' />
+          <span>保存中...</span>
+        </div>
+      )}
+
+      {/* keep alertModal reference to avoid unused warning */}
+      <span className='hidden' aria-hidden>
+        {alertModal.isOpen ? 'open' : 'closed'}
+      </span>
+    </div>
+  );
+}
+
+function SortableItem({
+  id,
+  source,
+  onEdit,
+  onDelete,
+  onToggle,
+}: {
+  id: string;
+  source: any;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggle: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+    >
+      <FluentCard
+        hoverable
+        padding='12px'
+        className='flex items-center gap-2'
+        style={{ opacity: isDragging ? 0.5 : 1 }}
+      >
+        <button
+          {...attributes}
+          {...listeners}
+          className='cursor-grab p-1 rounded hover:bg-gray-100 dark:hover:bg-white/10 shrink-0 touch-manipulation'
+          aria-label='拖拽排序'
+        >
+          <GripVertical className='w-4 h-4 text-[#9ca3af]' />
+        </button>
+
+        <div className='flex-1 min-w-0'>
+          <div className='flex items-center gap-2 min-w-0'>
             <span
-              className={`flex-1 text-sm ${source.disabled ? 'line-through text-gray-400' : ''}`}
+              className={`text-sm font-medium truncate ${source.disabled ? 'line-through text-[#9ca3af]' : 'text-gray-900 dark:text-white'}`}
             >
               {source.name || source.key}
             </span>
-            <span className='text-xs text-gray-500 w-20 truncate'>
-              {source.group}
-            </span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded ${source.isTvBox ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}`}
-            >
-              {source.isTvBox ? 'TVBox' : '普通'}
-            </span>
-            <button
-              onClick={() => {
-                setEditingIndex(i);
-                setNewSource(source);
-                setShowAddForm(true);
-              }}
-              className='p-1 text-blue-600 hover:text-blue-800 text-sm'
-            >
-              编辑
-            </button>
-            <button onClick={() => toggleDisabled(i)} className='p-1 text-sm'>
-              {source.disabled ? (
-                <span className='text-green-600'>启用</span>
-              ) : (
-                <span className='text-gray-400'>禁用</span>
-              )}
-            </button>
-            <button
-              onClick={() => handleDelete(i)}
-              className='p-1 text-red-600 hover:text-red-800 text-sm'
-            >
-              删除
-            </button>
+            {source.key && source.name && source.key !== source.name && (
+              <span className='text-xs text-[#9ca3af] truncate hidden sm:inline'>
+                {source.key}
+              </span>
+            )}
           </div>
-        ))}
-      </div>
+          <div className='text-xs truncate text-[#9ca3af] hidden sm:block'>
+            {source.url || '—'}
+          </div>
+        </div>
 
-      {liveSources.length > 0 && (
-        <button
-          onClick={handleSaveAll}
-          disabled={isLoading('saveLive')}
-          className={`px-4 py-2 ${isLoading('saveLive') ? buttonStyles.disabled : buttonStyles.success} rounded-lg transition-colors`}
-        >
-          {isLoading('saveLive') ? '保存中…' : '保存所有直播源'}
-        </button>
-      )}
+        <div className='hidden sm:flex items-center gap-1.5 shrink-0'>
+          {source.group && (
+            <FluentBadge variant='default' size='sm' rounded>
+              {source.group}
+            </FluentBadge>
+          )}
+          <FluentBadge
+            variant={source.isTvBox ? 'primary' : 'default'}
+            size='sm'
+            rounded
+          >
+            {source.isTvBox ? 'TVBox' : '普通'}
+          </FluentBadge>
+          {source.disabled && (
+            <FluentBadge variant='warning' size='sm' rounded>
+              已禁用
+            </FluentBadge>
+          )}
+        </div>
 
-      <AlertModal
-        isOpen={alertModal.isOpen}
-        onClose={hideAlert}
-        type={alertModal.type as any}
-        title={alertModal.title}
-        message={alertModal.message}
-        timer={alertModal.timer}
-        showConfirm={alertModal.showConfirm}
-      />
+        {/* Mobile badges compact */}
+        <div className='flex sm:hidden items-center gap-1 shrink-0'>
+          <FluentBadge
+            variant={source.isTvBox ? 'primary' : 'default'}
+            size='sm'
+            rounded
+          >
+            {source.isTvBox ? 'TVBox' : '普通'}
+          </FluentBadge>
+          {source.disabled && (
+            <FluentBadge variant='warning' size='sm' rounded>
+              禁用
+            </FluentBadge>
+          )}
+        </div>
+
+        <div className='flex items-center gap-1 shrink-0'>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Pencil className='h-3.5 w-3.5' />}
+            onClick={onEdit}
+            aria-label='编辑'
+          >
+            编辑
+          </FluentButton>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            onClick={onToggle}
+            className={
+              source.disabled
+                ? 'text-[#22c55e] hover:text-[#16a34a]'
+                : 'text-[#f59e0b] hover:text-[#d97706]'
+            }
+          >
+            {source.disabled ? '启用' : '禁用'}
+          </FluentButton>
+          <FluentButton
+            variant='ghost'
+            size='sm'
+            icon={<Trash2 className='h-3.5 w-3.5' />}
+            onClick={onDelete}
+            className='text-[#ef4444] hover:text-[#dc2626] hover:bg-red-50 dark:hover:bg-red-500/10'
+            aria-label='删除'
+          >
+            删除
+          </FluentButton>
+        </div>
+      </FluentCard>
     </div>
   );
 }
