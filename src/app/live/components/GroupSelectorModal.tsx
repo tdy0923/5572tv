@@ -162,7 +162,7 @@ export default function GroupSelectorModal({
 
       <div
         className='relative bg-white dark:bg-gray-800 w-full max-h-[85vh] sm:max-h-[80vh] sm:max-w-md sm:mx-4 flex flex-col pb-[env(safe-area-inset-bottom)] sm:pb-0
-                   rounded-t-3xl sm:rounded-2xl shadow-2xl
+                   rounded-t-3xl sm:rounded-2xl shadow-28
                    animate-in slide-in-from-bottom sm:fade-in sm:zoom-in-95 duration-300'
         onClick={(e) => e.stopPropagation()}
       >

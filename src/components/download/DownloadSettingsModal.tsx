@@ -38,7 +38,7 @@ export function DownloadSettingsModal({
         />
 
         {/* 模态框内容 */}
-        <div className='relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700 overflow-hidden'>
+        <div className='relative bg-white dark:bg-gray-800 rounded-lg shadow-28 w-full max-w-md border border-gray-200 dark:border-gray-700 overflow-hidden'>
           {/* 标题栏 */}
           <div className='flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700'>
             <h2 className='text-lg sm:text-xl font-bold text-gray-900 dark:text-white'>

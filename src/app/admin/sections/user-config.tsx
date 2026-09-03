@@ -957,7 +957,7 @@ export default function UserConfig({
       {/* 编辑分组弹窗 */}
       {showEditGroupModal && (
         <div className='fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4'>
-          <div className='bg-white dark:bg-[#1a1a1a] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl border border-gray-200 dark:border-white/10'>
+          <div className='bg-white dark:bg-[#1a1a1a] rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-28 border border-gray-200 dark:border-white/10'>
             <div className='px-6 py-4 border-b border-gray-200 dark:border-white/5 shrink-0 flex items-center justify-between'>
               <div className='flex items-center gap-2'>
                 <span className='w-8 h-8 rounded-lg bg-[#f4c24d]/15 flex items-center justify-center'>

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Loader2, Search, X } from 'lucide-react';
@@ -166,7 +165,7 @@ export default function DanmuManualMatchModal({
         onClick={onClose}
       />
       {/* Mobile: full-screen sheet / Desktop: centered dialog */}
-      <div className='fixed inset-0 z-50 flex flex-col bg-gray-950/95 dark:bg-slate-950/95 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[90vh] md:w-[min(96vw,1080px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-white/20 md:pb-0 md:pt-0 md:shadow-2xl'>
+      <div className='fixed inset-0 z-50 flex flex-col bg-gray-950/95 dark:bg-slate-950/95 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[90vh] md:w-[min(96vw,1080px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-2xl md:border md:border-white/20 md:pb-0 md:pt-0 md:shadow-28'>
         {/* Header */}
         <div className='flex shrink-0 items-center justify-between border-b border-white/10 px-[max(1rem,env(safe-area-inset-left))] py-3 sm:px-5'>
           <div>

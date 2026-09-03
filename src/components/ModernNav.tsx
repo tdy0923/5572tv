@@ -225,7 +225,7 @@ export default function ModernNav({
             aria-modal='true'
             aria-label='更多菜单'
             tabIndex={-1}
-            className='absolute bottom-20 left-2 right-2 bg-white dark:bg-gray-800 dark:bg-gray-900/90  rounded-3xl shadow-2xl border border-white/20 dark:border-gray-800/30 overflow-hidden'
+            className='absolute bottom-20 left-2 right-2 bg-white dark:bg-gray-800 dark:bg-gray-900/90  rounded-3xl shadow-16 border border-white/20 dark:border-gray-800/30 overflow-hidden'
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}

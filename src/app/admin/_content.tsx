@@ -484,7 +484,7 @@ function AdminPageClient() {
               />
             )}
             <aside
-              className={`${isMobileNavOpen ? 'fixed inset-y-0 left-0 z-50 w-[86%] max-w-[320px] overflow-y-auto p-4 shadow-2xl' : 'hidden'} lg:sticky lg:top-24 lg:flex lg:h-fit lg:max-h-[calc(100vh-6rem)] lg:w-auto lg:translate-x-0 flex-col overflow-y-auto ${isNavCollapsed ? 'lg:p-2' : 'lg:p-4'} ui-screen`}
+              className={`${isMobileNavOpen ? 'fixed inset-y-0 left-0 z-50 w-[86%] max-w-[320px] overflow-y-auto p-4 shadow-28' : 'hidden'} lg:sticky lg:top-24 lg:flex lg:h-fit lg:max-h-[calc(100vh-6rem)] lg:w-auto lg:translate-x-0 flex-col overflow-y-auto ${isNavCollapsed ? 'lg:p-2' : 'lg:p-4'} ui-screen`}
             >
               <div className='mb-3 flex items-center justify-between'>
                 {!isNavCollapsed && (

@@ -6752,7 +6752,7 @@ function PlayPageClient() {
           onClick={() => setShowShortcutsHelp(false)}
         >
           <div
-            className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6'
+            className='bg-white dark:bg-gray-900 rounded-2xl shadow-28 max-w-md w-full mx-4 p-6'
             onClick={(e) => e.stopPropagation()}
           >
             <div className='flex items-center justify-between mb-4'>

@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  AlertTriangle,
   CheckCircle,
   Clock,
   Play,
@@ -431,7 +430,10 @@ export default function SourceTestModule() {
   const getStatusIcon = (status: string, disabled?: boolean) => {
     if (disabled) {
       return (
-        <span className='w-4 h-4 rounded-full bg-[#9ca3af] inline-block' title='已禁用' />
+        <span
+          className='w-4 h-4 rounded-full bg-[#9ca3af] inline-block'
+          title='已禁用'
+        />
       );
     }
 
@@ -445,7 +447,9 @@ export default function SourceTestModule() {
       case 'timeout':
         return <Clock className='w-4 h-4 text-[#f59e0b]' />;
       default:
-        return <span className='w-4 h-4 rounded-full bg-gray-300 dark:bg-white/20 inline-block' />;
+        return (
+          <span className='w-4 h-4 rounded-full bg-gray-300 dark:bg-white/20 inline-block' />
+        );
     }
   };
 
@@ -562,7 +566,13 @@ export default function SourceTestModule() {
             <FluentButton
               variant='primary'
               size='md'
-              icon={isTestingAll ? <RefreshCw className='w-4 h-4 animate-spin' /> : <Play className='w-4 h-4' />}
+              icon={
+                isTestingAll ? (
+                  <RefreshCw className='w-4 h-4 animate-spin' />
+                ) : (
+                  <Play className='w-4 h-4' />
+                )
+              }
               loading={isTestingAll}
               disabled={!searchKeyword.trim() || sources.length === 0}
               onClick={handleTestAll}
@@ -583,7 +593,11 @@ export default function SourceTestModule() {
             <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>
               测试统计
             </h4>
-            <FluentBadge variant={stats.testing > 0 ? 'warning' : 'success'} size='sm' rounded>
+            <FluentBadge
+              variant={stats.testing > 0 ? 'warning' : 'success'}
+              size='sm'
+              rounded
+            >
               {stats.success}/{stats.total} 成功
             </FluentBadge>
           </div>
@@ -595,19 +609,27 @@ export default function SourceTestModule() {
               <div className='text-[11px] text-[#9ca3af]'>总源数</div>
             </div>
             <div className='rounded-xl border bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/20 p-2.5'>
-              <div className='text-lg font-bold text-[#22c55e]'>{stats.success}</div>
+              <div className='text-lg font-bold text-[#22c55e]'>
+                {stats.success}
+              </div>
               <div className='text-[11px] text-[#9ca3af]'>成功</div>
             </div>
             <div className='rounded-xl border bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/20 p-2.5'>
-              <div className='text-lg font-bold text-[#ef4444]'>{stats.error}</div>
+              <div className='text-lg font-bold text-[#ef4444]'>
+                {stats.error}
+              </div>
               <div className='text-[11px] text-[#9ca3af]'>失败</div>
             </div>
             <div className='rounded-xl border bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/20 p-2.5'>
-              <div className='text-lg font-bold text-[#f59e0b]'>{stats.timeout}</div>
+              <div className='text-lg font-bold text-[#f59e0b]'>
+                {stats.timeout}
+              </div>
               <div className='text-[11px] text-[#9ca3af]'>超时</div>
             </div>
             <div className='rounded-xl border bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/20 p-2.5'>
-              <div className='text-lg font-bold text-[#3b82f6]'>{stats.testing}</div>
+              <div className='text-lg font-bold text-[#3b82f6]'>
+                {stats.testing}
+              </div>
               <div className='text-[11px] text-[#9ca3af]'>测试中</div>
             </div>
           </div>
@@ -618,10 +640,18 @@ export default function SourceTestModule() {
                 启用源 ({stats.enabledTotal})
               </h4>
               <div className='flex flex-wrap gap-1.5'>
-                <FluentBadge variant='success' size='sm' rounded>成功 {stats.enabledSuccess}</FluentBadge>
-                <FluentBadge variant='error' size='sm' rounded>失败 {stats.enabledError}</FluentBadge>
-                <FluentBadge variant='warning' size='sm' rounded>超时 {stats.enabledTimeout}</FluentBadge>
-                <FluentBadge variant='info' size='sm' rounded>测试中 {stats.enabledTesting}</FluentBadge>
+                <FluentBadge variant='success' size='sm' rounded>
+                  成功 {stats.enabledSuccess}
+                </FluentBadge>
+                <FluentBadge variant='error' size='sm' rounded>
+                  失败 {stats.enabledError}
+                </FluentBadge>
+                <FluentBadge variant='warning' size='sm' rounded>
+                  超时 {stats.enabledTimeout}
+                </FluentBadge>
+                <FluentBadge variant='info' size='sm' rounded>
+                  测试中 {stats.enabledTesting}
+                </FluentBadge>
               </div>
             </div>
             <div className='rounded-xl border bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5 p-3'>
@@ -629,10 +659,18 @@ export default function SourceTestModule() {
                 禁用源 ({stats.disabledTotal})
               </h4>
               <div className='flex flex-wrap gap-1.5'>
-                <FluentBadge variant='success' size='sm' rounded>成功 {stats.disabledSuccess}</FluentBadge>
-                <FluentBadge variant='error' size='sm' rounded>失败 {stats.disabledError}</FluentBadge>
-                <FluentBadge variant='warning' size='sm' rounded>超时 {stats.disabledTimeout}</FluentBadge>
-                <FluentBadge variant='info' size='sm' rounded>测试中 {stats.disabledTesting}</FluentBadge>
+                <FluentBadge variant='success' size='sm' rounded>
+                  成功 {stats.disabledSuccess}
+                </FluentBadge>
+                <FluentBadge variant='error' size='sm' rounded>
+                  失败 {stats.disabledError}
+                </FluentBadge>
+                <FluentBadge variant='warning' size='sm' rounded>
+                  超时 {stats.disabledTimeout}
+                </FluentBadge>
+                <FluentBadge variant='info' size='sm' rounded>
+                  测试中 {stats.disabledTesting}
+                </FluentBadge>
               </div>
             </div>
           </div>
@@ -709,7 +747,9 @@ export default function SourceTestModule() {
                         )}
                       </div>
                       <div className='text-xs text-[#9ca3af] mt-0.5'>
-                        <div className='font-mono text-[11px]'>{source.key}</div>
+                        <div className='font-mono text-[11px]'>
+                          {source.key}
+                        </div>
                         <div
                           className='truncate hover:whitespace-normal hover:break-all transition-all cursor-pointer'
                           title={source.api}
@@ -735,13 +775,19 @@ export default function SourceTestModule() {
                           </div>
                         )}
                         {result.status === 'error' && (
-                          <FluentBadge variant='error' size='sm' rounded>请求失败</FluentBadge>
+                          <FluentBadge variant='error' size='sm' rounded>
+                            请求失败
+                          </FluentBadge>
                         )}
                         {result.status === 'timeout' && (
-                          <FluentBadge variant='warning' size='sm' rounded>请求超时</FluentBadge>
+                          <FluentBadge variant='warning' size='sm' rounded>
+                            请求超时
+                          </FluentBadge>
                         )}
                         {result.status === 'testing' && (
-                          <FluentBadge variant='info' size='sm' rounded>测试中...</FluentBadge>
+                          <FluentBadge variant='info' size='sm' rounded>
+                            测试中...
+                          </FluentBadge>
                         )}
                         {result.topMatches && result.topMatches.length > 0 && (
                           <div
@@ -783,7 +829,11 @@ export default function SourceTestModule() {
                       variant={source.disabled ? 'primary' : 'ghost'}
                       size='sm'
                       onClick={() => toggleSource(source)}
-                      className={source.disabled ? '' : '!text-[#ef4444] hover:!bg-red-50 dark:hover:!bg-red-500/10'}
+                      className={
+                        source.disabled
+                          ? ''
+                          : '!text-[#ef4444] hover:!bg-red-50 dark:hover:!bg-red-500/10'
+                      }
                     >
                       {source.disabled ? '启用' : '禁用'}
                     </FluentButton>
@@ -811,13 +861,19 @@ export default function SourceTestModule() {
                         </span>
                       )}
                       {result.status === 'error' && (
-                        <FluentBadge variant='error' size='sm' rounded>失败</FluentBadge>
+                        <FluentBadge variant='error' size='sm' rounded>
+                          失败
+                        </FluentBadge>
                       )}
                       {result.status === 'timeout' && (
-                        <FluentBadge variant='warning' size='sm' rounded>超时</FluentBadge>
+                        <FluentBadge variant='warning' size='sm' rounded>
+                          超时
+                        </FluentBadge>
                       )}
                       {result.status === 'testing' && (
-                        <FluentBadge variant='info' size='sm' rounded>测试中</FluentBadge>
+                        <FluentBadge variant='info' size='sm' rounded>
+                          测试中
+                        </FluentBadge>
                       )}
                     </div>
                     {result.topMatches && result.topMatches.length > 0 && (
@@ -868,7 +924,7 @@ export default function SourceTestModule() {
 
             {/* 侧边抽屉 */}
             <div
-              className={`fixed inset-y-0 right-0 z-40 w-full sm:w-3/4 md:w-2/3 lg:w-3/5 xl:w-1/2 bg-white dark:bg-gray-800 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col ${isDrawerAnimating ? 'translate-x-0' : 'translate-x-full'}`}
+              className={`fixed inset-y-0 right-0 z-40 w-full sm:w-3/4 md:w-2/3 lg:w-3/5 xl:w-1/2 bg-white dark:bg-gray-800 shadow-28 transition-transform duration-300 ease-in-out flex flex-col ${isDrawerAnimating ? 'translate-x-0' : 'translate-x-full'}`}
             >
               {/* 头部 */}
               <div className='flex justify-between items-center p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10 shadow-sm'>

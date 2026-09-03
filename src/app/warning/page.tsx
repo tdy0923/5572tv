@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function WarningPage() {
   return (
     <div className='min-h-screen bg-linear-to-br from-red-50 to-orange-50 dark:from-red-950/40 dark:to-orange-950/40 flex items-center justify-center p-4'>
-      <div className='max-w-2xl w-full bg-white dark:bg-[#121212] rounded-2xl shadow-2xl p-4 sm:p-8 border border-red-200 dark:border-red-900/60'>
+      <div className='max-w-2xl w-full bg-white dark:bg-[#121212] rounded-2xl shadow-28 p-4 sm:p-8 border border-red-200 dark:border-red-900/60'>
         {/* 警告图标 */}
         <div className='flex justify-center mb-4 sm:mb-6'>
           <div className='w-16 h-16 sm:w-20 sm:h-20 bg-red-100 rounded-full flex items-center justify-center'>

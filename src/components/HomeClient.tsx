@@ -1053,7 +1053,7 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               }}
             >
               <div
-                className='w-full max-w-md max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-900 transform transition-all duration-300 hover:shadow-2xl'
+                className='w-full max-w-md max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-900 transform transition-all duration-300 hover:shadow-16'
                 onTouchMove={(e) => {
                   e.stopPropagation();
                 }}

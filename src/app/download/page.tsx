@@ -348,7 +348,7 @@ export default function DownloadPage() {
           onClick={() => setShowQRModal(false)}
         >
           <div
-            className='relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#1a1a1a] p-6 shadow-2xl'
+            className='relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#1a1a1a] p-6 shadow-28'
             onClick={(e) => e.stopPropagation()}
           >
             <button

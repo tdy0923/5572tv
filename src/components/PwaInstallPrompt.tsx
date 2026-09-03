@@ -82,7 +82,7 @@ export default function PwaInstallPrompt() {
 
   return (
     <div className='fixed inset-x-3 bottom-[calc(76px+env(safe-area-inset-bottom))] z-[70] sm:bottom-6 sm:left-auto sm:right-6 sm:w-80'>
-      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-2xl backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/95'>
+      <div className='flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-16 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/95'>
         <div className='flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-500/20'>
           <Download className='h-5 w-5 text-[#b78415] dark:text-[#f4c24d]' />
         </div>

@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 /* eslint-disable unused-imports/no-unused-vars */
 
 'use client';
@@ -1097,7 +1095,7 @@ export default function SourceBrowserPage() {
                       <div className='md:col-span-1'>
                         <div className='md:sticky md:top-0'>
                           {previewItem?.poster ? (
-                            <div className='group relative mx-auto max-w-[200px] overflow-hidden rounded-xl border border-gray-200 shadow-lg md:max-w-none md:rounded-2xl md:border-2 md:shadow-2xl dark:border-gray-700'>
+                            <div className='group relative mx-auto max-w-[200px] overflow-hidden rounded-xl border border-gray-200 shadow-lg md:max-w-none md:rounded-2xl md:border-2 md:shadow-16 dark:border-gray-700'>
                               <img
                                 src={previewItem.poster}
                                 alt={previewItem.title}

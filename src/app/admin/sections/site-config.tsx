@@ -104,25 +104,50 @@ export default function SiteConfigComponent({
       try {
         // Proxy-mode validation: when type is proxy, URL must be non-empty and valid
         if (section !== 'ads') {
-          const validateProxyUrl = (type: string, url: string, label: string) => {
+          const validateProxyUrl = (
+            type: string,
+            url: string,
+            label: string,
+          ) => {
             if (type === 'proxy') {
               const trimmed = String(url || '').trim();
               if (!trimmed) {
-                showError(`${label}不能为空：代理模式需填写有效 URL`, showAlert);
+                showError(
+                  `${label}不能为空：代理模式需填写有效 URL`,
+                  showAlert,
+                );
                 return false;
               }
               try {
                 const u = new URL(trimmed);
-                if (!['http:', 'https:'].includes(u.protocol)) throw new Error('invalid protocol');
+                if (!['http:', 'https:'].includes(u.protocol))
+                  throw new Error('invalid protocol');
               } catch {
-                showError(`${label}不是有效 URL（需 http/https）: ${trimmed}`, showAlert);
+                showError(
+                  `${label}不是有效 URL（需 http/https）: ${trimmed}`,
+                  showAlert,
+                );
                 return false;
               }
             }
             return true;
           };
-          if (!validateProxyUrl(siteSettings.DoubanProxyType, siteSettings.DoubanProxy, '豆瓣代理地址')) return;
-          if (!validateProxyUrl(siteSettings.DoubanImageProxyType, siteSettings.DoubanImageProxy, '图片代理地址')) return;
+          if (
+            !validateProxyUrl(
+              siteSettings.DoubanProxyType,
+              siteSettings.DoubanProxy,
+              '豆瓣代理地址',
+            )
+          )
+            return;
+          if (
+            !validateProxyUrl(
+              siteSettings.DoubanImageProxyType,
+              siteSettings.DoubanImageProxy,
+              '图片代理地址',
+            )
+          )
+            return;
         }
         const clampedSiteSettings = {
           ...siteSettings,
@@ -293,7 +318,7 @@ export default function SiteConfigComponent({
           <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4'>
             <FluentCard
               padding='20px'
-              className='max-w-lg w-full space-y-4 !bg-white dark:!bg-[#1a1a1a] shadow-2xl max-h-[85vh] overflow-y-auto'
+              className='max-w-lg w-full space-y-4 !bg-white dark:!bg-[#1a1a1a] shadow-28 max-h-[85vh] overflow-y-auto'
             >
               <div className='flex items-center justify-between'>
                 <h3 className='text-[15px] font-semibold text-gray-900 dark:text-white'>
@@ -328,9 +353,11 @@ export default function SiteConfigComponent({
               />
               {/* 警告：广告 HTML 按纯文本渲染为安全转义，禁止直接 dangerouslySetInnerHTML；如需 HTML 需经 DOMPurify 清洗 */}
               <div className='rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300'>
-                提示：广告内容在前台以纯文本/受控组件渲染，HTML 标签将被转义而非直接执行。
-                请勿粘贴不受信任的脚本；如需富文本 HTML，请先经 DOMPurify 等库消毒后再用
-                dangerouslySetInnerHTML（当前 SiteAdSlot 已做纯文本转义，无需 HTML 注入）。
+                提示：广告内容在前台以纯文本/受控组件渲染，HTML
+                标签将被转义而非直接执行。 请勿粘贴不受信任的脚本；如需富文本
+                HTML，请先经 DOMPurify 等库消毒后再用
+                dangerouslySetInnerHTML（当前 SiteAdSlot 已做纯文本转义，无需
+                HTML 注入）。
               </div>
               {/* 纯文本预览（转义显示） */}
               {editDialog.ad?.content && (
