@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { duration, easing, radius } from '@/lib/fluent-tokens';
+import { motion } from '@/lib/fluent-alias';
+import { radius } from '@/lib/fluent-tokens';
 
 export type InputVariant = 'default' | 'filled' | 'underlined';
 
@@ -36,7 +37,7 @@ export function FluentInput({
   const baseStyle: React.CSSProperties = {
     borderRadius: radius.lg,
     fontSize: '14px',
-    transition: `all ${duration.fast} ${easing.standard}`,
+    transition: motion.color,
     width: fullWidth ? '100%' : undefined,
   };
 
@@ -62,13 +63,13 @@ export function FluentInput({
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {label && (
-        <label htmlFor={inputId} className='text-sm font-medium text-[#9ca3af]'>
+        <label htmlFor={inputId} className='text-sm font-medium text-gray-400'>
           {label}
         </label>
       )}
       <div className='relative flex items-center'>
         {prefix && (
-          <span className='absolute left-3 text-[#9ca3af] flex items-center'>
+          <span className='absolute left-3 text-gray-400 flex items-center'>
             {prefix}
           </span>
         )}
@@ -81,10 +82,10 @@ export function FluentInput({
             border-gray-200 dark:border-white/10
             focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1
             disabled:opacity-50 disabled:cursor-not-allowed
-            placeholder:text-gray-400 dark:placeholder:text-[#6b7280]
+            placeholder:text-gray-400 dark:placeholder:text-gray-500
             ${variant === 'filled' ? '!bg-gray-50 dark:!bg-white/[0.08] !border-transparent' : ''}
             ${variant === 'underlined' ? '!bg-transparent !rounded-none border-b dark:!border-white/20' : ''}
-            ${isError ? '!border-[#ef4444]' : ''}
+            ${isError ? '!border-red-500' : ''}
           `}
           style={{
             ...baseStyle,
@@ -98,7 +99,7 @@ export function FluentInput({
           {...props}
         />
         {suffix && (
-          <span className='absolute right-3 text-[#9ca3af] flex items-center'>
+          <span className='absolute right-3 text-gray-400 flex items-center'>
             {suffix}
           </span>
         )}
@@ -106,7 +107,7 @@ export function FluentInput({
       {error && (
         <span
           id={`${inputId}-error`}
-          className='text-xs text-[#ef4444]'
+          className='text-xs text-red-500'
           role='alert'
         >
           {error}
@@ -129,10 +130,7 @@ export function FluentTextArea({
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
       {label && (
-        <label
-          htmlFor={props.id}
-          className='text-sm font-medium text-[#9ca3af]'
-        >
+        <label htmlFor={props.id} className='text-sm font-medium text-gray-400'>
           {label}
         </label>
       )}
@@ -145,16 +143,16 @@ export function FluentTextArea({
           text-gray-900 dark:text-white
           px-4 py-3 text-sm
           focus:outline-none focus:ring-2 focus:ring-primary-500
-          placeholder:text-gray-400 dark:placeholder:text-[#6b7280]
-          ${error ? '!border-[#ef4444]' : ''}
+          placeholder:text-gray-400 dark:placeholder:text-gray-500
+          ${error ? '!border-red-500' : ''}
         `}
         style={{
-          transition: `all ${duration.fast} ${easing.standard}`,
+          transition: motion.color,
         }}
         {...props}
       />
       {error && (
-        <span className='text-xs text-[#ef4444]' role='alert'>
+        <span className='text-xs text-red-500' role='alert'>
           {error}
         </span>
       )}

@@ -45,6 +45,7 @@ export default [
           argsIgnorePattern: '^_',
         },
       ],
+
       'simple-import-sort/exports': 'warn',
       'simple-import-sort/imports': [
         'warn',
@@ -70,6 +71,27 @@ export default [
             ['^@/types'],
             ['^'],
           ],
+        },
+      ],
+    },
+  },
+  // Fluent2：核心组件禁止硬编码色号，走 @/lib/fluent-alias 语义层
+  // （其余 Fluent* 家族迁移中，暂不限；全仓禁 hex 会误伤 glass 渐变等合法场景）
+  {
+    files: [
+      'src/components/FluentButton.tsx',
+      'src/components/FluentCard.tsx',
+      'src/components/FluentModal.tsx',
+      'src/components/FluentInput.tsx',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'Literal[value=/#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\\b/]',
+          message:
+            'Fluent 核心组件禁止硬编码色号，请使用 @/lib/fluent-alias 语义层或主题色（primary-*/gray-*/red-500 等）。',
         },
       ],
     },

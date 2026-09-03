@@ -2,13 +2,8 @@
 
 import React from 'react';
 
-import {
-  brandColor,
-  duration,
-  easing,
-  radius,
-  shadow,
-} from '@/lib/fluent-tokens';
+import { brandAction, dangerAction, motion } from '@/lib/fluent-alias';
+import { radius, shadow } from '@/lib/fluent-tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -24,17 +19,17 @@ interface FluentButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 
 const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    backgroundColor: brandColor.gold,
-    color: '#000000',
-    borderColor: brandColor.gold,
+    backgroundColor: brandAction.bg,
+    color: brandAction.text,
+    borderColor: brandAction.bg,
     boxShadow: shadow.medium,
   },
   secondary: {},
   ghost: {},
   danger: {
-    backgroundColor: '#ef4444',
-    color: '#ffffff',
-    borderColor: '#ef4444',
+    backgroundColor: dangerAction.bg,
+    color: dangerAction.text,
+    borderColor: dangerAction.bg,
   },
 };
 
@@ -88,14 +83,14 @@ export function FluentButton({
         border
         cursor-pointer
         select-none
-        focus:outline-none focus:ring-2 focus:ring-offset-2
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
         disabled:opacity-40 disabled:cursor-not-allowed
         touch-manipulation
         ${variantClasses[variant]}
         ${className}
       `}
       style={{
-        transition: `all ${duration.fast} ${easing.standard}`,
+        transition: `${motion.color}, ${motion.press}`,
         width: fullWidth ? '100%' : undefined,
         ...(disabled ? { opacity: 0.5, cursor: 'not-allowed' } : {}),
         ...variantStyles[variant],

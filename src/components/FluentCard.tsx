@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { motion, surface } from '@/lib/fluent-alias';
 import { radius, shadow } from '@/lib/fluent-tokens';
 
 export type CardVariant = 'default' | 'glass' | 'bordered' | 'filled';
@@ -25,21 +26,20 @@ export function FluentCard({
   const baseStyle: React.CSSProperties = {
     borderRadius: radius.xl,
     padding,
-    transition: 'all 250ms cubic-bezier(0, 0, 0, 1)',
+    transition: motion.rise,
   };
 
   const variantClassMap: Record<CardVariant, string> = {
-    default:
-      'bg-gray-50 dark:bg-white/[0.03] border-gray-200 dark:border-white/5',
-    glass:
-      'bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 backdrop-blur',
+    default: surface.card.className,
+    glass: surface.glass.className,
     bordered: 'bg-transparent border-gray-200 dark:border-white/10',
     filled: 'bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/5',
   };
 
+  // 卡片统一用 shadow8（Fluent elevation：卡片层）
   const shadowStyle: Record<CardVariant, React.CSSProperties> = {
-    default: { boxShadow: shadow.light },
-    glass: { boxShadow: shadow.light },
+    default: { boxShadow: shadow.shadow8 },
+    glass: { boxShadow: shadow.shadow8 },
     bordered: { boxShadow: 'none' },
     filled: { boxShadow: shadow.medium },
   };
@@ -47,7 +47,7 @@ export function FluentCard({
   return (
     <div
       className={`
-        border overflow-hidden transition-[all] duration-250 ease-out
+        border overflow-hidden
         ${variantClassMap[variant]}
         ${hoverable ? 'cursor-pointer hover:-translate-y-[1px] active:scale-[0.98]' : ''}
         ${className}
