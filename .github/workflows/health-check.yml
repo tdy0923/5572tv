@@ -3,7 +3,11 @@ name: Health Check
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '*/15 * * * *'  # Every 15 minutes
+
+concurrency:
+  group: health-check
+  cancel-in-progress: true
 
 jobs:
   health-check:
@@ -18,5 +22,5 @@ jobs:
       - name: Notify on Failure
         if: failure()
         run: |
-          echo "## Health Check Failed" >> $GITHUB_STEP_SUMMARY
+          echo "## Health Check Failed ($(date -u '+%Y-%m-%d %H:%M UTC'))" >> $GITHUB_STEP_SUMMARY
           echo "Some health checks failed. Check the run logs for details." >> $GITHUB_STEP_SUMMARY
