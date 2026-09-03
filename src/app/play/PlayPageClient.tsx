@@ -1093,8 +1093,6 @@ function PlayPageClient() {
     handleConfirmSourceSwitch,
     handleCancelSourceSwitch,
   } = {
-    isInRoom: false,
-    isOwner: false,
     syncPaused: false,
     pauseSync: () => {},
     resumeSync: () => {},
