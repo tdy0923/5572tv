@@ -59,9 +59,7 @@ export async function GET(request: NextRequest) {
     let userEnabledSources = currentUser?.tvboxEnabledSources || [];
     if (currentUser && userEnabledSources.length === 0) {
       if (currentUser.enabledApis && currentUser.enabledApis.length > 0) {
-        userEnabledSources = currentUser.enabledApis.filter(
-          (apiKey) => apiKey !== 'ai-recommend',
-        );
+        userEnabledSources = [...currentUser.enabledApis];
       } else if (
         currentUser.tags &&
         currentUser.tags.length > 0 &&
@@ -74,9 +72,7 @@ export async function GET(request: NextRequest) {
           );
           if (tagConfig?.enabledApis) {
             tagConfig.enabledApis.forEach((apiKey) => {
-              if (apiKey !== 'ai-recommend') {
-                inheritedApis.add(apiKey);
-              }
+              inheritedApis.add(apiKey);
             });
           }
         });

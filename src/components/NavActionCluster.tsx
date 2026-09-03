@@ -1,13 +1,11 @@
 'use client';
 
-import { Bell, Sparkles } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
 
 type NavActionClusterProps = {
-  showAIButton?: boolean;
-  onAIButtonClick?: () => void;
   onAnnouncementClick?: () => void;
   hasUnreadAnnouncement?: boolean;
   announcementLabel?: string;
@@ -15,8 +13,6 @@ type NavActionClusterProps = {
 };
 
 export function NavActionCluster({
-  showAIButton = false,
-  onAIButtonClick,
   onAnnouncementClick,
   hasUnreadAnnouncement = false,
   announcementLabel = '公告',
@@ -26,19 +22,6 @@ export function NavActionCluster({
 
   return (
     <div className='flex items-center gap-1'>
-      {showAIButton && onAIButtonClick && (
-        <button
-          onClick={onAIButtonClick}
-          className='nav-cluster-btn group text-gray-700 hover:bg-purple-500/10 hover:text-purple-600 dark:text-gray-200 dark:hover:bg-purple-500/15 dark:hover:text-purple-400'
-          aria-label='AI 推荐'
-          title='AI 推荐'
-        >
-          <Sparkles
-            className='transition-transform duration-300'
-            strokeWidth={2.5}
-          />
-        </button>
-      )}
       {onAnnouncementClick && (
         <button
           onClick={onAnnouncementClick}

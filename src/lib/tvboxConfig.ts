@@ -188,14 +188,14 @@ function resolveAllowedSourceKeys(
     return new Set(user.tvboxEnabledSources);
   }
   if (user.enabledApis && user.enabledApis.length > 0) {
-    return new Set(user.enabledApis.filter((k) => k !== 'ai-recommend'));
+    return new Set(user.enabledApis);
   }
   if (user.tags && user.tags.length > 0 && config.UserConfig.Tags) {
     const inherited = new Set<string>();
     user.tags.forEach((tagName) => {
       const tag = config.UserConfig.Tags?.find((t) => t.name === tagName);
       tag?.enabledApis?.forEach((k) => {
-        if (k !== 'ai-recommend') inherited.add(k);
+        inherited.add(k);
       });
     });
     if (inherited.size > 0) return inherited;

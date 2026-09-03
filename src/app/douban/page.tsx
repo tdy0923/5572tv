@@ -10,7 +10,6 @@ import { Suspense } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
 import { GetBangumiCalendarData } from '@/lib/bangumi.client';
 import {
   getDoubanCategories,
@@ -130,10 +129,6 @@ function DoubanPageClient() {
   // 星期选择器状态
   const [selectedWeekday, setSelectedWeekday] = useState<string>('');
 
-  // 页面级别的AI权限检测状态
-  const [aiEnabled, setAiEnabled] = useState(false);
-  const [aiCheckComplete, setAiCheckComplete] = useState(false);
-
   // 保存虚拟化设置
   const toggleVirtualization = () => {
     const newValue = !useVirtualization;
@@ -160,13 +155,6 @@ function DoubanPageClient() {
       setCustomCategories(runtimeConfig.CUSTOM_CATEGORIES);
     }
   }, []);
-
-  // 页面级别的AI权限检测 - 只检测一次
-  useEffect(() => {
-    const disabled = isAIRecommendFeatureDisabled();
-    setAiEnabled(!disabled);
-    setAiCheckComplete(true);
-  }, []); // 只在组件挂载时检测一次
 
   // 同步最新参数值到 ref
   useEffect(() => {
@@ -1042,8 +1030,6 @@ function DoubanPageClient() {
                               type === 'anime' &&
                               primarySelection === '每日放送'
                             }
-                            aiEnabled={aiEnabled}
-                            aiCheckComplete={aiCheckComplete}
                             priority={index < 30}
                           />
                         </div>
@@ -1182,8 +1168,6 @@ function DoubanPageClient() {
                                 type === 'anime' &&
                                 primarySelection === '每日放送'
                               }
-                              aiEnabled={aiEnabled}
-                              aiCheckComplete={aiCheckComplete}
                             />
                           </div>
                         );

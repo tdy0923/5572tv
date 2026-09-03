@@ -116,9 +116,7 @@ export async function GET(request: NextRequest) {
         currentUser.enabledApis &&
         currentUser.enabledApis.length > 0
       ) {
-        allowedSourceKeys = new Set(
-          currentUser.enabledApis.filter((apiKey) => apiKey !== 'ai-recommend'),
-        );
+        allowedSourceKeys = new Set(currentUser.enabledApis);
       } else if (
         currentUser.tags &&
         currentUser.tags.length > 0 &&
@@ -131,9 +129,7 @@ export async function GET(request: NextRequest) {
           );
           if (tagConfig?.enabledApis) {
             tagConfig.enabledApis.forEach((apiKey) => {
-              if (apiKey !== 'ai-recommend') {
-                inheritedApis.add(apiKey);
-              }
+              inheritedApis.add(apiKey);
             });
           }
         });

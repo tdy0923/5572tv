@@ -2,11 +2,7 @@
 
 import { Search } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 
-import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
-
-import AIRecommendModal from './AIRecommendModal';
 import { BackButton } from './BackButton';
 import ModernNav from './ModernNav';
 import { NavActionCluster } from './NavActionCluster';
@@ -32,15 +28,6 @@ const PageLayout = ({
 }: PageLayoutProps) => {
   const { siteName } = useSite();
 
-  // ✨ AI 推荐功能 - 全局管理
-  const [showAIRecommendModal, setShowAIRecommendModal] = useState(false);
-  const [aiEnabled, setAiEnabled] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAiEnabled(!isAIRecommendFeatureDisabled());
-  }, []);
-
   if (useModernNav) {
     // 2025 Modern Navigation Layout
     return (
@@ -48,8 +35,6 @@ const PageLayout = ({
         <div className='ui-shell w-full min-h-screen'>
           {/* Modern Navigation - Top (Desktop) & Bottom (Mobile) */}
           <ModernNav
-            showAIButton={aiEnabled ?? false}
-            onAIButtonClick={() => setShowAIRecommendModal(true)}
             onAnnouncementClick={onAnnouncementClick}
             hasUnreadAnnouncement={hasUnreadAnnouncement}
           />
@@ -84,8 +69,6 @@ const PageLayout = ({
 
               {/* 右侧操作区 */}
               <NavActionCluster
-                showAIButton={aiEnabled ?? false}
-                onAIButtonClick={() => setShowAIRecommendModal(true)}
                 onAnnouncementClick={onAnnouncementClick}
                 hasUnreadAnnouncement={hasUnreadAnnouncement}
                 compact
@@ -120,12 +103,6 @@ const PageLayout = ({
             </div>
           </main>
         </div>
-
-        {/* ✨ AI 推荐弹窗 */}
-        <AIRecommendModal
-          isOpen={showAIRecommendModal}
-          onClose={() => setShowAIRecommendModal(false)}
-        />
       </>
     );
   }

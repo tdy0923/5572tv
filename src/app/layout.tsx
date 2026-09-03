@@ -108,7 +108,6 @@ export default async function RootLayout({
   let fluidSearch = process.env.NEXT_PUBLIC_FLUID_SEARCH !== 'false';
   let enableWebLive = false;
   let customAdFilterVersion = 0;
-  let aiRecommendEnabled = false;
   let embyEnabled = false;
   let adSettings = undefined as any;
   let customCSS = '';
@@ -118,7 +117,6 @@ export default async function RootLayout({
     const cfg = await getConfig();
     adSettings = cfg?.SiteConfig?.AdSettings || undefined;
     customCSS = cfg?.SiteConfig?.CustomCSS || '';
-    aiRecommendEnabled = cfg?.AIRecommendConfig?.enabled || false;
   } catch {
     // ignore config load errors
   }
@@ -135,7 +133,6 @@ export default async function RootLayout({
     FLUID_SEARCH: fluidSearch,
     ENABLE_WEB_LIVE: enableWebLive,
     CUSTOM_AD_FILTER_VERSION: customAdFilterVersion,
-    AI_RECOMMEND_ENABLED: aiRecommendEnabled,
     EMBY_ENABLED: embyEnabled,
     PRIVATE_LIBRARY_ENABLED: embyEnabled,
     // 禁用预告片：Vercel 自动检测，或用户手动设置 DISABLE_HERO_TRAILER=true

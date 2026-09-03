@@ -7,7 +7,6 @@
 import {
   Activity,
   AlertTriangle,
-  Brain,
   ChevronLeft,
   Database,
   Download,
@@ -32,7 +31,6 @@ import { AdminConfig, AdminConfigResult } from '@/lib/admin.types';
 import PerformanceMonitor from '@/components/admin/PerformanceMonitor';
 import PerformanceSummaryCards from '@/components/admin/PerformanceSummaryCards';
 import ThemeEditor from '@/components/admin/ThemeEditor';
-import AIRecommendConfig from '@/components/AIRecommendConfig';
 import CacheManager from '@/components/CacheManager';
 import CustomAdFilterConfig from '@/components/CustomAdFilterConfig';
 import DanmuApiConfig from '@/components/DanmuApiConfig';
@@ -194,7 +192,6 @@ function AdminPageClient() {
           { id: 'system-tools', label: '源检测', icon: TestTube },
           { id: 'category-config', label: '分类配置', icon: FolderOpen },
           { id: 'netdisk-config', label: '网盘搜索', icon: Database },
-          { id: 'ai-config', label: 'AI 推荐', icon: Brain },
         ],
       },
       {
@@ -249,7 +246,7 @@ function AdminPageClient() {
     siteConfig: false,
     categoryConfig: false,
     netdiskConfig: false,
-    aiRecommendConfig: false,
+
     shortDramaConfig: false,
     embyConfig: false,
     downloadConfig: false,
@@ -981,7 +978,9 @@ function AdminPageClient() {
                           if (!response.ok) {
                             let msg = `保存失败: ${response.status}`;
                             try {
-                              const data = (await response.json()) as { error?: string };
+                              const data = (await response.json()) as {
+                                error?: string;
+                              };
                               if (data?.error) msg = data.error;
                             } catch {}
                             throw new Error(msg);
@@ -1156,24 +1155,6 @@ function AdminPageClient() {
                     }
                   >
                     <SourceScripts />
-                  </AdminModulePanel>
-                )}
-
-                {/* AI推荐配置标签 */}
-                {isSectionActive('ai-config') && (
-                  <AdminModulePanel
-                    title='AI推荐配置'
-                    icon={
-                      <Brain
-                        size={20}
-                        className='text-gray-600 dark:text-gray-400'
-                      />
-                    }
-                  >
-                    <AIRecommendConfig
-                      config={config}
-                      refreshConfig={fetchConfig}
-                    />
                   </AdminModulePanel>
                 )}
 

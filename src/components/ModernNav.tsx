@@ -32,8 +32,6 @@ import {
 } from '../lib/navigation';
 
 interface ModernNavProps {
-  showAIButton?: boolean;
-  onAIButtonClick?: () => void;
   onAnnouncementClick?: () => void;
   hasUnreadAnnouncement?: boolean;
 }
@@ -65,8 +63,6 @@ const publicSourcesOptions = () =>
   });
 
 export default function ModernNav({
-  showAIButton = false,
-  onAIButtonClick,
   onAnnouncementClick,
   hasUnreadAnnouncement = false,
 }: ModernNavProps = {}) {
@@ -207,8 +203,6 @@ export default function ModernNav({
             {/* Right Side Actions */}
             <div className='shrink-0'>
               <NavActionCluster
-                showAIButton={showAIButton}
-                onAIButtonClick={onAIButtonClick}
                 onAnnouncementClick={onAnnouncementClick}
                 hasUnreadAnnouncement={hasUnreadAnnouncement}
                 announcementLabel={announcementTitle || '公告'}

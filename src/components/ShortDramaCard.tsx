@@ -1,18 +1,10 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  ExternalLink,
-  Heart,
-  Play,
-  PlayCircle,
-  Sparkles,
-  Star,
-} from 'lucide-react';
+import { ExternalLink, Heart, Play, PlayCircle, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { memo, useCallback, useEffect, useState } from 'react';
 
-import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
 import {
   deleteFavorite,
   generateStorageKey,
@@ -32,14 +24,12 @@ import { resolveCardPosterUrl } from '@/lib/utils';
 import { useToggleFavoriteMutation } from '@/hooks/useFavoritesMutations';
 import { useLongPress } from '@/hooks/useLongPress';
 
-import AIRecommendModal from '@/components/AIRecommendModal';
 import MobileActionSheet from '@/components/MobileActionSheet';
 
 interface ShortDramaCardProps {
   drama: ShortDramaItem;
   showDescription?: boolean;
   className?: string;
-  aiEnabled?: boolean; // AI功能是否启用
   priority?: boolean; // 图片加载优先级（用于首屏可见图片）
   disableEpisodeFetch?: boolean; // 禁止获取真实集数（首页可禁用以提升性能）
 }
@@ -48,7 +38,6 @@ function ShortDramaCard({
   drama,
   showDescription = false,
   className = '',
-  aiEnabled: aiEnabledProp,
   priority = false,
   disableEpisodeFetch = false,
 }: ShortDramaCardProps) {
@@ -67,15 +56,6 @@ function ShortDramaCard({
   ); // 图片加载状态，初始化时检查缓存
   const [favorited, setFavorited] = useState(false); // 收藏状态
   const [showMobileActions, setShowMobileActions] = useState(false); // 移动端操作面板
-  const [showAIChat, setShowAIChat] = useState(false); // AI问片弹窗
-
-  // AI功能状态：优先使用父组件传递的值，否则自己检测
-  const [aiEnabledLocal] = useState(() => !isAIRecommendFeatureDisabled());
-
-  // 实际使用的AI状态（优先父组件prop）
-  const aiEnabled =
-    aiEnabledProp !== undefined ? aiEnabledProp : aiEnabledLocal;
-
   // 短剧的source固定为shortdrama
   const source = 'shortdrama';
   const id = drama.id.toString(); // 转换为字符串
@@ -420,46 +400,6 @@ function ShortDramaCard({
               }`}
             />
           </button>
-
-          {/* AI问片按钮 - 桌面端hover显示 */}
-          {aiEnabled && (
-            <div
-              className='
-                hidden md:block absolute
-                bottom-2 left-2
-                opacity-0 group-hover:opacity-100 pointer-coarse:opacity-100
-                transition-all duration-300 ease-out
-                z-20
-              '
-            >
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowAIChat(true);
-                }}
-                className='
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
-                  bg-black/60 backdrop-blur-md
-                  hover:bg-black/80  hover:shadow-md
-                  transition-all duration-300 ease-out
-                  border border-white/10'
-                aria-label='AI问片'
-                style={
-                  {
-                    WebkitUserSelect: 'none',
-                    userSelect: 'none',
-                    WebkitTouchCallout: 'none',
-                  } as React.CSSProperties
-                }
-              >
-                <Sparkles size={14} className='text-purple-400' />
-                <span className='text-xs font-medium whitespace-nowrap text-white'>
-                  AI问片
-                </span>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* 信息区域 */}
@@ -575,35 +515,8 @@ function ShortDramaCard({
             },
             color: favorited ? ('danger' as const) : ('default' as const),
           },
-          ...(aiEnabled
-            ? [
-                {
-                  id: 'ai-chat',
-                  label: 'AI问片',
-                  icon: <Sparkles size={20} />,
-                  onClick: () => {
-                    setShowMobileActions(false);
-                    setShowAIChat(true);
-                  },
-                  color: 'default' as const,
-                },
-              ]
-            : []),
         ]}
       />
-
-      {/* AI问片弹窗 */}
-      {aiEnabled && showAIChat && (
-        <AIRecommendModal
-          isOpen={showAIChat}
-          onClose={() => setShowAIChat(false)}
-          context={{
-            title: drama.name,
-            type: 'tv',
-          }}
-          welcomeMessage={`想了解《${drama.name}》的更多信息吗？我可以帮你查询剧情、演员、评价等。`}
-        />
-      )}
     </>
   );
 }

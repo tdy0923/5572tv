@@ -12,7 +12,6 @@ import {
   Link,
   PlayCircleIcon,
   Radio,
-  Sparkles,
   Star,
   Trash2,
 } from 'lucide-react';
@@ -29,7 +28,6 @@ import React, {
   useState,
 } from 'react';
 
-import { isAIRecommendFeatureDisabled } from '@/lib/ai-recommend.client';
 import {
   generateStorageKey,
   isFavorited,
@@ -48,7 +46,6 @@ import { useLongPress } from '@/hooks/useLongPress';
 import { useDeletePlayRecordMutation } from '@/hooks/usePlayRecordsMutations';
 import { useToggleReminderMutation } from '@/hooks/useRemindersMutations';
 
-import AIRecommendModal from '@/components/AIRecommendModal';
 import { FluentBadge } from '@/components/FluentUI';
 import { ImagePlaceholder } from '@/components/ImagePlaceholder';
 import MobileActionSheet from '@/components/MobileActionSheet';
@@ -78,8 +75,6 @@ export interface VideoCardProps {
   releaseDate?: string; // 上映日期 (YYYY-MM-DD)，用于即将上映内容
   priority?: boolean; // 图片加载优先级（用于首屏可见图片）
   eager?: boolean; // 强制立即加载（用于横向滚动轨道：原生 lazy 对被裁切的图不触发）
-  aiEnabled?: boolean; // AI功能是否启用（从父组件传递）
-  aiCheckComplete?: boolean; // AI权限检测是否完成（从父组件传递）
 }
 
 export type VideoCardHandle = {
@@ -118,8 +113,6 @@ function VideoCard({
   releaseDate,
   priority = false,
   eager = false,
-  aiEnabled: aiEnabledProp,
-  aiCheckComplete: aiCheckCompleteProp,
 }: VideoCardProps & { ref?: React.Ref<VideoCardHandle> }) {
   const router = useRouter();
   const inRail = useIsHorizontalRail();
@@ -138,20 +131,6 @@ function VideoCard({
   ); // 图片加载状态
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [searchFavorited, setSearchFavorited] = useState<boolean | null>(null); // 搜索结果的收藏状态
-  const [showAIChat, setShowAIChat] = useState(false); // AI问片弹窗
-
-  // AI功能状态：优先使用父组件传递的值，否则自己检测
-  const [aiEnabledLocal, setAiEnabledLocal] = useState(false);
-  const [aiCheckCompleteLocal, setAiCheckCompleteLocal] = useState(false);
-
-  // 实际使用的AI状态（优先父组件prop）
-  const aiEnabled =
-    aiEnabledProp !== undefined ? aiEnabledProp : aiEnabledLocal;
-  const aiCheckComplete =
-    aiCheckCompleteProp !== undefined
-      ? aiCheckCompleteProp
-      : aiCheckCompleteLocal;
-
   // 🚀 React 19 useOptimistic - 乐观更新收藏状态，提供即时UI反馈
   const [optimisticFavorited, setOptimisticFavorited] = useOptimistic(
     favorited,
@@ -304,18 +283,6 @@ function VideoCard({
       unsubscribeReminders();
     };
   }, [from, actualSource, actualId, isUpcoming, remarks]);
-
-  // 检查AI功能是否启用 - 只在没有父组件传递时才执行
-  useEffect(() => {
-    // 如果父组件已传递aiEnabled，跳过本地检测
-    if (aiEnabledProp !== undefined || aiCheckCompleteProp !== undefined) {
-      return;
-    }
-
-    const disabled = isAIRecommendFeatureDisabled();
-    setAiEnabledLocal(!disabled);
-    setAiCheckCompleteLocal(true);
-  }, [aiEnabledProp, aiCheckCompleteProp]); // 依赖父组件传递的props
 
   // 🚀 使用 TanStack Query useMutation 优化收藏功能
   const handleToggleFavorite = useCallback(
@@ -940,20 +907,6 @@ function VideoCard({
       });
     }
 
-    // AI问片功能
-    if (aiEnabled && actualTitle) {
-      actions.push({
-        id: 'ai-chat',
-        label: 'AI问片',
-        icon: <Sparkles size={20} />,
-        onClick: () => {
-          setShowMobileActions(false); // 关闭菜单
-          setShowAIChat(true);
-        },
-        color: 'default' as const,
-      });
-    }
-
     return actions;
   }, [
     config,
@@ -973,7 +926,6 @@ function VideoCard({
     handlePlayInNewTab,
     handleToggleFavorite,
     handleDeleteRecord,
-    aiEnabled,
     actualTitle,
   ]);
 
@@ -1719,75 +1671,6 @@ function VideoCard({
                 </div>
               );
             })()}
-
-          {/* 🎯 AI问片按钮 - 桌面端hover显示，智能位置（避开底部标签和右下角按钮） */}
-          {aiEnabled && actualTitle && (
-            <div
-              className={`
-                sm:block absolute
-                ${hasRightBottomButtons ? 'left-1/3 -translate-x-1/2' : 'left-1/2 -translate-x-1/2'}
-                ${hasBottomTags ? 'bottom-14' : 'bottom-4'}
-                opacity-0 translate-y-2
-                group-hover:opacity-100 group-hover:translate-y-0
-                group-focus-within:opacity-100 group-focus-within:translate-y-0
-                focus-within:opacity-100 focus-within:translate-y-0
-                transition-all duration-300 ease-out z-20
-              `}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}
-              style={
-                {
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none',
-                  WebkitTouchCallout: 'none',
-                } as React.CSSProperties
-              }
-              onContextMenu={(e) => {
-                e.preventDefault();
-                return false;
-              }}
-            >
-              <button
-                type='button'
-                data-button='true'
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowAIChat(true);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation();
-                  }
-                }}
-                className='flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 px-3 py-2 rounded-md
-                  bg-black/70 backdrop-blur-sm
-                  shadow-lg text-white/90
-                  hover:bg-black/80  hover:shadow-md
-                  transition-all duration-300 ease-out
-                  border border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500'
-                aria-label='AI问片'
-                style={
-                  {
-                    WebkitUserSelect: 'none',
-                    userSelect: 'none',
-                    WebkitTouchCallout: 'none',
-                  } as React.CSSProperties
-                }
-              >
-                <Sparkles
-                  size={14}
-                  aria-hidden='true'
-                  className='text-purple-400 pointer-events-none'
-                />
-                <span className='text-xs font-medium whitespace-nowrap'>
-                  AI问片
-                </span>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* 进度条 */}
@@ -1997,22 +1880,6 @@ function VideoCard({
         totalEpisodes={actualEpisodes}
         origin={origin}
       />
-
-      {/* AI问片弹窗 */}
-      {aiEnabled && showAIChat && (
-        <AIRecommendModal
-          isOpen={showAIChat}
-          onClose={() => setShowAIChat(false)}
-          context={{
-            title: actualTitle,
-            year: actualYear,
-            douban_id: actualDoubanId,
-            type: actualSearchType as 'movie' | 'tv',
-            currentEpisode,
-          }}
-          welcomeMessage={`想了解《${actualTitle}》的更多信息吗？我可以帮你查询剧情、演员、评价等。`}
-        />
-      )}
     </>
   );
 }
