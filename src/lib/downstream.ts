@@ -632,6 +632,9 @@ async function getDetailFromJsonApi(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
 
+  // 结构化日志前缀：site key + id，便于按源统计失败率
+  const logPrefix = `[detail:json][${apiSite.key}][${id}]`;
+
   try {
     const response = await fetch(detailUrl, {
       headers: API_CONFIG.detail.headers,
@@ -641,10 +644,20 @@ async function getDetailFromJsonApi(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      console.warn(`${logPrefix} http_${response.status} ${detailUrl}`);
       return null;
     }
 
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch (jsonErr: any) {
+      console.warn(
+        `${logPrefix} invalid_json ${detailUrl}`,
+        jsonErr?.message || jsonErr,
+      );
+      return null;
+    }
 
     if (
       !data ||
@@ -652,6 +665,7 @@ async function getDetailFromJsonApi(
       !Array.isArray(data.list) ||
       data.list.length === 0
     ) {
+      console.warn(`${logPrefix} empty_list ${detailUrl}`);
       return null;
     }
 
@@ -713,7 +727,13 @@ async function getDetailFromJsonApi(
       douban_id: videoDetail.vod_douban_id,
       remarks: videoDetail.vod_remarks, // 传递备注信息（如"已完结"等）
     };
-  } catch {
+  } catch (err: any) {
+    // AbortError = 10s 超时；其余为 DNS/连接重置等网络错误
+    if (err?.name === 'AbortError') {
+      console.warn(`${logPrefix} timeout_abort 10s ${detailUrl}`);
+    } else {
+      console.warn(`${logPrefix} network_error`, err?.message || err);
+    }
     return null;
   }
 }
