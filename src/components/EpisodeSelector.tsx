@@ -654,9 +654,9 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                         </div>
 
                         {/* 信息区域 */}
-                        <div className='flex-1 min-w-0 flex flex-col justify-between h-16 sm:h-20'>
+                        <div className='flex-1 min-w-0 flex flex-col justify-between min-h-16 sm:h-20 gap-0.5'>
                           {/* 标题和分辨率 - 顶部 */}
-                          <div className='flex items-start justify-between gap-2 sm:gap-3 h-6 sm:h-7 overflow-x-auto whitespace-normal break-words'>
+                          <div className='flex items-start justify-between gap-2 sm:gap-3 h-6 sm:h-7 overflow-hidden whitespace-normal break-words'>
                             <div className='flex-1 min-w-0 relative group/title'>
                               <h3
                                 className='font-medium text-sm sm:text-base break-words whitespace-normal text-gray-900 dark:text-gray-100 leading-none cursor-pointer'
@@ -729,7 +729,7 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
                           </div>
 
                           {/* 网络信息 - 底部 */}
-                          <div className='flex items-end h-5 sm:h-6'>
+                          <div className='flex items-end min-h-5 sm:h-6'>
                             {(() => {
                               const sourceKey = `${source.source}-${source.id}`;
                               const videoInfo = videoInfoMap.get(sourceKey);

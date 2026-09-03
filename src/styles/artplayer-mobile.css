@@ -19,14 +19,15 @@
     display: none !important;
   }
 
-  /* 控制栏不换行，超宽时横向可滑（隐藏滚动条），杜绝挤压/换行错乱 */
+  /* 控制栏不换行，超宽时横向可滑（隐藏滚动条），杜绝挤压/换行错乱；
+     两侧留 10px 让首尾按钮避开播放器圆角裁切 */
   .art-controls {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
-    padding: 0 2px !important;
+    padding: 0 10px !important;
   }
   .art-controls::-webkit-scrollbar {
     display: none !important;
