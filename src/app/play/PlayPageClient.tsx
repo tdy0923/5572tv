@@ -3234,9 +3234,30 @@ function PlayPageClient() {
                 // 如果多次失败（密钥 403、段文件 502/504），升级为致命恢复，避免 startLoad 死循环
                 if (data.details === HlsModule.ErrorDetails.FRAG_LOAD_ERROR) {
                   consecutiveFragErrorRef.current++;
-                  // 已稳定播放时允许轻微重试，但连续失败仍升级（阈值略宽松）
-                  const threshold =
+                  // 自适应阈值：基础值（起播 4 / 已稳定播放移动 8 桌面 10），
+                  // 弱网（省流模式/2g/低带宽/高 RTT）收紧以更快换源，避免 startLoad 死循环
+                  let threshold =
                     (video.currentTime || 0) > 3 ? (isMobile ? 8 : 10) : 4;
+                  try {
+                    const conn = (navigator as any)?.connection;
+                    if (conn) {
+                      if (conn.saveData) threshold -= 2;
+                      const et = conn.effectiveType as string | undefined;
+                      if (et === 'slow-2g' || et === '2g') threshold -= 2;
+                      else if (et === '3g') threshold -= 1;
+                      if (typeof conn.downlink === 'number') {
+                        if (conn.downlink < 1) threshold -= 2;
+                        else if (conn.downlink < 2.5) threshold -= 1;
+                      }
+                      if (typeof conn.rtt === 'number') {
+                        if (conn.rtt > 1000) threshold -= 2;
+                        else if (conn.rtt > 500) threshold -= 1;
+                      }
+                    }
+                  } catch {
+                    // Network Information API 不可用时保持基础阈值
+                  }
+                  threshold = Math.min(12, Math.max(2, threshold));
                   if (consecutiveFragErrorRef.current >= threshold) {
                     console.warn(
                       `[HLS] 分片连续失败 ${consecutiveFragErrorRef.current} 次，升级为自动换源`,
