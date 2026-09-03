@@ -470,8 +470,9 @@ function handleAuthFailure(
 
 // 判断是否需要跳过认证的路径
 function shouldSkipAuth(pathname: string): boolean {
-  // 首页作为公开落地页，未登录也可浏览内容
-  if (pathname === '/' || pathname === '') return true;
+  // 全站必须登录：内容页与数据接口默认走登录墙，
+  // 仅放行静态资源、登录注册流程、机器接口（TVBox 自带 token）与无害元数据。
+  if (pathname === '/' || pathname === '') return false;
 
   const skipPaths = [
     '/_next',
@@ -488,37 +489,15 @@ function shouldSkipAuth(pathname: string): boolean {
     '/static/', // 静态资源（APK 下载等，公共访问）
     '/api/telegram/', // Telegram API 端点
     '/api/cache', // 缓存 API 端点（内部使用，无需认证）
-    '/api/douban', // 豆瓣 API 端点（公共数据，无需认证）
-    '/api/image-proxy', // 图片代理（公共数据，无需认证）
+    '/api/image-proxy', // 图片代理（matcher 层已豁免，保持一致）
     '/api/poster-edge', // 图片代理的 Worker 回源别名（同样公开）
-    '/api/video-proxy', // 视频代理（公共数据，无需认证）
-    '/api/poster-cache', // 海报本地缓存（公共数据，无需认证）
-    '/api/video-cache', // 视频缩略图缓存（公共数据，无需认证）
-    '/api/search/trending', // 热门搜索（公共数据，无需认证）
-    '/api/trending', // 热门内容（需要认证）
-    '/api/shortdrama', // 短剧 API（公共数据，无需认证）
-    '/api/release-calendar', // 即将上映（公共数据，无需认证）
-    '/api/ai/', // AI 功能端点（公共数据，无需认证）
-    '/api/shortdrama/', // 短剧 API 端点（公共数据，无需认证）
-    '/api/version-check', // 版本检查（公共数据，无需认证）
+    '/api/video-proxy', // 视频代理（matcher 层已豁免，保持一致）
+    '/api/poster-cache', // 海报本地缓存（matcher 层已豁免，保持一致）
+    '/api/video-cache', // 视频缩略图缓存（matcher 层已豁免，保持一致）
+    '/api/version-check', // 版本检查（APK 更新检查，无需认证）
     '/api/analytics', // 行为分析上报（匿名采集，路由内自带限流与机器人过滤）
-    '/api/danmu-external', // 弹幕 API（公共数据，无需认证）
-    '/api/tvbox', // TVBox 配置端点（自身处理 token/cookie/开放认证）
-    '/api/reviews/leaderboard', // 评分排行榜（公共数据，无需认证）
-    '/api/subtitle', // 字幕搜索/加载（公共数据，无需认证）
-    '/shortdrama', // 短剧页面（公共访问）
-    '/download', // 下载页面（公共访问）
-    '/ratings', // 评分排行榜页面（公共访问）
-    '/search', // 搜索页（公共访问，聚合搜索使用默认源）
-    '/douban', // 豆瓣浏览页（公共数据，可匿名浏览电影/剧集/动漫列表）
-    '/release-calendar', // 即将上映（公共内容页）
-    '/live', // 直播页（公共访问）
-    '/tvbox', // TVBox 配置页（接口自行处理 token/认证）
-    '/api/search', // 聚合搜索 API（匿名可用默认源，接口内限流）
-    '/play', // 播放页（公共访问，可匿名浏览内容）
-    '/favorites', // 收藏页面（客户端重定向）
-    '/history', // 历史页面（客户端重定向）
-    '/profile', // 个人中心（客户端重定向）
+    '/api/tvbox', // TVBox 机器接口（自身处理 token 认证）
+    '/download', // 下载页面（APK 获取入口，保持公开）
     '/offline.html', // 离线页面（Service Worker需要）
     '/sw.js', // Service Worker脚本
   ];
