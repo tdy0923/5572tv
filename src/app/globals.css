@@ -1744,3 +1744,19 @@ html.dark textarea:-webkit-autofill {
     scroll-behavior: auto !important;
   }
 }
+
+/* --- 20. Fluent2 无障碍：全站键盘焦点基线 ---
+   语义 = strokeFocus（2px 实线位移 2px）；currentColor 保证在任何底色上都有对比度。
+   用 :where() 保持零特异性：组件自带 focus 样式（如卡片绿环）优先，不叠加。 */
+:where(
+  a,
+  button,
+  [role='button'],
+  input,
+  select,
+  textarea,
+  [tabindex]:not([tabindex='-1'])
+):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
