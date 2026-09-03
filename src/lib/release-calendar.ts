@@ -57,6 +57,18 @@ async function fetchWithRetry(
 }
 
 /**
+ * 归一化类型标签：去重+排序，避免"恐怖/惊悚"与"惊悚/恐怖"并存两种写法
+ */
+function normalizeGenre(genre: string): string {
+  if (!genre) return '';
+  const parts = genre
+    .split(/[/、,，\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return [...new Set(parts)].sort((a, b) => a.localeCompare(b, 'zh')).join('/');
+}
+
+/**
  * Parse movie release schedule
  */
 function parseMovieSchedule(html: string): ReleaseItem[] {
@@ -100,11 +112,11 @@ function parseMovieSchedule(html: string): ReleaseItem[] {
     );
     const region = regionMatch ? regionMatch[1] : '';
 
-    // Extract genre
-    const genreMatch = textContent.match(
-      /(剧情|喜剧|动作|爱情|科幻|动画|悬疑|恐怖|犯罪|战争|奇幻|冒险|历史|传记|纪录片|家庭|音乐)/,
+    // Extract genre（全文可能出现多个，按归一化合并）
+    const genreHits = textContent.match(
+      /(剧情|喜剧|动作|爱情|科幻|动画|悬疑|恐怖|犯罪|战争|奇幻|冒险|历史|传记|纪录片|家庭|音乐)/g,
     );
-    const genre = genreMatch ? genreMatch[1] : '';
+    const genre = normalizeGenre((genreHits || []).join('/'));
 
     // Extract release date
     const dateMatch = textContent.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2})/);

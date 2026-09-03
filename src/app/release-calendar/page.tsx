@@ -650,24 +650,28 @@ export default function ReleaseCalendarPage() {
                             {item.title}
                           </h3>
 
-                          {/* 详细信息 */}
+                          {/* 详细信息（缺字段的行直接隐藏） */}
                           <div className='space-y-3 text-sm'>
-                            <div className='flex items-start gap-2'>
-                              <span className='font-medium text-gray-700 dark:text-gray-300 min-w-0 shrink-0'>
-                                导演:
-                              </span>
-                              <span className='text-gray-600 dark:text-gray-400 line-clamp-1'>
-                                {item.director}
-                              </span>
-                            </div>
-                            <div className='flex items-start gap-2'>
-                              <span className='font-medium text-gray-700 dark:text-gray-300 min-w-0 shrink-0'>
-                                主演:
-                              </span>
-                              <span className='text-gray-600 dark:text-gray-400 line-clamp-2'>
-                                {item.actors}
-                              </span>
-                            </div>
+                            {item.director && (
+                              <div className='flex items-start gap-2'>
+                                <span className='font-medium text-gray-700 dark:text-gray-300 min-w-0 shrink-0'>
+                                  导演:
+                                </span>
+                                <span className='text-gray-600 dark:text-gray-400 line-clamp-1'>
+                                  {item.director}
+                                </span>
+                              </div>
+                            )}
+                            {item.actors && (
+                              <div className='flex items-start gap-2'>
+                                <span className='font-medium text-gray-700 dark:text-gray-300 min-w-0 shrink-0'>
+                                  主演:
+                                </span>
+                                <span className='text-gray-600 dark:text-gray-400 line-clamp-2'>
+                                  {item.actors}
+                                </span>
+                              </div>
+                            )}
 
                             {/* 标签区域 */}
                             <div className='flex flex-wrap gap-2 pt-2'>
@@ -1065,8 +1069,12 @@ export default function ReleaseCalendarPage() {
                                   </span>
                                 </div>
                                 <div className='text-xs text-gray-600 dark:text-gray-400 space-y-1'>
-                                  <div>导演: {item.director}</div>
-                                  <div>主演: {item.actors}</div>
+                                  {item.director && (
+                                    <div>导演: {item.director}</div>
+                                  )}
+                                  {item.actors && (
+                                    <div>主演: {item.actors}</div>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -1250,24 +1258,28 @@ export default function ReleaseCalendarPage() {
                                         {item.title}
                                       </h4>
 
-                                      {/* 详细信息 */}
+                                      {/* 详细信息（缺字段的行直接隐藏） */}
                                       <div className='space-y-2 text-sm text-gray-600 dark:text-gray-400'>
-                                        <div className='flex items-start gap-2'>
-                                          <span className='font-medium min-w-0 shrink-0'>
-                                            导演:
-                                          </span>
-                                          <span className='line-clamp-1'>
-                                            {item.director}
-                                          </span>
-                                        </div>
-                                        <div className='flex items-start gap-2'>
-                                          <span className='font-medium min-w-0 shrink-0'>
-                                            主演:
-                                          </span>
-                                          <span className='line-clamp-2'>
-                                            {item.actors}
-                                          </span>
-                                        </div>
+                                        {item.director && (
+                                          <div className='flex items-start gap-2'>
+                                            <span className='font-medium min-w-0 shrink-0'>
+                                              导演:
+                                            </span>
+                                            <span className='line-clamp-1'>
+                                              {item.director}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {item.actors && (
+                                          <div className='flex items-start gap-2'>
+                                            <span className='font-medium min-w-0 shrink-0'>
+                                              主演:
+                                            </span>
+                                            <span className='line-clamp-2'>
+                                              {item.actors}
+                                            </span>
+                                          </div>
+                                        )}
 
                                         {/* 标签 */}
                                         <div className='flex flex-wrap gap-2 pt-2'>
