@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 """Generate 5572 app icons (web/PWA + iOS + Android adaptive).
 
-Design: Fluent-2 style geometric "5" with play-triangle, rendered from
-icon-master.svg (full icon) and icon-foreground.svg (glyph-only for
-Android adaptive). Outputs all required sizes with precise cropping.
+Design: Archivo Black字库 "5" + Lucide风格圆角播放三角，渲染自
+icon-master.svg（完整图标）与 icon-foreground.svg（透明底字形，
+供 Android adaptive）。换品牌字符只需改 SVG 内 <text> 后重跑本脚本。
+
+字体自举：优先系统已装 Archivo Black，否则从 fonts/ 目录临时安装到
+~/.fonts（需 fc-cache）。另产出 favicon.ico 与 public/logo.png。
 """
 import cairosvg
 import os
+import shutil
+import subprocess
 from PIL import Image
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +60,33 @@ def round_corner_mask(size, radius):
     return mask
 
 
+FONT_FILE = os.path.join(BASE, "fonts", "ArchivoBlack-Regular.ttf")
+
+
+def ensure_font():
+    """保证 Archivo Black 可被 SVG 渲染解析；缺失时从 fonts/ 自举安装。"""
+    try:
+        out = subprocess.run(
+            ["fc-list"], capture_output=True, text=True, timeout=30
+        ).stdout
+        if "Archivo Black" in out:
+            print("  font: Archivo Black 已安装")
+            return
+    except Exception:
+        pass
+    home_fonts = os.path.expanduser("~/.fonts")
+    os.makedirs(home_fonts, exist_ok=True)
+    dest = os.path.join(home_fonts, "ArchivoBlack-Regular.ttf")
+    if not os.path.exists(dest):
+        if not os.path.exists(FONT_FILE):
+            raise SystemExit("缺字体：fonts/ArchivoBlack-Regular.ttf 不存在")
+        shutil.copy(FONT_FILE, dest)
+        print(f"  font: 已自举安装到 {dest}")
+    subprocess.run(["fc-cache", "-f"], capture_output=True, timeout=60)
+
+
 def main():
+    ensure_font()
     fg_dir = os.path.join(REPO, "flutter_app/android/app/src/main/res")
     ios_dir = os.path.join(
         REPO, "flutter_app/ios/Runner/Assets.xcassets/AppIcon.appiconset"
@@ -126,6 +157,33 @@ def main():
     )
     print(f"  Maskable safe zone (80%): x[{center-safe}–{center+safe}] y[{center-safe}–{center+safe}]")
     print(f"  {'✅ All content within safe zone' if safe_ok else '❌ Content exceeds safe zone!'}")
+
+    # ── favicon.ico（多尺寸，浏览器标签页）──
+    print("\n== favicon.ico ==")
+    fav = render_at(SRC, 256)
+    fav_path = os.path.join(PUBLIC, "public", "favicon.ico")
+    fav.save(
+        fav_path,
+        sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+    )
+    print(f"  wrote favicon.ico")
+
+    # ── logo.png（由 public/logo.svg 栅格化，保持徽标一致）──
+    print("\n== logo.png ==")
+    logo_svg = os.path.join(PUBLIC, "public", "logo.svg")
+    if os.path.exists(logo_svg):
+        tmp = "/tmp/opencode/_logo_1200.png"
+        os.makedirs("/tmp/opencode", exist_ok=True)
+        cairosvg.svg2png(
+            url=logo_svg,
+            write_to=tmp,
+            output_width=1200,
+            output_height=320,
+        )
+        Image.open(tmp).convert("RGBA").save(
+            os.path.join(PUBLIC, "public", "logo.png"), "PNG"
+        )
+        print("  wrote logo.png (1200x320)")
 
     print("\nDone.")
 

@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- 5572 App Icon 母版
+    设计：金色渐变底 + Archivo Black 字库 "5" + Lucide 风格圆角播放三角。
+    换字符只需改 <text> 内容（如 5→7），字号/三角位置由 generate_icons.py 校验。
+    字体：public/icons/fonts/ArchivoBlack-Regular.ttf（OFL，见同目录 OFL.txt）。
+    生成：python3 public/icons/generate_icons.py
+  -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#F9C94E"/>
@@ -6,23 +12,14 @@
       <stop offset="100%" stop-color="#D19018"/>
     </linearGradient>
     <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgba(255,255,255,0.25)"/>
-      <stop offset="40%" stop-color="rgba(255,255,255,0)"/>
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.25"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
   <rect width="512" height="190" fill="url(#sheen)"/>
-  <g transform="translate(256 252)">
-    <g stroke="#171717" stroke-width="60" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="M-148 -96 H148"/>
-      <path d="M-148 -96 V-8"/>
-      <path d="M-148 -8 H55"/>
-      <path d="M148 -96 V-48"/>
-      <path d="M-148 -8 V90"/>
-      <path d="M-148 90 H66"/>
-      <path d="M66 90 V-4"/>
-    </g>
-    <polygon points="-72,20 -72,64 -30,42" fill="#FFF6DE"/>
-    <rect x="-112" y="160" width="224" height="14" rx="7" fill="#FFF6DE"/>
-  </g>
+  <!-- 品牌字形：字库 "5"，四周留白满足 maskable 80% 安全区与 Android 自适应圆形遮罩 -->
+  <text x="256" y="256" text-anchor="middle" dominant-baseline="central" font-family="'Archivo Black','DejaVu Sans',sans-serif" font-size="395" fill="#171717">5</text>
+  <!-- Lucide 风格圆角播放三角（描边同色实现圆角），位于 5 的下碗 -->
+  <path d="M258 275 L306 302 L258 329 Z" fill="#FFF6DE" stroke="#FFF6DE" stroke-width="14" stroke-linejoin="round"/>
 </svg>

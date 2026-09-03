@@ -20,19 +20,11 @@
   <rect x="20" y="28" width="1160" height="264" rx="30" fill="#0D121B"/>
   <rect x="20" y="28" width="1160" height="264" rx="30" stroke="#F4C24D" stroke-opacity="0.20" stroke-width="2"/>
 
-  <!-- 几何 "5" 徽标 -->
+  <!-- 字库 "5" 徽标（与 icons/icon-master.svg 同字体同风格） -->
   <g transform="translate(146 160)">
     <rect x="-88" y="-88" width="176" height="176" rx="40" fill="url(#tile)"/>
-    <g transform="translate(0 -4)" stroke="#171717" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="M-52 -42 H52"/>
-      <path d="M-52 -42 V-6"/>
-      <path d="M-52 -6 H22"/>
-      <path d="M52 -42 V-22"/>
-      <path d="M-52 -6 V40"/>
-      <path d="M-52 40 H26"/>
-      <path d="M26 40 V-2"/>
-    </g>
-    <polygon points="-30,12 -30,32 -10,22" fill="#FFF6DE"/>
+    <text x="0" y="-2" text-anchor="middle" dominant-baseline="central" font-family="'Archivo Black','DejaVu Sans',sans-serif" font-size="118" fill="#171717">5</text>
+    <path d="M0.6 1.7 L15 9.8 L0.6 17.9 Z" fill="#FFF6DE" stroke="#FFF6DE" stroke-width="5" stroke-linejoin="round"/>
   </g>
 
   <text x="280" y="196" fill="url(#gold)" font-family="'Baskerville','Georgia','Times New Roman',serif" font-size="150" font-weight="700" letter-spacing="4">5572</text>

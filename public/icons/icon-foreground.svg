@@ -1,15 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- Android adaptive foreground: transparent bg + glyph only -->
-  <g transform="translate(256 252)">
-    <g stroke="#171717" stroke-width="60" stroke-linecap="round" stroke-linejoin="round" fill="none">
-      <path d="M-148 -96 H148"/>
-      <path d="M-148 -96 V-8"/>
-      <path d="M-148 -8 H55"/>
-      <path d="M148 -96 V-48"/>
-      <path d="M-148 -8 V90"/>
-      <path d="M-148 90 H66"/>
-      <path d="M66 90 V-4"/>
-    </g>
-    <polygon points="-72,20 -72,64 -30,42" fill="#171717"/>
-  </g>
+  <!-- Android 自适应图标前景：透明底 + 字形 only。
+    字形与 icon-master.svg 同几何、四周留白，圆形遮罩下不裁边。
+    背景色见 generate_icons.py 写入的 ic_launcher_background（#F4C24D）。
+  -->
+  <text x="256" y="256" text-anchor="middle" dominant-baseline="central" font-family="'Archivo Black','DejaVu Sans',sans-serif" font-size="395" fill="#171717">5</text>
+  <path d="M258 275 L306 302 L258 329 Z" fill="#FFF6DE" stroke="#FFF6DE" stroke-width="14" stroke-linejoin="round"/>
 </svg>
