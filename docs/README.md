@@ -8,11 +8,9 @@
 
 - [部署指南](deployment/DEPLOYMENT.md) - Docker、Vercel、Render 等部署完整指南
 - [配置说明](deployment/CONFIGURATION.md) - 环境变量、功能配置详解
-- [观影房部署](deployment/WATCH_ROOM_DEPLOYMENT.md) - 多人同步观影功能部署
 
 ### ✨ 功能特性
 
-- [AI 功能](features/AI_FEATURES.md) - AI 智能推荐、聊天助手详细说明
 - [下载功能](features/DOWNLOAD_FEATURES.md) - 离线下载、资源管理功能
 - [虚拟滚动指南](features/VIRTUAL_SCROLL_GUIDE.md) - 高性能列表渲染技术说明
 - [邀请码系统](INVITE_CODE_SYSTEM.md) - 邀请码注册系统配置和使用
