@@ -8,40 +8,15 @@
    策略：参考主流移动视频站（B站/YouTube），手机端控制栏只保留核心按钮，
    次要功能（倍速/画面比例/PiP/翻转/锁定/音量）一律隐藏，避免挤压错乱 */
 @media (max-width: 768px) {
-  /* 音量、PiP、倍速、比例、翻转、锁定、网页全屏 → 手机端隐藏（可在设置中访问） */
-  .art-control-fullscreenWeb,
-  .art-control-volume,
-  .art-control-pip,
-  .art-control-flip,
-  .art-control-playbackRate,
-  .art-control-aspectRatio,
-  .art-control-lock {
+  /* 手机用硬件音量键，原生无隐藏开关，只剩这一处 display:none */
+  .art-control-volume {
     display: none !important;
   }
 
-  /* 控制栏不换行，超宽时横向可滑（隐藏滚动条），杜绝挤压/换行错乱；
-     两侧留 10px 让首尾按钮避开播放器圆角裁切 */
+  /* 控制条只剩核心按钮，原生排布即可；两侧留 10px 避开圆角裁切 */
   .art-controls {
     flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
     padding: 0 10px !important;
-  }
-  .art-controls::-webkit-scrollbar {
-    display: none !important;
-  }
-  .art-controls-left,
-  .art-controls-right {
-    flex-shrink: 0 !important;
-    gap: 0 !important;
-    flex-wrap: nowrap !important;
-  }
-  /* 进度条占据剩余空间，不被挤压 */
-  .art-control-progress {
-    flex: 1 1 auto !important;
-    min-width: 60px !important;
   }
 
   /* 控制按钮至少44px触控目标 (Apple HIG) */
@@ -53,15 +28,22 @@
     flex-shrink: 0 !important;
   }
 
-  /* 控制栏稳定深色半透明背景：浅色主题下白色图标也不至于消失成"白色方块" */
+  /* 根治"贴上去"：全幅渐变盒子与毛玻璃悬浮 pill 打架出双层错位。
+     背景只画在原生 .art-liquid-glass pill 上，
+     .art-bottom/.art-controls 保持透明；
+     浅色主题下白色图标依然有深色衬底（防"白色方块"回潮）。 */
   .art-bottom,
   .art-controls {
+    background: none !important;
+    background-image: none !important;
+  }
+  .artplayer-plugin-liquid-glass .art-liquid-glass {
     background: linear-gradient(
       to top,
-      rgba(0, 0, 0, 0.65),
-      rgba(0, 0, 0, 0.2) 60%,
-      transparent
+      rgba(0, 0, 0, 0.72),
+      rgba(0, 0, 0, 0.45)
     ) !important;
+    border-radius: 14px !important;
   }
 
   /* 控制栏内所有图标强制白色，保证浅色主题下清晰可见 */

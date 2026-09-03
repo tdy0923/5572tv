@@ -37,7 +37,8 @@ export const radius = {
   xl: '12px',
   '2xl': '16px',
   '3xl': '24px',
-  full: '50%',
+  // 药丸/胶囊用超大固定圆角；50% 只适用于 1:1 圆形，用在宽按钮上会变成两头尖的椭圆
+  full: '9999px',
 } as const;
 
 export const shadow = {

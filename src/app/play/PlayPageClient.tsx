@@ -1122,7 +1122,11 @@ function PlayPageClient() {
       return _sourceWeightsCacheRef.current;
     }
     try {
-      const response = await fetch('/api/source-weights');
+      // 权重接口必须限时：曾出现无超时挂起，导致优选阶段 loading 卡死、
+      // 换源列表已有测速结果却仍弹"搜索较慢请重试"
+      const response = await fetch('/api/source-weights', {
+        signal: AbortSignal.timeout(5000),
+      });
       if (!response.ok) {
         return _sourceWeightsCacheRef.current || {};
       }
@@ -2030,18 +2034,26 @@ function PlayPageClient() {
             }, 800);
           },
         });
-        // P5: 12s 超时需有 UI 反馈；超时后显示"搜索较慢"并允许重试
+        // P5: 12s 超时需有 UI 反馈；超时后显示"搜索较慢"并允许重试。
+        // 根治：流式首命中获胜后必须清除定时器，否则定时器在 12s 照样开火，
+        // 把正在播放的播放器拍回"搜索较慢重试屏"（有源有测速仍弹重试的根因）。
+        let streamTimer: ReturnType<typeof setTimeout> | null = null;
         const first = await Promise.race([
           streamSearchRef.current.promise,
-          new Promise<null>((r) =>
-            setTimeout(() => {
+          new Promise<null>((r) => {
+            streamTimer = setTimeout(() => {
+              streamTimer = null;
               streamingDidTimeout = true;
               setStreamingTimedOut(true);
               setLoadingStage('searching', '搜索较慢，正在尝试备用方式…');
               r(null);
-            }, 12000),
-          ),
+            }, 12000);
+          }),
         ]);
+        if (streamTimer) {
+          clearTimeout(streamTimer);
+          streamTimer = null;
+        }
         if (first && first.episodes?.length && !currentSource && !detailData) {
           // 立即开播首个命中；prefer 跳过（后续失败路径已有重试机制）
           detailData = first;
@@ -2169,7 +2181,24 @@ function PlayPageClient() {
         );
 
         if (sourcesToTest.length > 0) {
-          detailData = await preferBestSource(sourcesToTest);
+          // 优选整体限时 15s：任何单点挂起都不许卡住 loading，
+          // 超时直接用首个候选源开播（换源列表已有测速结果可手动切换）
+          const PREFER_TIMEOUT_MS = 15000;
+          let preferTimer: ReturnType<typeof setTimeout> | null = null;
+          try {
+            detailData = await Promise.race([
+              preferBestSource(sourcesToTest),
+              new Promise<SearchResult>((resolve) => {
+                preferTimer = setTimeout(() => {
+                  console.warn('[Play] 优选超时，直接使用首个候选源');
+                  resolve(sourcesToTest[0]);
+                }, PREFER_TIMEOUT_MS);
+              }),
+            ]);
+          } finally {
+            if (preferTimer) clearTimeout(preferTimer);
+            setSpeedTestProgress(null);
+          }
         } else if (excludedSources.length > 0) {
           // 如果只有 emby 源，直接使用第一个
           detailData = excludedSources[0];
@@ -2844,6 +2873,43 @@ function PlayPageClient() {
         // 重新启用5.3.0内存优化功能，但使用false参数避免清空DOM
         Artplayer.REMOVE_SRC_WHEN_DESTROY = true;
 
+        // 手机端截图（设置面板调用）：优先系统分享，不支持则下载
+        const captureScreenshot = () => {
+          if (!artPlayerRef.current) return;
+          const video = artPlayerRef.current.video;
+          if (!video || !video.videoWidth) return;
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            if (navigator.share && navigator.canShare) {
+              const file = new File([blob], 'screenshot.png', {
+                type: 'image/png',
+              });
+              if (navigator.canShare({ files: [file] })) {
+                navigator.share({
+                  files: [file],
+                  title: artPlayerRef.current?.title || '截图',
+                });
+                URL.revokeObjectURL(url);
+                return;
+              }
+            }
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `screenshot_${Date.now()}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+            if (artPlayerRef.current)
+              artPlayerRef.current.notice.show = '📸 截图已保存';
+          }, 'image/png');
+        };
+
         artPlayerRef.current = new Artplayer({
           container: artRef.current,
           url: videoUrl,
@@ -2853,7 +2919,10 @@ function PlayPageClient() {
           // iOS设备需要静音才能自动播放，参考ArtPlayer源码处理
           muted: isIOS || isSafari,
           autoplay: true,
-          pip: true,
+          // 手机端只留核心按钮（播放/时间/进度/全屏+必要的自定义项），
+          // 次要功能原生关闭（不用 CSS display:none 硬藏，避免布局错乱），
+          // 倍速/截图等进设置齿轮面板
+          pip: !isMobile,
           autoSize: false,
           // 悬浮小窗播放：页面往下滚动时播放器缩成小窗跟随，可继续观看
           autoMini: true,
@@ -2869,11 +2938,11 @@ function PlayPageClient() {
           screenshot: !isMobile, // 桌面端启用截图功能
           setting: true,
           loop: false,
-          flip: true,
-          playbackRate: true,
-          aspectRatio: true,
+          flip: !isMobile,
+          playbackRate: !isMobile,
+          aspectRatio: !isMobile,
           fullscreen: true,
-          fullscreenWeb: true,
+          fullscreenWeb: !isMobile,
           subtitleOffset: false,
           miniProgressBar: true,
           mutex: true,
@@ -2885,7 +2954,7 @@ function PlayPageClient() {
           fastForward: true,
           // 自动横屏由自研 orientationchange 处理器负责（socket 升级前调用 lock 会报错导致全屏闪退）
           autoOrientation: false,
-          lock: true,
+          lock: !isMobile,
           // AirPlay 仅在支持 WebKit API 的浏览器中启用
           // 主要是 Safari (桌面和移动端) 和 iOS 上的其他浏览器
           airplay: isIOS || isSafari,
@@ -3461,6 +3530,48 @@ function PlayPageClient() {
                 return modeNames[mode] || item.html;
               },
             },
+            // 手机端专属：控制条瘦身后，倍速/截图只能从设置进入
+            ...(isMobile
+              ? [
+                  {
+                    html: '倍速',
+                    icon: '<text x="50%" y="50%" font-size="14" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">速</text>',
+                    tooltip: (() => `${loadPlaybackRate()}x`)(),
+                    selector: [0.5, 0.75, 1, 1.25, 1.5, 2].map((v) => ({
+                      html: `${v}x`,
+                      value: v,
+                      default: loadPlaybackRate() === v,
+                    })),
+                    onSelect: function (item: any) {
+                      const rate = Number(item.value) || 1;
+                      try {
+                        localStorage.setItem(
+                          PLAYER_PLAYBACK_RATE_KEY,
+                          String(rate),
+                        );
+                      } catch {
+                        // 隐私模式写失败不影响当前播放速率
+                      }
+                      if (artPlayerRef.current) {
+                        artPlayerRef.current.playbackRate = rate;
+                      }
+                      return `${rate}x`;
+                    },
+                  },
+                  {
+                    html: '截图',
+                    icon: '<text x="50%" y="50%" font-size="14" font-weight="bold" text-anchor="middle" dominant-baseline="middle" fill="#ffffff">截</text>',
+                    tooltip: '保存当前画面',
+                    onClick: function () {
+                      captureScreenshot();
+                      if (artPlayerRef.current) {
+                        artPlayerRef.current.setting.show = false;
+                      }
+                      return '保存当前画面';
+                    },
+                  },
+                ]
+              : []),
             ...(webGPUSupported
               ? [
                   {
@@ -3543,57 +3654,10 @@ function PlayPageClient() {
                 },
               },
             ],
-            // 截图按钮（仅移动端）
-            ...(isMobile
-              ? [
-                  {
-                    name: 'screenshot',
-                    index: 6,
-                    position: 'right' as const,
-                    html: '<div style="padding:0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;" title="截图"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg></div>',
-                    click: function () {
-                      if (!artPlayerRef.current) return;
-                      const video = artPlayerRef.current.video;
-                      const canvas = document.createElement('canvas');
-                      canvas.width = video.videoWidth;
-                      canvas.height = video.videoHeight;
-                      const ctx = canvas.getContext('2d');
-                      if (!ctx) return;
-                      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                      canvas.toBlob((blob) => {
-                        if (!blob) return;
-                        const url = URL.createObjectURL(blob);
-                        // Try native share API
-                        if (navigator.share && navigator.canShare) {
-                          const file = new File([blob], 'screenshot.png', {
-                            type: 'image/png',
-                          });
-                          if (navigator.canShare({ files: [file] })) {
-                            navigator.share({
-                              files: [file],
-                              title: artPlayerRef.current?.title || '截图',
-                            });
-                            URL.revokeObjectURL(url);
-                            return;
-                          }
-                        }
-                        // Fallback: download
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `screenshot_${Date.now()}.png`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        if (artPlayerRef.current)
-                          artPlayerRef.current.notice.show = '📸 截图已保存';
-                      }, 'image/png');
-                    },
-                  },
-                ]
+            // 音轨/字幕切换按钮（仅桌面端；手机端控制条只留核心按钮）
+            ...(!isMobile
+              ? [buildAudioTrackControl(), buildSubtitleControl()]
               : []),
-            // 音轨切换按钮
-            buildAudioTrackControl(),
-            // 字幕切换按钮（源自带字幕自动显示，无需用户配置）
-            buildSubtitleControl(),
           ],
           // 🚀 性能优化的弹幕插件配置 - 保持弹幕数量，优化渲染性能
           plugins: [
@@ -5638,9 +5702,9 @@ function PlayPageClient() {
                     : 'grid-cols-1 md:grid-cols-4'
                 }`}
               >
-                {/* 播放器 */}
+                {/* 播放器（手机端顶满宽，APP 式沉浸观感） */}
                 <div
-                  className={`h-full transition-all duration-300 ease-in-out rounded-none sm:rounded-xl border-0 sm:border sm:border-white/0 dark:sm:border-white/30 ${
+                  className={`h-full transition-all duration-300 ease-in-out rounded-none sm:rounded-xl border-0 sm:border sm:border-white/0 dark:sm:border-white/30 -mx-6 sm:mx-0 ${
                     isEpisodeSelectorCollapsed ? 'col-span-1' : 'md:col-span-3'
                   }`}
                 >
