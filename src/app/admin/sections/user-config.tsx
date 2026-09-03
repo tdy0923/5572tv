@@ -78,7 +78,6 @@ export default function UserConfig({
   useEffect(() => {
     // Sync state with config on config changes
     if (config?.UserConfig?.Users) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsers(config.UserConfig.Users);
     }
     if (config?.SourceConfig) {
@@ -377,6 +376,78 @@ export default function UserConfig({
             {userGroups.length} 分组
           </FluentBadge>
         </div>
+      </div>
+
+      {/* 注册设置 */}
+      <div className='rounded-xl border bg-white dark:bg-white/[0.03] border-gray-200 dark:border-white/5 shadow-sm p-4 space-y-3'>
+        <div className='text-sm font-semibold text-gray-900 dark:text-white'>
+          注册设置
+        </div>
+        {[
+          {
+            key: 'AllowRegister' as const,
+            label: '允许注册',
+            desc: '关闭后注册页拒绝新用户（站长后台加人不受影响）',
+            value: config?.UserConfig?.AllowRegister !== false,
+          },
+          {
+            key: 'RequireInviteCode' as const,
+            label: '需要邀请码',
+            desc: '开启后注册必须填写有效邀请码（邀请码在邀请管理中生成）',
+            value: config?.UserConfig?.RequireInviteCode === true,
+          },
+        ].map((item) => (
+          <div
+            key={item.key}
+            className='flex items-center justify-between gap-3'
+          >
+            <div>
+              <div className='text-sm text-gray-800 dark:text-gray-200'>
+                {item.label}
+              </div>
+              <div className='text-xs text-gray-500 dark:text-gray-400'>
+                {item.desc}
+              </div>
+            </div>
+            <button
+              role='switch'
+              aria-checked={item.value}
+              aria-label={item.label}
+              onClick={async () => {
+                if (!config) return;
+                await withLoading('registerConfig', async () => {
+                  try {
+                    const resp = await fetch('/api/admin/config', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        ...config,
+                        UserConfig: {
+                          ...config.UserConfig,
+                          [item.key]: !item.value,
+                        },
+                      }),
+                    });
+                    if (!resp.ok) throw new Error('保存失败');
+                    showSuccess('已保存', showAlert);
+                    await reload();
+                  } catch (err) {
+                    showError('保存失败: ' + (err as Error).message, showAlert);
+                  }
+                });
+              }}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                item.value ? 'bg-[#f4c24d]' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                  item.value ? 'left-[22px]' : 'left-0.5'
+                }`}
+              />
+            </button>
+          </div>
+        ))}
       </div>
 
       {/* Tab 切换 */}
