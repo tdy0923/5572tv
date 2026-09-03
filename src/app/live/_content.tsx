@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps, no-console, @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
 
 /* eslint-disable unused-imports/no-unused-vars */
 
@@ -23,17 +23,16 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { debounce } from '@/lib/channel-search';
 import { parseCustomTimeFormat } from '@/lib/time';
 import { devicePerformance, isMobile, isSafari } from '@/lib/utils';
-import { useLiveSync } from '@/hooks/useLiveSync';
 import { useTabsDragScroll } from '@/hooks/useTabsDragScroll';
 
 import EpgScrollableRow from '@/components/EpgScrollableRow';
+import { FluentSpinner } from '@/components/FluentSpinner';
 import {
   FluentBadge,
   FluentButton,
   FluentCard,
   FluentEmptyState,
 } from '@/components/FluentUI';
-import { FluentSpinner } from '@/components/FluentSpinner';
 import PageLayout from '@/components/PageLayout';
 
 import ChannelSidebar from './components/ChannelSidebar';
@@ -172,11 +171,6 @@ function LivePageClient() {
   const [isEpgLoading, setIsEpgLoading] = useState(false);
 
   const currentChannelRef = useRef<LiveChannel | null>(null);
-
-  // 待同步的频道ID（用于跨直播源切换）
-  const [pendingSyncChannelId, setPendingSyncChannelId] = useState<
-    string | null
-  >(null);
 
   // 频道名展开状态
   const [expandedChannels, setExpandedChannels] = useState<Set<string>>(
@@ -340,42 +334,8 @@ function LivePageClient() {
   const groupButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const channelListRef = useRef<HTMLDivElement>(null);
 
-  // 观影室同步 - 房主切换频道时广播，房员接收并同步
-  const liveSync = useLiveSync({
-    currentChannelId: currentChannel?.id || '',
-    currentChannelName: currentChannel?.name || '',
-    currentSourceKey: currentSource?.key || '',
-    onChannelChange: (channelId: string, sourceKey: string) => {
-      // 房员接收到频道切换指令
-      //         channelId,
-      //         sourceKey,
-      //       });
-
-      // 1. 先切换直播源（如果不同）
-      if (sourceKey && sourceKey !== currentSourceRef.current?.key) {
-        const targetSource = liveSources.find((s) => s.key === sourceKey);
-        if (targetSource) {
-          // 这里需要先加载直播源的频道列表，然后再切换频道
-          // 由于 loadChannels 是异步的，我们需要等待加载完成后再切换频道
-          setCurrentSource(targetSource);
-          // 保存需要切换的频道ID，在频道列表加载完成后自动切换
-          setPendingSyncChannelId(channelId);
-          return;
-        }
-      }
-
-      // 2. 切换频道（同一直播源）
-      const targetChannel = currentChannels.find((c) => c.id === channelId);
-      if (targetChannel) {
-        setCurrentChannel(targetChannel);
-        setVideoUrl(targetChannel.url);
-        // 自动滚动到选中的频道位置
-        setTimeout(() => {
-          scrollToChannel(targetChannel);
-        }, 100);
-      }
-    },
-  });
+  // 观影房已下线：同步桩恒为关闭，频道切换不受限
+  const liveSync = { shouldDisableControls: false };
 
   // 拖拽滚动功能
   const { isDragging, dragHandlers } = useTabsDragScroll();
@@ -606,24 +566,6 @@ function LivePageClient() {
       }
 
       // 检查是否有待同步的频道（来自观影室同步）
-      if (pendingSyncChannelId) {
-        const syncChannel = channels.find(
-          (c: LiveChannel) => c.id === pendingSyncChannelId,
-        );
-        if (syncChannel) {
-          //             '[Live] Auto-switching to synced channel:',
-          //             syncChannel.name,
-          //           );
-          setCurrentChannel(syncChannel);
-          setVideoUrl(syncChannel.url);
-          // 自动滚动到选中的频道位置
-          setTimeout(() => {
-            scrollToChannel(syncChannel);
-          }, 200);
-        }
-        setPendingSyncChannelId(null); // 清除待同步的频道ID
-      }
-
       setIsVideoLoading(false);
     } catch (err) {
       console.error('获取频道列表失败:', err);
@@ -1839,7 +1781,10 @@ function LivePageClient() {
     return (
       <PageLayout activePath='/live'>
         <div className='flex min-h-[50vh] flex-col items-center justify-center gap-8 p-6'>
-          <FluentCard variant='default' className='flex w-full max-w-md flex-col items-center gap-5 !p-8'>
+          <FluentCard
+            variant='default'
+            className='flex w-full max-w-md flex-col items-center gap-5 !p-8'
+          >
             <FluentSpinner size='large' label={loadingMessage} />
             <div className='flex items-center gap-2'>
               <span
@@ -1888,7 +1833,10 @@ function LivePageClient() {
               title='加载失败'
               description={error || '请检查网络连接或尝试刷新页面'}
               action={
-                <FluentButton variant='primary' onClick={() => window.location.reload()}>
+                <FluentButton
+                  variant='primary'
+                  onClick={() => window.location.reload()}
+                >
                   重新尝试
                 </FluentButton>
               }
@@ -1983,7 +1931,9 @@ function LivePageClient() {
                     {directPlaybackEnabled ? (
                       <>
                         <span>⚡</span>
-                        <span>直连{playbackMode === 'proxy' ? '(降级)' : ''}</span>
+                        <span>
+                          直连{playbackMode === 'proxy' ? '(降级)' : ''}
+                        </span>
                       </>
                     ) : (
                       <>
@@ -2006,7 +1956,9 @@ function LivePageClient() {
               variant='ghost'
               size='sm'
               onClick={() => setIsChannelListCollapsed(!isChannelListCollapsed)}
-              aria-label={isChannelListCollapsed ? '显示频道列表' : '隐藏频道列表'}
+              aria-label={
+                isChannelListCollapsed ? '显示频道列表' : '隐藏频道列表'
+              }
               className='!rounded-full'
             >
               <span className='inline-flex items-center gap-1.5'>
@@ -2016,7 +1968,12 @@ function LivePageClient() {
                   stroke='currentColor'
                   viewBox='0 0 24 24'
                 >
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M9 5l7 7-7 7' />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    d='M9 5l7 7-7 7'
+                  />
                 </svg>
                 {isChannelListCollapsed ? '显示' : '隐藏'}
                 <span
@@ -2047,7 +2004,10 @@ function LivePageClient() {
                 {/* 不支持的直播类型提示 — FluentCard + FluentEmptyState */}
                 {unsupportedType && (
                   <div className='absolute inset-0 bg-black/85 backdrop-blur-sm rounded-xl flex items-center justify-center z-60 p-4'>
-                    <FluentCard variant='default' className='w-full max-w-md !p-0 bg-white dark:bg-gray-900'>
+                    <FluentCard
+                      variant='default'
+                      className='w-full max-w-md !p-0 bg-white dark:bg-gray-900'
+                    >
                       <FluentEmptyState
                         icon={
                           unsupportedType === 'channel-unavailable' ? (
@@ -2114,15 +2074,22 @@ function LivePageClient() {
 
                 {/* DVR 回放支持提示 — FluentCard */}
                 {dvrDetected && (
-                  <FluentCard variant='glass' className='absolute top-4 left-4 right-4 !p-3 z-60 bg-white/95 dark:bg-gray-800/95'>
+                  <FluentCard
+                    variant='glass'
+                    className='absolute top-4 left-4 right-4 !p-3 z-60 bg-white/95 dark:bg-gray-800/95'
+                  >
                     <div className='flex items-center justify-between gap-3'>
                       <div className='flex items-center gap-3 min-w-0 flex-1'>
                         <div className='h-8 w-8 shrink-0 rounded-full bg-blue-500 flex items-center justify-center'>
                           <Play className='h-4 w-4 text-white' />
                         </div>
                         <div className='min-w-0 flex-1'>
-                          <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>此频道支持回放功能</p>
-                          <p className='text-xs text-gray-500 dark:text-gray-400'>可拖动范围: {Math.floor(dvrSeekableRange / 60)} 分钟</p>
+                          <p className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
+                            此频道支持回放功能
+                          </p>
+                          <p className='text-xs text-gray-500 dark:text-gray-400'>
+                            可拖动范围: {Math.floor(dvrSeekableRange / 60)} 分钟
+                          </p>
                         </div>
                       </div>
                       <div className='flex items-center gap-2 shrink-0'>
@@ -2141,7 +2108,12 @@ function LivePageClient() {
                         >
                           启用进度条
                         </FluentButton>
-                        <FluentButton variant='ghost' size='sm' onClick={() => setDvrDetected(false)} aria-label='关闭提示'>
+                        <FluentButton
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => setDvrDetected(false)}
+                          aria-label='关闭提示'
+                        >
                           <X className='h-4 w-4' />
                         </FluentButton>
                       </div>
@@ -2152,9 +2124,14 @@ function LivePageClient() {
                 {/* 视频加载蒙层 — FluentSpinner */}
                 {isVideoLoading && (
                   <div className='absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-60'>
-                    <FluentCard variant='glass' className='!px-8 !py-6 flex flex-col items-center gap-3 bg-white/90 dark:bg-gray-800/90'>
+                    <FluentCard
+                      variant='glass'
+                      className='!px-8 !py-6 flex flex-col items-center gap-3 bg-white/90 dark:bg-gray-800/90'
+                    >
                       <FluentSpinner size='large' />
-                      <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>IPTV 加载中…</span>
+                      <span className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                        IPTV 加载中…
+                      </span>
                     </FluentCard>
                   </div>
                 )}

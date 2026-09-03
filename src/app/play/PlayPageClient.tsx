@@ -1079,10 +1079,8 @@ function PlayPageClient() {
   const danmakuConfigCleanupRef = useRef<(() => void) | null>(null);
   const globalCleanupFnsRef = useRef<(() => void)[]>([]);
 
-  // 观影室同步
+  // 观影房已下线：保留 inert 桩以维持房主变更/换源确认对话框的挂载逻辑
   const {
-    isInRoom: isInWatchRoom,
-    isOwner: isWatchRoomOwner,
     syncPaused,
     pauseSync,
     resumeSync,

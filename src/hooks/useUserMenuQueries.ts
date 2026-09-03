@@ -88,23 +88,6 @@ export function useSaveEmbyConfigMutation() {
 }
 
 /**
- * Watch room is offline, always return false
- */
-const watchRoomConfigOptions = () =>
-  queryOptions({
-    queryKey: ['watchRoomConfig'],
-    queryFn: async () => false,
-    staleTime: Infinity,
-  });
-
-/**
- * Fetch watch room config
- */
-export function useWatchRoomConfigQuery() {
-  return useQuery(watchRoomConfigOptions());
-}
-
-/**
  * Query options for server config
  */
 const serverConfigOptions = () =>

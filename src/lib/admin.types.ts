@@ -171,11 +171,6 @@ export interface AdminConfig {
   DownloadConfig?: {
     enabled: boolean; // 是否启用下载功能（全局开关）
   };
-  WatchRoomConfig?: {
-    enabled: boolean; // 是否启用观影室功能
-    serverUrl: string; // 外部观影室服务器地址
-    authKey: string; // 观影室服务器认证密钥
-  };
   DoubanConfig?: {
     enablePuppeteer: boolean; // 是否启用 Puppeteer 绕过 Challenge（默认 false）
     cookies?: string; // 豆瓣认证 Cookies（包含 dbcl2, frodotk_db, ck 等）

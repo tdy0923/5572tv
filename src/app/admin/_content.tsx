@@ -45,7 +45,6 @@ import SourceTestModule from '@/components/SourceTestModule';
 import { TelegramAuthConfig } from '@/components/TelegramAuthConfig';
 import TrustedNetworkConfig from '@/components/TrustedNetworkConfig';
 import TVBoxSecurityConfig from '@/components/TVBoxSecurityConfig';
-import WatchRoomConfig from '@/components/WatchRoomConfig';
 
 import {
   AlertModal,
@@ -199,7 +198,7 @@ function AdminPageClient() {
         items: [
           { id: 'media-tools', label: '媒体工具', icon: FolderOpen },
           { id: 'download-tools', label: '下载工具', icon: Download },
-          { id: 'watchroom-tools', label: '观影室', icon: Users },
+
           { id: 'adfilter-tools', label: '去广告', icon: Video },
           { id: 'danmu-tools', label: '弹幕能力', icon: MessageSquare },
         ],
@@ -251,7 +250,7 @@ function AdminPageClient() {
     embyConfig: false,
     downloadConfig: false,
     customAdFilter: false,
-    watchRoomConfig: false,
+
     tvboxSecurityConfig: false,
     trustedNetworkConfig: false,
     danmuApiConfig: false,
@@ -306,8 +305,8 @@ function AdminPageClient() {
       总览: '核心运营数据与系统健康一目了然。',
       站点与外观: '站点信息、主题、配置文件与广告位集中管理。',
       用户与安全: '用户、邀请码、登录方式、访问控制与安全。',
-      内容与发现: '视频源、直播源、源脚本、源检测、分类、网盘与 AI 推荐。',
-      播放与能力: '影库、下载、观影室、去广告与弹幕等播放能力。',
+      内容与发现: '视频源、直播源、源脚本、源检测、分类与网盘。',
+      播放与能力: '影库、下载、去广告与弹幕等播放能力。',
     }),
     [],
   );
@@ -890,14 +889,6 @@ function AdminPageClient() {
                         </div>
                       </button>
                       <button
-                        onClick={() => setActiveAdminSection('watchroom-tools')}
-                        className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
-                      >
-                        <div className='text-sm font-semibold text-gray-900 dark:text-gray-100'>
-                          观影室
-                        </div>
-                      </button>
-                      <button
                         onClick={() => setActiveAdminSection('adfilter-tools')}
                         className='rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left transition-colors hover:bg-white dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.08]'
                       >
@@ -1227,26 +1218,6 @@ function AdminPageClient() {
                       refreshConfig={fetchConfig}
                     />
                   </AdminModulePanel>
-                )}
-
-                {/* 观影室配置标签 */}
-                {isSectionActive('watchroom-tools') && (
-                  <div id='watchroom-tools'>
-                    <AdminModulePanel
-                      title='观影室配置'
-                      icon={
-                        <Users
-                          size={20}
-                          className='text-indigo-600 dark:text-indigo-400'
-                        />
-                      }
-                    >
-                      <WatchRoomConfig
-                        config={config}
-                        refreshConfig={fetchConfig}
-                      />
-                    </AdminModulePanel>
-                  </div>
                 )}
 
                 {/* TVBox安全配置标签 */}

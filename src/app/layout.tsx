@@ -15,8 +15,6 @@ import RouteLoadingBar from '../components/RouteLoadingBar';
 import { SessionTracker } from '../components/SessionTracker';
 import { SiteProvider } from '../components/SiteProvider';
 import { ThemeProvider } from '../components/ThemeProvider';
-import ChatFloatingWindow from '../components/watch-room/ChatFloatingWindow';
-import { WatchRoomProvider } from '../components/WatchRoomProvider';
 import { DownloadProvider } from '../contexts/DownloadContext';
 import { GlobalCacheProvider } from '../contexts/GlobalCacheContext';
 
@@ -235,25 +233,22 @@ export default async function RootLayout({
           <QueryProvider>
             <GlobalCacheProvider>
               <DownloadProvider>
-                <WatchRoomProvider>
-                  <SiteProvider
-                    siteName={siteName}
-                    announcementTitle={announcementTitle}
-                    announcement={announcement}
-                    adSettings={adSettings}
-                  >
-                    <Suspense fallback={null}>
-                      <SessionTracker />
-                      {children}
-                      <GlobalErrorIndicator />
-                    </Suspense>
-                  </SiteProvider>
+                <SiteProvider
+                  siteName={siteName}
+                  announcementTitle={announcementTitle}
+                  announcement={announcement}
+                  adSettings={adSettings}
+                >
                   <Suspense fallback={null}>
-                    <DownloadPanel />
-                    <ChatFloatingWindow />
-                    <PwaInstallPrompt />
+                    <SessionTracker />
+                    {children}
+                    <GlobalErrorIndicator />
                   </Suspense>
-                </WatchRoomProvider>
+                </SiteProvider>
+                <Suspense fallback={null}>
+                  <DownloadPanel />
+                  <PwaInstallPrompt />
+                </Suspense>
               </DownloadProvider>
             </GlobalCacheProvider>
           </QueryProvider>

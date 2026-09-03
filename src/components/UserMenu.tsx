@@ -16,7 +16,6 @@ import {
   Shield,
   Tv,
   User,
-  Users,
   X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -44,7 +43,6 @@ import {
   usePlayRecordsQuery,
   useServerConfigQuery,
   useVersionCheckQuery,
-  useWatchRoomConfigQuery,
 } from '@/hooks/useUserMenuQueries';
 
 import { useDownload } from '@/contexts/DownloadContext';
@@ -100,8 +98,6 @@ export const UserMenu: React.FC = () => {
       // ignore
     }
   }, []);
-  // 🚀 TanStack Query - 观影室配置
-  const { data: showWatchRoom = false } = useWatchRoomConfigQuery();
   // 🚀 TanStack Query - 下载功能配置
   const { data: serverConfig } = useServerConfigQuery();
   const downloadEnabled = serverConfig?.downloadEnabled === true;
@@ -231,16 +227,12 @@ export const UserMenu: React.FC = () => {
       }
       // 预加载 TVBox 配置（所有人都能访问）
       router.prefetch('/tvbox');
-      // 预加载观影室（如果功能启用，所有人都能访问）
-      if (showWatchRoom) {
-        router.prefetch('/watch-room');
-      }
       // 预加载发布日历（所有人都能访问）
       router.prefetch('/release-calendar');
     }
-  }, [isOpen, authInfo, storageType, showWatchRoom, router]);
+  }, [isOpen, authInfo, storageType, router]);
 
-  // 🚀 观影室配置和下载配置由 TanStack Query 自动管理
+  // 🚀 下载配置由 TanStack Query 自动管理
 
   // 🚀 版本检查由 TanStack Query 自动管理
 
@@ -421,12 +413,6 @@ export const UserMenu: React.FC = () => {
     setIsOpen(false);
     router.refresh();
     router.push('/tvbox');
-  };
-
-  const handleWatchRoom = () => {
-    setIsOpen(false);
-    router.refresh();
-    router.push('/watch-room');
   };
 
   const handleReleaseCalendar = () => {
@@ -856,14 +842,6 @@ export const UserMenu: React.FC = () => {
             <Tv className='w-5 h-5 text-gray-500 dark:text-gray-400' />
             <span className='font-medium'>TVBox 配置</span>
           </button>
-
-          {/* 观影室按钮 */}
-          {showWatchRoom && (
-            <button onClick={handleWatchRoom} className='ui-menu-button'>
-              <Users className='w-5 h-5 text-gray-500 dark:text-gray-400' />
-              <span className='font-medium'>观影室</span>
-            </button>
-          )}
 
           {/* 下载管理按钮 */}
           {downloadEnabled && (
