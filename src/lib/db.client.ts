@@ -610,7 +610,8 @@ async function fetchWithAuth(
   const res = await fetchWithTimeout(url, options);
   if (!res.ok) {
     // 401 未授权：清理登录态，但不跳转登录页。
-    // 跳转会在公开页面（如首页）触发后台数据请求 → 401 → 跳转的无限循环。
+    // 全站登录墙下页面级 401 由中间件 307 处理；此处若再跳转，
+    // 会话过期时的后台轮询请求会触发跳转循环。
     if (res.status === 401) {
       try {
         await fetch('/api/logout', {

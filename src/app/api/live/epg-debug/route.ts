@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+import { ensureAdmin } from '@/lib/admin-auth';
 import { getConfig } from '@/lib/config';
 import { parseEpgWithDebug, parseM3U } from '@/lib/live';
 
@@ -14,6 +15,9 @@ const defaultUA = 'AptvPlayer/1.4.10';
 
 export async function GET(request: NextRequest) {
   try {
+    // 诊断接口返回直播源配置（含源地址），仅管理员可用
+    await ensureAdmin(request);
+
     const { searchParams } = new URL(request.url);
     const sourceKey = searchParams.get('source');
 
@@ -181,6 +185,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('[EPG Debug] 错误:', error);
+    if ((error as Error).message === 'UNAUTHORIZED') {
+      return NextResponse.json({ error: '未授权' }, { status: 401 });
+    }
     return NextResponse.json(
       {
         error: 'EPG 诊断失败',
