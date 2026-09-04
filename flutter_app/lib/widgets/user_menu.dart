@@ -447,7 +447,10 @@ class _UserMenuState extends State<UserMenu> {
             ),
             TextButton(
               onPressed: () async {
-                final url = controller.text.trim();
+                var url = controller.text.trim();
+                // 归一化：用户常把完整示例（含 ?url= 甚至 ?url=url=）粘进来，
+                // 统一压成单层前缀，空着=用默认
+                url = url.replaceAll('?url=url=', '?url=');
                 await UserDataService.saveM3u8ProxyUrl(url);
                 if (!mounted) return;
                 setState(() {

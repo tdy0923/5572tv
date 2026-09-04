@@ -763,6 +763,11 @@ class PlayerState extends ChangeNotifier {
 
       final m3u8ProxyUrl = await UserDataService.getM3u8ProxyUrl();
 
+      // 容错：源返回的地址偶带 url= 前缀，先剥掉，否则拼出 ?url=url= 打不开
+      if (finalUrl.startsWith('url=')) {
+        finalUrl = finalUrl.substring(4);
+      }
+
       // 对 http(s) 播放地址启用代理；已带代理前缀（自身 video-proxy）的地址不再套一层，避免递归
       final alreadyProxied = finalUrl.contains('video-proxy?url=');
       if (m3u8ProxyUrl.isNotEmpty &&

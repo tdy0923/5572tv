@@ -210,7 +210,8 @@ class UserDataService {
     if (savedUrl == null || savedUrl.isEmpty) {
       return 'https://www.5572.net/api/video-proxy?url=';
     }
-    return savedUrl;
+    // 归一化已存坏值：?url=url= 压成单层
+    return savedUrl.replaceAll('?url=url=', '?url=');
   }
 
   // 保存优选测速设置

@@ -31,10 +31,15 @@ function extractDoubanIdFromReferer(request: Request): string | null {
 // 视频代理接口 - 支持流式传输和Range请求
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const videoUrl = searchParams.get('url');
+  let videoUrl = searchParams.get('url');
 
   if (!videoUrl) {
     return NextResponse.json({ error: 'Missing video URL' }, { status: 400 });
+  }
+
+  // 容错：客户端误拼出 ?url=url=xxx 时剥掉一层（APK 自定义代理设置易写错）
+  if (videoUrl.startsWith('url=')) {
+    videoUrl = videoUrl.slice(4);
   }
 
   // URL 格式验证 + SSRF protection (with DNS rebinding defense)
@@ -339,10 +344,15 @@ export async function GET(request: Request) {
 // 处理 HEAD 请求（用于获取视频元数据）
 export async function HEAD(request: Request) {
   const { searchParams } = new URL(request.url);
-  const videoUrl = searchParams.get('url');
+  let videoUrl = searchParams.get('url');
 
   if (!videoUrl) {
     return new NextResponse(null, { status: 400 });
+  }
+
+  // 容错：同 GET，剥掉误拼的 url= 前缀
+  if (videoUrl.startsWith('url=')) {
+    videoUrl = videoUrl.slice(4);
   }
 
   // SSRF protection: block internal/private IPs (with DNS rebinding defense)
