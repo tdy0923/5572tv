@@ -5540,6 +5540,12 @@ function PlayPageClient() {
         <PlayErrorDisplay
           error={error}
           videoTitle={videoTitle}
+          sourceLabel={detail?.source_name || currentSource || undefined}
+          episodeLabel={
+            detail?.episodes?.length
+              ? `第${currentEpisodeIndex + 1}集/共${detail.episodes.length}集`
+              : undefined
+          }
           onRetry={handleRetry}
           onSwitchSource={
             availableSources.length > 0

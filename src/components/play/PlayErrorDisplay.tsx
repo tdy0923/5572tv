@@ -4,14 +4,30 @@ import { Check, Copy, Frown, RefreshCw, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { CURRENT_VERSION } from '@/lib/version';
+
 import { FluentButton, FluentCard, FluentDivider } from '@/components/FluentUI';
 
-function buildDiagnostics(error: string, videoTitle?: string): string {
+function buildDiagnostics(opts: {
+  error: string;
+  videoTitle?: string;
+  sourceLabel?: string;
+  episodeLabel?: string;
+}): string {
+  const { error, videoTitle, sourceLabel, episodeLabel } = opts;
   const nav = typeof navigator !== 'undefined' ? navigator : null;
+  const hasAuth =
+    typeof document !== 'undefined' &&
+    /(user_auth|auth)=/.test(document.cookie || '');
   return [
     `时间: ${new Date().toISOString()}`,
+    `版本: ${CURRENT_VERSION}`,
     `错误: ${error}`,
     `片名: ${videoTitle || '-'}`,
+    `线路: ${sourceLabel || '-'}`,
+    `选集: ${episodeLabel || '-'}`,
+    `登录态: ${hasAuth ? '有cookie' : '无cookie'}`,
+    `在线: ${typeof navigator !== 'undefined' ? String(navigator.onLine) : '-'}`,
     `页面: ${typeof location !== 'undefined' ? location.href : '-'}`,
     `设备: ${nav ? nav.userAgent : '-'}`,
     `网络: ${
@@ -26,6 +42,8 @@ function buildDiagnostics(error: string, videoTitle?: string): string {
 interface PlayErrorDisplayProps {
   error: string;
   videoTitle?: string;
+  sourceLabel?: string;
+  episodeLabel?: string;
   onRetry?: () => void;
   onSwitchSource?: () => void;
 }
@@ -33,6 +51,8 @@ interface PlayErrorDisplayProps {
 export default function PlayErrorDisplay({
   error,
   videoTitle,
+  sourceLabel,
+  episodeLabel,
   onRetry,
   onSwitchSource,
 }: PlayErrorDisplayProps) {
@@ -41,7 +61,9 @@ export default function PlayErrorDisplay({
 
   const copyDiagnostics = async () => {
     try {
-      await navigator.clipboard.writeText(buildDiagnostics(error, videoTitle));
+      await navigator.clipboard.writeText(
+        buildDiagnostics({ error, videoTitle, sourceLabel, episodeLabel }),
+      );
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
