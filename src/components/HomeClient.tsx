@@ -716,6 +716,15 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
   useEffect(() => {
     if (!homeData) return;
 
+    // 无登录 cookie 时直接置空，避免过期会话下对 401 接口的无效轮询
+    if (
+      typeof document !== 'undefined' &&
+      !document.cookie.includes('user_info=')
+    ) {
+      dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+      return;
+    }
+
     const controller = new AbortController();
 
     fetch('/api/release-calendar?limit=100', { signal: controller.signal })

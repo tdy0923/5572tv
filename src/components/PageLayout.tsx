@@ -2,10 +2,14 @@
 
 import { Search } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
+
+import { installGlobal401Interceptor } from '@/lib/session-expired';
 
 import { BackButton } from './BackButton';
 import ModernNav from './ModernNav';
 import { NavActionCluster } from './NavActionCluster';
+import SessionExpiredModal from './SessionExpiredModal';
 import { SiteAdSlot } from './SiteAdSlot';
 import { useSite } from './SiteProvider';
 
@@ -27,6 +31,11 @@ const PageLayout = ({
   noPadding = false,
 }: PageLayoutProps) => {
   const { siteName } = useSite();
+
+  // 全局 401 拦截只装一次：过期登录弹一次窗，而不是静默转圈
+  useEffect(() => {
+    installGlobal401Interceptor();
+  }, []);
 
   if (useModernNav) {
     // 2025 Modern Navigation Layout
@@ -99,6 +108,7 @@ const PageLayout = ({
               >
                 {children}
                 <SiteAdSlot position='footer' className='mt-8' />
+                <SessionExpiredModal />
               </div>
             </div>
           </main>

@@ -609,9 +609,8 @@ async function fetchWithAuth(
 ): Promise<Response> {
   const res = await fetchWithTimeout(url, options);
   if (!res.ok) {
-    // 401 未授权：清理登录态，但不跳转登录页。
-    // 全站登录墙下页面级 401 由中间件 307 处理；此处若再跳转，
-    // 会话过期时的后台轮询请求会触发跳转循环。
+    // 401 未授权：清理登录态 + 全局弹一次"登录过期"（SessionExpiredModal 负责展示，
+    // 登录/注册页未挂载该组件，不会误弹；后台轮询并发 401 只弹一次）。
     if (res.status === 401) {
       try {
         await fetch('/api/logout', {
@@ -621,9 +620,21 @@ async function fetchWithAuth(
       } catch (error) {
         console.warn('注销请求失败:', error);
       }
+      try {
+        const { notifySessionExpired } = await import('./session-expired');
+        notifySessionExpired();
+      } catch {
+        // 通知失败不影响主错误抛出
+      }
       throw new Error('未授权');
     }
     throw new Error(`请求 ${url} 失败: ${res.status}`);
+  }
+  try {
+    const { resetSessionExpiredNotify } = await import('./session-expired');
+    resetSessionExpiredNotify();
+  } catch {
+    // ignore
   }
   return res;
 }
