@@ -45,20 +45,23 @@ export async function GET(request: NextRequest) {
   resetDbQueryCount();
 
   const authInfo = await getAuthInfoFromCookie(request);
-  // 未登录用户也允许搜索（使用默认源），便于公开浏览；限流见下方
   const username = authInfo?.username;
 
-  // 搜索限流：每IP每分钟最多10次
+  // 搜索限流：一户一桶，避免手机基站出口 IP 被多人分摊误伤，
+  // 也避免一次播放（自身调搜索）耗尽额度连累后续播放。
   // 与 proxy.ts 一致：优先使用 Cloudflare 不可伪造的头，避免客户端伪造 X-Forwarded-For 绕过限流
   const ip =
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-real-ip') ||
     'unknown';
-  const rateLimitKey = `search_ratelimit:${ip}`;
+  const rateLimitKey = username
+    ? `search_ratelimit:user:${username}`
+    : `search_ratelimit:ip:${ip}`;
+  const rateLimitMax = username ? 60 : 10;
   // 先递增再检查，避免 TOCTOU 竞态条件
   const currentCount = ((await db.getCache(rateLimitKey)) as number) || 0;
   await db.setCache(rateLimitKey, currentCount + 1, 60);
-  if (currentCount >= 10) {
+  if (currentCount >= rateLimitMax) {
     return NextResponse.json(
       { error: '搜索过于频繁，请稍后再试' },
       { status: 429 },
