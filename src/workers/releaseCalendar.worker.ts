@@ -56,10 +56,11 @@ function normalizeTitle(title: string): string {
 function processReleaseCalendar(input: WorkerInput): WorkerOutput {
   const { releases, today } = input;
 
-  // 过滤出即将上映和刚上映的作品（过去7天到未来90天）
-  const todayDate = new Date(today);
+  // 过滤出即将上映和刚上映的作品（过去7天到未来90天）。
+  // today 非法时回退 Worker 本地日期（可能差一天），绝不抛错置空。
+  let todayDate = new Date(today);
   if (!isValidDate(todayDate)) {
-    throw new RangeError(`Invalid worker date: ${today}`);
+    todayDate = new Date();
   }
   todayDate.setHours(0, 0, 0, 0);
   const sevenDaysAgo = new Date(todayDate);

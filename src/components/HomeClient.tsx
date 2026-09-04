@@ -731,6 +731,31 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
 
         if (upcomingData?.items) {
           const releases = upcomingData.items;
+          // 零填充 ISO 上海日期（Safari 下 new Date('2026-9-4') 非法，必须 padded）
+          const todayStr = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          }).format(new Date());
+          // Worker 不可用时的主线程回退：简单窗口过滤，保证有内容
+          const fallbackFilter = () => {
+            const base = new Date(`${todayStr}T00:00:00+08:00`);
+            if (Number.isNaN(base.getTime())) return releases.slice(0, 20);
+            const fmt = (x: Date) =>
+              `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+            const lo = new Date(base);
+            lo.setDate(lo.getDate() - 7);
+            const hi = new Date(base);
+            hi.setDate(hi.getDate() + 90);
+            const loS = fmt(lo);
+            const hiS = fmt(hi);
+            return releases
+              .filter(
+                (it: any) => it.releaseDate >= loS && it.releaseDate <= hiS,
+              )
+              .slice(0, 60);
+          };
           // 初始化Web Worker
           if (
             !workerRef.current &&
@@ -748,9 +773,12 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               workerRef.current.onmessage = (e: MessageEvent) => {
                 const { selectedItems, error } = e.data;
 
-                if (error) {
-                  console.error('📅 [Worker] 处理失败:', error);
-                  dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+                if (error || !Array.isArray(selectedItems)) {
+                  console.error('📅 [Worker] 处理失败，走主线程回退:', error);
+                  dispatch({
+                    type: 'SET_UPCOMING_RELEASES',
+                    payload: fallbackFilter(),
+                  });
                   return;
                 }
 
@@ -761,26 +789,28 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
               };
 
               workerRef.current.onerror = () => {
-                dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+                dispatch({
+                  type: 'SET_UPCOMING_RELEASES',
+                  payload: fallbackFilter(),
+                });
               };
             } catch {
-              dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
+              dispatch({
+                type: 'SET_UPCOMING_RELEASES',
+                payload: fallbackFilter(),
+              });
             }
           }
 
           if (workerRef.current) {
-            const todayStr = new Date()
-              .toLocaleDateString('zh-CN', {
-                timeZone: 'Asia/Shanghai',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-              })
-              .replace(/\//g, '-');
-
             workerRef.current.postMessage({
               releases,
               today: todayStr,
+            });
+          } else {
+            dispatch({
+              type: 'SET_UPCOMING_RELEASES',
+              payload: fallbackFilter(),
             });
           }
         }
