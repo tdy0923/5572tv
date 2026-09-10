@@ -78,7 +78,7 @@ async function fetchDoubanTagBoard(
 ): Promise<RankingItem[]> {
   const url = `https://movie.douban.com/j/search_subjects?type=${board.type}&tag=${encodeURIComponent(board.tag)}&sort=${board.sort}&page_limit=${board.limit}&page_start=0`;
   try {
-    const { data } = await fetchDoubanWithProxy<any>(url, 8000);
+    const { data } = await fetchDoubanWithProxy<any>(url, 6000);
     const subjects: DoubanSubject[] = Array.isArray(data?.subjects)
       ? data.subjects
       : [];
@@ -95,7 +95,7 @@ async function fetchDoubanTop250(
 ): Promise<RankingItem[]> {
   const url = `https://movie.douban.com/j/chart/top_list?type=11&interval_id=100:90&action=&start=0&limit=${board.limit}`;
   try {
-    const { data } = await fetchDoubanWithProxy<any>(url, 8000);
+    const { data } = await fetchDoubanWithProxy<any>(url, 6000);
     if (Array.isArray(data) && data.length > 0) {
       return toRankingItems(data as DoubanSubject[], board.type);
     }

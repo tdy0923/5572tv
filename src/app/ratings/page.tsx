@@ -13,7 +13,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   RANKING_GROUPS,
@@ -129,7 +129,7 @@ function BoardCard({
   return (
     <Link
       href={itemHref(item)}
-      className='group relative block w-[120px] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:w-[132px] dark:focus-visible:ring-offset-gray-900'
+      className='group relative block w-[132px] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:w-[148px] dark:focus-visible:ring-offset-gray-900'
     >
       {showRank && (
         <div
@@ -245,12 +245,37 @@ function BoardCard({
 function BoardSection({
   board,
   availability,
+  onVisible,
 }: {
   board: RankingBoard;
   availability: Record<string, AvailabilityInfo>;
+  onVisible?: (boardId: string) => void;
 }) {
   const Icon = BOARD_ICONS[board.id] || Star;
   const iconColor = BOARD_ICON_COLORS[board.id] || 'text-primary-500';
+  const [expanded, setExpanded] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const visibleFiredRef = useRef(false);
+
+  // 进入视口才回调，触发该榜的可用性匹配
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || visibleFiredRef.current) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          visibleFiredRef.current = true;
+          onVisible?.(board.id);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [board.id, onVisible]);
+
+  const shownItems = expanded ? board.items : board.items.slice(0, 12);
 
   if (board.id === 'site-search') {
     return (
@@ -313,6 +338,7 @@ function BoardSection({
 
   return (
     <section
+      ref={sectionRef}
       className='home-section mb-8 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03]'
       style={{ borderColor: 'var(--color-stroke-subtle)' }}
     >
@@ -342,6 +368,19 @@ function BoardSection({
             </p>
           </div>
         </div>
+        {board.items.length > 12 && (
+          <button
+            type='button'
+            onClick={() => setExpanded((v) => !v)}
+            className='shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary-500/10'
+            style={{
+              borderColor: 'var(--color-stroke-subtle)',
+              color: 'var(--color-foreground-muted)',
+            }}
+          >
+            {expanded ? '收起' : `展开全部 ${board.items.length} 部`}
+          </button>
+        )}
       </div>
 
       {board.items.length === 0 ? (
@@ -351,9 +390,9 @@ function BoardSection({
           description='榜单暂时没有内容，稍后再来看看。'
         />
       ) : (
-        <div className='-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-5 sm:px-5 [scrollbar-width:thin]'>
-          <div className='flex gap-3 sm:gap-4'>
-            {board.items.map((item, index) => (
+        <div className='-mx-4 overflow-x-auto px-4 pb-4 pt-3 sm:-mx-5 sm:px-5 [scrollbar-width:thin]'>
+          <div className='flex gap-4 sm:gap-5'>
+            {shownItems.map((item, index) => (
               <div
                 key={`${board.id}-${item.id}-${index}`}
                 className='animate-[fluent2-fade-in_250ms_ease-out_both]'
@@ -408,50 +447,47 @@ export default function RatingsPage() {
     [populatedBoards, activeGroup],
   );
 
-  // 对当前分组的豆瓣榜条目做批量可用性匹配（top 15 / 榜）
-  useEffect(() => {
-    const doubanItems = visibleBoards
-      .filter((b) => b.kind === 'douban')
-      .flatMap((b) =>
-        b.items.slice(0, 15).map((it) => ({
-          title: it.title,
-          douban_id: it.douban_id,
-        })),
-      );
-
-    if (doubanItems.length === 0) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/rankings/availability', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: doubanItems }),
-          signal: AbortSignal.timeout(30000),
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled || !Array.isArray(data.results)) return;
-        const map: Record<string, AvailabilityInfo> = {};
-        for (const r of data.results) {
-          if (r.title) {
-            map[r.title] = {
-              available: !!r.available,
-              source: r.source,
-              id: r.id,
-            };
+  // 榜单进入视口时才查该榜的可用性（每榜前 10），避免首屏一次打爆源站
+  const firedBoardsRef = useRef<Set<string>>(new Set());
+  const handleBoardVisible = useCallback(
+    (boardId: string) => {
+      if (firedBoardsRef.current.has(boardId)) return;
+      firedBoardsRef.current.add(boardId);
+      const board = populatedBoards.find((b) => b.id === boardId);
+      if (!board || board.kind !== 'douban' || board.items.length === 0) return;
+      const items = board.items.slice(0, 10).map((it) => ({
+        title: it.title,
+        douban_id: it.douban_id,
+      }));
+      (async () => {
+        try {
+          const res = await fetch('/api/rankings/availability', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items }),
+            signal: AbortSignal.timeout(20000),
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!Array.isArray(data.results)) return;
+          const map: Record<string, AvailabilityInfo> = {};
+          for (const r of data.results) {
+            if (r.title) {
+              map[r.title] = {
+                available: !!r.available,
+                source: r.source,
+                id: r.id,
+              };
+            }
           }
+          setAvailability((prev) => ({ ...prev, ...map }));
+        } catch {
+          // 匹配失败静默，不影响榜单展示
         }
-        setAvailability((prev) => ({ ...prev, ...map }));
-      } catch {
-        // 匹配失败静默，不影响榜单展示
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [visibleBoards]);
+      })();
+    },
+    [populatedBoards],
+  );
 
   return (
     <PageLayout activePath='/ratings'>
@@ -505,6 +541,7 @@ export default function RatingsPage() {
             key={board.id}
             board={board}
             availability={availability}
+            onVisible={handleBoardVisible}
           />
         ))
       )}
