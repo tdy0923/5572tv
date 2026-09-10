@@ -82,11 +82,13 @@ function RankRowCard({
   item,
   index,
   available,
+  eagerRow,
 }: {
   board: RankingBoard;
   item: RankingItem;
   index: number;
   available?: AvailabilityInfo;
+  eagerRow?: boolean;
 }) {
   if (/^\d+$/.test(item.title)) return null;
   const showRank = board.kind === 'douban';
@@ -126,7 +128,7 @@ function RankRowCard({
           rate={item.rate}
           year={item.year}
           type={item.type}
-          eager={index < 12}
+          eager={!!eagerRow && index < 12}
         />
       ) : (
         <VideoCard
@@ -135,7 +137,7 @@ function RankRowCard({
           id={item.id}
           title={item.title}
           poster={item.poster}
-          eager={index < 12}
+          eager={!!eagerRow && index < 12}
         />
       )}
     </div>
@@ -146,18 +148,23 @@ function BoardSection({
   board,
   availability,
   onVisible,
+  onExpand,
+  eagerBoard,
 }: {
   board: RankingBoard;
   availability: Record<string, AvailabilityInfo>;
   onVisible?: (boardId: string) => void;
+  onExpand?: (boardId: string) => void;
+  eagerBoard?: boolean;
 }) {
   const Icon = BOARD_ICONS[board.id] || Star;
   const iconColor = BOARD_ICON_COLORS[board.id] || 'text-primary-500';
   const [expanded, setExpanded] = useState(false);
+  const [rowVisible, setRowVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const visibleFiredRef = useRef(false);
 
-  // 进入视口才回调，触发该榜的可用性匹配
+  // 进入视口才渲染卡片行并回调，触发该榜的可用性匹配
   useEffect(() => {
     const el = sectionRef.current;
     if (!el || visibleFiredRef.current) return;
@@ -165,6 +172,7 @@ function BoardSection({
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
           visibleFiredRef.current = true;
+          setRowVisible(true);
           onVisible?.(board.id);
           io.disconnect();
         }
@@ -208,7 +216,11 @@ function BoardSection({
         <FluentButton
           variant='secondary'
           size='sm'
-          onClick={() => setExpanded((v) => !v)}
+          onClick={() => {
+            const next = !expanded;
+            setExpanded(next);
+            if (next) onExpand?.(board.id);
+          }}
         >
           {expanded ? '收起' : `展开全部 ${board.items.length} 部`}
         </FluentButton>
@@ -263,17 +275,29 @@ function BoardSection({
       >
         {header}
         <div className='-mx-4 overflow-x-auto px-4 pb-4 pt-3 sm:-mx-5 sm:px-5 [scrollbar-width:thin]'>
-          <div className='flex gap-4 sm:gap-5'>
-            {shownItems.map((item, index) => (
-              <RankRowCard
-                key={`${board.id}-${item.id}-${index}`}
-                board={board}
-                item={item}
-                index={index}
-                available={availability[item.title]}
-              />
-            ))}
-          </div>
+          {!rowVisible ? (
+            <div className='flex gap-4 overflow-hidden sm:gap-5' aria-hidden>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className='aspect-[2/3] w-[160px] shrink-0 animate-pulse rounded-xl bg-gray-200 dark:bg-white/5'
+                />
+              ))}
+            </div>
+          ) : (
+            <div className='flex gap-4 sm:gap-5'>
+              {shownItems.map((item, index) => (
+                <RankRowCard
+                  key={`${board.id}-${item.id}-${index}`}
+                  board={board}
+                  item={item}
+                  index={index}
+                  available={availability[item.title]}
+                  eagerRow={eagerBoard}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </FluentCard>
     </div>
@@ -316,6 +340,37 @@ export default function RatingsPage() {
 
   // 榜单进入视口时才查该榜的可用性（每榜前 10），避免首屏一次打爆源站
   const firedBoardsRef = useRef<Set<string>>(new Set());
+  const checkedRef = useRef<Record<string, number>>({});
+  const fetchAvailability = useCallback(
+    async (items: Array<{ title: string; douban_id?: number }>) => {
+      if (items.length === 0) return;
+      try {
+        const res = await fetch('/api/rankings/availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items }),
+          signal: AbortSignal.timeout(20000),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!Array.isArray(data.results)) return;
+        const map: Record<string, AvailabilityInfo> = {};
+        for (const r of data.results) {
+          if (r.title) {
+            map[r.title] = {
+              available: !!r.available,
+              source: r.source,
+              id: r.id,
+            };
+          }
+        }
+        setAvailability((prev) => ({ ...prev, ...map }));
+      } catch {
+        // 匹配失败静默，不影响榜单展示
+      }
+    },
+    [],
+  );
   const handleBoardVisible = useCallback(
     (boardId: string) => {
       if (firedBoardsRef.current.has(boardId)) return;
@@ -326,34 +381,27 @@ export default function RatingsPage() {
         title: it.title,
         douban_id: it.douban_id,
       }));
-      (async () => {
-        try {
-          const res = await fetch('/api/rankings/availability', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items }),
-            signal: AbortSignal.timeout(20000),
-          });
-          if (!res.ok) return;
-          const data = await res.json();
-          if (!Array.isArray(data.results)) return;
-          const map: Record<string, AvailabilityInfo> = {};
-          for (const r of data.results) {
-            if (r.title) {
-              map[r.title] = {
-                available: !!r.available,
-                source: r.source,
-                id: r.id,
-              };
-            }
-          }
-          setAvailability((prev) => ({ ...prev, ...map }));
-        } catch {
-          // 匹配失败静默，不影响榜单展示
-        }
-      })();
+      checkedRef.current[boardId] = items.length;
+      void fetchAvailability(items);
     },
-    [populatedBoards],
+    [populatedBoards, fetchAvailability],
+  );
+
+  // 展开榜单时，补查之前没查过的条目
+  const handleBoardExpand = useCallback(
+    (boardId: string) => {
+      const board = populatedBoards.find((b) => b.id === boardId);
+      if (!board || board.kind !== 'douban' || board.items.length === 0) return;
+      const from = checkedRef.current[boardId] ?? 0;
+      if (from >= board.items.length) return;
+      const items = board.items.slice(from, from + 70).map((it) => ({
+        title: it.title,
+        douban_id: it.douban_id,
+      }));
+      checkedRef.current[boardId] = from + items.length;
+      void fetchAvailability(items);
+    },
+    [populatedBoards, fetchAvailability],
   );
 
   return (
@@ -403,12 +451,14 @@ export default function RatingsPage() {
           }
         />
       ) : (
-        visibleBoards.map((board) => (
+        visibleBoards.map((board, boardIndex) => (
           <BoardSection
             key={board.id}
             board={board}
             availability={availability}
             onVisible={handleBoardVisible}
+            onExpand={handleBoardExpand}
+            eagerBoard={boardIndex === 0}
           />
         ))
       )}

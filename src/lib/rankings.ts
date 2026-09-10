@@ -63,7 +63,7 @@ export const DOUBAN_BOARDS: DoubanBoardConfig[] = [
     sort: 'rank',
     type: 'movie',
     group: 'movie',
-    limit: 50,
+    limit: 250,
     top250: true,
   },
   {

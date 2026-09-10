@@ -34,10 +34,13 @@ interface DoubanSubject {
   rating?: [string] | { value: number };
   release_date?: string;
   year?: string;
+  card_subtitle?: string;
 }
 
 function yearOf(s: DoubanSubject): string {
   if (s.release_date) return s.release_date.slice(0, 4);
+  const m = s.card_subtitle?.match(/(\d{4})/);
+  if (m) return m[1];
   if (s.year) return String(s.year).slice(0, 4);
   return '';
 }
@@ -94,14 +97,26 @@ async function fetchDoubanTagBoard(
 async function fetchDoubanTop250(
   board: DoubanBoardConfig,
 ): Promise<RankingItem[]> {
-  const url = `https://movie.douban.com/j/chart/top_list?type=11&interval_id=100:90&action=&start=0&limit=${board.limit}`;
+  const perPage = 50;
+  const pages = Math.max(1, Math.ceil(board.limit / perPage));
   try {
-    const { data } = await fetchDoubanWithProxy<any>(url, 6000);
-    if (Array.isArray(data) && data.length > 0) {
-      return toRankingItems(
-        data as DoubanSubject[],
-        board.cardType ?? board.type,
-      );
+    const results = await Promise.all(
+      Array.from({ length: pages }, (_, i) => {
+        const url = `https://movie.douban.com/j/chart/top_list?type=11&interval_id=100:90&action=&start=${i * perPage}&limit=${perPage}`;
+        return fetchDoubanWithProxy<any>(url, 6000)
+          .then(({ data }) =>
+            Array.isArray(data) ? (data as DoubanSubject[]) : [],
+          )
+          .catch(() => [] as DoubanSubject[]);
+      }),
+    );
+    const merged = results.flat().slice(0, board.limit);
+    if (merged.length > 0) {
+      // top_list 的 release_date 常为重映日期（如肖申克 2026），不可信则宁可不展示年份
+      return toRankingItems(merged, board.cardType ?? board.type).map((it) => ({
+        ...it,
+        year: '',
+      }));
     }
   } catch (e) {
     console.warn(`[rankings] Top250 图表接口失败，回退 tag:`, e);
