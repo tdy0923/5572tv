@@ -1,119 +1,121 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Flame, Search, Star, TrendingUp } from 'lucide-react';
+import {
+  Clapperboard,
+  Clock,
+  Crown,
+  Flame,
+  Play,
+  Search,
+  Sparkles,
+  Star,
+  Trophy,
+} from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
-
-import { resolveCardPosterUrl } from '@/lib/utils';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
-  FluentEmptyState,
-  FluentSelect,
-  FluentTabs,
-} from '@/components/FluentUI';
+  RANKING_GROUPS,
+  RankingBoard,
+  RankingGroup,
+  RankingItem,
+} from '@/lib/rankings';
+import { resolveCardPosterUrl } from '@/lib/utils';
+
+import { FluentEmptyState, FluentTabs } from '@/components/FluentUI';
 import PageLayout from '@/components/PageLayout';
 import PosterGridSkeleton from '@/components/PosterGridSkeleton';
 import SectionTitle from '@/components/SectionTitle';
 
-interface RatingEntry {
-  videoId: string;
-  videoSource: string;
-  title: string;
-  poster?: string;
-  avgRating: number;
-  count: number;
-  type?: string;
+interface AvailabilityInfo {
+  available: boolean;
+  source?: string;
+  id?: string;
 }
 
-const RATINGS_OPTIONS = {
-  queryKey: ['ratings', 'leaderboard'],
-  queryFn: async (): Promise<RatingEntry[]> => {
-    const res = await fetch('/api/reviews/leaderboard', {
-      signal: AbortSignal.timeout(5000),
+const RANKINGS_OPTIONS = {
+  queryKey: ['rankings', 'boards'],
+  queryFn: async (): Promise<{ boards: RankingBoard[] }> => {
+    const res = await fetch('/api/rankings', {
+      signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.list || [];
+    if (!res.ok) return { boards: [] };
+    return res.json();
   },
   staleTime: 5 * 60 * 1000,
   retry: 1,
   gcTime: 10 * 60 * 1000,
 };
 
-const DOUBAN_HIGH_OPTIONS = (type: string) => ({
-  queryKey: ['ratings', 'douban-high', type],
-  queryFn: async (): Promise<RatingEntry[]> => {
-    const res = await fetch(
-      `/api/douban?type=${type}&tag=豆瓣高分&page=0&pageSize=12`,
-      {
-        signal: AbortSignal.timeout(5000),
-      },
-    );
-    if (!res.ok) return [];
-    const json = await res.json();
-    const raw = json?.data ?? json;
-    const subjects = Array.isArray(raw?.subjects)
-      ? raw.subjects
-      : Array.isArray(raw?.list)
-        ? raw.list
-        : [];
-    return subjects.map((s: any) => ({
-      videoId: String(s.id || ''),
-      videoSource: 'douban',
-      title: String(s.title || ''),
-      poster: s.cover || s.poster || '',
-      avgRating: Number(s.rate || s.rating?.value || 0),
-      count: 0,
-      type,
-    }));
-  },
-  staleTime: 10 * 60 * 1000,
-  retry: 1,
-  gcTime: 10 * 60 * 1000,
-});
+const BOARD_ICONS: Record<string, typeof Crown> = {
+  'douban-movie-top250': Crown,
+  'douban-movie-hot': Flame,
+  'douban-tv-hot': Flame,
+  'douban-variety': Sparkles,
+  'douban-movie-new': Clock,
+  'douban-anime': Clapperboard,
+  'site-play': Play,
+  'site-search': Search,
+};
 
-function RatingCard({
+const BOARD_ICON_COLORS: Record<string, string> = {
+  'douban-movie-top250': 'text-amber-500',
+  'douban-movie-hot': 'text-orange-500',
+  'douban-tv-hot': 'text-orange-500',
+  'douban-variety': 'text-fuchsia-500',
+  'douban-anime': 'text-rose-500',
+  'site-play': 'text-emerald-500',
+  'site-search': 'text-blue-500',
+};
+
+function itemHref(item: RankingItem): string {
+  if (item.query) {
+    return `/search?q=${encodeURIComponent(item.query)}`;
+  }
+  if (item.source && item.id) {
+    return `/play?source=${encodeURIComponent(item.source)}&id=${encodeURIComponent(item.id)}&title=${encodeURIComponent(item.title)}`;
+  }
+  const stype = item.type === 'tv' || item.type === 'anime' ? 'tv' : 'movie';
+  return `/play?title=${encodeURIComponent(item.title)}&douban_id=${encodeURIComponent(item.id)}&stype=${stype}`;
+}
+
+const rankTone: Record<
+  number,
+  { bg: string; fg: string; ring: string; shadow: string }
+> = {
+  0: {
+    bg: 'linear-gradient(135deg,#f4c24d 0%,#d89c18 100%)',
+    fg: '#111',
+    ring: 'rgba(244,194,77,0.35)',
+    shadow: '0 8px 20px rgba(244,194,77,0.35)',
+  },
+  1: {
+    bg: 'linear-gradient(135deg,#e5e7eb 0%,#9ca3af 100%)',
+    fg: '#111827',
+    ring: 'rgba(156,163,175,0.3)',
+    shadow: '0 6px 16px rgba(0,0,0,0.12)',
+  },
+  2: {
+    bg: 'linear-gradient(135deg,#b45309 0%,#92400e 100%)',
+    fg: '#fffbeb',
+    ring: 'rgba(180,83,9,0.25)',
+    shadow: '0 6px 16px rgba(146,64,14,0.25)',
+  },
+};
+
+function BoardCard({
   item,
   index,
-  showRank = false,
+  showRank,
+  available,
 }: {
-  item: RatingEntry;
+  item: RankingItem;
   index: number;
-  showRank?: boolean;
+  showRank: boolean;
+  available?: AvailabilityInfo;
 }) {
-  // API 已过滤纯数字脏数据，前端防御性兜底：数字标题不展示
   if (/^\d+$/.test(item.title)) return null;
-  const displayTitle = item.title;
-
-  const href =
-    item.videoSource === 'douban'
-      ? `/play?title=${encodeURIComponent(item.title)}&douban_id=${encodeURIComponent(item.videoId)}&stype=${item.type || 'movie'}`
-      : `/play?source=${encodeURIComponent(item.videoSource)}&id=${encodeURIComponent(item.videoId)}&title=${encodeURIComponent(item.title)}`;
-
-  const rankTone: Record<
-    number,
-    { bg: string; fg: string; ring: string; shadow: string }
-  > = {
-    0: {
-      bg: 'linear-gradient(135deg,#f4c24d 0%,#d89c18 100%)',
-      fg: '#111',
-      ring: 'rgba(244,194,77,0.35)',
-      shadow: '0 8px 20px rgba(244,194,77,0.35)',
-    },
-    1: {
-      bg: 'linear-gradient(135deg,#e5e7eb 0%,#9ca3af 100%)',
-      fg: '#111827',
-      ring: 'rgba(156,163,175,0.3)',
-      shadow: '0 6px 16px rgba(0,0,0,0.12)',
-    },
-    2: {
-      bg: 'linear-gradient(135deg,#b45309 0%,#92400e 100%)',
-      fg: '#fffbeb',
-      ring: 'rgba(180,83,9,0.25)',
-      shadow: '0 6px 16px rgba(146,64,14,0.25)',
-    },
-  };
   const rankStyle =
     showRank && index < 3
       ? rankTone[index]
@@ -126,13 +128,12 @@ function RatingCard({
 
   return (
     <Link
-      href={href}
-      className='group relative block rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900'
-      style={{ animationDelay: `${index * 40}ms` }}
+      href={itemHref(item)}
+      className='group relative block w-[120px] shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:w-[132px] dark:focus-visible:ring-offset-gray-900'
     >
       {showRank && (
         <div
-          className='absolute -top-2 -left-2 z-10 flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-xs font-bold backdrop-blur'
+          className='absolute -top-2 -left-2 z-10 flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[11px] font-bold backdrop-blur'
           style={{
             background: rankStyle.bg,
             color: rankStyle.fg,
@@ -142,6 +143,14 @@ function RatingCard({
           aria-label={`第 ${index + 1} 名`}
         >
           {index + 1}
+        </div>
+      )}
+
+      {/* 可播放徽章 */}
+      {available?.available && (
+        <div className='absolute -top-2 -right-2 z-10 flex items-center gap-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-md'>
+          <Play className='h-2.5 w-2.5 fill-current' />
+          可播放
         </div>
       )}
 
@@ -168,38 +177,51 @@ function RatingCard({
           />
         ) : null}
         <div
-          className='flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-center absolute inset-0'
+          className='absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center'
           style={{
             background: 'var(--color-background-subtle)',
             display: item.poster ? 'none' : 'flex',
           }}
         >
           <div
-            className='flex h-10 w-10 items-center justify-center rounded-full'
+            className='flex h-9 w-9 items-center justify-center rounded-full'
             style={{ background: 'rgba(244,194,77,0.12)', color: '#f4c24d' }}
           >
-            <Star className='h-5 w-5' />
+            <Star className='h-4 w-4' />
           </div>
           <span
-            className='line-clamp-3 text-xs leading-relaxed'
+            className='line-clamp-3 text-[11px] leading-relaxed'
             style={{ color: 'var(--color-foreground-muted)' }}
           >
-            {displayTitle}
+            {item.title}
           </span>
         </div>
-        {/* 评分角标 */}
-        <div
-          className='absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none backdrop-blur-md'
-          style={{
-            background: 'rgba(0,0,0,0.72)',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <Star className='h-3 w-3 fill-[#f4c24d] text-[#f4c24d]' />
-          {item.avgRating.toFixed(1)}
-        </div>
-        {/* hover 渐变蒙层 */}
+
+        {item.rate ? (
+          <div
+            className='absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none backdrop-blur-md'
+            style={{
+              background: 'rgba(0,0,0,0.72)',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <Star className='h-3 w-3 fill-[#f4c24d] text-[#f4c24d]' />
+            {item.rate}
+          </div>
+        ) : item.count != null ? (
+          <div
+            className='absolute bottom-1.5 right-1.5 flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold leading-none backdrop-blur-md'
+            style={{
+              background: 'rgba(0,0,0,0.72)',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            {item.count}
+          </div>
+        ) : null}
+
         <div
           className='pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-250 group-hover:opacity-100'
           style={{
@@ -209,262 +231,282 @@ function RatingCard({
         />
       </div>
 
-      <div className='mt-2.5 flex flex-col gap-1'>
-        <p
-          className='truncate text-[13px] font-medium leading-tight transition-colors group-hover:text-primary-600 dark:group-hover:text-primary-400'
-          style={{ color: 'var(--color-foreground)' }}
-          title={displayTitle}
-        >
-          {displayTitle}
-        </p>
-        <div className='flex items-center gap-1.5'>
-          <span
-            className='inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold'
-            style={{
-              background: 'rgba(244,194,77,0.12)',
-              color: '#b45309',
-              border: '1px solid rgba(244,194,77,0.22)',
-            }}
-          >
-            <Star className='h-3 w-3 fill-[#f4c24d] text-[#f4c24d]' />
-            {item.avgRating.toFixed(1)}
-          </span>
-          {item.count > 0 ? (
-            <span
-              className='text-xs'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
-              {item.count} 票
-            </span>
-          ) : (
-            <span
-              className='text-xs'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
-              豆瓣 {item.avgRating.toFixed(1)}
-            </span>
-          )}
-        </div>
-      </div>
+      <p
+        className='mt-2 line-clamp-2 min-h-[2.5rem] text-[12px] font-medium leading-tight transition-colors group-hover:text-primary-600 dark:group-hover:text-primary-400'
+        style={{ color: 'var(--color-foreground)' }}
+        title={item.title}
+      >
+        {item.title}
+      </p>
     </Link>
   );
 }
 
+function BoardSection({
+  board,
+  availability,
+}: {
+  board: RankingBoard;
+  availability: Record<string, AvailabilityInfo>;
+}) {
+  const Icon = BOARD_ICONS[board.id] || Star;
+  const iconColor = BOARD_ICON_COLORS[board.id] || 'text-primary-500';
+
+  if (board.id === 'site-search') {
+    return (
+      <section
+        className='home-section mb-8 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03]'
+        style={{ borderColor: 'var(--color-stroke-subtle)' }}
+      >
+        <div className='mb-4 flex items-center gap-3'>
+          <div
+            className='flex h-9 w-9 items-center justify-center rounded-xl border'
+            style={{
+              background: 'rgba(59,130,246,0.12)',
+              borderColor: 'rgba(59,130,246,0.22)',
+            }}
+          >
+            <Search className={`h-4 w-4 ${iconColor}`} />
+          </div>
+          <div>
+            <h2
+              className='text-[15px] font-semibold'
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              {board.title}
+            </h2>
+            <p
+              className='text-xs'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              {board.subtitle}
+            </p>
+          </div>
+        </div>
+        <div className='flex flex-wrap gap-2'>
+          {board.items.map((item, index) => (
+            <Link
+              key={item.id}
+              href={itemHref(item)}
+              className='inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary-500/10 hover:border-primary-500/30'
+              style={{
+                borderColor: 'var(--color-stroke-subtle)',
+                color: 'var(--color-foreground)',
+              }}
+            >
+              <span
+                className='font-bold'
+                style={{
+                  color:
+                    index < 3 ? '#f4c24d' : 'var(--color-foreground-muted)',
+                }}
+              >
+                {index + 1}
+              </span>
+              {item.title}
+            </Link>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className='home-section mb-8 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03]'
+      style={{ borderColor: 'var(--color-stroke-subtle)' }}
+    >
+      <div className='mb-4 flex items-center justify-between gap-3'>
+        <div className='flex items-center gap-3'>
+          <div
+            className='flex h-9 w-9 items-center justify-center rounded-xl border'
+            style={{
+              background: 'rgba(244,194,77,0.12)',
+              borderColor: 'rgba(244,194,77,0.22)',
+            }}
+          >
+            <Icon className={`h-4 w-4 ${iconColor}`} />
+          </div>
+          <div>
+            <h2
+              className='text-[15px] font-semibold'
+              style={{ color: 'var(--color-foreground)' }}
+            >
+              {board.title}
+            </h2>
+            <p
+              className='text-xs'
+              style={{ color: 'var(--color-foreground-muted)' }}
+            >
+              {board.subtitle} · {board.items.length} 部
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {board.items.length === 0 ? (
+        <FluentEmptyState
+          icon={<Star className='h-6 w-6' style={{ color: '#f4c24d' }} />}
+          title='暂无数据'
+          description='榜单暂时没有内容，稍后再来看看。'
+        />
+      ) : (
+        <div className='-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-5 sm:px-5 [scrollbar-width:thin]'>
+          <div className='flex gap-3 sm:gap-4'>
+            {board.items.map((item, index) => (
+              <div
+                key={`${board.id}-${item.id}-${index}`}
+                className='animate-[fluent2-fade-in_250ms_ease-out_both]'
+                style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
+              >
+                <BoardCard
+                  item={item}
+                  index={index}
+                  showRank={board.kind === 'douban'}
+                  available={availability[item.title]}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function RatingsPage() {
-  const { data: list = [], isLoading } = useQuery(RATINGS_OPTIONS);
-  const [minVotes, setMinVotes] = useState(1);
-  const [sortBy, setSortBy] = useState<'rating' | 'count'>('rating');
-  const [doubanType, setDoubanType] = useState<'movie' | 'tv' | 'anime'>(
-    'movie',
+  const [group, setGroup] = useState<RankingGroup>('movie');
+  const [availability, setAvailability] = useState<
+    Record<string, AvailabilityInfo>
+  >({});
+
+  const { data: rankingsData, isLoading: rankingsLoading } =
+    useQuery(RANKINGS_OPTIONS);
+
+  const populatedBoards = useMemo<RankingBoard[]>(
+    () => (rankingsData?.boards ?? []).filter((b) => b.items.length > 0),
+    [rankingsData],
   );
 
-  const { data: doubanHigh = [], isLoading: doubanLoading } = useQuery(
-    DOUBAN_HIGH_OPTIONS(doubanType),
+  // 仅展示有内容的分组
+  const groupsWithContent = useMemo(
+    () =>
+      RANKING_GROUPS.filter((g) =>
+        populatedBoards.some((b) => b.group === g.id),
+      ),
+    [populatedBoards],
   );
 
-  const filteredRaw = list.filter(
-    (item) => item.count >= minVotes && !/^\d+$/.test(item.title),
+  const activeGroup: RankingGroup = groupsWithContent.some(
+    (g) => g.id === group,
+  )
+    ? group
+    : (groupsWithContent[0]?.id ?? group);
+
+  const visibleBoards = useMemo(
+    () => populatedBoards.filter((b) => b.group === activeGroup),
+    [populatedBoards, activeGroup],
   );
-  const filtered =
-    sortBy === 'count'
-      ? [...filteredRaw].sort(
-          (a, b) => b.count - a.count || b.avgRating - a.avgRating,
-        )
-      : filteredRaw;
-  const showDouban = filtered.length < 8;
+
+  // 对当前分组的豆瓣榜条目做批量可用性匹配（top 15 / 榜）
+  useEffect(() => {
+    const doubanItems = visibleBoards
+      .filter((b) => b.kind === 'douban')
+      .flatMap((b) =>
+        b.items.slice(0, 15).map((it) => ({
+          title: it.title,
+          douban_id: it.douban_id,
+        })),
+      );
+
+    if (doubanItems.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/rankings/availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: doubanItems }),
+          signal: AbortSignal.timeout(30000),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled || !Array.isArray(data.results)) return;
+        const map: Record<string, AvailabilityInfo> = {};
+        for (const r of data.results) {
+          if (r.title) {
+            map[r.title] = {
+              available: !!r.available,
+              source: r.source,
+              id: r.id,
+            };
+          }
+        }
+        setAvailability((prev) => ({ ...prev, ...map }));
+      } catch {
+        // 匹配失败静默，不影响榜单展示
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [visibleBoards]);
 
   return (
     <PageLayout activePath='/ratings'>
-      {/* 标题区 */}
       <div className='mb-6 sm:mb-8'>
         <SectionTitle
-          title='评分排行榜'
-          icon={TrendingUp}
+          title='热门榜单'
+          icon={Trophy}
           iconColor='text-primary-500'
-          kicker='Leaderboard'
+          kicker='Rankings'
           index='05'
         />
         <p
           className='mt-3 max-w-2xl text-sm leading-relaxed'
           style={{ color: 'var(--color-foreground-muted)' }}
         >
-          用户实时评分，发现高分佳作。参与评分，让好作品被更多人看见。
+          汇聚豆瓣各类型权威榜单，点击即可直达播放，标记「可播放」的均为站内已有资源。
         </p>
       </div>
 
-      {/* 用户评分榜 */}
-      <section
-        className='home-section mb-8 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 md:mb-10 dark:bg-white/[0.03]'
-        style={{ borderColor: 'var(--color-stroke-subtle)' }}
-      >
-        <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <div className='flex items-center gap-3'>
-            <div
-              className='flex h-9 w-9 items-center justify-center rounded-xl border text-primary-600 dark:text-primary-400'
-              style={{
-                background: 'rgba(244,194,77,0.12)',
-                borderColor: 'rgba(244,194,77,0.22)',
-              }}
-            >
-              <Star className='h-4 w-4' />
-            </div>
-            <div>
-              <h2
-                className='text-[15px] font-semibold'
-                style={{ color: 'var(--color-foreground)' }}
-              >
-                用户评分榜
-              </h2>
-              <p
-                className='text-xs'
-                style={{ color: 'var(--color-foreground-muted)' }}
-              >
-                {filtered.length} 部 ·{' '}
-                {sortBy === 'rating' ? '按平均分排序' : '按票数排序'}
-                {filtered.length > 0 && ` · 前 3 名高亮`}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex flex-wrap items-center gap-2 self-start sm:self-auto'>
-            <span
-              className='whitespace-nowrap text-xs'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
-              至少
-            </span>
-            <FluentSelect
-              value={String(minVotes)}
-              onChange={(e) =>
-                setMinVotes(Number((e.target as HTMLSelectElement).value))
-              }
-              options={[
-                { value: '1', label: '1 票' },
-                { value: '2', label: '2 票' },
-                { value: '3', label: '3 票' },
-                { value: '5', label: '5 票' },
-                { value: '10', label: '10 票' },
-              ]}
-            />
-            <span
-              className='whitespace-nowrap text-xs'
-              style={{ color: 'var(--color-foreground-muted)' }}
-            >
-              排序
-            </span>
-            <FluentSelect
-              value={sortBy}
-              onChange={(e) =>
-                setSortBy((e.target as HTMLSelectElement).value as any)
-              }
-              options={[
-                { value: 'rating', label: '按评分' },
-                { value: 'count', label: '按票数' },
-              ]}
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <PosterGridSkeleton count={12} />
-        ) : filtered.length === 0 ? (
-          <FluentEmptyState
-            icon={<Star className='h-6 w-6' style={{ color: '#f4c24d' }} />}
-            title='暂无用户评分'
-            description='播放影片后即可点亮你的评分，成为第一个为喜欢的作品投票的人。'
-            action={
-              <Link
-                href='/douban?type=movie'
-                className='inline-flex items-center gap-1 text-xs font-medium transition-colors hover:underline'
-                style={{ color: '#f4c24d' }}
-              >
-                <Search className='h-3.5 w-3.5' /> 去发现影片 →
-              </Link>
-            }
+      {/* 分组导航 */}
+      {groupsWithContent.length > 1 && (
+        <div className='mb-6'>
+          <FluentTabs
+            tabs={groupsWithContent.map((g) => ({ id: g.id, label: g.label }))}
+            value={activeGroup}
+            onChange={(id) => setGroup(id as RankingGroup)}
           />
-        ) : (
-          <div className='grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-5 lg:grid-cols-6'>
-            {filtered.map((item, index) => (
-              <div
-                key={`${item.videoSource}-${item.videoId}`}
-                className='animate-[fluent2-fade-in_250ms_ease-out_both]'
-              >
-                <RatingCard item={item} index={index} showRank />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+        </div>
+      )}
 
-      {/* 豆瓣高分精选：用户评分少时兜底，页面永不空白 */}
-      {showDouban && (
-        <section
-          className='home-section rounded-2xl border bg-white p-4 shadow-sm sm:p-5 dark:bg-white/[0.03]'
-          style={{ borderColor: 'var(--color-stroke-subtle)' }}
-        >
-          <div className='mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div className='flex items-center gap-3'>
-              <div
-                className='flex h-9 w-9 items-center justify-center rounded-xl border text-orange-600 dark:text-orange-400'
-                style={{
-                  background: 'rgba(251,146,60,0.12)',
-                  borderColor: 'rgba(251,146,60,0.22)',
-                }}
-              >
-                <Flame className='h-4 w-4' />
-              </div>
-              <div>
-                <h2
-                  className='text-[15px] font-semibold'
-                  style={{ color: 'var(--color-foreground)' }}
-                >
-                  豆瓣高分精选
-                </h2>
-                <p
-                  className='text-xs'
-                  style={{ color: 'var(--color-foreground-muted)' }}
-                >
-                  来自豆瓣的高分佳作 ·{' '}
-                  {doubanType === 'movie'
-                    ? '电影'
-                    : doubanType === 'tv'
-                      ? '剧集'
-                      : '动漫'}
-                </p>
-              </div>
-            </div>
-            <FluentTabs
-              tabs={[
-                { id: 'movie', label: '电影' },
-                { id: 'tv', label: '剧集' },
-                { id: 'anime', label: '动漫' },
-              ]}
-              value={doubanType}
-              onChange={(id) => setDoubanType(id as any)}
-            />
-          </div>
-          {doubanLoading ? (
-            <PosterGridSkeleton count={12} />
-          ) : doubanHigh.length === 0 ? (
-            <FluentEmptyState
-              icon={<Flame className='h-6 w-6' style={{ color: '#fb923c' }} />}
-              title='暂无豆瓣高分'
-              description='该分类暂时没有数据，试试切换其他类型。'
-            />
-          ) : (
-            <div className='grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 md:grid-cols-5 lg:grid-cols-6'>
-              {doubanHigh.map((item, index) => (
-                <div
-                  key={item.videoId}
-                  className='animate-[fluent2-fade-in_250ms_ease-out_both]'
-                  style={{ animationDelay: `${index * 30}ms` }}
-                >
-                  <RatingCard item={item} index={index} />
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+      {rankingsLoading ? (
+        <PosterGridSkeleton count={12} />
+      ) : visibleBoards.length === 0 ? (
+        <FluentEmptyState
+          icon={<Star className='h-6 w-6' style={{ color: '#f4c24d' }} />}
+          title='暂无榜单'
+          description='暂时没有榜单数据，稍后再来看看。'
+          action={
+            <Link
+              href='/douban?type=movie'
+              className='inline-flex items-center gap-1 text-xs font-medium transition-colors hover:underline'
+              style={{ color: '#f4c24d' }}
+            >
+              <Search className='h-3.5 w-3.5' /> 去豆瓣浏览 →
+            </Link>
+          }
+        />
+      ) : (
+        visibleBoards.map((board) => (
+          <BoardSection
+            key={board.id}
+            board={board}
+            availability={availability}
+          />
+        ))
       )}
     </PageLayout>
   );
