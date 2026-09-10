@@ -8,6 +8,7 @@ import {
   DoubanBoardConfig,
   RankingBoard,
   RankingItem,
+  RankingItemType,
 } from '@/lib/rankings';
 
 export const runtime = 'nodejs';
@@ -53,7 +54,7 @@ function rateOf(s: DoubanSubject): string {
 /** 从 subjects / 数组两种响应形状归一化 */
 function toRankingItems(
   subjects: DoubanSubject[],
-  type: 'movie' | 'tv',
+  type: RankingItemType,
 ): RankingItem[] {
   const items: RankingItem[] = [];
   for (const s of subjects) {
@@ -82,7 +83,7 @@ async function fetchDoubanTagBoard(
     const subjects: DoubanSubject[] = Array.isArray(data?.subjects)
       ? data.subjects
       : [];
-    return toRankingItems(subjects, board.type);
+    return toRankingItems(subjects, board.cardType ?? board.type);
   } catch (e) {
     console.warn(`[rankings] 豆瓣榜单 ${board.id} 获取失败:`, e);
     return [];
@@ -97,7 +98,10 @@ async function fetchDoubanTop250(
   try {
     const { data } = await fetchDoubanWithProxy<any>(url, 6000);
     if (Array.isArray(data) && data.length > 0) {
-      return toRankingItems(data as DoubanSubject[], board.type);
+      return toRankingItems(
+        data as DoubanSubject[],
+        board.cardType ?? board.type,
+      );
     }
   } catch (e) {
     console.warn(`[rankings] Top250 图表接口失败，回退 tag:`, e);

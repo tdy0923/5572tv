@@ -46,6 +46,8 @@ export interface DoubanBoardConfig {
   tag: string;
   sort: 'recommend' | 'time' | 'rank';
   type: 'movie' | 'tv';
+  /** 卡片展示类型（影响播放页 stype；默认跟随 type） */
+  cardType?: RankingItemType;
   group: RankingGroup;
   limit: number;
   /** 使用 Top250 图表接口（j/chart/top_list） */
@@ -229,13 +231,14 @@ export const DOUBAN_BOARDS: DoubanBoardConfig[] = [
     limit: 20,
   },
 
-  // ── 动漫（日本动画，douban 动画标签走 movie 通道）──
+  // ── 动漫（日本动画，douban 动画标签走 movie 通道，卡片按 anime 播）──
   {
     id: 'douban-anime',
     title: '日本动画',
     tag: '动画',
     sort: 'recommend',
     type: 'movie',
+    cardType: 'anime',
     group: 'anime',
     limit: 20,
   },
@@ -247,6 +250,7 @@ export const DOUBAN_BOARDS: DoubanBoardConfig[] = [
     tag: '综艺',
     sort: 'recommend',
     type: 'tv',
+    cardType: 'variety',
     group: 'variety',
     limit: 20,
   },
