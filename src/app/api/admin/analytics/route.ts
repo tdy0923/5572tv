@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       90,
     );
 
-    const summary = getAnalyticsSummary(days);
+    const summary = await getAnalyticsSummary(days);
 
     return NextResponse.json({ ok: true, data: summary });
   } catch (error) {

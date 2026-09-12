@@ -17,6 +17,7 @@ import {
   PlayRecord,
   PlayStatsResult,
   Reminder,
+  TopPlayedVideo,
   UserPlayStat,
 } from './types';
 
@@ -1504,7 +1505,181 @@ export class UpstashRedisStorage implements IStorage {
       await withRetry(() => this.client.del(key));
     } catch (error) {
       console.error(`删除用户 ${userName} Emby 配置失败:`, error);
-      throw error;
+    }
+  }
+
+  // ---------- 真实播放计数（按天分桶 ZSET，30 天窗口） ----------
+  private playCountDayKey(dateKey: string) {
+    return `pc:${dateKey}`;
+  }
+
+  private playCountMetaKey() {
+    return 'pc:meta';
+  }
+
+  private playCountDayKeyFromDate(ts: number) {
+    const d = new Date(ts);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return this.playCountDayKey(`${y}-${m}-${day}`);
+  }
+
+  async recordPlayCount(userName: string, videoId: string): Promise<void> {
+    try {
+      const zsetKey = this.playCountDayKeyFromDate(Date.now());
+      await withRetry(() => this.client.zincrby(zsetKey, 1, videoId));
+      // 保留 35 天，略长于统计窗口，避免边界丢失
+      await withRetry(() => this.client.expire(zsetKey, 35 * 24 * 3600));
+      void userName;
+    } catch (error) {
+      console.error('记录播放计数失败:', error);
+    }
+  }
+
+  async recordPlayCountMeta(
+    videoId: string,
+    meta: { title: string; source_name: string; cover: string; year: string },
+  ): Promise<void> {
+    try {
+      await withRetry(() =>
+        this.client.hset(this.playCountMetaKey(), { [videoId]: meta }),
+      );
+      await withRetry(() =>
+        this.client.expire(this.playCountMetaKey(), 35 * 24 * 3600),
+      );
+    } catch (error) {
+      console.error('记录播放计数元数据失败:', error);
+    }
+  }
+
+  async recordPlayUser(videoId: string, userName: string): Promise<void> {
+    try {
+      const uvKey = `pc:uv:${videoId}`;
+      await withRetry(() => this.client.pfadd(uvKey, userName));
+      // 与计数窗口对齐，35 天过期
+      await withRetry(() => this.client.expire(uvKey, 35 * 24 * 3600));
+    } catch (error) {
+      console.error('记录播放用户失败:', error);
+    }
+  }
+
+  async getTopPlayedVideos(days = 30, limit = 10): Promise<TopPlayedVideo[]> {
+    try {
+      // 逐天 ZRANGE WITHSCORES 聚合（Upstash 不支持服务端 ZUNIONSTORE 跨 30 键稳定执行）
+      const dayKeys: string[] = [];
+      for (let i = 0; i < days; i++) {
+        dayKeys.push(this.playCountDayKeyFromDate(Date.now() - i * 86400000));
+      }
+
+      const totals = new Map<string, number>();
+      for (const key of dayKeys) {
+        const entries = await withRetry(() =>
+          this.client.zrange(key, 0, -1, { withScores: true }),
+        );
+        // Upstash 返回扁平数组 [member, score, member, score, ...]
+        if (Array.isArray(entries)) {
+          for (let i = 0; i + 1 < entries.length; i += 2) {
+            const member = String(entries[i]);
+            const score = Number(entries[i + 1]) || 0;
+            totals.set(member, (totals.get(member) || 0) + score);
+          }
+        }
+      }
+
+      if (totals.size === 0) return [];
+
+      const ranked = [...totals.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit);
+
+      // 取元数据 + 去重用户数（HyperLogLog 近似）
+      const metaAll =
+        (await withRetry(() =>
+          this.client.hgetall<Record<string, any>>(this.playCountMetaKey()),
+        )) || {};
+
+      const result: TopPlayedVideo[] = [];
+      for (const [videoId, score] of ranked) {
+        const sep = videoId.indexOf('+');
+        const source = sep > 0 ? videoId.slice(0, sep) : videoId;
+        const id = sep > 0 ? videoId.slice(sep + 1) : '';
+
+        let meta: any = metaAll?.[videoId] ?? null;
+        if (typeof meta === 'string') {
+          try {
+            meta = JSON.parse(meta);
+          } catch {
+            meta = null;
+          }
+        }
+
+        let uniqueUsers = 0;
+        let lastPlayed = 0;
+        try {
+          uniqueUsers =
+            (await withRetry(() => this.client.pfcount(`pc:uv:${videoId}`))) ||
+            0;
+          // lastPlayed：从最近的按天键倒查该成员
+          for (let i = 0; i < days; i++) {
+            const inDay = await withRetry(() =>
+              this.client.zscore(dayKeys[i], videoId),
+            );
+            if (inDay !== null && inDay !== undefined) {
+              const dayTs = Date.now() - i * 86400000;
+              const d = new Date(dayTs);
+              lastPlayed = new Date(
+                d.getFullYear(),
+                d.getMonth(),
+                d.getDate(),
+                23,
+                59,
+                59,
+              ).getTime();
+              break;
+            }
+          }
+        } catch {
+          // HyperLogLog / zscore 不可用时忽略
+        }
+
+        result.push({
+          source,
+          id,
+          title: meta?.title || id || '未知影片',
+          source_name: meta?.source_name || source || '未知来源',
+          cover: meta?.cover || '',
+          year: meta?.year || '',
+          playCount: Math.round(score),
+          uniqueUsers: Number(uniqueUsers) || 0,
+          lastPlayed,
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('获取真实播放 Top 榜失败:', error);
+      return [];
+    }
+  }
+
+  // ---------- 行为分析事件持久化（按天 List，95 天 TTL） ----------
+  async appendAnalyticsEvents(dateKey: string, lines: string[]): Promise<void> {
+    const key = `analytics:events:${dateKey}`;
+    await withRetry(() => this.client.rpush(key, ...lines));
+    // 每次写入刷新 TTL；日期不再写入后自动过期清理
+    await withRetry(() => this.client.expire(key, 95 * 24 * 3600));
+  }
+
+  async readAnalyticsEvents(dateKey: string): Promise<string[] | null> {
+    try {
+      const key = `analytics:events:${dateKey}`;
+      const events = await withRetry(() =>
+        this.client.lrange<string>(key, 0, -1),
+      );
+      return Array.isArray(events) ? events.map(String) : null;
+    } catch (error) {
+      console.error(`读取行为分析事件失败 (${dateKey}):`, error);
+      return null;
     }
   }
 }

@@ -364,12 +364,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 行为分析：记录播放事件（同一视频 10 分钟内去重，避免进度更新重复计数）
+    // 行为分析：记录播放事件（同一用户+视频 10 分钟内去重，避免进度更新重复计数）
     try {
       const now = Date.now();
-      const last = lastPlayTrack.get(key);
+      const trackKey = `${authInfo.username}:${key}`;
+      const last = lastPlayTrack.get(trackKey);
       if (!last || now - last > 10 * 60 * 1000) {
-        lastPlayTrack.set(key, now);
+        lastPlayTrack.set(trackKey, now);
         const { trackEvent } = await import('@/lib/analytics-store');
         trackEvent({
           type: 'play',
@@ -380,6 +381,19 @@ export async function POST(request: NextRequest) {
           title: record.title || '',
           sourceName: record.source_name || '',
         });
+
+        // 真实播放计数（Redis 兼容存储）：每次起播 +1
+        const videoIdKey = `${source}+${id}`;
+        await db.recordPlayCount(authInfo.username, videoIdKey).catch(() => {});
+        await db
+          .recordPlayCountMeta(videoIdKey, {
+            title: record.title || '',
+            source_name: record.source_name || '',
+            cover: record.cover || '',
+            year: record.year || '',
+          })
+          .catch(() => {});
+        await db.recordPlayUser(videoIdKey, authInfo.username).catch(() => {});
       }
     } catch {
       // 分析记录失败不影响播放

@@ -153,26 +153,45 @@ async function getSitePlayBoard(): Promise<RankingBoard> {
 
   let items: RankingItem[] = [];
   try {
-    const summary = getAnalyticsSummary(30);
-    items = summary.topVideos
-      .filter((v) => v.videoId && v.title && v.videoId.includes(':'))
-      .slice(0, 30)
-      .map((v) => {
-        const sep = v.videoId.indexOf(':');
-        const source = v.videoId.slice(0, sep);
-        const id = v.videoId.slice(sep + 1);
-        return {
-          id,
-          videoId: v.videoId,
+    // 优先：真实播放计数（按天分桶 ZSET 持久化在 Redis，每次起播 +1）
+    const topPlayed = await db.getTopPlayedVideos(30, 30).catch(() => null);
+    if (topPlayed && topPlayed.length > 0) {
+      items = topPlayed
+        .filter((v) => v.source && v.id && v.title)
+        .map((v) => ({
+          id: v.id,
+          videoId: `${v.source}+${v.id}`,
           title: v.title,
-          poster: '',
+          poster: v.cover || '',
           rate: '',
-          year: '',
+          year: v.year || '',
           type: 'movie' as const,
-          source,
-          count: v.count,
-        } as RankingItem;
-      });
+          source: v.source,
+          count: v.playCount,
+        }));
+    } else {
+      // 回退：行为分析 JSONL（本地磁盘，部署重启会清空）
+      const summary = await getAnalyticsSummary(30);
+      items = summary.topVideos
+        .filter((v) => v.videoId && v.title && v.videoId.includes(':'))
+        .slice(0, 30)
+        .map((v) => {
+          const sep = v.videoId.indexOf(':');
+          const source = v.videoId.slice(0, sep);
+          const id = v.videoId.slice(sep + 1);
+          return {
+            id,
+            videoId: v.videoId,
+            title: v.title,
+            poster: '',
+            rate: '',
+            year: '',
+            type: 'movie' as const,
+            source,
+            count: v.count,
+          } as RankingItem;
+        });
+    }
   } catch (e) {
     console.warn('[rankings] 站内热播榜获取失败:', e);
   }

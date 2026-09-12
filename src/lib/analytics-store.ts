@@ -10,6 +10,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import { db, getStorageType } from './db';
+
 export type AnalyticsEvent =
   | {
       type: 'pageview';
@@ -131,6 +133,20 @@ function dayFile(ts: number): string {
   return path.join(eventsDir, `${y}-${m}-${day}.jsonl`);
 }
 
+function dayKeyFromDate(ts: number): string {
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// Redis 兼容存储（redis/upstash/kvrocks）时事件持久化到按天 List，
+// 部署重启不丢数据；localstorage 模式回退本地文件
+function isRedisMode(): boolean {
+  return getStorageType() !== 'localstorage';
+}
+
 function ensureDirs(): void {
   if (loaded) return;
   loaded = true;
@@ -145,6 +161,17 @@ function writeBuffer(): void {
   if (buffer.length === 0) return;
   const lines = buffer;
   buffer = [];
+  if (isRedisMode()) {
+    db.appendAnalyticsEvents(dayKeyFromDate(Date.now()), lines).catch((e) => {
+      console.error('❌ analytics store 写入 Redis 失败，回退本地文件:', e);
+      fallbackWriteLines(lines);
+    });
+    return;
+  }
+  fallbackWriteLines(lines);
+}
+
+function fallbackWriteLines(lines: string[]): void {
   try {
     ensureDirs();
     fs.appendFileSync(dayFile(Date.now()), lines.join('\n') + '\n');
@@ -204,7 +231,9 @@ function pruneOldFiles(): void {
  * 记录一条行为事件（立即入内存缓冲，定时落盘）
  */
 export function trackEvent(event: AnalyticsEvent): void {
-  ensureDirs();
+  if (!isRedisMode()) {
+    ensureDirs();
+  }
   try {
     buffer.push(JSON.stringify(event));
   } catch (e) {
@@ -215,26 +244,31 @@ export function trackEvent(event: AnalyticsEvent): void {
   if (buffer.length >= MAX_BUFFER_LINES) {
     writeBuffer();
   }
-  pruneOldFiles();
+  if (!isRedisMode()) {
+    pruneOldFiles();
+  }
 }
 
 // ── 聚合 ────────────────────────────────────────────────────
+
+function parseLines(lines: string[]): RawEvent[] {
+  return lines
+    .filter(Boolean)
+    .map((line) => {
+      try {
+        return JSON.parse(line) as RawEvent;
+      } catch {
+        return null;
+      }
+    })
+    .filter((e): e is RawEvent => e !== null);
+}
 
 function readDayEvents(file: string): RawEvent[] {
   try {
     const content = fs.readFileSync(file, 'utf8');
     if (!content.trim()) return [];
-    return content
-      .split('\n')
-      .filter(Boolean)
-      .map((line) => {
-        try {
-          return JSON.parse(line) as RawEvent;
-        } catch {
-          return null;
-        }
-      })
-      .filter((e): e is RawEvent => e !== null);
+    return parseLines(content.split('\n'));
   } catch {
     return [];
   }
@@ -248,7 +282,9 @@ function dateKey(ts: number): string {
 /**
  * 聚合最近 N 天的行为数据
  */
-export function getAnalyticsSummary(days: number): AnalyticsSummary {
+export async function getAnalyticsSummary(
+  days: number,
+): Promise<AnalyticsSummary> {
   ensureDirs();
   const now = Date.now();
   const from = now - days * 24 * 3600 * 1000;
@@ -285,21 +321,27 @@ export function getAnalyticsSummary(days: number): AnalyticsSummary {
   >();
   const totalUv = new Set<string>();
 
-  let files: string[] = [];
-  try {
-    if (fs.existsSync(eventsDir)) {
-      files = fs.readdirSync(eventsDir);
+  // 按天读取：Redis List 优先（持久化，部署重启不丢），本地文件回退；
+  // 多读一天兜底跨零点写入的事件
+  for (let i = days; i >= 0; i--) {
+    const ts = now - i * 86400000;
+    const dKey = dateKey(ts);
+
+    let events: RawEvent[] | null = null;
+    if (isRedisMode()) {
+      const lines = await db.readAnalyticsEvents(dKey).catch(() => null);
+      events = lines ? parseLines(lines) : null;
+      if (events && events.length === 0) {
+        // Redis 当天无数据，补读本地文件（迁移期兼容）
+        const fileEvents = readDayEvents(path.join(eventsDir, dayFile(ts)));
+        if (fileEvents.length > 0) events = fileEvents;
+      }
     }
-  } catch {
-    files = [];
-  }
+    if (!events) {
+      events = readDayEvents(path.join(eventsDir, dayFile(ts)));
+    }
 
-  for (const file of files) {
-    const filePath = path.join(eventsDir, file);
-    const stat = fs.statSync(filePath);
-    if (stat.mtimeMs < from) continue;
-
-    for (const ev of readDayEvents(filePath)) {
+    for (const ev of events) {
       if (!ev.ts || ev.ts < from || ev.ts > now) continue;
       const day = dateKey(ev.ts);
       const identity = ev.uid || ev.anon || 'unknown';

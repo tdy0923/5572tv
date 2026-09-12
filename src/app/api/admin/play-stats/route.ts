@@ -311,24 +311,58 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([source, count]) => ({ source, count }));
 
-    const topVideos = Object.values(contentStats)
-      .sort((a, b) => {
-        if (b.playCount !== a.playCount) return b.playCount - a.playCount;
-        return b.totalWatchTime - a.totalWatchTime;
-      })
-      .slice(0, 10)
-      .map((item) => ({
-        title: item.title,
-        source_name: item.source_name,
-        cover: item.cover,
-        year: item.year,
-        playCount: item.playCount,
-        totalWatchTime: item.totalWatchTime,
-        averageWatchTime:
-          item.playCount > 0 ? item.totalWatchTime / item.playCount : 0,
-        lastPlayed: item.lastPlayed,
-        uniqueUsers: item.users.size,
-      }));
+    // 热门点播影片：优先使用真实播放计数（30 天窗口，每次起播 +1），
+    // 无计数数据时回退到播放记录聚合（历史兼容，语义为"看过的用户数"）
+    let topVideos: Array<{
+      title: string;
+      source_name: string;
+      cover: string;
+      year: string;
+      playCount: number;
+      totalWatchTime: number;
+      averageWatchTime: number;
+      lastPlayed: number;
+      uniqueUsers: number;
+    }> = [];
+    try {
+      const played = await db.getTopPlayedVideos(30, 10);
+      if (played && played.length > 0) {
+        topVideos = played.map((item) => ({
+          title: item.title,
+          source_name: item.source_name,
+          cover: item.cover,
+          year: item.year,
+          playCount: item.playCount,
+          totalWatchTime: 0,
+          averageWatchTime: 0,
+          lastPlayed: item.lastPlayed,
+          uniqueUsers: item.uniqueUsers,
+        }));
+      }
+    } catch (e) {
+      console.error('获取真实播放计数失败，回退播放记录聚合:', e);
+    }
+
+    if (topVideos.length === 0) {
+      topVideos = Object.values(contentStats)
+        .sort((a, b) => {
+          if (b.playCount !== a.playCount) return b.playCount - a.playCount;
+          return b.totalWatchTime - a.totalWatchTime;
+        })
+        .slice(0, 10)
+        .map((item) => ({
+          title: item.title,
+          source_name: item.source_name,
+          cover: item.cover,
+          year: item.year,
+          playCount: item.playCount,
+          totalWatchTime: item.totalWatchTime,
+          averageWatchTime:
+            item.playCount > 0 ? item.totalWatchTime / item.playCount : 0,
+          lastPlayed: item.lastPlayed,
+          uniqueUsers: item.users.size,
+        }));
+    }
 
     // 整理近7天数据
     const dailyStats: Array<{

@@ -1,3 +1,20 @@
+## [1.18.0] - 2026-09-12
+
+### Added
+
+- 🔥 **真实播放计数**：Redis 按天分桶 ZSET（每次起播 +1、同用户同视频 10 分钟去重、35 天保留）+ HyperLogLog 播放用户去重，热门榜单从此是"真·播放次数"而非"看过的用户数"；Web/APP 共用写入点
+- 🧱 **统计存储层**：IStorage 新增可选接口 `recordPlayCount*`/`getTopPlayedVideos`/`appendAnalyticsEvents`/`readAnalyticsEvents`，redis-base（KVRocks/Redis）与 upstash 双实现
+
+### Fixed
+
+- 🐛 **后台热门点播影片统计永远不变（根因）**：旧口径按"播放记录条数"（每用户每视频仅一条）聚合且为全时段，追更/重播不增加，小用户量站点上线后榜单冻结 → 改用真实播放计数（30 天窗口），无计数数据时回退旧口径兜底
+- 🐛 **行为分析面板部署即清零**：事件写在容器本地磁盘，Render 每次部署清空 → 迁移到 Redis 按天 List（95 天 TTL），部署重启不丢；无 Redis/写入失败自动回退本地文件，迁移期兼容补读旧 JSONL
+- 🐛 **播放事件跨用户误去重**：去重 key 由 videoId 改为 `username:videoId`
+
+### Changed
+
+- 📊 **热门点播/站内热播榜数据源**：优先真实播放计数（持久化），行为分析 JSONL 降为回退兜底
+
 ## [1.17.0] - 2026-09-03
 
 ### Removed

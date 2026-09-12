@@ -226,6 +226,14 @@ export interface IStorage {
     loginTime: number,
     isFirstLogin?: boolean,
   ): Promise<void>;
+
+  // 真实播放计数（可选：仅 Redis 兼容存储实现）
+  recordPlayCount?(userName: string, videoId: string): Promise<void>;
+  getTopPlayedVideos?(days: number, limit: number): Promise<TopPlayedVideo[]>;
+
+  // 行为分析事件持久化（可选：仅 Redis 兼容存储实现）
+  appendAnalyticsEvents?(dateKey: string, lines: string[]): Promise<void>;
+  readAnalyticsEvents?(dateKey: string): Promise<string[] | null>;
 }
 
 // 搜索结果数据结构
@@ -444,6 +452,19 @@ export interface ContentStat {
   averageWatchTime: number; // 平均观看时长
   lastPlayed: number; // 最后播放时间
   uniqueUsers: number; // 观看用户数
+}
+
+// 真实播放计数（按天分桶 ZSET 聚合）
+export interface TopPlayedVideo {
+  source: string;
+  id: string;
+  title: string;
+  source_name: string;
+  cover: string;
+  year: string;
+  playCount: number; // 30 天真实播放次数（每次起播 +1）
+  uniqueUsers: number; // 去重用户数
+  lastPlayed: number; // 最后一次播放时间戳
 }
 
 // 发布日历数据结构
