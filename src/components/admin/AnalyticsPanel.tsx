@@ -142,7 +142,13 @@ function PanelCard({
           )}
         </div>
         <span className='flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] text-[var(--color-foreground-muted)] transition-transform group-open:rotate-180'>
-          <svg width='14' height='14' viewBox='0 0 16 16' fill='none' aria-hidden>
+          <svg
+            width='14'
+            height='14'
+            viewBox='0 0 16 16'
+            fill='none'
+            aria-hidden
+          >
             <path
               d='M4 6l4 4 4-4'
               stroke='currentColor'
@@ -264,7 +270,9 @@ function TopList<T extends { count: number }>({
               <span className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--color-background-subtle)] text-[11px] font-semibold tabular-nums text-[var(--color-foreground-muted)]'>
                 {index + 1}
               </span>
-              <div className='flex-1 min-w-0 text-sm'>{render(item, index)}</div>
+              <div className='flex-1 min-w-0 text-sm'>
+                {render(item, index)}
+              </div>
               <span className='shrink-0 rounded-full bg-[var(--color-primary-50)] dark:bg-[var(--color-primary-900)]/30 px-2 py-0.5 text-xs font-medium tabular-nums text-[var(--color-primary-700)] dark:text-[var(--color-primary-300)]'>
                 {item.count}
               </span>
@@ -282,12 +290,6 @@ export default function AnalyticsPanel({
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fallbackVideos, setFallbackVideos] = useState<
-    { videoId: string; title: string; count: number }[] | null
-  >(null);
-  const [recordTop, setRecordTop] = useState<
-    { videoId: string; title: string; count: number }[] | null
-  >(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -297,46 +299,6 @@ export default function AnalyticsPanel({
       if (!res.ok) throw new Error(`请求失败: ${res.status}`);
       const json = await res.json();
       setData(json.data);
-      if (
-        json.data &&
-        (json.data.totals.plays === 0 || json.data.topVideos.length === 0)
-      ) {
-        try {
-          const r2 = await fetch('/api/admin/play-stats');
-          if (r2.ok) {
-            const j2 = await r2.json();
-            const list: { videoId: string; title: string; count: number }[] =
-              [];
-            const src = j2.data || j2;
-            const rawList = src?.topVideos || src?.topContents || [];
-            if (Array.isArray(rawList)) {
-              for (const v of rawList.slice(0, 10)) {
-                list.push({
-                  videoId: String(
-                    (v as Record<string, unknown>).videoId ||
-                      (v as Record<string, unknown>).id ||
-                      (v as Record<string, unknown>).title ||
-                      '',
-                  ),
-                  title: String(
-                    (v as Record<string, unknown>).title ||
-                      (v as Record<string, unknown>).videoId ||
-                      '',
-                  ),
-                  count: Number(
-                    (v as Record<string, unknown>).playCount ||
-                      (v as Record<string, unknown>).count ||
-                      1,
-                  ),
-                });
-              }
-            }
-            if (list.length > 0) setFallbackVideos(list);
-          }
-        } catch {}
-      } else {
-        setFallbackVideos(null);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败');
     } finally {
@@ -353,31 +315,6 @@ export default function AnalyticsPanel({
     const interval = setInterval(fetchData, 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchData]);
-
-  const fetchRecordTop = useCallback(async () => {
-    try {
-      const r = await fetch('/api/admin/play-stats');
-      if (!r.ok) return;
-      const j = await r.json();
-      const src = j.data || j;
-      const rawList = (src?.topVideos as unknown[]) || [];
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const list = rawList.slice(0, 10).map((v) => {
-          const o = v as Record<string, unknown>;
-          return {
-            videoId: String(o.videoId || o.title || ''),
-            title: String(o.title || o.videoId || ''),
-            count: Number(o.playCount || o.count || 1),
-          };
-        });
-        setRecordTop(list);
-      }
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    fetchRecordTop();
-  }, [fetchRecordTop]);
 
   if (loading) {
     return (
@@ -444,7 +381,6 @@ export default function AnalyticsPanel({
   }
 
   const t = data.totals;
-  const showFallback = fallbackVideos && fallbackVideos.length > 0;
 
   return (
     <div className='space-y-4 sm:space-y-5'>
@@ -560,49 +496,40 @@ export default function AnalyticsPanel({
             </a>
           )}
         />
-        <div className='space-y-2'>
-          <TopList
-            title='热门播放影片'
-            items={
-              data.topVideos.length > 0 ? data.topVideos : fallbackVideos || []
+        <TopList
+          title='热门播放影片'
+          items={data.topVideos}
+          render={(item) => {
+            const vid = String(item.videoId || '');
+            const title = String(item.title || vid);
+            let href = `/search?q=${encodeURIComponent(title)}`;
+            if (vid.includes(':')) {
+              const [s, ...rest] = vid.split(':');
+              const id = rest.join(':');
+              if (s && id)
+                href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
+            } else if (vid.includes('+')) {
+              const [s, ...rest] = vid.split('+');
+              const id = rest.join('+');
+              if (s && id)
+                href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
             }
-            render={(item) => {
-              const vid = String(item.videoId || '');
-              const title = String(item.title || vid);
-              let href = `/search?q=${encodeURIComponent(title)}`;
-              if (vid.includes(':')) {
-                const [s, ...rest] = vid.split(':');
-                const id = rest.join(':');
-                if (s && id)
-                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
-              } else if (vid.includes('+')) {
-                const [s, ...rest] = vid.split('+');
-                const id = rest.join('+');
-                if (s && id)
-                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
-              }
-              return (
-                <a
-                  href={href}
-                  className='min-w-0 block hover:opacity-80 transition-opacity'
-                  title={`播放 ${title}`}
-                >
-                  <div className='truncate text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'>
-                    {title}
-                  </div>
-                  <div className='truncate text-xs text-[var(--color-foreground-muted)]'>
-                    {vid}
-                  </div>
-                </a>
-              );
-            }}
-          />
-          {showFallback && (
-            <div className='rounded-[var(--radius-lg)] border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300'>
-              行为统计暂无播放数据，已降级展示播放记录中的热门影片（修复后新播放才会进入行为统计）
-            </div>
-          )}
-        </div>
+            return (
+              <a
+                href={href}
+                className='min-w-0 block hover:opacity-80 transition-opacity'
+                title={`播放 ${title}`}
+              >
+                <div className='truncate text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'>
+                  {title}
+                </div>
+                <div className='truncate text-xs text-[var(--color-foreground-muted)]'>
+                  {vid}
+                </div>
+              </a>
+            );
+          }}
+        />
         <TopList
           title='下载渠道'
           items={data.topDownloads}
@@ -612,42 +539,6 @@ export default function AnalyticsPanel({
             </span>
           )}
         />
-        {recordTop && recordTop.length > 0 && (
-          <TopList
-            title='热门播放（播放记录，持久化）'
-            items={recordTop}
-            render={(item) => {
-              const vid = String(item.videoId || '');
-              const title = String(item.title || vid);
-              let href = `/search?q=${encodeURIComponent(title)}`;
-              if (vid.includes(':')) {
-                const [s, ...rest] = vid.split(':');
-                const id = rest.join(':');
-                if (s && id)
-                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
-              } else if (vid.includes('+')) {
-                const [s, ...rest] = vid.split('+');
-                const id = rest.join('+');
-                if (s && id)
-                  href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
-              }
-              return (
-                <a
-                  href={href}
-                  className='min-w-0 block hover:opacity-80 transition-opacity'
-                  title={`播放 ${title}`}
-                >
-                  <div className='truncate text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'>
-                    {title}
-                  </div>
-                  <div className='truncate text-xs text-[var(--color-foreground-muted)]'>
-                    {vid}
-                  </div>
-                </a>
-              );
-            }}
-          />
-        )}
         <TopList
           title='热门来源'
           items={data.topReferrers}
@@ -676,7 +567,10 @@ export default function AnalyticsPanel({
       </div>
 
       {/* 活跃用户表 */}
-      <PanelCard title={`活跃用户（最近 ${DAYS} 天）`} description='按用户聚合的访问与行为明细'>
+      <PanelCard
+        title={`活跃用户（最近 ${DAYS} 天）`}
+        description='按用户聚合的访问与行为明细'
+      >
         {data.users.length === 0 ? (
           <FluentEmptyState
             icon={<Users size={20} />}
@@ -689,21 +583,30 @@ export default function AnalyticsPanel({
               <table className='min-w-full'>
                 <thead>
                   <tr className='border-b border-[var(--color-stroke-subtle)]'>
-                    {['用户', '访问', '播放', '搜索', '收藏', '下载', '最后活跃'].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className='whitespace-nowrap px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-foreground-muted)] sm:px-4'
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
+                    {[
+                      '用户',
+                      '访问',
+                      '播放',
+                      '搜索',
+                      '收藏',
+                      '下载',
+                      '最后活跃',
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className='whitespace-nowrap px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-foreground-muted)] sm:px-4'
+                      >
+                        {h}
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-[var(--color-stroke-subtle)]'>
                   {data.users.map((u) => (
-                    <tr key={u.uid} className='hover:bg-[var(--color-background-subtle)] transition-colors'>
+                    <tr
+                      key={u.uid}
+                      className='hover:bg-[var(--color-background-subtle)] transition-colors'
+                    >
                       <td className='whitespace-nowrap px-3 py-3 text-sm font-medium text-[var(--color-foreground)] sm:px-4'>
                         {u.uid}
                       </td>
