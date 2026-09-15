@@ -189,13 +189,8 @@ export async function POST(request: NextRequest) {
       totalMovies: currentStats.totalMovies || currentStats.totalPlays || 1,
     };
 
-    // 使用现有的 updatePlayStatistics 方法更新统计
-    await db.updatePlayStatistics(
-      authInfo.username,
-      'play-stats',
-      'watch-time',
-      watchTime,
-    );
+    // 注意：个人统计一律实时从播放记录聚合（getUserPlayStat），
+    // 此处不再写任何统计缓存，保持单一事实来源。
 
     return NextResponse.json({
       success: true,

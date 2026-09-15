@@ -354,17 +354,8 @@ export async function POST(request: NextRequest) {
 
     await db.savePlayRecord(authInfo.username, source, id, finalRecord);
 
-    // 更新播放统计（如果存储类型支持）
-    if (db.isStatsSupported()) {
-      await db.updatePlayStatistics(
-        authInfo.username,
-        source,
-        id,
-        finalRecord.play_time,
-      );
-    }
-
-    // 行为分析：记录播放事件（同一用户+视频 10 分钟内去重，避免进度更新重复计数）
+    // 行为分析：记录播放事件（同一用户+视频 10 分钟内去重，避免进度更新重复计数）。
+    // 事件流是唯一的播放统计来源：热门榜、用户/影片双向下钻均由此聚合。
     try {
       const now = Date.now();
       const trackKey = `${authInfo.username}:${key}`;
@@ -380,20 +371,13 @@ export async function POST(request: NextRequest) {
           videoId: `${source}:${id}`,
           title: record.title || '',
           sourceName: record.source_name || '',
+          source,
+          vid: id,
+          searchTitle: record.search_title || record.title || '',
+          year: record.year || '',
+          cover: record.cover || '',
+          ...(record.douban_id ? { doubanId: record.douban_id } : {}),
         });
-
-        // 真实播放计数（Redis 兼容存储）：每次起播 +1
-        const videoIdKey = `${source}+${id}`;
-        await db.recordPlayCount(authInfo.username, videoIdKey).catch(() => {});
-        await db
-          .recordPlayCountMeta(videoIdKey, {
-            title: record.title || '',
-            source_name: record.source_name || '',
-            cover: record.cover || '',
-            year: record.year || '',
-          })
-          .catch(() => {});
-        await db.recordPlayUser(videoIdKey, authInfo.username).catch(() => {});
       }
     } catch {
       // 分析记录失败不影响播放

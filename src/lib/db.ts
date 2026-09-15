@@ -3,14 +3,11 @@ import { KvrocksStorage } from './kvrocks.db';
 import { incrementDbQuery } from './performance-monitor';
 import { RedisStorage } from './redis.db';
 import {
-  ContentStat,
   EpisodeSkipConfig,
   Favorite,
   IStorage,
   PlayRecord,
-  PlayStatsResult,
   Reminder,
-  TopPlayedVideo,
   UserPlayStat,
 } from './types';
 import { UpstashRedisStorage } from './upstash.db';
@@ -673,40 +670,8 @@ export class DbManager {
   }
 
   // ---------- 播放统计相关 ----------
-  async getPlayStats(): Promise<PlayStatsResult> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).getPlayStats === 'function'
-    ) {
-      return (this.storage as any).getPlayStats();
-    }
-
-    // 如果存储不支持统计功能，返回默认值
-    return {
-      totalUsers: 0,
-      totalWatchTime: 0,
-      totalPlays: 0,
-      avgWatchTimePerUser: 0,
-      avgPlaysPerUser: 0,
-      userStats: [],
-      topSources: [],
-      dailyStats: [],
-      // 新增：用户注册统计
-      registrationStats: {
-        todayNewUsers: 0,
-        totalRegisteredUsers: 0,
-        registrationTrend: [],
-      },
-      // 新增：用户活跃度统计
-      activeUsers: {
-        daily: 0,
-        weekly: 0,
-        monthly: 0,
-      },
-    };
-  }
-
+  // 注意：全站播放统计一律实时聚合（播放记录 + 行为事件流），
+  // 不再维护 getPlayStats 缓存聚合；个人统计走 getUserPlayStat。
   async getUserPlayStat(userName: string): Promise<UserPlayStat> {
     incrementDbQuery();
     if (
@@ -726,39 +691,6 @@ export class DbManager {
       avgWatchTime: 0,
       mostWatchedSource: '',
     };
-  }
-
-  async getContentStats(limit = 10): Promise<ContentStat[]> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).getContentStats === 'function'
-    ) {
-      return (this.storage as any).getContentStats(limit);
-    }
-
-    // 如果存储不支持统计功能，返回空数组
-    return [];
-  }
-
-  async updatePlayStatistics(
-    _userName: string,
-    _source: string,
-    _id: string,
-    _watchTime: number,
-  ): Promise<void> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).updatePlayStatistics === 'function'
-    ) {
-      await (this.storage as any).updatePlayStatistics(
-        _userName,
-        _source,
-        _id,
-        _watchTime,
-      );
-    }
   }
 
   async updateUserLoginStats(
@@ -790,57 +722,6 @@ export class DbManager {
   // 检查存储类型是否支持统计功能
   isStatsSupported(): boolean {
     return STORAGE_TYPE !== 'localstorage';
-  }
-
-  // 真实播放计数：每次起播 +1（Redis 兼容存储实现，其他存储为 no-op）
-  async recordPlayCount(userName: string, videoId: string): Promise<void> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).recordPlayCount === 'function'
-    ) {
-      await (this.storage as any).recordPlayCount(userName, videoId);
-    }
-  }
-
-  // 播放计数元数据（标题/封面等，首次写入为准）
-  async recordPlayCountMeta(
-    videoId: string,
-    meta: { title: string; source_name: string; cover: string; year: string },
-  ): Promise<void> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).recordPlayCountMeta === 'function'
-    ) {
-      await (this.storage as any).recordPlayCountMeta(videoId, meta);
-    }
-  }
-
-  // 播放用户去重（HyperLogLog 近似）
-  async recordPlayUser(videoId: string, userName: string): Promise<void> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).recordPlayUser === 'function'
-    ) {
-      await (this.storage as any).recordPlayUser(videoId, userName);
-    }
-  }
-
-  // 近 N 天真实播放 Top 榜（不支持时回退 getContentStats）
-  async getTopPlayedVideos(
-    days = 30,
-    limit = 10,
-  ): Promise<TopPlayedVideo[] | null> {
-    incrementDbQuery();
-    if (
-      this.storage &&
-      typeof (this.storage as any).getTopPlayedVideos === 'function'
-    ) {
-      return (this.storage as any).getTopPlayedVideos(days, limit);
-    }
-    return null;
   }
 
   // 行为分析事件追加（Redis 按天 List；不支持时抛错由调用方回退本地文件）

@@ -1,6 +1,10 @@
 /* eslint-disable unused-imports/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 
+import {
+  getAnalyticsSummary,
+  normalizeVideoTitle,
+} from '@/lib/analytics-store';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
 import { db } from '@/lib/db';
@@ -311,8 +315,8 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(([source, count]) => ({ source, count }));
 
-    // 热门点播影片：优先使用真实播放计数（30 天窗口，每次起播 +1），
-    // 无计数数据时回退到播放记录聚合（历史兼容，语义为"看过的用户数"）
+    // 热门点播影片：行为事件流是唯一来源（按标题跨线路归并，附用户/线路下钻）。
+    // 事件流无数据时回退 ZSET 真实计数，再无则回退播放记录聚合。
     let topVideos: Array<{
       title: string;
       source_name: string;
@@ -323,24 +327,41 @@ export async function GET(request: NextRequest) {
       averageWatchTime: number;
       lastPlayed: number;
       uniqueUsers: number;
+      sources: Array<{ source: string; name: string; count: number }>;
+      users: Array<{ uid: string; count: number; lastPlayed: number }>;
     }> = [];
     try {
-      const played = await db.getTopPlayedVideos(30, 10);
-      if (played && played.length > 0) {
-        topVideos = played.map((item) => ({
-          title: item.title,
-          source_name: item.source_name,
-          cover: item.cover,
-          year: item.year,
-          playCount: item.playCount,
-          totalWatchTime: 0,
-          averageWatchTime: 0,
-          lastPlayed: item.lastPlayed,
-          uniqueUsers: item.uniqueUsers,
-        }));
+      const summary = await getAnalyticsSummary(30);
+      if (summary.topVideos && summary.topVideos.length > 0) {
+        // 观看时长按归一化标题从播放记录聚合结果中对齐
+        const watchByTitle = new Map<string, number>();
+        for (const c of Object.values(contentStats)) {
+          const k = normalizeVideoTitle(c.title);
+          watchByTitle.set(k, (watchByTitle.get(k) || 0) + c.totalWatchTime);
+        }
+        topVideos = summary.topVideos.slice(0, 10).map((v) => {
+          const wt = watchByTitle.get(normalizeVideoTitle(v.title)) || 0;
+          const primary = v.sources[0];
+          return {
+            title: v.title,
+            source_name:
+              v.sources.length > 1
+                ? `${primary?.name || primary?.source || ''} 等${v.sources.length}条线路`
+                : primary?.name || primary?.source || '',
+            cover: v.cover || '',
+            year: v.year || '',
+            playCount: v.count,
+            totalWatchTime: wt,
+            averageWatchTime: v.count > 0 ? wt / v.count : 0,
+            lastPlayed: v.lastPlayed,
+            uniqueUsers: v.uniqueUsers,
+            sources: v.sources,
+            users: v.users,
+          };
+        });
       }
     } catch (e) {
-      console.error('获取真实播放计数失败，回退播放记录聚合:', e);
+      console.error('行为事件流热门榜聚合失败，回退播放记录聚合:', e);
     }
 
     if (topVideos.length === 0) {
@@ -361,6 +382,12 @@ export async function GET(request: NextRequest) {
             item.playCount > 0 ? item.totalWatchTime / item.playCount : 0,
           lastPlayed: item.lastPlayed,
           uniqueUsers: item.users.size,
+          sources: [],
+          users: Array.from(item.users).map((uid) => ({
+            uid,
+            count: 1,
+            lastPlayed: item.lastPlayed,
+          })),
         }));
     }
 

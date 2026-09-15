@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import type { AnalyticsSummary } from '@/lib/analytics-store';
 
@@ -290,6 +290,9 @@ export default function AnalyticsPanel({
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 下钻展开态：影片 key（归并行）与用户 uid
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -499,9 +502,13 @@ export default function AnalyticsPanel({
         <TopList
           title='热门播放影片'
           items={data.topVideos}
-          render={(item) => {
+          render={(item, index) => {
             const vid = String(item.videoId || '');
             const title = String(item.title || vid);
+            const rowKey = `${title}__${index}`;
+            const isOpen = expandedVideo === rowKey;
+            const userCount = item.uniqueUsers ?? item.users?.length ?? 0;
+            const sourceCount = item.sources?.length ?? 0;
             let href = `/search?q=${encodeURIComponent(title)}`;
             if (vid.includes(':')) {
               const [s, ...rest] = vid.split(':');
@@ -515,18 +522,70 @@ export default function AnalyticsPanel({
                 href = `/play?source=${encodeURIComponent(s)}&id=${encodeURIComponent(id)}&title=${encodeURIComponent(title)}`;
             }
             return (
-              <a
-                href={href}
-                className='min-w-0 block hover:opacity-80 transition-opacity'
-                title={`播放 ${title}`}
-              >
-                <div className='truncate text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'>
-                  {title}
-                </div>
-                <div className='truncate text-xs text-[var(--color-foreground-muted)]'>
-                  {vid}
-                </div>
-              </a>
+              <div className='min-w-0'>
+                <button
+                  type='button'
+                  onClick={() => setExpandedVideo(isOpen ? null : rowKey)}
+                  className='block w-full text-left hover:opacity-80 transition-opacity'
+                  title='点击查看哪些用户看过'
+                >
+                  <div className='truncate text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)]'>
+                    {title}
+                    {item.year ? (
+                      <span className='ml-1 text-xs font-normal text-[var(--color-foreground-muted)]'>
+                        {item.year}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className='truncate text-xs text-[var(--color-foreground-muted)]'>
+                    {userCount} 人观看
+                    {sourceCount > 1 ? ` · ${sourceCount} 条线路` : ''}
+                    {isOpen ? ' · 收起 ▲' : ' · 展开看用户 ▼'}
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className='mt-2 space-y-1 rounded-[var(--radius-lg)] bg-[var(--color-background-subtle)] px-2 py-2'>
+                    {(item.users ?? []).length === 0 && (
+                      <div className='px-1 py-1 text-xs text-[var(--color-foreground-muted)]'>
+                        暂无用户明细
+                      </div>
+                    )}
+                    {(item.users ?? []).map((u) => (
+                      <div
+                        key={u.uid}
+                        className='flex items-center justify-between gap-2 px-1 py-0.5 text-xs'
+                      >
+                        <span className='truncate font-medium text-[var(--color-foreground)]'>
+                          {u.uid}
+                        </span>
+                        <span className='shrink-0 tabular-nums text-[var(--color-foreground-muted)]'>
+                          {u.count} 次 ·{' '}
+                          {new Date(u.lastPlayed).toLocaleString('zh-CN', {
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                    {(item.sources ?? []).length > 1 && (
+                      <div className='truncate px-1 pt-1 text-[11px] text-[var(--color-foreground-muted)]'>
+                        线路：
+                        {(item.sources ?? [])
+                          .map((s) => `${s.name || s.source}×${s.count}`)
+                          .join(' / ')}
+                      </div>
+                    )}
+                    <a
+                      href={href}
+                      className='block px-1 pt-1 text-xs text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'
+                    >
+                      搜索该片 →
+                    </a>
+                  </div>
+                )}
+              </div>
             );
           }}
         />
@@ -602,34 +661,93 @@ export default function AnalyticsPanel({
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-[var(--color-stroke-subtle)]'>
-                  {data.users.map((u) => (
-                    <tr
-                      key={u.uid}
-                      className='hover:bg-[var(--color-background-subtle)] transition-colors'
-                    >
-                      <td className='whitespace-nowrap px-3 py-3 text-sm font-medium text-[var(--color-foreground)] sm:px-4'>
-                        {u.uid}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
-                        {u.pv}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
-                        {u.plays}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
-                        {u.searches}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
-                        {u.favorites}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
-                        {u.downloads}
-                      </td>
-                      <td className='whitespace-nowrap px-3 py-3 text-xs text-[var(--color-foreground-muted)] sm:px-4'>
-                        {new Date(u.lastActive).toLocaleString('zh-CN')}
-                      </td>
-                    </tr>
-                  ))}
+                  {data.users.map((u) => {
+                    const isOpen = expandedUser === u.uid;
+                    const playedVideos = u.videos ?? [];
+                    return (
+                      <Fragment key={u.uid}>
+                        <tr
+                          onClick={() => setExpandedUser(isOpen ? null : u.uid)}
+                          className='hover:bg-[var(--color-background-subtle)] transition-colors cursor-pointer'
+                          title={
+                            playedVideos.length > 0
+                              ? '点击查看该用户看过的影片'
+                              : undefined
+                          }
+                        >
+                          <td className='whitespace-nowrap px-3 py-3 text-sm font-medium text-[var(--color-foreground)] sm:px-4'>
+                            {u.uid}
+                            {playedVideos.length > 0 && (
+                              <span className='ml-1 text-[11px] font-normal text-[var(--color-foreground-muted)]'>
+                                {isOpen ? '▲' : '▼'}
+                              </span>
+                            )}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
+                            {u.pv}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
+                            {u.plays}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
+                            {u.searches}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
+                            {u.favorites}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-4'>
+                            {u.downloads}
+                          </td>
+                          <td className='whitespace-nowrap px-3 py-3 text-xs text-[var(--color-foreground-muted)] sm:px-4'>
+                            {new Date(u.lastActive).toLocaleString('zh-CN')}
+                          </td>
+                        </tr>
+                        {isOpen && (
+                          <tr className='bg-[var(--color-background-subtle)]'>
+                            <td colSpan={7} className='px-3 py-2 sm:px-4'>
+                              {playedVideos.length === 0 ? (
+                                <div className='py-1 text-xs text-[var(--color-foreground-muted)]'>
+                                  该用户暂无播放记录
+                                </div>
+                              ) : (
+                                <div className='space-y-1'>
+                                  <div className='text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-foreground-muted)]'>
+                                    看过的影片（{playedVideos.length}）
+                                  </div>
+                                  {playedVideos.map((v) => (
+                                    <div
+                                      key={`${v.videoId || v.title}`}
+                                      className='flex items-center justify-between gap-2 text-xs'
+                                    >
+                                      <a
+                                        href={`/search?q=${encodeURIComponent(v.title)}`}
+                                        className='truncate text-[var(--color-primary-600)] hover:underline dark:text-[var(--color-primary-400)]'
+                                        title={`搜索 ${v.title}`}
+                                      >
+                                        {v.title || v.videoId}
+                                      </a>
+                                      <span className='shrink-0 tabular-nums text-[var(--color-foreground-muted)]'>
+                                        {v.count} 次 ·{' '}
+                                        {new Date(v.lastPlayed).toLocaleString(
+                                          'zh-CN',
+                                          {
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                          },
+                                        )}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

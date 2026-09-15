@@ -38,6 +38,13 @@ export type AnalyticsEvent =
       videoId: string;
       title: string;
       sourceName?: string;
+      // 以下为跨线路归并与下钻用字段（新事件携带，老事件缺失时回退解析 videoId/title）
+      source?: string; // 线路 key（如 zuida）
+      vid?: string; // 线路内影片 id
+      searchTitle?: string; // 归并用标题（优先于 title）
+      year?: string;
+      cover?: string;
+      doubanId?: number;
     }
   | {
       type: 'favorite';
@@ -69,6 +76,13 @@ interface RawEvent {
   apk?: string;
   action?: string;
   ref?: string;
+  sourceName?: string;
+  source?: string;
+  vid?: string;
+  searchTitle?: string;
+  year?: string;
+  cover?: string;
+  doubanId?: number;
 }
 
 export interface DailyStat {
@@ -97,7 +111,18 @@ export interface AnalyticsSummary {
   daily: DailyStat[];
   topPages: { path: string; count: number }[];
   topSearches: { query: string; count: number }[];
-  topVideos: { videoId: string; title: string; count: number }[];
+  topVideos: {
+    videoId: string;
+    title: string;
+    count: number;
+    // 跨线路归并：同一部片不同来源合并为一条
+    year: string;
+    cover: string;
+    uniqueUsers: number;
+    lastPlayed: number;
+    sources: { source: string; name: string; count: number }[];
+    users: { uid: string; count: number; lastPlayed: number }[];
+  }[];
   topDownloads: { apk: string; count: number }[];
   topReferrers: { domain: string; count: number }[];
   entryPages: { path: string; count: number }[];
@@ -109,7 +134,46 @@ export interface AnalyticsSummary {
     favorites: number;
     downloads: number;
     lastActive: number;
+    // 用户→影片下钻：该用户看过的影片
+    videos: {
+      videoId: string;
+      title: string;
+      count: number;
+      lastPlayed: number;
+    }[];
   }[];
+}
+
+// ── 跨线路归并 ────────────────────────────────────────────────
+// 同一部影片在不同线路/片源上点播时 videoId 不同（source:id），
+// 按归并键合并为一条：优先豆瓣ID，其次归一化标题+年份。
+function normalizeMergeTitle(s: string): string {
+  return (s || '').trim().replace(/\s+/g, '').toLowerCase();
+}
+
+export function videoMergeKey(ev: {
+  searchTitle?: string;
+  title?: string;
+  videoId?: string;
+  year?: string;
+  doubanId?: number;
+}): string {
+  if (ev.doubanId) return `douban:${ev.doubanId}`;
+  const t = normalizeMergeTitle(ev.searchTitle || ev.title || ev.videoId || '');
+  const y = (ev.year || '').trim();
+  return `title:${t}__${y}`;
+}
+
+/** 仅按标题归一化（不含年份），用于与播放记录时长数据对齐 */
+export function normalizeVideoTitle(s: string): string {
+  return normalizeMergeTitle(s);
+}
+
+/** 从 `source:id` 格式的 videoId 拆出线路 key（兼容老事件） */
+export function splitVideoId(videoId: string): { source: string; vid: string } {
+  const i = (videoId || '').indexOf(':');
+  if (i <= 0) return { source: '', vid: videoId || '' };
+  return { source: videoId.slice(0, i), vid: videoId.slice(i + 1) };
 }
 
 // ── 目录与文件 ──────────────────────────────────────────────
@@ -303,7 +367,28 @@ export async function getAnalyticsSummary(
   >();
   const topPages = new Map<string, number>();
   const topSearches = new Map<string, number>();
-  const topVideos = new Map<string, { title: string; count: number }>();
+  // 影片归并组：mergeKey -> 聚合（跨线路合并）
+  const videoGroups = new Map<
+    string,
+    {
+      title: string;
+      year: string;
+      cover: string;
+      videoId: string;
+      count: number;
+      lastPlayed: number;
+      sources: Map<string, { name: string; count: number }>;
+      users: Map<string, { count: number; lastPlayed: number }>;
+    }
+  >();
+  // 用户→影片：uid -> mergeKey -> 明细
+  const userVideos = new Map<
+    string,
+    Map<
+      string,
+      { videoId: string; title: string; count: number; lastPlayed: number }
+    >
+  >();
   const topDownloads = new Map<string, number>();
   const topReferrers = new Map<string, number>();
   // 每个身份第一次进入的页面（入口页）
@@ -401,19 +486,68 @@ export async function getAnalyticsSummary(
           }
           addUser(users, identity, 'search', ev.ts);
           break;
-        case 'play':
+        case 'play': {
           d.plays++;
-          if (ev.videoId) {
-            const cur = topVideos.get(ev.videoId) || {
+          const mergeKey = videoMergeKey(ev);
+          let g = videoGroups.get(mergeKey);
+          if (!g) {
+            g = {
+              title: ev.title || '',
+              year: ev.year || '',
+              cover: ev.cover || '',
+              videoId: ev.videoId || '',
+              count: 0,
+              lastPlayed: 0,
+              sources: new Map(),
+              users: new Map(),
+            };
+            videoGroups.set(mergeKey, g);
+          }
+          g.count++;
+          g.lastPlayed = Math.max(g.lastPlayed, ev.ts);
+          if (!g.title && ev.title) g.title = ev.title;
+          if (!g.year && ev.year) g.year = ev.year;
+          if (!g.cover && ev.cover) g.cover = ev.cover;
+          if (!g.videoId && ev.videoId) g.videoId = ev.videoId;
+          // 线路明细（新事件用 source 字段，老事件从 videoId 解析）
+          const srcKey =
+            ev.source || splitVideoId(ev.videoId || '').source || '未知线路';
+          const srcEntry = g.sources.get(srcKey) || {
+            name: ev.sourceName || srcKey,
+            count: 0,
+          };
+          srcEntry.count++;
+          if (srcEntry.name === srcKey && ev.sourceName) {
+            srcEntry.name = ev.sourceName;
+          }
+          g.sources.set(srcKey, srcEntry);
+          // 影片→用户下钻（跳过匿名 unknown）
+          if (identity && identity !== 'unknown') {
+            const vu = g.users.get(identity) || { count: 0, lastPlayed: 0 };
+            vu.count++;
+            vu.lastPlayed = Math.max(vu.lastPlayed, ev.ts);
+            g.users.set(identity, vu);
+            // 用户→影片下钻
+            let uv = userVideos.get(identity);
+            if (!uv) {
+              uv = new Map();
+              userVideos.set(identity, uv);
+            }
+            const ve = uv.get(mergeKey) || {
+              videoId: ev.videoId || '',
               title: ev.title || '',
               count: 0,
+              lastPlayed: 0,
             };
-            cur.count++;
-            if (ev.title) cur.title = ev.title;
-            topVideos.set(ev.videoId, cur);
+            ve.count++;
+            ve.lastPlayed = Math.max(ve.lastPlayed, ev.ts);
+            if (!ve.title && ev.title) ve.title = ev.title;
+            if (!ve.videoId && ev.videoId) ve.videoId = ev.videoId;
+            uv.set(mergeKey, ve);
           }
           addUser(users, identity, 'play', ev.ts);
           break;
+        }
         case 'favorite':
           if (ev.action === 'add') {
             d.favorites++;
@@ -458,9 +592,34 @@ export async function getAnalyticsSummary(
   ): T[] => [...items].sort((a, b) => b.count - a.count).slice(0, take);
 
   const userList = Array.from(users.entries())
-    .map(([uid, v]) => ({ uid, ...v }))
+    .map(([uid, v]) => {
+      const played = Array.from(userVideos.get(uid)?.values() ?? []);
+      played.sort((a, b) => b.count - a.count || b.lastPlayed - a.lastPlayed);
+      return { uid, ...v, videos: played.slice(0, 50) };
+    })
     .sort((a, b) => b.pv - a.pv || b.lastActive - a.lastActive)
     .slice(0, 50);
+
+  const mergedVideos = Array.from(videoGroups.values()).map((g) => {
+    const srcList = Array.from(g.sources.entries())
+      .map(([source, s]) => ({ source, name: s.name, count: s.count }))
+      .sort((a, b) => b.count - a.count);
+    const userListOfVideo = Array.from(g.users.entries())
+      .map(([uid, u]) => ({ uid, count: u.count, lastPlayed: u.lastPlayed }))
+      .sort((a, b) => b.count - a.count || b.lastPlayed - a.lastPlayed)
+      .slice(0, 50);
+    return {
+      videoId: g.videoId,
+      title: g.title,
+      count: g.count,
+      year: g.year,
+      cover: g.cover,
+      uniqueUsers: g.users.size,
+      lastPlayed: g.lastPlayed,
+      sources: srcList,
+      users: userListOfVideo,
+    };
+  });
 
   return {
     range: { from, to: now, days },
@@ -486,14 +645,7 @@ export async function getAnalyticsSummary(
       })),
       10,
     ),
-    topVideos: sortTop(
-      Array.from(topVideos.entries()).map(([videoId, v]) => ({
-        videoId,
-        title: v.title,
-        count: v.count,
-      })),
-      10,
-    ),
+    topVideos: sortTop(mergedVideos, 30),
     topDownloads: sortTop(
       Array.from(topDownloads.entries()).map(([apk, count]) => ({
         apk,

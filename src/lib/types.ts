@@ -209,16 +209,8 @@ export interface IStorage {
   deleteCache(key: string): Promise<void>;
   clearExpiredCache(prefix?: string): Promise<void>;
 
-  // 播放统计相关
-  getPlayStats(): Promise<PlayStatsResult>;
+  // 播放统计相关（个人统计实时聚合；全站统计由路由层按需聚合）
   getUserPlayStat(userName: string): Promise<UserPlayStat>;
-  getContentStats(limit?: number): Promise<ContentStat[]>;
-  updatePlayStatistics(
-    userName: string,
-    source: string,
-    id: string,
-    watchTime: number,
-  ): Promise<void>;
 
   // 登入统计相关
   updateUserLoginStats(
@@ -226,10 +218,6 @@ export interface IStorage {
     loginTime: number,
     isFirstLogin?: boolean,
   ): Promise<void>;
-
-  // 真实播放计数（可选：仅 Redis 兼容存储实现）
-  recordPlayCount?(userName: string, videoId: string): Promise<void>;
-  getTopPlayedVideos?(days: number, limit: number): Promise<TopPlayedVideo[]>;
 
   // 行为分析事件持久化（可选：仅 Redis 兼容存储实现）
   appendAnalyticsEvents?(dateKey: string, lines: string[]): Promise<void>;
@@ -414,6 +402,9 @@ export interface PlayStatsResult {
     averageWatchTime: number;
     lastPlayed: number;
     uniqueUsers: number;
+    // 下钻：线路明细与观看用户（事件流聚合；回退路径可能为空）
+    sources?: Array<{ source: string; name: string; count: number }>;
+    users?: Array<{ uid: string; count: number; lastPlayed: number }>;
   }>;
   dailyStats: Array<{
     // 近7天每日统计
@@ -437,34 +428,6 @@ export interface PlayStatsResult {
     weekly: number; // 周活跃用户数
     monthly: number; // 月活跃用户数
   };
-}
-
-// 内容热度统计数据结构
-export interface ContentStat {
-  source: string;
-  id: string;
-  title: string;
-  source_name: string;
-  cover: string;
-  year: string;
-  playCount: number; // 播放次数
-  totalWatchTime: number; // 总观看时长
-  averageWatchTime: number; // 平均观看时长
-  lastPlayed: number; // 最后播放时间
-  uniqueUsers: number; // 观看用户数
-}
-
-// 真实播放计数（按天分桶 ZSET 聚合）
-export interface TopPlayedVideo {
-  source: string;
-  id: string;
-  title: string;
-  source_name: string;
-  cover: string;
-  year: string;
-  playCount: number; // 30 天真实播放次数（每次起播 +1）
-  uniqueUsers: number; // 去重用户数
-  lastPlayed: number; // 最后一次播放时间戳
 }
 
 // 发布日历数据结构

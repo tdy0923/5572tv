@@ -146,52 +146,34 @@ async function getDoubanBoard(board: DoubanBoardConfig): Promise<RankingBoard> {
   return result;
 }
 
-/** 站内热播榜（近 30 天播放量聚合） */
+/** 站内热播榜（近 30 天行为事件流聚合，跨线路按标题归并） */
 async function getSitePlayBoard(): Promise<RankingBoard> {
   const cached = boardCache.get('site-play');
   if (cached && Date.now() - cached.ts < BOARD_CACHE_TTL) return cached.data;
 
   let items: RankingItem[] = [];
   try {
-    // 优先：真实播放计数（按天分桶 ZSET 持久化在 Redis，每次起播 +1）
-    const topPlayed = await db.getTopPlayedVideos(30, 30).catch(() => null);
-    if (topPlayed && topPlayed.length > 0) {
-      items = topPlayed
-        .filter((v) => v.source && v.id && v.title)
-        .map((v) => ({
-          id: v.id,
-          videoId: `${v.source}+${v.id}`,
+    // 唯一来源：行为事件流（与统计中心同一口径）
+    const summary = await getAnalyticsSummary(30);
+    items = summary.topVideos
+      .filter((v) => v.videoId && v.title)
+      .slice(0, 30)
+      .map((v) => {
+        const sep = v.videoId.indexOf(':');
+        const source = sep > 0 ? v.videoId.slice(0, sep) : '';
+        const id = sep > 0 ? v.videoId.slice(sep + 1) : v.videoId;
+        return {
+          id,
+          videoId: v.videoId,
           title: v.title,
           poster: v.cover || '',
           rate: '',
           year: v.year || '',
           type: 'movie' as const,
-          source: v.source,
-          count: v.playCount,
-        }));
-    } else {
-      // 回退：行为分析 JSONL（本地磁盘，部署重启会清空）
-      const summary = await getAnalyticsSummary(30);
-      items = summary.topVideos
-        .filter((v) => v.videoId && v.title && v.videoId.includes(':'))
-        .slice(0, 30)
-        .map((v) => {
-          const sep = v.videoId.indexOf(':');
-          const source = v.videoId.slice(0, sep);
-          const id = v.videoId.slice(sep + 1);
-          return {
-            id,
-            videoId: v.videoId,
-            title: v.title,
-            poster: '',
-            rate: '',
-            year: '',
-            type: 'movie' as const,
-            source,
-            count: v.count,
-          } as RankingItem;
-        });
-    }
+          source,
+          count: v.count,
+        } as RankingItem;
+      });
   } catch (e) {
     console.warn('[rankings] 站内热播榜获取失败:', e);
   }
