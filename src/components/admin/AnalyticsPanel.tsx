@@ -14,6 +14,9 @@ import {
 import { Fragment, useCallback, useEffect, useState } from 'react';
 
 import type { AnalyticsSummary } from '@/lib/analytics-store';
+import { usePagination } from '@/hooks/usePagination';
+
+import PaginationBar from '@/components/PaginationBar';
 
 interface AnalyticsPanelProps {
   autoRefresh?: boolean;
@@ -293,6 +296,14 @@ export default function AnalyticsPanel({
   // 下钻展开态：影片 key（归并行）与用户 uid
   const [expandedVideo, setExpandedVideo] = useState<string | null>(null);
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+
+  // 活跃用户表分页（数据已全量在前端）
+  const {
+    page: activeUserPage,
+    setPage: setActiveUserPage,
+    totalPages: activeUserTotalPages,
+    pagedItems: pagedActiveUsers,
+  } = usePagination(data?.users ?? [], 10);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -629,6 +640,7 @@ export default function AnalyticsPanel({
       <PanelCard
         title={`活跃用户（最近 ${DAYS} 天）`}
         description='按用户聚合的访问与行为明细'
+        badge={`共 ${data.users.length} 人`}
       >
         {data.users.length === 0 ? (
           <FluentEmptyState
@@ -661,7 +673,7 @@ export default function AnalyticsPanel({
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-[var(--color-stroke-subtle)]'>
-                  {data.users.map((u) => {
+                  {pagedActiveUsers.map((u) => {
                     const isOpen = expandedUser === u.uid;
                     const playedVideos = u.videos ?? [];
                     return (
@@ -751,6 +763,17 @@ export default function AnalyticsPanel({
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+        {data.users.length > 0 && (
+          <div className='px-1 pt-3'>
+            <PaginationBar
+              page={activeUserPage}
+              totalPages={activeUserTotalPages}
+              total={data.users.length}
+              pageSize={10}
+              onChange={setActiveUserPage}
+            />
           </div>
         )}
       </PanelCard>

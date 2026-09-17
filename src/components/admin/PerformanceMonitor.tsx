@@ -14,6 +14,10 @@ import {
 } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
 
+import { usePagination } from '@/hooks/usePagination';
+
+import PaginationBar from '@/components/PaginationBar';
+
 import AnalyticsPanel from './AnalyticsPanel';
 
 interface PerformanceData {
@@ -565,6 +569,17 @@ export default function PerformanceMonitor() {
     return () => clearInterval(interval);
   }, [autoRefresh, timeRange]);
 
+  // 最近请求列表分页（最多展示 100 条，每页 20 条；放 early return 之前以满足 hooks 规则）
+  const displayRequests = data
+    ? filterRequestsForDisplay(data.recentRequests)
+    : [];
+  const {
+    page: requestPage,
+    setPage: setRequestPage,
+    totalPages: requestTotalPages,
+    pagedItems: pagedRequests,
+  } = usePagination(displayRequests, 20);
+
   if (loading) {
     return (
       <div className='space-y-4 sm:space-y-5'>
@@ -687,7 +702,10 @@ export default function PerformanceMonitor() {
         <div className='flex flex-wrap items-center gap-2'>
           <select
             value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as '1' | '24')}
+            onChange={(e) => {
+              setTimeRange(e.target.value as '1' | '24');
+              setRequestPage(1);
+            }}
             className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-3.5 py-2 text-sm font-medium text-[var(--color-foreground)] shadow-[var(--shadow-2)] focus:border-[var(--color-primary-400)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-100)]'
             aria-label='时间范围'
           >
@@ -696,7 +714,10 @@ export default function PerformanceMonitor() {
           </select>
           <select
             value={apiFilter}
-            onChange={(e) => setApiFilter(e.target.value)}
+            onChange={(e) => {
+              setApiFilter(e.target.value);
+              setRequestPage(1);
+            }}
             className='rounded-full border border-[var(--color-stroke)] bg-[var(--color-background)] px-3.5 py-2 text-sm font-medium text-[var(--color-foreground)] shadow-[var(--shadow-2)] focus:border-[var(--color-primary-400)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-100)]'
             aria-label='API 筛选'
           >
@@ -1066,9 +1087,9 @@ export default function PerformanceMonitor() {
       {/* 最近请求列表 */}
       <SectionCard
         title='最近请求（最新 100 条）'
-        badge={`${filterRequestsForDisplay(data.recentRequests).length} 条`}
+        badge={`${displayRequests.length} 条`}
       >
-        {filterRequestsForDisplay(data.recentRequests).length === 0 ? (
+        {displayRequests.length === 0 ? (
           <div className='p-4 sm:p-6'>
             <FluentEmpty
               icon={<Inbox size={18} />}
@@ -1100,62 +1121,71 @@ export default function PerformanceMonitor() {
                 </tr>
               </thead>
               <tbody className='divide-y divide-[var(--color-stroke-subtle)]'>
-                {filterRequestsForDisplay(data.recentRequests).map(
-                  (request: any, index: number) => {
-                    const responseSizeKB = (
-                      request.responseSize / 1024
-                    ).toFixed(2);
-                    const isSuccess =
-                      request.statusCode >= 200 && request.statusCode < 300;
-                    const isError = request.statusCode >= 400;
-                    return (
-                      <tr
-                        key={request.timestamp + '-' + index}
-                        className='hover:bg-[var(--color-background-subtle)] transition-colors'
-                      >
-                        <td className='whitespace-nowrap px-4 py-3 text-xs tabular-nums text-[var(--color-foreground)] sm:px-6'>
-                          {new Date(request.timestamp).toLocaleString('zh-CN', {
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                          })}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm font-medium text-[var(--color-foreground)] sm:px-6'>
-                          {getApiName(request.path)}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm sm:px-6'>
-                          <span
-                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
-                              isSuccess
-                                ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-300'
-                                : isError
-                                  ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300'
-                                  : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
-                            }`}
-                          >
-                            {request.statusCode}
-                          </span>
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
-                          {request.duration}ms
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
-                          {request.memoryUsed.toFixed(2)} MB
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
-                          {request.dbQueries > 0 ? request.dbQueries : '—'}
-                        </td>
-                        <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
-                          {responseSizeKB} KB
-                        </td>
-                      </tr>
-                    );
-                  },
-                )}
+                {pagedRequests.map((request: any, index: number) => {
+                  const responseSizeKB = (request.responseSize / 1024).toFixed(
+                    2,
+                  );
+                  const isSuccess =
+                    request.statusCode >= 200 && request.statusCode < 300;
+                  const isError = request.statusCode >= 400;
+                  return (
+                    <tr
+                      key={request.timestamp + '-' + index}
+                      className='hover:bg-[var(--color-background-subtle)] transition-colors'
+                    >
+                      <td className='whitespace-nowrap px-4 py-3 text-xs tabular-nums text-[var(--color-foreground)] sm:px-6'>
+                        {new Date(request.timestamp).toLocaleString('zh-CN', {
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        })}
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm font-medium text-[var(--color-foreground)] sm:px-6'>
+                        {getApiName(request.path)}
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm sm:px-6'>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums ${
+                            isSuccess
+                              ? 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-300'
+                              : isError
+                                ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300'
+                                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300'
+                          }`}
+                        >
+                          {request.statusCode}
+                        </span>
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
+                        {request.duration}ms
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
+                        {request.memoryUsed.toFixed(2)} MB
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
+                        {request.dbQueries > 0 ? request.dbQueries : '—'}
+                      </td>
+                      <td className='whitespace-nowrap px-4 py-3 text-sm tabular-nums text-[var(--color-foreground)] sm:px-6'>
+                        {responseSizeKB} KB
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+        {displayRequests.length > 0 && (
+          <div className='px-4 py-3 sm:px-6 border-t border-[var(--color-stroke-subtle)]'>
+            <PaginationBar
+              page={requestPage}
+              totalPages={requestTotalPages}
+              total={displayRequests.length}
+              pageSize={20}
+              onChange={setRequestPage}
+            />
           </div>
         )}
       </SectionCard>
