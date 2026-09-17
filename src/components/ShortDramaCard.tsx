@@ -25,6 +25,7 @@ import { useToggleFavoriteMutation } from '@/hooks/useFavoritesMutations';
 import { useLongPress } from '@/hooks/useLongPress';
 
 import MobileActionSheet from '@/components/MobileActionSheet';
+import { useIsHorizontalRail } from '@/components/rail-context';
 
 interface ShortDramaCardProps {
   drama: ShortDramaItem;
@@ -60,6 +61,9 @@ function ShortDramaCard({
   const source = 'shortdrama';
   const id = drama.id.toString(); // 转换为字符串
   const posterUrl = resolveCardPosterUrl(drama.cover);
+  // 横向轨道内被裁切的图片原生 lazy 不触发（与 VideoCard 同因），必须 eager；
+  // 垂直列表保持 lazy。
+  const inRail = useIsHorizontalRail();
 
   // 检查收藏状态
   useEffect(() => {
@@ -338,7 +342,7 @@ function ShortDramaCard({
                 : 'opacity-0 blur-md scale-105'
             }`}
             referrerPolicy='no-referrer'
-            loading={priority ? undefined : 'lazy'}
+            loading={priority || inRail ? 'eager' : 'lazy'}
             onLoad={() => {
               loadedImageUrls.add(posterUrl);
               setImageLoaded(true);

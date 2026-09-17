@@ -85,6 +85,20 @@ export type VideoCardHandle = {
 
 import { loadedImageUrls } from '@/lib/imageCache';
 
+// 图片失败时的一级回退目标：poster-cache → image-proxy；
+// 非代理的远端直链（采集源 418/403 防盗链）同样包进 image-proxy 透传；
+// 本地/data/blob 原样返回（代理不了也不该代理）。
+function toImageProxyFallback(posterUrl: string): string {
+  if (posterUrl.includes('/api/image-proxy?url=')) return posterUrl;
+  if (posterUrl.includes('/api/poster-cache?url=')) {
+    return posterUrl.replace('/api/poster-cache?url=', '/api/image-proxy?url=');
+  }
+  if (/^https?:\/\//i.test(posterUrl)) {
+    return `/api/image-proxy?url=${encodeURIComponent(posterUrl)}`;
+  }
+  return posterUrl;
+}
+
 // Module-level cache: tracks poster URLs already loaded by the browser.
 // Survives VirtuosoGrid remount cycles so re-entering items skip the skeleton.
 
@@ -129,6 +143,15 @@ function VideoCard({
   const [imageLoaded, setImageLoaded] = useState(() =>
     loadedImageUrls.has(processImageUrl(poster)),
   ); // 图片加载状态
+  // 海报自愈：豆瓣限流/超时是瞬时的，占位不应是终态。
+  // retryKey 按 URL：DOM 节点被复用时换图即重置重试状态；
+  // healCount 上限避免死图无限重拉；timer/online 只做恢复，不制造循环。
+  const posterRetryKeyRef = useRef<string | null>(null);
+  const posterImgRef = useRef<HTMLImageElement | null>(null);
+  const posterHealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const posterHealCountRef = useRef(0);
+  const POSTER_HEAL_DELAY_MS = 30000;
+  const POSTER_HEAL_MAX = 3;
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [searchFavorited, setSearchFavorited] = useState<boolean | null>(null); // 搜索结果的收藏状态
   // 🚀 React 19 useOptimistic - 乐观更新收藏状态，提供即时UI反馈
@@ -174,6 +197,112 @@ function VideoCard({
   // 使用 useMemo 缓存计算值，避免每次渲染重新计算
   const actualTitle = title;
   const actualPoster = resolveCardPosterUrl(poster);
+  // 海报自愈：占位后延迟重拉（上限3次）+ 离线恢复时重拉。
+  // 放 actualPoster 声明之后，避免 TDZ。
+  const revalidatePoster = useCallback(() => {
+    const el = posterImgRef.current;
+    if (!el || !el.isConnected) return;
+    // 只有仍显示占位 SVG 时才重拉，真图已恢复就不动
+    if (!el.src.includes('data:image/svg+xml')) return;
+    if (posterHealCountRef.current >= POSTER_HEAL_MAX) return;
+    posterHealCountRef.current++;
+    delete el.dataset.retried;
+    el.src = actualPoster;
+  }, [actualPoster]);
+
+  const schedulePosterHeal = useCallback(() => {
+    if (posterHealTimerRef.current) return;
+    posterHealTimerRef.current = setTimeout(() => {
+      posterHealTimerRef.current = null;
+      revalidatePoster();
+    }, POSTER_HEAL_DELAY_MS);
+  }, [revalidatePoster]);
+
+  // 图片加载失败/挂起的统一处理（onError 与看门狗超时共用同一回退链）。
+  // 关键：浏览器 <img> 无超时——请求被服务端队列/慢上游吊住时既不触发 onError
+  // 也不触发 onLoad，卡片会无限空白。看门狗 15s 后强制走这里，改走 image-proxy。
+  const handlePosterError = useCallback(
+    (img: HTMLImageElement) => {
+      posterImgRef.current = img;
+      // DOM 节点被复用且换了 URL：重置重试状态（dataset 常驻会导致新图零重试）
+      if (posterRetryKeyRef.current !== actualPoster) {
+        posterRetryKeyRef.current = actualPoster;
+        delete img.dataset.retried;
+      }
+      if (origin === 'live') {
+        img.src =
+          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Ccircle cx="100" cy="120" r="30"/%3E%3Cpath d="M60 160 Q60 140 80 140 L120 140 Q140 140 140 160 L140 200 Q140 220 120 220 L80 220 Q60 220 60 200 Z"/%3E%3C/g%3E%3Ctext x="100" y="260" font-family="Arial" font-size="14" fill="%239CA3AF" text-anchor="middle"%3E直播频道%3C/text%3E%3C/svg%3E';
+        setImageLoaded(true);
+      } else if (!img.dataset.retried) {
+        img.dataset.retried = 'true';
+        const fallback = toImageProxyFallback(actualPoster);
+        if (fallback !== img.src) {
+          img.src = fallback;
+          return;
+        }
+        setTimeout(() => {
+          if (img.src !== actualPoster) img.src = actualPoster;
+        }, 1200);
+      } else if (img.dataset.retried === 'true') {
+        img.dataset.retried = '2';
+        const fallback2 = toImageProxyFallback(actualPoster);
+        if (img.src.includes('/api/poster-cache')) {
+          img.src = fallback2;
+          return;
+        }
+        img.src =
+          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Cpath d="M100 80 L100 120 M80 100 L120 100" stroke="%239CA3AF" stroke-width="8" stroke-linecap="round"/%3E%3Crect x="60" y="140" width="80" height="100" rx="5" fill="none" stroke="%239CA3AF" stroke-width="4"/%3E%3Cpath d="M70 160 L90 180 L130 140" stroke="%239CA3AF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/%3E%3C/g%3E%3Ctext x="100" y="270" font-family="Arial" font-size="12" fill="%239CA3AF" text-anchor="middle"%3E暂无海报%3C/text%3E%3C/svg%3E';
+        setImageLoaded(true);
+        schedulePosterHeal();
+      } else {
+        img.src =
+          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Cpath d="M100 80 L100 120 M80 100 L120 100" stroke="%239CA3AF" stroke-width="8" stroke-linecap="round"/%3E%3Crect x="60" y="140" width="80" height="100" rx="5" fill="none" stroke="%239CA3AF" stroke-width="4"/%3E%3Cpath d="M70 160 L90 180 L130 140" stroke="%239CA3AF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/%3E%3C/g%3E%3Ctext x="100" y="270" font-family="Arial" font-size="12" fill="%239CA3AF" text-anchor="middle"%3E暂无海报%3C/text%3E%3C/svg%3E';
+        setImageLoaded(true);
+        schedulePosterHeal();
+      }
+    },
+    [actualPoster, origin, schedulePosterHeal],
+  );
+
+  // 挂起看门狗：图片 15s 未完成加载（无 onLoad 无 onError）判定为被吊住，强制走回退链。
+  // 注意 el.src 恒为绝对 URL，不能直接 == 相对路径的 actualPoster，只看 complete 状态。
+  // 回退串本身也可能挂起，因此每次触发后重装定时器，直到 imageLoaded（终态占位会置 true）。
+  // 回退链是有限状态机（dataset.retried → true → 2 → 占位），必收敛，不会无限循环。
+  const posterWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (imageLoaded) return;
+    const fire = () => {
+      const el = posterImgRef.current;
+      if (!el || !el.isConnected) return;
+      const settled =
+        el.complete && (el.naturalWidth > 0 || el.src.startsWith('data:'));
+      if (!settled) handlePosterError(el);
+      posterWatchdogRef.current = setTimeout(fire, 15000);
+    };
+    posterWatchdogRef.current = setTimeout(fire, 15000);
+    return () => {
+      if (posterWatchdogRef.current) clearTimeout(posterWatchdogRef.current);
+    };
+  }, [actualPoster, imageLoaded, handlePosterError]);
+
+  useEffect(() => {
+    // 换图：重置重试/自愈状态
+    posterRetryKeyRef.current = null;
+    posterHealCountRef.current = 0;
+    if (posterHealTimerRef.current) {
+      clearTimeout(posterHealTimerRef.current);
+      posterHealTimerRef.current = null;
+    }
+    const onOnline = () => revalidatePoster();
+    window.addEventListener('online', onOnline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      if (posterHealTimerRef.current) {
+        clearTimeout(posterHealTimerRef.current);
+        posterHealTimerRef.current = null;
+      }
+    };
+  }, [actualPoster, revalidatePoster]);
   // 为豆瓣内容生成收藏用的source和id（仅用于收藏，不用于播放）
   const actualSource =
     source || (from === 'douban' && douban_id ? 'douban' : '');
@@ -1017,6 +1146,7 @@ function VideoCard({
           {!isLoading && <ImagePlaceholder aspectRatio='aspect-[2/3]' />}
           {/* 图片 */}
           <Image
+            ref={posterImgRef}
             src={actualPoster}
             alt={actualTitle}
             fill
@@ -1025,7 +1155,9 @@ function VideoCard({
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             referrerPolicy='no-referrer'
-            loading={priority || eager || inRail ? undefined : 'lazy'}
+            // 注意：next/image 中 loading={undefined} 仍按 lazy 处理，
+            // 横向轨道内被裁切的图片 lazy 永远不触发，必须显式 eager。
+            loading={priority || eager || inRail ? 'eager' : 'lazy'}
             priority={priority}
             quality={75}
             onLoad={() => {
@@ -1035,54 +1167,7 @@ function VideoCard({
                 setImageLoaded(true);
               }
             }}
-            onError={(e) => {
-              // 图片加载失败时的处理
-              const img = e.target as HTMLImageElement;
-              if (origin === 'live') {
-                // 直播频道使用默认图标，不重试避免闪烁
-                img.src =
-                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Ccircle cx="100" cy="120" r="30"/%3E%3Cpath d="M60 160 Q60 140 80 140 L120 140 Q140 140 140 160 L140 200 Q140 220 120 220 L80 220 Q60 220 60 200 Z"/%3E%3C/g%3E%3Ctext x="100" y="260" font-family="Arial" font-size="14" fill="%239CA3AF" text-anchor="middle"%3E直播频道%3C/text%3E%3C/svg%3E';
-                setImageLoaded(true);
-              } else if (!img.dataset.retried) {
-                img.dataset.retried = 'true';
-                // 1级回退：poster-cache → image-proxy（豆瓣 403/502 时透传代理更稳）
-                const fallback = actualPoster.includes('/api/poster-cache?url=')
-                  ? actualPoster.replace(
-                      '/api/poster-cache?url=',
-                      '/api/image-proxy?url=',
-                    )
-                  : actualPoster;
-                if (fallback !== img.src) {
-                  img.src = fallback;
-                  return;
-                }
-                setTimeout(() => {
-                  if (img.src !== actualPoster) img.src = actualPoster;
-                }, 1200);
-              } else if (img.dataset.retried === 'true') {
-                img.dataset.retried = '2';
-                const fallback2 = actualPoster.includes(
-                  '/api/poster-cache?url=',
-                )
-                  ? actualPoster.replace(
-                      '/api/poster-cache?url=',
-                      '/api/image-proxy?url=',
-                    )
-                  : actualPoster;
-                // 2级回退仍失败才占位，避免同一 502 循环
-                if (img.src.includes('/api/poster-cache')) {
-                  img.src = fallback2;
-                  return;
-                }
-                img.src =
-                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Cpath d="M100 80 L100 120 M80 100 L120 100" stroke="%239CA3AF" stroke-width="8" stroke-linecap="round"/%3E%3Crect x="60" y="140" width="80" height="100" rx="5" fill="none" stroke="%239CA3AF" stroke-width="4"/%3E%3Cpath d="M70 160 L90 180 L130 140" stroke="%239CA3AF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/%3E%3C/g%3E%3Ctext x="100" y="270" font-family="Arial" font-size="12" fill="%239CA3AF" text-anchor="middle"%3E暂无海报%3C/text%3E%3C/svg%3E';
-                setImageLoaded(true);
-              } else {
-                img.src =
-                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300"%3E%3Crect fill="%23374151" width="200" height="300"/%3E%3Cg fill="%239CA3AF"%3E%3Cpath d="M100 80 L100 120 M80 100 L120 100" stroke="%239CA3AF" stroke-width="8" stroke-linecap="round"/%3E%3Crect x="60" y="140" width="80" height="100" rx="5" fill="none" stroke="%239CA3AF" stroke-width="4"/%3E%3Cpath d="M70 160 L90 180 L130 140" stroke="%239CA3AF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/%3E%3C/g%3E%3Ctext x="100" y="270" font-family="Arial" font-size="12" fill="%239CA3AF" text-anchor="middle"%3E暂无海报%3C/text%3E%3C/svg%3E';
-                setImageLoaded(true);
-              }
-            }}
+            onError={(e) => handlePosterError(e.target as HTMLImageElement)}
             style={
               {
                 // 禁用图片的默认长按效果
