@@ -4,16 +4,21 @@
 
 import { Calendar, ChevronUp, Clapperboard, Film, Tv } from 'lucide-react';
 import Image from 'next/image';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { PlayRecord } from '@/lib/types';
+import { usePagination } from '@/hooks/usePagination';
 
 import PageLayout from '@/components/PageLayout';
+import PaginationBar from '@/components/PaginationBar';
 import VideoCard from '@/components/VideoCard';
 
 import { useContinueWatching } from './hooks/useContinueWatching';
 import { usePlayStatsData } from './hooks/usePlayStatsData';
-import { usePlayStatsFilters } from './hooks/usePlayStatsFilters';
+import {
+  usePlayStatsFilters,
+  USER_STATS_PAGE_SIZE,
+} from './hooks/usePlayStatsFilters';
 
 // 用户等级系统
 const USER_LEVELS = [
@@ -158,7 +163,30 @@ const PlayStatsPage: React.FC = () => {
     toggleUserExpanded,
     showBackToTop,
     scrollToTop,
+    userQuery,
+    setUserQuery,
   } = usePlayStatsFilters();
+
+  // 用户播放统计：搜索过滤 + 分页（避免用户多时页面过长）
+  const filteredUserStats = useMemo(() => {
+    const list = statsData?.userStats ?? [];
+    const q = userQuery.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((u) => u.username.toLowerCase().includes(q));
+  }, [statsData, userQuery]);
+
+  const {
+    page: userListPage,
+    setPage: setUserListPage,
+    totalPages: userListTotalPages,
+    total: userListTotal,
+    pagedItems: pagedUserStats,
+  } = usePagination(filteredUserStats, USER_STATS_PAGE_SIZE);
+
+  const handleUserQueryChange = (q: string) => {
+    setUserQuery(q);
+    setUserListPage(1);
+  };
 
   const {
     watchingUpdates,
@@ -572,11 +600,31 @@ const PlayStatsPage: React.FC = () => {
 
               {/* 用户播放统计 */}
               <div>
-                <h3 className='text-xl font-semibold text-gray-900 dark:text-white mb-6'>
-                  用户播放统计
-                </h3>
+                <div className='flex flex-col sm:flex-row sm:items-center gap-3 mb-6'>
+                  <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>
+                    用户播放统计
+                  </h3>
+                  <div className='text-xs text-gray-500 dark:text-gray-400'>
+                    共 {userListTotal} 个用户
+                  </div>
+                  <div className='sm:ml-auto w-full sm:w-64'>
+                    <input
+                      value={userQuery}
+                      onChange={(e) => handleUserQueryChange(e.target.value)}
+                      placeholder='搜索用户名…'
+                      className='w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none'
+                    />
+                  </div>
+                </div>
+                {pagedUserStats.length === 0 && (
+                  <div className='text-center py-8 text-sm text-gray-500 dark:text-gray-400'>
+                    {userQuery
+                      ? `没有匹配“${userQuery}”的用户`
+                      : '暂无用户数据'}
+                  </div>
+                )}
                 <div className='space-y-4'>
-                  {statsData.userStats.map((userStat) => (
+                  {pagedUserStats.map((userStat) => (
                     <div
                       key={userStat.username}
                       className='border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800'
@@ -824,6 +872,13 @@ const PlayStatsPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                <PaginationBar
+                  page={userListPage}
+                  totalPages={userListTotalPages}
+                  total={userListTotal}
+                  pageSize={USER_STATS_PAGE_SIZE}
+                  onChange={setUserListPage}
+                />
               </div>
             </>
           ) : (

@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react';
 
+/** 用户播放统计列表每页条数 */
+export const USER_STATS_PAGE_SIZE = 10;
+
 export function usePlayStatsFilters() {
   const [activeTab, setActiveTab] = useState<'admin' | 'personal'>('admin');
   const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
 
   const toggleUserExpanded = (username: string) => {
     setExpandedUsers((prev) => {
@@ -54,5 +58,7 @@ export function usePlayStatsFilters() {
     toggleUserExpanded,
     showBackToTop,
     scrollToTop,
+    userQuery,
+    setUserQuery,
   };
 }

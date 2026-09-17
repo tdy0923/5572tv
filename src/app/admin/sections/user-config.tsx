@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { AdminConfig } from '@/lib/admin.types';
+import { usePagination } from '@/hooks/usePagination';
 
 import {
   FluentBadge,
@@ -25,6 +26,7 @@ import {
   FluentInput,
   FluentSelect,
 } from '@/components/FluentUI';
+import PaginationBar from '@/components/PaginationBar';
 
 import {
   showError,
@@ -327,6 +329,14 @@ export default function UserConfig({
         (filterStatus === 'banned' && u.banned) ||
         (filterStatus === 'active' && !u.banned)),
   );
+
+  // 用户表格分页（搜索/筛选变化时回到第一页）
+  const {
+    page: userTablePage,
+    setPage: setUserTablePage,
+    totalPages: userTableTotalPages,
+    pagedItems: pagedUsers,
+  } = usePagination(filteredUsers, 15);
 
   const getRoleBadgeVariant = (r: string): 'error' | 'info' | 'default' => {
     switch (r) {
@@ -652,7 +662,10 @@ export default function UserConfig({
               <div className='flex-1 min-w-0'>
                 <FluentInput
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setUserTablePage(1);
+                  }}
                   placeholder='搜索用户名…'
                   prefix={<Search className='w-3.5 h-3.5' />}
                 />
@@ -660,7 +673,10 @@ export default function UserConfig({
               <div className='flex items-center gap-2'>
                 <FluentSelect
                   value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
+                  onChange={(e) => {
+                    setFilterRole(e.target.value);
+                    setUserTablePage(1);
+                  }}
                   options={[
                     { value: '', label: '全部角色' },
                     { value: 'owner', label: '站长' },
@@ -671,7 +687,10 @@ export default function UserConfig({
                 />
                 <FluentSelect
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
+                  onChange={(e) => {
+                    setFilterStatus(e.target.value);
+                    setUserTablePage(1);
+                  }}
                   options={[
                     { value: '', label: '全部状态' },
                     { value: 'active', label: '正常' },
@@ -703,7 +722,7 @@ export default function UserConfig({
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-200 dark:divide-white/5'>
-                  {filteredUsers.map((u: any) => (
+                  {pagedUsers.map((u: any) => (
                     <tr
                       key={u.username}
                       className='hover:bg-gray-50 dark:hover:bg-white/[0.03] transition-colors duration-150'
@@ -882,6 +901,18 @@ export default function UserConfig({
                 </tbody>
               </table>
             </div>
+
+            {filteredUsers.length > 0 && (
+              <div className='px-3 sm:px-4 py-3 border-t border-gray-200 dark:border-white/5'>
+                <PaginationBar
+                  page={userTablePage}
+                  totalPages={userTableTotalPages}
+                  total={filteredUsers.length}
+                  pageSize={15}
+                  onChange={setUserTablePage}
+                />
+              </div>
+            )}
 
             {filteredUsers.length === 0 && (
               <FluentEmptyState
