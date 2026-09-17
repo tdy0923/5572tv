@@ -3,10 +3,46 @@
 import { Film } from 'lucide-react';
 
 import { FluentEmptyState } from '@/components/FluentUI';
+import { useIsHorizontalRail } from '@/components/rail-context';
 import ScrollableRow from '@/components/ScrollableRow';
 
 interface HistoryViewProps {
   historyTimeline: Record<string, any[]>;
+}
+
+/**
+ * 轨道内封面：必须在 ScrollableRow 内部读取 inRail，
+ * 外层组件读到的是轨道外的 context（恒 false），故单独成组件。
+ */
+function HistoryCover({ cover, title }: { cover: string; title: string }) {
+  // 轨道内被裁切的图片原生 lazy 不触发（与 VideoCard 同因），必须 eager
+  const inRail = useIsHorizontalRail();
+  if (!cover) {
+    return (
+      <div
+        className='flex h-full w-full items-center justify-center'
+        style={{
+          background: 'var(--color-background-subtle)',
+        }}
+      >
+        <Film className='h-8 w-8' style={{ color: '#9ca3af' }} />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={cover}
+      alt={title}
+      loading={inRail ? 'eager' : 'lazy'}
+      className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]'
+      onError={(e) => {
+        // 封面失败兜底，避免破图图标（守卫防止循环触发）
+        if (!e.currentTarget.src.endsWith('placeholder-cover.jpg')) {
+          e.currentTarget.src = '/placeholder-cover.jpg';
+        }
+      }}
+    />
+  );
 }
 
 export default function HistoryView({ historyTimeline }: HistoryViewProps) {
@@ -76,26 +112,7 @@ export default function HistoryView({ historyTimeline }: HistoryViewProps) {
                         boxShadow: 'var(--shadow-2)',
                       }}
                     >
-                      {item.cover ? (
-                        <img
-                          src={item.cover}
-                          alt={item.title}
-                          loading='lazy'
-                          className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]'
-                        />
-                      ) : (
-                        <div
-                          className='flex h-full w-full items-center justify-center'
-                          style={{
-                            background: 'var(--color-background-subtle)',
-                          }}
-                        >
-                          <Film
-                            className='h-8 w-8'
-                            style={{ color: '#9ca3af' }}
-                          />
-                        </div>
-                      )}
+                      <HistoryCover cover={item.cover} title={item.title} />
                     </div>
                     <p
                       className='mt-2 truncate text-xs font-medium transition-colors group-hover:text-primary-600 dark:group-hover:text-primary-400'
