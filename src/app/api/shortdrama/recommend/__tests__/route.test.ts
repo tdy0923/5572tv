@@ -112,6 +112,7 @@ describe('shortdrama recommend route cache', () => {
     expect(
       (res.body as Array<Record<string, unknown>>).length,
     ).toBeGreaterThan(0);
+    expect(res.headers.get('X-Upstream')).toContain('hongniuzy2=1');
   });
 
   it('never caches empty results', async () => {

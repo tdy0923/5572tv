@@ -117,7 +117,11 @@ async function fetchFromShortDramaCategory(
 }
 
 // 服务端专用函数，从所有短剧源聚合数据
-async function getRecommendedShortDramasInternal(category?: number, size = 10) {
+async function getRecommendedShortDramasInternal(
+  category?: number,
+  size = 10,
+  diag?: Array<{ name: string; ok: boolean; count: number; ms: number }>,
+) {
   try {
     // 从多源配置获取所有启用的短剧源
     const enabledSources = getEnabledSources();
@@ -153,6 +157,7 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     }
 
     // 聚合所有源的数据
+    const startedAt = sourcesWithShortDrama.map(() => Date.now());
     const results = await Promise.allSettled(
       sourcesWithShortDrama.map((source) => {
         if (source.categoryId > 0) {
@@ -169,13 +174,18 @@ async function getRecommendedShortDramasInternal(category?: number, size = 10) {
     // 合并所有成功的结果
     const allItems: any[] = [];
     results.forEach((result, index) => {
+      const name = sourcesWithShortDrama[index].name;
       if (result.status === 'fulfilled') {
         allItems.push(...result.value);
+        diag?.push({
+          name,
+          ok: true,
+          count: result.value.length,
+          ms: Date.now() - startedAt[index],
+        });
       } else {
-        console.error(
-          `❌ ${sourcesWithShortDrama[index].name}: 请求失败`,
-          result.reason,
-        );
+        console.error(`❌ ${name}: 请求失败`, result.reason);
+        diag?.push({ name, ok: false, count: 0, ms: Date.now() - startedAt[index] });
       }
     });
 
@@ -225,6 +235,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Cache-Control': 'public, max-age=300, s-maxage=300',
         'X-Memory-Cache': 'HIT',
+        'X-Upstream': 'mem-hit',
       },
     });
   }
@@ -264,9 +275,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(errorResponse, { status: 400 });
     }
 
+    const diag: Array<{
+      name: string;
+      ok: boolean;
+      count: number;
+      ms: number;
+    }> = [];
     const result = await getRecommendedShortDramasInternal(
       categoryNum,
       pageSize,
+      diag,
     );
 
     // 写入内存缓存（限大小防泄漏；空结果不缓存，避免空白被放大）
@@ -313,6 +331,11 @@ export async function GET(request: NextRequest) {
     response.headers.set(
       'X-Cache-Duration',
       hasData ? `${cacheTime}s` : 'no-store',
+    );
+    response.headers.set(
+      'X-Upstream',
+      diag.map((d) => `${d.name}=${d.ok ? d.count : 'FAIL'}:${d.ms}ms`).join(',') ||
+        'unknown',
     );
     response.headers.set(
       'X-Cache-Expires-At',
