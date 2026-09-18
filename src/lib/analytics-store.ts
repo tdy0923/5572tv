@@ -62,7 +62,18 @@ export type AnalyticsEvent =
       anon: string;
       apk: string;
     }
-  | { type: 'login'; ts: number; uid: string; anon: string };
+  | { type: 'login'; ts: number; uid: string; anon: string }
+  | {
+      type: 'player_error';
+      ts: number;
+      uid?: string;
+      anon: string;
+      kind: 'error' | 'source_switch' | 'summary';
+      message: string;
+      videoId?: string;
+      title?: string;
+      sourceName?: string;
+    };
 
 interface RawEvent {
   type: string;
@@ -75,6 +86,8 @@ interface RawEvent {
   title?: string;
   apk?: string;
   action?: string;
+  kind?: string;
+  message?: string;
   ref?: string;
   sourceName?: string;
   source?: string;
@@ -672,6 +685,95 @@ export async function getAnalyticsSummary(
     })(),
     users: userList,
   };
+export interface PlayerErrorGroup {
+  kind: string;
+  message: string;
+  count: number;
+  lastTs: number;
+  videoId?: string;
+  title?: string;
+  sourceName?: string;
+}
+
+export interface PlayerErrorSample {
+  ts: number;
+  kind: string;
+  message: string;
+  videoId?: string;
+  title?: string;
+  sourceName?: string;
+}
+
+export interface PlayerErrorSummary {
+  days: number;
+  total: number;
+  top: PlayerErrorGroup[];
+  recent: PlayerErrorSample[];
+}
+
+export async function getPlayerErrors(days: number): Promise<PlayerErrorSummary> {
+  const safeDays = Math.min(Math.max(Math.floor(days) || 3, 1), 14);
+  const now = Date.now();
+  const groups = new Map<string, PlayerErrorGroup>();
+  const samples: PlayerErrorSample[] = [];
+  let total = 0;
+
+  for (let i = safeDays; i >= 0; i--) {
+    const ts = now - i * 86400000;
+    const dKey = dateKey(ts);
+    let events: RawEvent[] | null = null;
+    if (isRedisMode()) {
+      const lines = await withRedisTimeout(db.readAnalyticsEvents(dKey), 5000)
+        .catch(() => null);
+      events = lines ? parseLines(lines) : null;
+      if (events && events.length === 0) {
+        const fileEvents = readDayEvents(path.join(eventsDir, dayFile(ts)));
+        if (fileEvents.length > 0) events = fileEvents;
+      }
+    } else {
+      ensureDirs();
+      events = readDayEvents(path.join(eventsDir, dayFile(ts)));
+    }
+    if (!events) continue;
+    for (const ev of events) {
+      if (ev.type !== 'player_error' || !ev.message) continue;
+      total++;
+      const kind = ev.kind || 'error';
+      const key = `${kind}::${ev.message}`;
+      let g = groups.get(key);
+      if (!g) {
+        g = {
+          kind,
+          message: ev.message,
+          count: 0,
+          lastTs: 0,
+          videoId: ev.videoId,
+          title: ev.title,
+          sourceName: ev.sourceName,
+        };
+        groups.set(key, g);
+      }
+      g.count++;
+      g.lastTs = Math.max(g.lastTs, ev.ts);
+      samples.push({
+        ts: ev.ts,
+        kind,
+        message: ev.message,
+        videoId: ev.videoId,
+        title: ev.title,
+        sourceName: ev.sourceName,
+      });
+    }
+  }
+
+  const top = [...groups.values()]
+    .sort((a, b) => b.count - a.count || b.lastTs - a.lastTs)
+    .slice(0, 20);
+  const recent = samples
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 50);
+
+  return { days: safeDays, total, top, recent };
 }
 
 function addUser(

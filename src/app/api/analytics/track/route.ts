@@ -168,5 +168,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (type === 'player_error') {
+    const message =
+      typeof body.message === 'string' ? body.message.slice(0, 300) : '';
+    if (!message) return NextResponse.json({ ok: false }, { status: 400 });
+    const kind =
+      body.kind === 'source_switch' || body.kind === 'summary'
+        ? body.kind
+        : 'error';
+    trackEvent({
+      type: 'player_error',
+      ts,
+      uid,
+      anon,
+      kind,
+      message,
+      videoId:
+        typeof body.videoId === 'string'
+          ? body.videoId.slice(0, 200)
+          : undefined,
+      title:
+        typeof body.title === 'string' ? body.title.slice(0, 200) : undefined,
+      sourceName:
+        typeof body.sourceName === 'string'
+          ? body.sourceName.slice(0, 50)
+          : undefined,
+    });
+    return NextResponse.json({ ok: true });
+  }
+
   return NextResponse.json({ ok: false }, { status: 400 });
 }

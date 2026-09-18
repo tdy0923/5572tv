@@ -970,6 +970,11 @@ function PlayPageClient() {
     artPlayerRef,
     currentSourceRef,
     currentEpisodeIndexRef,
+    () => ({
+      videoId: currentIdRef.current || currentId,
+      title: videoTitle,
+      source: currentSourceRef.current || currentSource,
+    }),
   );
 
   // 跨源兜底：按剧名到其他短剧采集源搜索同名剧集（非阻塞，异步追加）
