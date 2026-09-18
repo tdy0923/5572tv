@@ -370,15 +370,26 @@ function dateKey(ts: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+const SUMMARY_CACHE_TTL_MS = 5 * 60 * 1000;
+const summaryCache = new Map<
+  number,
+  { ts: number; summary: AnalyticsSummary }
+>();
+
 /**
  * 聚合最近 N 天的行为数据
  */
 export async function getAnalyticsSummary(
   days: number,
 ): Promise<AnalyticsSummary> {
+  const safeDays = Math.min(Math.max(Math.floor(days) || 30, 1), 95);
+  const cached = summaryCache.get(safeDays);
+  if (cached && Date.now() - cached.ts < SUMMARY_CACHE_TTL_MS) {
+    return cached.summary;
+  }
   ensureDirs();
   const now = Date.now();
-  const from = now - days * 24 * 3600 * 1000;
+  const from = now - safeDays * 24 * 3600 * 1000;
 
   const dailyMap = new Map<
     string,
@@ -435,7 +446,7 @@ export async function getAnalyticsSummary(
 
   // 按天读取：Redis List 优先（持久化，部署重启不丢），本地文件回退；
   // 多读一天兜底跨零点写入的事件
-  for (let i = days; i >= 0; i--) {
+  for (let i = safeDays; i >= 0; i--) {
     const ts = now - i * 86400000;
     const dKey = dateKey(ts);
 
@@ -598,7 +609,7 @@ export async function getAnalyticsSummary(
 
   // 补齐缺失日期，按日期升序
   const daily: DailyStat[] = [];
-  for (let i = days - 1; i >= 0; i--) {
+  for (let i = safeDays - 1; i >= 0; i--) {
     const ts = now - i * 24 * 3600 * 1000;
     const key = dateKey(ts);
     const d = dailyMap.get(key);
@@ -649,8 +660,8 @@ export async function getAnalyticsSummary(
     };
   });
 
-  return {
-    range: { from, to: now, days },
+  const summary: AnalyticsSummary = {
+    range: { from, to: now, days: safeDays },
     totals: {
       pv: daily.reduce((s, d) => s + d.pv, 0),
       uv: totalUv.size,
@@ -700,6 +711,14 @@ export async function getAnalyticsSummary(
     })(),
     users: userList,
   };
+  summaryCache.set(safeDays, { ts: Date.now(), summary });
+  if (summaryCache.size > 8) {
+    const oldest = summaryCache.keys().next();
+    if (!oldest.done) summaryCache.delete(oldest.value);
+  }
+  return summary;
+}
+
 export interface PlayerErrorGroup {
   kind: string;
   message: string;
