@@ -19,6 +19,7 @@ import { usePagination } from '@/hooks/usePagination';
 import PaginationBar from '@/components/PaginationBar';
 
 import AnalyticsPanel from './AnalyticsPanel';
+import PlayerErrorsPanel from './PlayerErrorsPanel';
 
 interface PerformanceData {
   metrics: any[];
@@ -902,6 +903,13 @@ export default function PerformanceMonitor() {
       <SectionCard title='用户行为分析' badge='最近 30 天'>
         <div className='p-4 sm:p-6'>
           <AnalyticsPanel autoRefresh={autoRefresh} />
+        </div>
+      </SectionCard>
+
+      {/* 播放器错误 */}
+      <SectionCard title='播放器错误'>
+        <div className='p-4 sm:p-6'>
+          <PlayerErrorsPanel autoRefresh={autoRefresh} />
         </div>
       </SectionCard>
 
