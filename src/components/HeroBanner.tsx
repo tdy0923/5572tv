@@ -314,6 +314,7 @@ function HeroBanner({
                   index === currentIndex ? 'scale-[1.07]' : 'scale-100'
                 }`}
                 loading={index === 0 ? 'eager' : 'lazy'}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
                 decoding='async'
                 onError={(e) => {
                   // 焦点图背景降级：poster-cache 失败→image-proxy 透传→原始(非横图)地址，
