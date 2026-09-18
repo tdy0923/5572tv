@@ -2905,7 +2905,7 @@ function PlayPageClient() {
             a.href = url;
             a.download = `screenshot_${Date.now()}.png`;
             a.click();
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 4000);
             if (artPlayerRef.current)
               artPlayerRef.current.notice.show = '📸 截图已保存';
           }, 'image/png');
