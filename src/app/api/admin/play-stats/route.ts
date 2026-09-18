@@ -7,7 +7,7 @@ import {
 } from '@/lib/analytics-store';
 import { getAuthInfoFromCookie } from '@/lib/auth';
 import { getConfig } from '@/lib/config';
-import { db } from '@/lib/db';
+import { db, getStorageType } from '@/lib/db';
 import { PlayRecord } from '@/lib/types';
 
 // 导出类型供页面组件使用
@@ -16,7 +16,7 @@ export type { PlayStatsResult } from '@/lib/types';
 export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  const storageType = process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
+  const storageType = getStorageType();
   if (storageType === 'localstorage') {
     return NextResponse.json(
       {
@@ -233,7 +233,7 @@ export async function GET(request: NextRequest) {
         });
 
         // 获取最近播放记录（按时间倒序，最多10条）
-        const recentRecords = records
+        const recentRecords = [...records]
           .sort((a, b) => (b.save_time || 0) - (a.save_time || 0))
           .slice(0, 10);
 
