@@ -269,12 +269,15 @@ export async function GET(request: NextRequest) {
       pageSize,
     );
 
-    // 写入内存缓存（限大小防泄漏）
-    if (recommendCache.size > 20) {
-      const oldest = recommendCache.keys().next().value;
-      if (oldest) recommendCache.delete(oldest);
+    // 写入内存缓存（限大小防泄漏；空结果不缓存，避免空白被放大）
+    const hasData = Array.isArray(result) && result.length > 0;
+    if (hasData) {
+      if (recommendCache.size > 20) {
+        const oldest = recommendCache.keys().next().value;
+        if (oldest) recommendCache.delete(oldest);
+      }
+      recommendCache.set(cacheKey, { data: result, ts: Date.now() });
     }
-    recommendCache.set(cacheKey, { data: result, ts: Date.now() });
 
     // 死剧沉底（不删除）：客户端播放失败上报的剧排到末尾，
     // 12小时未再上报自动过期回到原位。缓存的是原始顺序，每次响应实时排序。
@@ -284,23 +287,33 @@ export async function GET(request: NextRequest) {
         ) as unknown as typeof result)
       : result;
 
-    // 测试1小时HTTP缓存策略
     const response = NextResponse.json(orderedResult);
 
-    // 1小时 = 3600秒
-    const cacheTime = 3600;
-    response.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-    );
-    response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    response.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
+    // 空结果不缓存（no-store），避免边缘缓存把空白放大；
+    // 有数据时 s-maxage 与内存缓存 TTL 对齐为 5 分钟
+    const cacheTime = 300;
+    if (hasData) {
+      response.headers.set(
+        'Cache-Control',
+        `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'Vercel-CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+    } else {
+      response.headers.set('Cache-Control', 'no-store');
+    }
 
     // 调试信息
-    response.headers.set('X-Cache-Duration', '1hour');
+    response.headers.set(
+      'X-Cache-Duration',
+      hasData ? `${cacheTime}s` : 'no-store',
+    );
     response.headers.set(
       'X-Cache-Expires-At',
       new Date(Date.now() + cacheTime * 1000).toISOString(),
