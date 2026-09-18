@@ -234,12 +234,26 @@ function ensureDirs(): void {
   }
 }
 
+function withRedisTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('redis operation timeout')), ms);
+    (timer as unknown as { unref?: () => void }).unref?.();
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer !== undefined) clearTimeout(timer);
+  });
+}
+
 function writeBuffer(): void {
   if (buffer.length === 0) return;
   const lines = buffer;
   buffer = [];
   if (isRedisMode()) {
-    db.appendAnalyticsEvents(dayKeyFromDate(Date.now()), lines).catch((e) => {
+    withRedisTimeout(
+      db.appendAnalyticsEvents(dayKeyFromDate(Date.now()), lines),
+      5000,
+    ).catch((e) => {
       console.error('❌ analytics store 写入 Redis 失败，回退本地文件:', e);
       fallbackWriteLines(lines);
     });
@@ -427,7 +441,8 @@ export async function getAnalyticsSummary(
 
     let events: RawEvent[] | null = null;
     if (isRedisMode()) {
-      const lines = await db.readAnalyticsEvents(dKey).catch(() => null);
+      const lines = await withRedisTimeout(db.readAnalyticsEvents(dKey), 5000)
+        .catch(() => null);
       events = lines ? parseLines(lines) : null;
       if (events && events.length === 0) {
         // Redis 当天无数据，补读本地文件（迁移期兼容）
