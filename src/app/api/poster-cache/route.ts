@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { join } from 'path';
 
 import { isUrlSafeDeep } from '@/lib/ssrf-protection';
+import { DOUBAN_CDN_MIRRORS } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 
@@ -64,6 +65,27 @@ function getReferer(url: string): string {
 }
 
 /**
+ * 豆瓣系回源候选（原站优先 + CMLiussss 公益镜像）。
+ * 非豆瓣系返回单候选，保持原行为。
+ */
+function buildOriginCandidates(rawUrl: string): string[] {
+  try {
+    const u = new URL(rawUrl);
+    if (!/doubanio\./i.test(u.hostname)) return [rawUrl];
+    const tail = u.pathname + u.search;
+    const hosts = [
+      u.hostname,
+      DOUBAN_CDN_MIRRORS.cmliussssCom,
+      DOUBAN_CDN_MIRRORS.cmliussssNet,
+      DOUBAN_CDN_MIRRORS.img3,
+    ].filter((h, i, arr) => arr.indexOf(h) === i);
+    return hosts.map((h) => `https://${h}${tail}`);
+  } catch {
+    return [rawUrl];
+  }
+}
+
+/**
  * 海报下载调度：并发限流 + 同 URL 去重 + 失败重试
  * 豆瓣图片源对高并发断连敏感，8 并发为安全上限；上次提至 12 导致与
  * m3u8 探活并发叠加耗尽浏览器 socket（ERR_INSUFFICIENT_RESOURCES），回退至 6。
@@ -95,9 +117,14 @@ const downloadQueue: Array<{
 
 async function downloadOnce(url: string): Promise<ArrayBuffer | null> {
   const referer = getReferer(url);
+  // 豆瓣系回源候选：原站 + 公益镜像。每次重试换一个 host，
+  // 避免被限流的 host 上连撞 3 次（最坏 30s+ 才轮到 image-proxy 的镜像链）。
+  // 总尝试次数不变，不增加上游压力；排序按实测速度：原站 > 阿里 > 腾讯 > img3。
+  const candidates = buildOriginCandidates(url);
   for (let attempt = 0; attempt < MAX_DOWNLOAD_ATTEMPTS; attempt++) {
+    const target = candidates[attempt % candidates.length];
     try {
-      const response = await fetch(url, {
+      const response = await fetch(target, {
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -265,8 +292,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 下载图片（并发限流 + 去重 + 重试）
-    const imageData = await getImageData(url);
+    // 下载图片（并发限流 + 去重 + 重试）。
+    // 总超时熔断：队列 + 回源最长等 20s，超时直接 302 到 image-proxy（内存缓存+镜像链，
+    // 通常毫秒级），避免浏览器 <img> 无超时挂起导致首页白卡（无骨架无占位）。
+    const imageData = await Promise.race([
+      getImageData(url),
+      new Promise<null>((resolve) =>
+        setTimeout(() => resolve(null), 20000),
+      ),
+    ]);
 
     if (!imageData) {
       // 记入短期负缓存，避免死图/持续限流被反复回源打爆上游
