@@ -10,6 +10,7 @@ import React, {
   useState,
 } from 'react';
 
+import { isHostDead, markHostDead } from '@/lib/dead-cdn-tracker';
 import { SearchResult } from '@/lib/types';
 import { getVideoResolutionFromM3u8, processImageUrl } from '@/lib/utils';
 
@@ -153,6 +154,19 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
     const episodeUrl =
       source.episodes.length > 1 ? source.episodes[1] : source.episodes[0];
 
+    // 死亡名单内直接标错，不再重复测速（quickProbe/播放失败时已标记，10 分钟有效）
+    if (isHostDead(episodeUrl)) {
+      setVideoInfoMap((prev) =>
+        new Map(prev).set(sourceKey, {
+          quality: '疑似失效',
+          loadSpeed: '未知',
+          pingTime: 9999,
+          hasError: true,
+        }),
+      );
+      return;
+    }
+
     // 标记为已尝试
     setAttemptedSources((prev) => new Set(prev).add(sourceKey));
 
@@ -161,7 +175,8 @@ const EpisodeSelector: React.FC<EpisodeSelectorProps> = ({
       const info = await getVideoResolutionFromM3u8(episodeUrl);
       setVideoInfoMap((prev) => new Map(prev).set(sourceKey, info));
     } catch (error) {
-      // 失败时保存错误状态
+      // 失败时保存错误状态，并记入死亡名单供后续跳过
+      markHostDead(episodeUrl);
       setVideoInfoMap((prev) =>
         new Map(prev).set(sourceKey, {
           quality: '错误',

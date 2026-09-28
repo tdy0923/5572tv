@@ -15,6 +15,7 @@ export const GEO_BLOCKED_CDNS = [
   'yzzy28-play',
   'power34play',
   'ijycnd.com',
+  'jisuzyv.com', // 极速资源站视频 CDN：海外出口 403（线上日志确认），key/分片同受影响
 ];
 
 export function isGeoBlockedCdn(url: string): boolean {

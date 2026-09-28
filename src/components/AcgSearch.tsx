@@ -296,6 +296,10 @@ export default function AcgSearch({
                     alt=''
                     className='h-20 w-auto rounded object-cover'
                     loading='eager'
+                    onError={(e) => {
+                      // 预览图挂了直接隐藏，避免破图图标撑坏布局
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 ))}
               </div>

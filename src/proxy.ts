@@ -60,6 +60,12 @@ function getTrustedNetworkFromEnv(): {
   const trustedIPs = process.env.TRUSTED_NETWORK_IPS;
   if (!trustedIPs) return null;
 
+  if (/(^|,)\s*\*\s*(,|$)/.test(trustedIPs)) {
+    console.warn(
+      '[trusted-network] TRUSTED_NETWORK_IPS 中的通配符 * 已被忽略（等同全网免登，拒绝生效），请配置具体 IP/CIDR',
+    );
+  }
+
   return {
     enabled: true,
     trustedIPs: trustedIPs
@@ -147,8 +153,8 @@ function getClientIP(request: NextRequest): string {
 
 // 简化的 IP/CIDR 匹配（Edge Runtime 兼容）
 function isIPInCIDR(clientIP: string, cidr: string): boolean {
-  // 处理通配符
-  if (cidr === '*') return true;
+  // 通配符 '*' 已禁用：含义等同全网免登，误配即灾难；如需关闭认证请走正常登录
+  if (cidr === '*') return false;
 
   // 检测 IPv6
   const isClientIPv6 = clientIP.includes(':');
@@ -253,7 +259,7 @@ function generateTrustedAuthCookie(request: NextRequest): NextResponse {
 
 // 为页面响应设置 CSP nonce 头
 function applyCSPHeaders(response: NextResponse, nonce: string): NextResponse {
-  const csp = `default-src 'self' https: http:; script-src 'self' 'unsafe-inline' https://tg.yunku.de https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none';`;
+  const csp = `default-src 'self' https: http:; script-src 'self' 'unsafe-inline' https://tg.yunku.de https://static.cloudflareinsights.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: http: data: blob:; media-src 'self' https: http: blob:; connect-src 'self' https: http:; font-src 'self' https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none';`;
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('x-csp-nonce', nonce);
   return response;
@@ -271,7 +277,7 @@ export async function proxy(request: NextRequest) {
   else if (pathname.startsWith('/api/image-proxy')) routeType = 'image-proxy';
   else if (pathname.startsWith('/api/video-cache')) routeType = 'video-cache';
   if (routeType && !checkRateLimit(ip, routeType)) {
-    return new NextResponse('Too Many Requests', { status: 429 });
+    return new NextResponse('请求过于频繁，请稍后再试', { status: 429 });
   }
 
   // 处理 /adult/ 路径前缀，重写为实际 API 路径

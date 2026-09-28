@@ -1,16 +1,15 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
-import { db } from './db';
+import { db, getStorageType } from './db';
 
 // 日历缓存键
 const CALENDAR_DATA_KEY = 'calendar:release_calendar_data';
 const CALENDAR_TIME_KEY = 'calendar:release_calendar_time';
 const CACHE_DURATION = 8 * 60 * 60 * 1000; // 8小时缓存（参考TMDb API标准）
 
-// 获取存储类型
-function getStorageType(): string {
-  return process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage';
-}
+// 存储类型统一走 db.ts 的运行时判定（KVROCKS_URL→STORAGE_TYPE），
+// 不读 NEXT_PUBLIC_STORAGE_TYPE（构建期烘焙，与运行时可能不一致导致分支错乱抛 500）
+// 注：下文 getStorageType() 即 db.ts 导出，纯常量读取，不抛异常。
 
 // 获取数据库存储实例
 function getDatabaseStorage(): any {

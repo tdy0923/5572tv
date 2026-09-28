@@ -191,6 +191,12 @@ function SearchPageClient() {
                 alt={item.title}
                 className='h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]'
                 loading='lazy'
+                onError={(e) => {
+                  // 与 VideoCard 一致的失败兜底，避免破图（守卫防止循环触发）
+                  if (!e.currentTarget.src.endsWith('placeholder-cover.jpg')) {
+                    e.currentTarget.src = '/placeholder-cover.jpg';
+                  }
+                }}
               />
             </button>
           </div>

@@ -4,6 +4,7 @@
 // 避免对同一批死链反复探活浪费时间。TTL 10 分钟后自动过期重试。
 
 const DEAD_TTL_MS = 10 * 60 * 1000;
+const DEAD_MAX_HOSTS = 500; // 防无限增长（轮换域名攻击/海量死源）
 const deadHosts = new Map<string, number>();
 
 function extractHost(url: string): string | null {
@@ -17,6 +18,10 @@ function extractHost(url: string): string | null {
 export function markHostDead(url: string): void {
   const host = extractHost(url);
   if (!host) return;
+  if (!deadHosts.has(host) && deadHosts.size >= DEAD_MAX_HOSTS) {
+    const oldest = deadHosts.keys().next().value;
+    if (oldest) deadHosts.delete(oldest);
+  }
   deadHosts.set(host, Date.now());
 }
 
