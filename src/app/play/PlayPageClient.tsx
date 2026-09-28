@@ -16,6 +16,7 @@ import { isFloatAdElement, textContainsAdKeyword } from '@/lib/ad-blocker';
 import artplayerPluginChromecast from '@/lib/artplayer-plugin-chromecast';
 import artplayerPluginLiquidGlass from '@/lib/artplayer-plugin-liquid-glass';
 import { generateStorageKey, getAllPlayRecords } from '@/lib/db.client';
+import { isHostDead } from '@/lib/dead-cdn-tracker';
 import { resolvePlaybackUrl } from '@/lib/geo-blocked-cdns';
 import {
   BLOCK_AD_KEY,
@@ -921,6 +922,7 @@ function PlayPageClient() {
 
   const {
     handleSourceChange,
+    cancelSourceChange,
     availableSources,
     setAvailableSources,
     availableSourcesRef,
@@ -1052,27 +1054,34 @@ function PlayPageClient() {
     let cancelled = false;
     (async () => {
       const epIdx = currentEpisodeIndexRef.current || 0;
-      const probes = dramaEpisodeCandidates.map(async (set) => {
-        const url = set[epIdx] || set[0];
-        if (!url) return false;
-        try {
-          const res = await fetch(
-            `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
-            { signal: AbortSignal.timeout(6000) },
-          );
-          if (!res.ok) return false;
-          const txt = await res.text();
-          return txt.includes('#EXTM3U');
-        } catch {
-          return false;
+      // 首个健康即定：死候选会占满 6s 超时，allSettled 等齐最慢一个才定优选；
+      // 改为逐个结算、只向更优下标收敛——健康源 1-2s 即开播，不再被死源拖住。
+      // （播放器 healthyLocked 后忽略后续更新，最多 pre-lock 期内切换一次）
+      let best = -1;
+      const publishIfBetter = (idx: number) => {
+        if (cancelled) return;
+        if (best === -1 || idx < best) {
+          best = idx;
+          setDramaPreferredIdx(idx);
         }
+      };
+      dramaEpisodeCandidates.forEach((set, i) => {
+        (async () => {
+          const url = set[epIdx] || set[0];
+          if (!url) return;
+          try {
+            const res = await fetch(
+              `/api/proxy/m3u8?url=${encodeURIComponent(url)}`,
+              { signal: AbortSignal.timeout(6000) },
+            );
+            if (!res.ok) return;
+            const txt = await res.text();
+            if (txt.includes('#EXTM3U')) publishIfBetter(i);
+          } catch {
+            // 超时/失败：等其他候选，全灭则保持 undefined 走盲播+轮转兜底
+          }
+        })();
       });
-      const results = await Promise.allSettled(probes);
-      if (cancelled) return;
-      const firstHealthy = results.findIndex(
-        (r) => r.status === 'fulfilled' && r.value === true,
-      );
-      setDramaPreferredIdx(firstHealthy >= 0 ? firstHealthy : undefined);
     })();
     return () => {
       cancelled = true;
@@ -1301,6 +1310,16 @@ function PlayPageClient() {
             source.episodes.length > 1
               ? source.episodes[1]
               : source.episodes[0];
+
+          // 死亡名单内直接判死，不发探测（quickProbe/播放失败时已标记，10 分钟有效）
+          if (isHostDead(episodeUrl)) {
+            return {
+              source,
+              pingTime: 9999,
+              available: false,
+              weight: weights[source.source] ?? 50,
+            };
+          }
 
           // 已是内部代理 URL（预告片 /api/video-proxy、或其他 proxy 包装）不再二次包 m3u8 代理，
           // 否则会形成 /api/proxy/m3u8?url=/api/video-proxy?... 的双重代理死链（400）
@@ -2772,7 +2791,7 @@ function PlayPageClient() {
 
           // 🚀 关键修复：区分换源和切换集数
           const isEpisodeChange = isEpisodeChangingRef.current;
-          const currentTime = artPlayerRef.current.currentTime || 0;
+          const currentTime = artPlayerRef.current?.currentTime || 0;
           // P0-1：切集前捕获是否有待恢复进度；video:canplay 会先应用恢复，
           // 若此处再无条件归零会把刚恢复的进度冲掉
           const hasPendingResume = (resumeTimeRef.current ?? 0) > 0;
@@ -2797,15 +2816,18 @@ function PlayPageClient() {
             .then(() => {
               // 只有当前Promise还是活跃的才执行后续操作
               if (switchPromiseRef.current === switchPromise) {
-                artPlayerRef.current.title = `${videoTitle} - 第${currentEpisodeIndex + 1}集`;
-                artPlayerRef.current.poster = videoCover;
+                // 切换期间播放器可能已被销毁（快速切集/切源），无对象可更新则直接返回
+                const art = artPlayerRef.current;
+                if (!art) return;
+                art.title = `${videoTitle} - 第${currentEpisodeIndex + 1}集`;
+                art.poster = videoCover;
 
                 // 🔥 重置集数切换标识
                 if (isEpisodeChange) {
                   // 🔑 关键修复：切换集数后显式重置播放时间为 0，确保片头自动跳过能触发
                   // 但若本次切集带有恢复进度（resumeTimeRef），canplay 已跳转，不能再归零
                   if (!hasPendingResume) {
-                    artPlayerRef.current.currentTime = 0;
+                    art.currentTime = 0;
                   }
                   isEpisodeChangingRef.current = false;
                 }
@@ -4951,6 +4973,9 @@ function PlayPageClient() {
                   playAttempts++;
 
                   try {
+                    // canplay 到真正执行之间播放器可能已被销毁：直接失败走重试/报错，
+                    // 别把 TypeError 当成播放失败记入重试计数
+                    if (!artPlayerRef.current) return false;
                     await artPlayerRef.current.play();
                     return true;
                   } catch (playError: any) {
@@ -5175,9 +5200,13 @@ function PlayPageClient() {
         artPlayerRef.current.on('error', (err: any) => {
           console.error('播放器错误:', err);
 
+          // 播放器已销毁（换源/切集 teardown 后迟到的错误事件）：无可恢复对象，直接返回
+          const art = artPlayerRef.current;
+          if (!art) return;
+
           // 视频已稳定播放(>3s)且错误非"stalled"类时，认为已进入正常播放
           // 此时不触发换源（避免中途网络波动导致不必要的换源）
-          const currTime = artPlayerRef.current.currentTime;
+          const currTime = art.currentTime || 0;
           const errType = err?.type || err?.code || '';
           const isSevereError =
             errType.includes('abort') ||
@@ -5268,8 +5297,10 @@ function PlayPageClient() {
 
         // 合并的timeupdate监听器 - 处理跳过片头片尾和保存进度
         artPlayerRef.current.on('video:timeupdate', () => {
-          const currentTime = artPlayerRef.current.currentTime || 0;
-          const duration = artPlayerRef.current.duration || 0;
+          const art = artPlayerRef.current;
+          if (!art) return;
+          const currentTime = art.currentTime || 0;
+          const duration = art.duration || 0;
           const remainingTime = duration - currentTime;
 
           setCurrentPlayTime(currentTime);
@@ -5815,10 +5846,20 @@ function PlayPageClient() {
                         />
                       )}
 
-                      {/* 换源加载蒙层 */}
+                      {/* 换源加载蒙层（6s 未完成出现重试/取消；初始加载只有重试）。
+                          key 保证每次展示重挂载，overlay 内计时器从零开始 */}
                       <VideoLoadingOverlay
+                        key={`${videoLoadingStage}-${isVideoLoading}`}
                         isVisible={isVideoLoading}
                         loadingStage={videoLoadingStage}
+                        onRetry={() =>
+                          setReloadTrigger((prev) => prev + 1)
+                        }
+                        onCancel={
+                          videoLoadingStage === 'sourceChanging'
+                            ? cancelSourceChange
+                            : undefined
+                        }
                       />
                     </div>
                   </div>

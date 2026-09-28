@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import { deletePlayRecord } from '@/lib/db.client';
 import { isHostDead, markHostDead } from '@/lib/dead-cdn-tracker';
 import type { SearchResult } from '@/lib/types';
 import { resolveCardPosterUrl } from '@/lib/utils';
@@ -86,6 +85,8 @@ export function useSourceSwitching(params: {
   const fallbackAutoRetriedRef = useRef(false);
   const isSourceChangingRef = useRef(false);
   const sourceErrorCountRef = useRef(0);
+  // 切换代际：取消时+1，后台收尾检测到代际不一致即 no-op，避免旧切换覆盖用户操作
+  const switchGenRef = useRef(0);
 
   const isSourceAvailable = useCallback((sourceKey: string): boolean => {
     const state = sourceRetryStateRef.current.get(sourceKey);
@@ -209,6 +210,7 @@ export function useSourceSwitching(params: {
       if (isSourceChangingRef.current) return;
 
       isSourceChangingRef.current = true;
+      const gen = ++switchGenRef.current;
 
       params.setVideoLoadingStage('sourceChanging');
       setIsVideoLoading(true);
@@ -330,22 +332,15 @@ export function useSourceSwitching(params: {
       });
 
       setTimeout(async () => {
+        // 代际已变（用户点了取消/发起了新切换）：后台收尾直接丢弃
+        if (gen !== switchGenRef.current) return;
         // Guard against unmount during timeout
         if (!isSourceChangingRef.current && !params.artPlayerRef.current)
           return;
         isSourceChangingRef.current = false;
         setIsVideoLoading(false);
 
-        if (params.currentSourceRef.current && params.currentIdRef.current) {
-          try {
-            await deletePlayRecord(
-              params.currentSourceRef.current,
-              params.currentIdRef.current,
-            );
-          } catch (err) {
-            console.error('清除播放记录失败:', err);
-          }
-        }
+        // 保留旧源播放记录不删：切回旧线路可接着看（历史页会保留各线路条目）
 
         if (
           params.artPlayerRef.current?.plugins?.artplayerPluginDanmuku &&
@@ -408,6 +403,14 @@ export function useSourceSwitching(params: {
     }
   };
 
+  // 取消正在进行的换源：代际+1 让后台收尾 no-op，松开 guard 并隐藏蒙层
+  // （旧播放器画面保留，用户可继续看或手动重试）
+  const cancelSourceChange = useCallback(() => {
+    switchGenRef.current++;
+    isSourceChangingRef.current = false;
+    params.setIsVideoLoading(false);
+  }, [params]);
+
   const resetSourceState = useCallback(() => {
     sourceRetryStateRef.current.clear();
     totalSessionFailuresRef.current = 0;
@@ -423,6 +426,7 @@ export function useSourceSwitching(params: {
 
   return {
     handleSourceChange,
+    cancelSourceChange,
     findWorkingSource,
     availableSources,
     setAvailableSources,

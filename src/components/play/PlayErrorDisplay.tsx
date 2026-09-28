@@ -48,6 +48,20 @@ interface PlayErrorDisplayProps {
   onSwitchSource?: () => void;
 }
 
+// 英文/裸错误码转中文人话（原文保留进诊断信息，不丢排障信息）
+function humanizePlayError(error: string): string {
+  if (/403/.test(error)) return '该线路被源站拒绝访问，请切换播放源';
+  if (/404/.test(error)) return '资源不存在，请切换播放源或重新搜索';
+  if (/50[0-9]|502|503|504|525/.test(error))
+    return '上游服务暂时异常，请稍后重试或切换播放源';
+  if (/timeout|超时|abort|504/i.test(error))
+    return '请求超时，请检查网络后重试';
+  if (/network|failed to fetch|load failed|ERR_/i.test(error))
+    return '网络连接异常，请检查网络后重试';
+  if (/未找到匹配结果/.test(error)) return '该线路暂无可用资源，请切换播放源';
+  return error;
+}
+
 export default function PlayErrorDisplay({
   error,
   videoTitle,
@@ -123,7 +137,7 @@ export default function PlayErrorDisplay({
               className='text-xs font-medium text-center'
               style={{ color: '#ef4444' }}
             >
-              {error}
+              {humanizePlayError(error)}
             </p>
           </div>
 

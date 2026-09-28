@@ -444,7 +444,11 @@ export function useSourceSearch(params: {
           });
         };
 
-        for (const variant of searchVariants) {
+        // 变体并发请求（P5 的超时/重试逻辑保留在单变体内）：
+        // 优先级语义不变——全部并发发出，按原顺序取"首个命中"，延迟=最慢变体而非累加
+        const fetchVariant = async (
+          variant: string,
+        ): Promise<SearchResult[] | null> => {
           // P5: 带超时与重试的搜索变体请求，避免静默失败无重试
           let response: Response | null = null;
           let lastErr: unknown = null;
@@ -484,13 +488,36 @@ export function useSourceSearch(params: {
           }
           if (!response) {
             console.warn(`搜索变体 "${variant}" 失败:`, lastErr);
-            continue;
+            return null;
           }
           if (!response.ok) {
             console.warn(`搜索变体 "${variant}" 失败:`, response.statusText);
+            return null;
+          }
+          try {
+            const data = await response.json();
+            return Array.isArray(data?.results) ? data.results : [];
+          } catch (e) {
+            console.warn(`搜索变体 "${variant}" 解析失败:`, e);
+            return null;
+          }
+        };
+
+        const settled = await Promise.allSettled(
+          searchVariants.map(fetchVariant),
+        );
+        if (signal.aborted) return [];
+
+        for (let vi = 0; vi < searchVariants.length; vi++) {
+          const settledOne = settled[vi];
+          const variant = searchVariants[vi];
+          if (settledOne.status !== 'fulfilled' || !settledOne.value) {
+            if (settledOne.status === 'rejected') {
+              console.warn(`搜索变体 "${variant}" 失败:`, settledOne.reason);
+            }
             continue;
           }
-          const data = await response.json();
+          const data = { results: settledOne.value };
 
           if (data.results && data.results.length > 0) {
             allResults.push(...data.results);

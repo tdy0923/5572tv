@@ -1,16 +1,33 @@
 'use client';
 
-import { Film } from 'lucide-react';
+import { Film, RotateCcw, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface VideoLoadingOverlayProps {
   isVisible: boolean;
   loadingStage: 'sourceChanging' | 'initing';
+  onRetry?: () => void;
+  onCancel?: () => void;
 }
+
+// 操作按钮延迟秒数：快加载不闪按钮，弱网卡住才给用户抓手
+const ACTIONS_DELAY_MS = 6000;
 
 export default function VideoLoadingOverlay({
   isVisible,
   loadingStage,
+  onRetry,
+  onCancel,
 }: VideoLoadingOverlayProps) {
+  const [showActions, setShowActions] = useState(false);
+
+  // 父级以 visibility+stage 为 key 重挂载本组件（每次展示都是全新计时），
+  // 因此 effect 内只需启动计时器，无需同步 reset state
+  useEffect(() => {
+    const timer = setTimeout(() => setShowActions(true), ACTIONS_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!isVisible) return null;
 
   return (
@@ -46,6 +63,32 @@ export default function VideoLoadingOverlay({
               : '🔄 视频加载中...'}
           </p>
         </div>
+
+        {/* 长时间卡住才出现：重试 / 取消 */}
+        {showActions && (onRetry || onCancel) && (
+          <div className='mt-8 flex items-center justify-center gap-3'>
+            {onCancel && (
+              <button
+                type='button'
+                onClick={onCancel}
+                className='inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/20'
+              >
+                <X className='h-4 w-4' />
+                取消
+              </button>
+            )}
+            {onRetry && (
+              <button
+                type='button'
+                onClick={onRetry}
+                className='inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-500'
+              >
+                <RotateCcw className='h-4 w-4' />
+                重试
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

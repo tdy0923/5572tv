@@ -148,13 +148,16 @@ export function useWebSR(artPlayerRef: React.RefObject<ArtPlayer | null>) {
       canvas.style.top = '0';
       canvas.style.left = '0';
       canvas.style.width = '100%';
-      canvas.style.height = '100%';
       canvas.style.objectFit = 'contain';
       canvas.style.pointerEvents = 'none'; // 让点击穿透到 ArtPlayer
       canvas.style.zIndex = '1';
 
+      // 等待 GPU 初始化期间播放器可能已被销毁：重新确认， detached 的 video 不挂载
+      const art = artPlayerRef.current;
+      if (!art || !art.video || art.video !== video) return;
+
       // 插入 canvas
-      const container = artPlayerRef.current.template.$video.parentElement;
+      const container = art.template.$video.parentElement;
       container.insertBefore(canvas, video);
 
       // 获取权重文件
