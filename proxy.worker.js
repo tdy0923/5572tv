@@ -437,7 +437,7 @@ async function handleSegmentProxy(request, url) {
 // ---------- Key Proxy ----------
 
 const keyCache = new Map();
-const KEY_CACHE_TTL = 600000; // 10 min
+const KEY_CACHE_TTL = 300000; // 5 min（与源站 key 路由一致）
 
 async function handleKeyProxy(request, url) {
   const targetUrl = decodeURIComponent(url.searchParams.get('url') || '');
@@ -639,10 +639,10 @@ async function rewriteM3U8(
       continue;
     }
 
-    // Non-tag line = URL
+    // Non-tag line = URL（先变量替换后解析，与源站路由端一致）
     if (!trimmed.startsWith('#')) {
-      const resolved = resolveUrl(baseUrl, trimmed);
-      const finalSrc = substituteVars(resolved, vars);
+      const substituted = substituteVars(trimmed, vars);
+      const finalSrc = resolveUrl(baseUrl, substituted);
       try {
         const segHost = new URL(finalSrc).hostname;
         const base = getSegmentBase(segHost, proxyBase, denoBase);
@@ -663,8 +663,8 @@ async function rewriteM3U8(
       line,
       'URI',
       (uri) => {
-        const resolved = resolveUrl(baseUrl, uri);
-        const finalSrc = substituteVars(resolved, vars);
+        const substituted = substituteVars(uri, vars);
+        const finalSrc = resolveUrl(baseUrl, substituted);
         return `${proxyBase}/segment?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-MAP:',
@@ -678,8 +678,8 @@ async function rewriteM3U8(
       line,
       'URI',
       (uri) => {
-        const resolved = resolveUrl(baseUrl, uri);
-        const finalSrc = substituteVars(resolved, vars);
+        const substituted = substituteVars(uri, vars);
+        const finalSrc = resolveUrl(baseUrl, substituted);
         return `${proxyBase}/key?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-KEY:',
@@ -690,19 +690,20 @@ async function rewriteM3U8(
       line,
       'URI',
       (uri) => {
-        const resolved = resolveUrl(baseUrl, uri);
-        const finalSrc = substituteVars(resolved, vars);
+        const substituted = substituteVars(uri, vars);
+        const finalSrc = resolveUrl(baseUrl, substituted);
         return `${proxyBase}/m3u8?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-MEDIA:',
+      '#EXT-X-I-FRAME-STREAM-INF:',
     );
 
     line = processTagUri(
       line,
       'SERVER-URI',
       (uri) => {
-        const resolved = resolveUrl(baseUrl, uri);
-        const finalSrc = substituteVars(resolved, vars);
+        const substituted = substituteVars(uri, vars);
+        const finalSrc = resolveUrl(baseUrl, substituted);
         return `${proxyBase}/m3u8?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-CONTENT-STEERING:',
@@ -712,8 +713,8 @@ async function rewriteM3U8(
       line,
       'URI',
       (uri) => {
-        const resolved = resolveUrl(baseUrl, uri);
-        const finalSrc = substituteVars(resolved, vars);
+        const substituted = substituteVars(uri, vars);
+        const finalSrc = resolveUrl(baseUrl, substituted);
         return `${proxyBase}/m3u8?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
       },
       '#EXT-X-RENDITION-REPORT:',
@@ -727,8 +728,8 @@ async function rewriteM3U8(
         const nextIdx = i + 1;
         const nextLine = lines[nextIdx].trim();
         if (nextLine && !nextLine.startsWith('#')) {
-          const resolved = resolveUrl(baseUrl, nextLine);
-          const finalSrc = substituteVars(resolved, vars);
+          const substituted = substituteVars(nextLine, vars);
+          const finalSrc = resolveUrl(baseUrl, substituted);
           const proxyUrl = `${proxyBase}/m3u8?url=${encodeURIComponent(finalSrc)}${sourceParam}`;
           result.push(proxyUrl);
           i++; // skip the next line
@@ -753,12 +754,17 @@ function processTagUri(line, attrName, rewriteFn, ...tagPrefixes) {
   if (!match) return line;
 
   const originalUri = match[1];
+  // 坏 URI（nan）删属性让 hls.js 跳过该轨道，与源站路由端一致
   if (!originalUri || originalUri === 'nan' || originalUri.includes('nan')) {
-    return line;
+    return line.replace(/,?URI="[^"]*"/, '');
   }
 
   try {
     const rewritten = rewriteFn(originalUri);
+    // 返回 null = 坏 URI，删掉该属性让 hls.js 跳过（与源站路由端一致）
+    if (rewritten === null) {
+      return line.replace(/,?URI="[^"]*"/, '');
+    }
     return line.replace(match[0], `${attrName}="${rewritten}"`);
   } catch {
     return line;
@@ -786,6 +792,7 @@ const GEO_BLOCKED_CDNS = [
   'yzzy28-play',
   'power34play',
   'ijycnd.com',
+  'jisuzyv.com',
 ];
 
 // 公益中继池：地域封锁CDN的m3u8救援
@@ -881,65 +888,6 @@ function buildHeaders(sourceDomain) {
   return h;
 }
 
-// ---------- Douban Trailer Cache ----------
-
-async function handleTrailerCache(request, url) {
-  const targetUrl = url.searchParams.get('url');
-  if (!targetUrl) {
-    return jsonResponse({ error: 'Missing url parameter' }, 400);
-  }
-
-  const decodedUrl = decodeURIComponent(targetUrl);
-
-  try {
-    new URL(decodedUrl);
-  } catch {
-    return jsonResponse({ error: 'Invalid URL format' }, 400);
-  }
-
-  const allowedDomains = ['douban.com', 'doubanio.com'];
-  try {
-    const parsedUrl = new URL(decodedUrl);
-    if (!allowedDomains.includes(parsedUrl.hostname)) {
-      return jsonResponse({ error: 'Only douban domains are allowed' }, 403);
-    }
-  } catch {
-    return jsonResponse({ error: 'Invalid URL' }, 400);
-  }
-
-  try {
-    const response = await fetch(decodedUrl, {
-      headers: {
-        'User-Agent': UA,
-        Referer: 'https://movie.douban.com/',
-      },
-      redirect: 'follow',
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!response.ok) {
-      return jsonResponse(
-        { error: 'Upstream returned ' + response.status },
-        response.status,
-      );
-    }
-
-    const headers = new Headers(response.headers);
-    headers.set(
-      'Access-Control-Allow-Origin',
-      request.headers.get('Origin') || '',
-    );
-    headers.set('Cache-Control', 'public, max-age=86400');
-
-    return new Response(response.body, {
-      status: response.status,
-      headers,
-    });
-  } catch {
-    return jsonResponse({ error: 'Fetch failed' }, 502);
-  }
-}
-
 // ---------- Utilities ----------
 
 function jsonResponse(data, status, cors = false, req) {
@@ -963,7 +911,7 @@ function getRootHtml() {
 <head><title>5572tv-proxy</title></head>
 <body>
 <h1>5572tv Cloudflare Worker</h1>
-<p>Active: M3U8 / Segment / Key proxy + Douban trailer cache.</p>
+<p>Active: M3U8 / Segment / Key proxy.</p>
 </body>
 </html>`;
 }

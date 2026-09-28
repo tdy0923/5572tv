@@ -3,7 +3,7 @@ name: Health Check
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: '17 * * * *'  # Hourly (was every 15 min: 96 runs/day)
 
 concurrency:
   group: health-check

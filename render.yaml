@@ -8,15 +8,48 @@ services:
     plan: free
     healthCheckPath: /
     envVars:
+      # ── 认证（必填）──
       - key: USERNAME
         sync: false
       - key: PASSWORD
         sync: false
+      # 独立 cookie 签名密钥；不设则回退用 PASSWORD，快填一个随机长字符串
+      - key: AUTH_SECRET
+        sync: false
+      # ── 存储（必填，与 NEXT_PUBLIC_STORAGE_TYPE 保持一致）──
       - key: NEXT_PUBLIC_STORAGE_TYPE
+        value: upstash
+      # 服务端实际读取的存储类型（db.ts 只认 STORAGE_TYPE/KVROCKS_URL，
+      # 缺失会静默回落 localstorage 空存储，服务端收藏/记录全变 no-op）
+      - key: STORAGE_TYPE
         value: upstash
       - key: UPSTASH_URL
         sync: false
       - key: UPSTASH_TOKEN
+        sync: false
+      # ── 站点（建议填写）──
+      - key: SITE_BASE
+        sync: false
+      - key: NEXT_PUBLIC_SITE_NAME
+        sync: false
+      # ── 定时任务鉴权（不设则回退用 PASSWORD）──
+      - key: CRON_SECRET
+        sync: false
+      # ── 信任网络（LAN 免登，可选）──
+      - key: TRUSTED_NETWORK_IPS
+        sync: false
+      - key: TRUSTED_NETWORK_ROLE
+        sync: false
+      # ── 可选功能 ──
+      - key: TMDB_API_KEY
+        sync: false
+      - key: OPENSUBTITLES_API_KEY
+        sync: false
+      - key: OPENSUBTITLES_USERNAME
+        sync: false
+      - key: OPENSUBTITLES_PASSWORD
+        sync: false
+      - key: TVBOX_SUBSCRIBE_TOKEN
         sync: false
       - key: DISABLE_HERO_TRAILER
         value: "true"

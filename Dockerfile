@@ -1,31 +1,26 @@
 # ---- 第 1 阶段：安装依赖 ----
 FROM node:22-alpine AS deps
 
-# 启用 corepack 并激活 pnpm（Node20 默认提供 corepack）
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 启用 corepack 并激活 pnpm（Node22 默认提供 corepack）
+RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 
 WORKDIR /app
 
 # 仅复制依赖清单，提高构建缓存利用率
 COPY package.json pnpm-lock.yaml ./
 
-# 清理任何潜在的缓存并安装所有依赖（包括可选的原生模块）
-RUN pnpm store prune && pnpm install --frozen-lockfile
+# 安装所有依赖（包括 serverExternalPackages 所需的外部包）
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # ---- 第 2 阶段：构建项目 ----
 FROM node:22-alpine AS builder
-ARG CACHE_BUST=1
-# 安装构建工具以编译原生模块
-RUN apk add --no-cache python3 make g++
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.14.0 --activate
 WORKDIR /app
 
-# 复制package files先，确保依赖版本一致
+# 复用 deps 阶段的依赖（避免重复 install）
 COPY package.json pnpm-lock.yaml ./
-# 复制依赖
 COPY --from=deps /app/node_modules ./node_modules
-# 验证依赖完整性，如果不匹配则重新安装
-RUN pnpm install --frozen-lockfile --offline || pnpm install --frozen-lockfile
 # 复制全部源代码
 COPY . .
 # Verify static directory exists (APK will be mounted at deploy time via volume)
@@ -53,22 +48,19 @@ RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nextjs -G nodejs
 WORKDIR /app
 
 # 创建视频缓存与行为分析数据目录并设置权限（.data/analytics 需持久化，否则重启丢数据）
-RUN mkdir -p /app/video-cache /app/.data/analytics && chown -R nextjs:nodejs /app/video-cache /app/.data
+RUN mkdir -p /app/video-cache /app/.data/analytics /app/static/download /app/public/poster-cache \
+    && chown -R nextjs:nodejs /app/video-cache /app/.data /app/static /app/public/poster-cache
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
-ENV DOCKER_BUILD=true
-# Puppeteer 配置：使用系统安装的 Chromium（已禁用）
-# ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-# ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # 从构建器中复制 standalone 输出
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-# 从构建器中复制 scripts 目录
-COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+# 运行时仅需 generate-manifest.js（start.js 调用），其余运维脚本不进镜像
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/generate-manifest.js ./scripts/generate-manifest.js
 # 从构建器中复制 start.js
 COPY --from=builder --chown=nextjs:nodejs /app/start.js ./start.js
-# 从构建器中复制 public、static 和 .next/static 目录
+# 从构建器中复制 public 和 .next/static 目录
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # static/download 目录通过 volume 挂载提供 APK（部署时从 GitHub raw 下载）
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

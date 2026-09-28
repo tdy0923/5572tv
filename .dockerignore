@@ -1,7 +1,51 @@
+# 依赖与构建产物
 node_modules
 .next
+out
+coverage
+
+# 版本控制与 CI
 .git
+.github
+
+# 文档（不进镜像，减小构建上下文）
 *.md
-.gitignore
+docs
+
+# Flutter App：独立仓库级目录（2GB+），与 Next.js 镜像无关
+flutter_app
+
+# 开发期工具配置（不进镜像）
+.vscode
+.kilo
+.husky
+commitlint.config.js
+mcp.json
+_audit_parens.py
+verify.sh
+TEST_PLAN.md
+SOURCE_SCRIPT.md
+
+# 本地环境与密钥
+.env
+.env*.local
+.local-secrets
+*.pem
+*.keystore
+key.properties
+
+# 运行时挂载/缓存目录（部署时由 volume 提供或运行时生成）
+static/download
+public/poster-cache
+.data
+data
+video-cache
+
+# 构建缓存
+.swc
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# 本文件与 Dockerfile 自身
 Dockerfile
 .dockerignore
