@@ -36,6 +36,10 @@ export function notifySessionExpired(): void {
 }
 
 export function resetSessionExpiredNotify(): void {
+  // 仅在"已通知→恢复"跃迁时广播，横幅据此隐藏；平时调用无事件，不刷屏
+  if (typeof window !== 'undefined' && notified) {
+    window.dispatchEvent(new CustomEvent('session-active'));
+  }
   notified = false;
 }
 

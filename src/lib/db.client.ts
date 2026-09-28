@@ -519,6 +519,27 @@ async function handleDatabaseOperationFailure(
 ): Promise<void> {
   console.error(`数据库操作失败 (${dataType}):`, error);
 
+  // 用户可见提示（节流：定时存档失败会高频触发，同类 5 分钟只弹一次；
+  // '未授权'走登录过期流程，不在这里重复提示）
+  try {
+    const msg = String((error as any)?.message || '');
+    if (msg !== '未授权') {
+      const now = Date.now();
+      const last =
+        (globalThis as any).__syncFailHintAt?.[dataType] || 0;
+      if (now - last > 5 * 60 * 1000) {
+        ((globalThis as any).__syncFailHintAt ||= {})[dataType] = now;
+        triggerGlobalError(
+          dataType === 'playRecords'
+            ? '播放进度云同步失败，已暂存本地，网络恢复后会自动重试'
+            : '数据同步失败，已暂存本地，网络恢复后会自动重试',
+        );
+      }
+    }
+  } catch {
+    // 提示失败不影响主流程
+  }
+
   try {
     let freshData: any;
     let eventName: string;

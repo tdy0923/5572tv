@@ -171,25 +171,25 @@ export async function consumeInviteCode(
     throw new Error(validation.error || '邀请码无效');
   }
 
-  // 获取邀请码详情
+  // 获取邀请码详情（取 maxUses；currentUses 以 incr 返回值为准，避免 TOCTOU）
   const inviteData = (await client.hGetAll(
     `invite:${code}`,
   )) as unknown as InviteCodeData;
+  const maxUses = Number(inviteData.maxUses);
 
-  // 增加使用次数
-  await client.hIncrBy(`invite:${code}`, 'currentUses', 1);
+  // 原子占用：hIncrBy 单命令原子；超额则回滚，保证并发下实际成功数永不超 maxUses
+  // （redis/kvrocks/upstash 三后端通用，无需 Lua；validate 的禁用/过期检查是前置快筛）
+  const newUses = await client.hIncrBy(`invite:${code}`, 'currentUses', 1);
+  if (newUses > maxUses) {
+    await client.hIncrBy(`invite:${code}`, 'currentUses', -1);
+    throw new Error('邀请码已达到最大使用次数');
+  }
 
   // 记录使用者
   await client.lPush(`invite:${code}:users`, username);
 
-  const currentUses = Number(inviteData.currentUses);
-  const maxUses = Number(inviteData.maxUses);
-
-  //     `[InviteCode] 使用邀请码: ${code}, 用户: ${username}, 当前使用次数: ${currentUses + 1}/${maxUses}`,
-  //   );
-
   // 如果达到最大使用次数，从活跃集合中移除
-  if (currentUses + 1 >= maxUses) {
+  if (newUses >= maxUses) {
     await client.sRem('invites:active', code);
   }
 

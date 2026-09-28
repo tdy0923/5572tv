@@ -41,6 +41,7 @@ function QRLoginClient() {
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(300);
   const [isMobile, setIsMobile] = useState(false);
+  const [detectDone, setDetectDone] = useState(false);
 
   // Mobile confirm form state
   const [username, setUsername] = useState('');
@@ -62,6 +63,7 @@ function QRLoginClient() {
       ua.includes('iphone') ||
       ua.includes('ipad');
     setIsMobile(mobile);
+    setDetectDone(true);
   }, []);
 
   // Create QR session (desktop mode)
@@ -125,25 +127,30 @@ function QRLoginClient() {
           const res = await fetch(`/api/auth/qr?sessionId=${sid}`);
           const data = await res.json();
 
-          if (data.status === 'confirmed' && data.token) {
+          if (data.status === 'confirmed') {
+            // 服务端核销会话并 HttpOnly 种 Cookie（token 不经过 JS）
+            try {
+              const done = await fetch('/api/auth/qr/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: sid }),
+              });
+              if (!done.ok) {
+                const err = await done.json().catch(() => ({}));
+                setError(err.error || '登录确认失败，请重新扫码');
+                setStatus('error');
+                clearInterval(countdownRef.current!);
+                return;
+              }
+            } catch {
+              setError('网络错误，请重试');
+              setStatus('error');
+              clearInterval(countdownRef.current!);
+              return;
+            }
             // Login successful
             clearInterval(countdownRef.current!);
             setStatus('confirmed');
-
-            // Set auth cookies
-            document.cookie = `user_auth=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-
-            // Also set user_info for client-side reads
-            try {
-              const parsed = JSON.parse(data.token);
-              const userInfo = JSON.stringify({
-                username: parsed.username,
-                role: parsed.role,
-              });
-              document.cookie = `user_info=${userInfo}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-            } catch {
-              // fallback: user_auth will be parsed directly
-            }
 
             // Redirect after short delay
             setTimeout(() => {
@@ -217,16 +224,18 @@ function QRLoginClient() {
     }
   };
 
-  // Initialize: check if mobile with session ID, or create new session
+  // Initialize: check if mobile with session ID, or create new session.
+  // 桌面端带 sid 打开（误点二维码链接）不再卡 loading：忽略 sid 走正常建码流程
   useEffect(() => {
+    if (!detectDone) return;
     if (sessionId && isMobile) {
       // Mobile mode: show confirm form
       setStatus('pending');
-    } else if (!sessionId) {
+    } else {
       // Desktop mode: create QR session
       createQRSession();
     }
-  }, [sessionId, isMobile, createQRSession]);
+  }, [sessionId, isMobile, detectDone, createQRSession]);
 
   // Cleanup
   useEffect(() => {

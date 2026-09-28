@@ -162,6 +162,21 @@ function RegisterPageClient() {
         }, delay);
       } else {
         const data = await res.json();
+        // 页面打开后管理员才开启邀请码：服务端报邀请码错误但本地没输入框时，
+        // 重新拉配置并补出输入框，而不是让用户对着报错干瞪眼
+        if (!requireInviteCode && /邀请码/.test(data.error ?? '')) {
+          try {
+            const configRes = await fetch('/api/server-config');
+            const configData = await configRes.json();
+            if (configData.requireInviteCode) {
+              setRequireInviteCode(true);
+              setError('本站已开启邀请码注册，请填写邀请码后重试');
+              return;
+            }
+          } catch {
+            // 配置拉取失败则透出原始报错
+          }
+        }
         setError(data.error ?? '注册失败');
       }
     } catch (error) {

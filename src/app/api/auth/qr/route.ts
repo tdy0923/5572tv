@@ -99,11 +99,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: 'expired' });
     }
 
+    // token 不再经 GET 返回：桌面端凭 sessionId 调 POST /complete，
+    // 服务端核销后直接 HttpOnly 种 Cookie，避免 token 落入 JS/XSS 可读区
     if (session.status === 'confirmed' && session.token) {
-      await db.deleteCache(`${QR_SESSION_PREFIX}${sessionId}`);
       return NextResponse.json({
         status: 'confirmed',
-        token: session.token,
         username: session.username,
       });
     }
@@ -126,10 +126,8 @@ export async function GET(req: NextRequest) {
 
       if (current.status !== session.status) {
         if (current.status === 'confirmed' && current.token) {
-          await db.deleteCache(`${QR_SESSION_PREFIX}${sessionId}`);
           return NextResponse.json({
             status: 'confirmed',
-            token: current.token,
             username: current.username,
           });
         }

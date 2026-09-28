@@ -9,7 +9,9 @@ import { installGlobal401Interceptor } from '@/lib/session-expired';
 import { BackButton } from './BackButton';
 import ModernNav from './ModernNav';
 import { NavActionCluster } from './NavActionCluster';
-import SessionExpiredModal from './SessionExpiredModal';
+import SessionExpiredModal, {
+  SessionExpiredBanner,
+} from './SessionExpiredModal';
 import { SiteAdSlot } from './SiteAdSlot';
 import { useSite } from './SiteProvider';
 
@@ -109,6 +111,7 @@ const PageLayout = ({
                 {children}
                 <SiteAdSlot position='footer' className='mt-8' />
                 <SessionExpiredModal />
+                <SessionExpiredBanner />
               </div>
             </div>
           </main>
