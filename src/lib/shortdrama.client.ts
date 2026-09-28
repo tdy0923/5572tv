@@ -106,7 +106,7 @@ export async function getRecommendedShortDramas(
     const apiUrl = `${getApiBase()}/recommend?${params.toString()}`;
 
     const response = await fetch(apiUrl, {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {

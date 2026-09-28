@@ -30,7 +30,7 @@ async function fetchTrending(): Promise<{
 }> {
   try {
     const response = await fetch('/api/trending', {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) throw new Error('获取热门内容失败');
     const data = await response.json();

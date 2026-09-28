@@ -111,7 +111,12 @@ export async function GET(_request: NextRequest) {
       ],
     };
 
-    setCache(result);
+    const hasItems = result.results.some(
+      (group) => (group.items || []).length > 0,
+    );
+    if (hasItems) {
+      setCache(result);
+    }
 
     return NextResponse.json(result, {
       headers: {

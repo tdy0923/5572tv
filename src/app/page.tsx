@@ -11,7 +11,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 // 首页 SSR 不再同步等待上游源站：给内部 API 一个短超时，
 // 超时立即返回空数据出骨架，水合后由客户端拉取，避免首屏 TTFB 被拖慢
-const SSR_FETCH_TIMEOUT = 1500;
+const SSR_FETCH_TIMEOUT = 3000;
 
 function raceTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
