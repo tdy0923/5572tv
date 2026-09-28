@@ -53,7 +53,7 @@ export async function GET(request: Request) {
 
   // SSRF protection: block internal/private IPs
   const decodedUrl = decodeURIComponent(url);
-  if (!isUrlSafe(decodedUrl)) {
+  if (!(await isUrlSafe(decodedUrl))) {
     stats.errors++;
     return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
   }
@@ -429,8 +429,11 @@ function rewriteM3U8Content(
     let line = lines[i].trim();
 
     // 处理 TS 片段 URL 和其他媒体文件
+    // 顺序：先变量替换后解析相对 URL（与各 rewrite*Uri 一致；HLS 要求替换先行，
+    // 否则 {$VAR} 会被当相对路径吃掉）
     if (line && !line.startsWith('#')) {
-      const resolvedUrl = resolveUrl(baseUrl, line);
+      const substituted = substituteVariables(line, variables);
+      const resolvedUrl = resolveUrl(baseUrl, substituted);
       const proxyUrl = allowCORS
         ? resolvedUrl
         : `${proxyBase}/segment?url=${encodeURIComponent(resolvedUrl)}${sourceParam}`;
@@ -513,8 +516,8 @@ function rewriteM3U8Content(
           i++;
           const nextLine = lines[i].trim();
           if (nextLine && !nextLine.startsWith('#')) {
-            let resolvedUrl = resolveUrl(baseUrl, nextLine);
-            resolvedUrl = substituteVariables(resolvedUrl, variables);
+            const substituted = substituteVariables(nextLine, variables);
+            const resolvedUrl = resolveUrl(baseUrl, substituted);
             const proxyUrl = `${proxyBase}/m3u8?url=${encodeURIComponent(resolvedUrl)}${sourceParam}`;
             rewrittenLines.push(proxyUrl);
           } else {
@@ -523,6 +526,11 @@ function rewriteM3U8Content(
         }
       }
       continue;
+    }
+
+    // 处理 I-frame 播放列表 (EXT-X-I-FRAME-STREAM-INF)，其 URI 指向 m3u8
+    if (line.startsWith('#EXT-X-I-FRAME-STREAM-INF:')) {
+      line = rewriteMediaUri(line, baseUrl, proxyBase, variables, sourceParam);
     }
 
     // 处理日期范围标签中的 URI (EXT-X-DATERANGE)

@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 
   // SSRF protection: block internal/private IPs
   const decodedUrl = decodeURIComponent(url);
-  if (!isUrlSafe(decodedUrl)) {
+  if (!(await isUrlSafe(decodedUrl))) {
     return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
   }
 

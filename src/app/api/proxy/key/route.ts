@@ -86,7 +86,7 @@ export async function GET(request: Request) {
 
   // SSRF protection: block internal/private IPs
   const decodedUrl = decodeURIComponent(url);
-  if (!isUrlSafe(decodedUrl)) {
+  if (!(await isUrlSafe(decodedUrl))) {
     keyStats.errors++;
     return NextResponse.json({ error: '禁止访问内部地址' }, { status: 403 });
   }
@@ -161,17 +161,17 @@ export async function GET(request: Request) {
     );
 
     // 403 时重试：去掉防盗链头（部分 CDN 白名单校验）
+    const retryHeaders = {
+      'User-Agent': ua,
+      Accept: 'application/octet-stream, */*',
+      'Cache-Control': 'no-cache',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+    };
     if (response.status === 403) {
       try {
         await response.body?.cancel();
       } catch {}
-      const retryHeaders = {
-        'User-Agent': ua,
-        Accept: 'application/octet-stream, */*',
-        'Cache-Control': 'no-cache',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-      };
       try {
         response = await fetchWithRetry(
           decodedUrl,
@@ -183,6 +183,29 @@ export async function GET(request: Request) {
           ua,
         );
       } catch {}
+    }
+
+    // key 重试不设名单门槛：key 体积极小（十几字节），3 次短重试成本可忽略；
+    // 名单外 CDN 同样可能地域封锁（如日志中的 jisuzyv），命中即赚。
+    // 非名单行为变化仅限：持续 403 时多 3 次尝试（约 1s），无其他副作用。
+    if (response.status === 403) {
+      for (let i = 0; i < 3 && response.status === 403; i++) {
+        try {
+          await response.body?.cancel();
+        } catch {}
+        await new Promise((r) => setTimeout(r, 150 * (i + 1)));
+        try {
+          response = await fetchWithRetry(
+            decodedUrl,
+            {
+              signal: controller.signal,
+              headers: retryHeaders,
+              agent: typeof window === 'undefined' ? agent : undefined,
+            },
+            ua,
+          );
+        } catch {}
+      }
     }
 
     clearTimeout(timeoutId);

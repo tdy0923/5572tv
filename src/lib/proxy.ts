@@ -2,16 +2,21 @@
 
 import { BoundedMap } from '@/lib/bounded-map';
 import { getConfig } from '@/lib/config';
+import { isUrlSafeDeep } from '@/lib/ssrf-protection';
 import { getRandomUserAgent } from '@/lib/user-agent';
 
 const DEFAULT_USER_AGENT = 'AptvPlayer/1.4.10';
 
 // CDN 域名级策略缓存（进程级别，跨请求有效，最多500条自动淘汰）
+const BLOCK_TTL_MS = 300000; // 熔断 5 分钟后放一个探测请求
+const BLOCK_FAIL_THRESHOLD = 3; // 连续失败 3 次才熔断：单个 404（删片）不误伤整站
 const cdnStrategy = new BoundedMap<
   string,
   {
     best: 'direct' | 'ua_rotate' | 'proxy' | 'blocked';
     lastOk: number;
+    lastFail: number;
+    consecFails: number;
   }
 >(500);
 
@@ -31,8 +36,10 @@ function reportCdnResult(
   const entry = cdnStrategy.get(domain);
   if (!entry) {
     cdnStrategy.set(domain, {
-      best: ok ? via : 'blocked',
+      best: ok ? via : 'direct',
       lastOk: ok ? Date.now() : 0,
+      lastFail: ok ? 0 : Date.now(),
+      consecFails: ok ? 0 : 1,
     });
     return;
   }
@@ -43,6 +50,14 @@ function reportCdnResult(
       entry.best = via;
     }
     entry.lastOk = Date.now();
+    entry.consecFails = 0;
+    return;
+  }
+  // 失败：连续计数，达阈值才熔断（单次 404/抖动不误伤）
+  entry.lastFail = Date.now();
+  entry.consecFails++;
+  if (entry.consecFails >= BLOCK_FAIL_THRESHOLD) {
+    entry.best = 'blocked';
   }
 }
 
@@ -51,9 +66,11 @@ function getCdnStrategy(
 ): 'direct' | 'ua_rotate' | 'proxy' | 'blocked' {
   const entry = cdnStrategy.get(domain);
   if (!entry) return 'direct';
-  // 超过 5 分钟可重新尝试
-  if (entry.best === 'blocked' && Date.now() - entry.lastOk < 300000)
-    return 'blocked';
+  if (entry.best === 'blocked') {
+    // 熔断窗内短路；窗口过后放行一次探测（direct），成败重新学习——
+    // 旧代码此处直接返回 entry.best，blocked 后永不恢复（需重启）
+    return Date.now() - entry.lastFail < BLOCK_TTL_MS ? 'blocked' : 'direct';
+  }
   return entry.best;
 }
 
@@ -165,6 +182,10 @@ export async function fetchWithRetry(
     attempts.push({ ua: getRandomUserAgent(), via: 'proxy' });
   }
 
+  // 是否见过上游真实 403（地域封锁/防盗链），用于最终状态码：
+  // 纯网络错误（DNS/超时/Abort）不应伪装成 403，避免调用方做无意义的 403 重试
+  let sawUpstream403 = false;
+
   for (let i = 0; i < attempts.length; i++) {
     const a = attempts[i];
     try {
@@ -197,10 +218,20 @@ export async function fetchWithRetry(
 
       if (response.ok) {
         if (domain) reportCdnResult(domain, true, a.via);
+        // 落地校验：fetch 自动跟随 302，落地到内网即拦截并丢弃 body
+        // （保留 follow 行为，合法 CDN 的 302 跳转不受影响）
+        if (response.url && !(await isUrlSafeDeep(response.url))) {
+          try {
+            response.body?.cancel();
+          } catch {}
+          if (domain) reportCdnResult(domain, false, a.via);
+          return new Response('Upstream redirect blocked', { status: 403 });
+        }
         return response;
       }
 
       if (response.status === 403) {
+        sawUpstream403 = true;
         // Capture Set-Cookie from CDN (e.g., cf_clearance) and retry with cookie
         const setCookie = response.headers.get('set-cookie');
         if (setCookie && domain) {
@@ -226,6 +257,15 @@ export async function fetchWithRetry(
             });
             if (retryResp.ok) {
               if (domain) reportCdnResult(domain, true, a.via);
+              if (retryResp.url && !(await isUrlSafeDeep(retryResp.url))) {
+                try {
+                  retryResp.body?.cancel();
+                } catch {}
+                if (domain) reportCdnResult(domain, false, a.via);
+                return new Response('Upstream redirect blocked', {
+                  status: 403,
+                });
+              }
               return retryResp;
             }
           } catch (error) {
@@ -243,7 +283,19 @@ export async function fetchWithRetry(
       }
 
       if (response.status !== 403) {
-        // 非 403 错误（如 404/500）不重试
+        // 非 403 错误（如 404/500）不重试；同样做落地校验后直接透传
+        if (response.url && !(await isUrlSafeDeep(response.url))) {
+          try {
+            response.body?.cancel();
+          } catch {}
+          if (domain) reportCdnResult(domain, false, a.via);
+          return new Response('Upstream redirect blocked', { status: 403 });
+        }
+        // 非 ok 计入连续失败（304 除外）：3 次即熔断该 host 5 分钟，
+        // 重复探测死源时直接短路，客户端秒级判定死亡换源
+        if (domain && !response.ok && response.status !== 304) {
+          reportCdnResult(domain, false, a.via);
+        }
         return response;
       }
 
@@ -254,5 +306,9 @@ export async function fetchWithRetry(
   }
 
   if (domain) reportCdnResult(domain, false, 'direct');
-  return new Response('All retry attempts failed', { status: 403 });
+  // 见过真实 403 才返回 403（调用方会做去头/地域重试）；
+  // 纯网络错误返回 502，避免无意义的重试放大
+  return sawUpstream403
+    ? new Response('All retry attempts failed', { status: 403 })
+    : new Response('Upstream unreachable', { status: 502 });
 }
