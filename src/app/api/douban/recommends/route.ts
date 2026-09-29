@@ -142,13 +142,15 @@ export async function GET(request: NextRequest) {
     });
 
     const cacheTime = await getCacheTime();
+    const hasData = response.list.length > 0;
     return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-        'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-        'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
-        'Netlify-Vary': 'query',
-      },
+      headers: hasData
+        ? {
+            'Cache-Control': `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+            'CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+            'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheTime}`,
+          }
+        : { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     const errorResponse = {

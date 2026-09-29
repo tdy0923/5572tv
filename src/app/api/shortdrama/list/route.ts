@@ -222,18 +222,29 @@ export async function GET(request: NextRequest) {
     // 设置与网页端一致的缓存策略
     const response = NextResponse.json(result);
 
-    // 使用共享缓存时间配置
+    // 使用共享缓存时间配置；空结果不缓存，避免空白被边缘放大
     const cacheTime = SHORTDRAMA_CACHE_SECONDS.lists;
+    const hasData = Array.isArray(result.list) && result.list.length > 0;
+    if (hasData) {
+      response.headers.set(
+        'Cache-Control',
+        `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'Vercel-CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+    } else {
+      response.headers.set('Cache-Control', 'no-store');
+    }
     response.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+      'X-Cache-Duration',
+      hasData ? `${cacheTime}s` : 'no-store',
     );
-    response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    response.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
-    response.headers.set('X-Cache-Duration', `${cacheTime}s`);
     response.headers.set(
       'X-Cache-Expires-At',
       new Date(Date.now() + cacheTime * 1000).toISOString(),

@@ -225,20 +225,32 @@ export async function GET(request: NextRequest) {
     // 设置与网页端一致的缓存策略（搜索结果: 1小时）
     const response = NextResponse.json(result);
 
-    // 1小时 = 3600秒（搜索结果更新频繁，短期缓存）
+    // 1小时 = 3600秒（搜索结果更新频繁，短期缓存）；
+    // 空结果不缓存，避免空白被边缘放大
     const cacheTime = 3600;
-    response.headers.set(
-      'Cache-Control',
-      `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
-    );
-    response.headers.set('CDN-Cache-Control', `public, s-maxage=${cacheTime}`);
-    response.headers.set(
-      'Vercel-CDN-Cache-Control',
-      `public, s-maxage=${cacheTime}`,
-    );
+    const hasData = Array.isArray(result.list) && result.list.length > 0;
+    if (hasData) {
+      response.headers.set(
+        'Cache-Control',
+        `public, max-age=${cacheTime}, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+      response.headers.set(
+        'Vercel-CDN-Cache-Control',
+        `public, s-maxage=${cacheTime}`,
+      );
+    } else {
+      response.headers.set('Cache-Control', 'no-store');
+    }
 
     // 调试信息
-    response.headers.set('X-Cache-Duration', '1hour');
+    response.headers.set(
+      'X-Cache-Duration',
+      hasData ? '1hour' : 'no-store',
+    );
     response.headers.set(
       'X-Cache-Expires-At',
       new Date(Date.now() + cacheTime * 1000).toISOString(),
