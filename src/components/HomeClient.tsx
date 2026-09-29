@@ -712,22 +712,15 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
     };
   }, [homeData]);
 
-  // 🔄 异步加载即将上映数据
+  // 🔄 异步加载即将上映数据（公开接口，未登录也可看）
   useEffect(() => {
     if (!homeData) return;
 
-    // 无登录 cookie 时直接置空，避免过期会话下对 401 接口的无效轮询
-    if (
-      typeof document !== 'undefined' &&
-      !document.cookie.includes('user_info=')
-    ) {
-      dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
-      return;
-    }
-
     const controller = new AbortController();
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-    fetch('/api/release-calendar?limit=100', { signal: controller.signal })
+    const loadUpcoming = (isRetry: boolean) => {
+      fetch('/api/release-calendar?limit=100', { signal: controller.signal })
       .then((res) => {
         if (!res.ok) {
           console.error('获取即将上映数据失败，状态码:', res.status);
@@ -824,13 +817,22 @@ export function HomeClient({ initialTrendingData }: HomeClientProps) {
           }
         }
       })
-      .catch(() => {
-        if (!controller.signal.aborted) {
+        .catch(() => {
+          if (controller.signal.aborted) return;
+          if (!isRetry) {
+            retryTimer = setTimeout(() => loadUpcoming(true), 3000);
+            return;
+          }
           dispatch({ type: 'SET_UPCOMING_RELEASES', payload: [] });
-        }
-      });
+        });
+    };
 
-    return () => controller.abort();
+    loadUpcoming(false);
+
+    return () => {
+      if (retryTimer) clearTimeout(retryTimer);
+      controller.abort();
+    };
   }, [homeData]);
 
   // 🚀 TanStack Query - 使用 useMutation 管理清空收藏操作

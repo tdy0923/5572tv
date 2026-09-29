@@ -36,8 +36,7 @@ interface WorkerOutput {
   };
 }
 
-// 缓存正则表达式
-const seasonRegex = /第[一二三四五六七八九十\d]+季|Season\s*\d+|S\d+/gi;
+const seasonRegex = /第[一二三四五六七八九十\d]+季|Season\s*\d+|S\d+/i;
 
 function normalizeTitle(title: string): string {
   // 合并多个replace操作，减少字符串创建
@@ -271,5 +270,4 @@ self.addEventListener('message', (e: MessageEvent<WorkerInput>) => {
   }
 });
 
-// Export for TypeScript (won't be used at runtime)
-export {};
+export { processReleaseCalendar };
