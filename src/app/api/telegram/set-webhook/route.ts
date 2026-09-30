@@ -23,16 +23,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Telegram 未配置' }, { status: 400 });
     }
 
-    // 构建 webhook URL - 只使用当前访问的域名
-    const host = request.headers.get('host');
-    if (!host) {
+    // 构建 webhook URL - 优先当前访问的域名，容器内网 host 回落站点配置
+    const { resolvePublicBaseUrl } = await import('@/lib/site-url');
+    const base = resolvePublicBaseUrl(
+      request.headers.get('host'),
+      request.headers.get('x-forwarded-proto') ??
+      new URL(request.url).protocol.replace(/:$/, ''),
+    );
+    if (!base) {
       return NextResponse.json({ error: '无法获取当前域名' }, { status: 400 });
     }
-
-    const protocol =
-      request.headers.get('x-forwarded-proto') ||
-      (host.includes('localhost') ? 'http' : 'https');
-    const webhookUrl = `${protocol}://${host}/api/telegram/webhook`;
+    const webhookUrl = `${base}/api/telegram/webhook`;
 
     // 调用 Telegram API 设置 webhook
     const response = await fetch(

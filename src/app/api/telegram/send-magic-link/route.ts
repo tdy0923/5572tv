@@ -33,11 +33,15 @@ export async function POST(request: Request) {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = Date.now() + 5 * 60 * 1000; // 5 分钟过期
 
-    // 获取当前请求的域名
-    const protocol = request.headers.get('x-forwarded-proto') || 'https';
-    const host =
-      request.headers.get('host') || request.headers.get('x-forwarded-host');
-    const baseUrl = `${protocol}://${host}`;
+    // 获取当前请求的域名（容器内网 host 回落站点配置，避免魔法链接指向内网）
+    const { resolvePublicBaseUrl } = await import('@/lib/site-url');
+    const baseUrl =
+      resolvePublicBaseUrl(
+        request.headers.get('host') ||
+          request.headers.get('x-forwarded-host'),
+        request.headers.get('x-forwarded-proto') ??
+      new URL(request.url).protocol.replace(/:$/, ''),
+      ) || 'https://www.5572.net';
 
     // 存储 token 到数据库
     const tokenData = {

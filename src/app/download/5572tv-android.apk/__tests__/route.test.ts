@@ -22,9 +22,10 @@ jest.mock('next/server', () => {
 
 import { GET } from '@/app/download/5572tv-android.apk/route';
 
-const makeRequest = () =>
+const makeRequest = (host = '0.0.0.0:3000') =>
   ({
-    url: 'http://0.0.0.0:3000/download/5572tv-android.apk',
+    url: `http://${host}/download/5572tv-android.apk`,
+    headers: { get: (name: string) => (name === 'host' ? host : null) },
   }) as unknown as NextRequest;
 
 describe('download apk route', () => {
