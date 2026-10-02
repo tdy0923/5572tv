@@ -109,6 +109,40 @@ else
   check "M3U8 Protocol" "warn" "Skipped"
 fi
 
+# ── 3b. Download & API Sanity (read-only) ──
+echo ""
+echo "── 3b. Download & API Sanity ──"
+
+SITE_HOST=$(echo "$BASE_URL" | sed -E 's|https?://||; s|/.*||')
+for APK in "5572tv-android.apk" "5572tv-android-armv7a.apk"; do
+  LOC=$(curl -s -D - -o /dev/null --max-time 15 "$BASE_URL/download/$APK" 2>&1 | grep -i "^location:" | tr -d '\r' | awk '{print $2}')
+  if [ -z "$LOC" ]; then
+    check "APK Redirect $APK" "fail" "No Location header"
+  elif echo "$LOC" | grep -q "0\.0\.0\.0\|localhost\|127\.0\.0\.1"; then
+    check "APK Redirect $APK" "fail" "Points at internal host: $LOC"
+  elif echo "$LOC" | grep -q "$SITE_HOST"; then
+    check "APK Redirect $APK" "ok"
+  else
+    check "APK Redirect $APK" "warn" "Unexpected target: $LOC"
+  fi
+done
+
+VC_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/api/version-check" 2>&1 || echo "000")
+if [ "$VC_CODE" = "200" ]; then
+  check "Version Check API" "ok"
+else
+  check "Version Check API" "fail" "HTTP $VC_CODE"
+fi
+
+REC_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$BASE_URL/api/shortdrama/recommend?size=5" 2>&1 || echo "000")
+if [ "$REC_CODE" = "401" ]; then
+  check "Recommend Auth Gate" "ok"
+elif [ "$REC_CODE" = "200" ]; then
+  check "Recommend Auth Gate" "warn" "Publicly accessible (expected 401)"
+else
+  check "Recommend Auth Gate" "fail" "HTTP $REC_CODE (expected 401)"
+fi
+
 # ── 4. Code Quality Checks ──
 echo ""
 echo "── 4. Code Quality ──"
