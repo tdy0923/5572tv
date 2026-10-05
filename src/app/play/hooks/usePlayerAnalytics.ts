@@ -17,6 +17,36 @@ interface PlayerAnalytics {
 
 const MAX_EVENTS = 100;
 
+export function stringifyPlayerError(err: any): string {
+  if (err == null) return 'unknown';
+  if (typeof err === 'string') return err;
+  if (err instanceof Error) {
+    return err.message ? `${err.name}: ${err.message}` : String(err);
+  }
+  if (typeof err === 'object') {
+    const parts: string[] = [];
+    if (typeof err.type === 'string' && err.type) parts.push(err.type);
+    if (typeof err.message === 'string' && err.message) {
+      parts.push(err.message);
+    }
+    const media = (err.target as any)?.error;
+    if (media && typeof media === 'object') {
+      if (media.code != null) parts.push(`code=${media.code}`);
+      if (typeof media.message === 'string' && media.message) {
+        parts.push(media.message);
+      }
+    }
+    if (parts.length > 0) return parts.join(' ');
+    try {
+      const dumped = JSON.stringify(err);
+      if (dumped && dumped !== '{}') return dumped.slice(0, 300);
+    } catch {
+      return 'unknown error';
+    }
+  }
+  return 'unknown error';
+}
+
 export function usePlayerAnalytics(
   artPlayerRef: React.RefObject<any>,
   currentSourceRef: React.MutableRefObject<string>,
@@ -117,7 +147,7 @@ export function usePlayerAnalytics(
     };
     const onError = (err: any) => {
       statsRef.current.errorCount++;
-      const detail = String(err).slice(0, 300);
+      const detail = stringifyPlayerError(err).slice(0, 300);
       recordEvent('error', detail);
       const now = Date.now();
       const last = lastReportRef.current;

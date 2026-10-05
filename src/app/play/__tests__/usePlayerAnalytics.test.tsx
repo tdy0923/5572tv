@@ -1,6 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 
-import { usePlayerAnalytics } from '../hooks/usePlayerAnalytics';
+import {
+  stringifyPlayerError,
+  usePlayerAnalytics,
+} from '../hooks/usePlayerAnalytics';
 
 type Handler = (...args: any[]) => void;
 
@@ -427,6 +430,29 @@ describe('usePlayerAnalytics', () => {
       emitB('play');
     });
     expect(result.current.getStats().events.length).toBe(before + 1);
+  });
+
+  it('serializes DOM-like error events usefully', () => {
+    expect(stringifyPlayerError('plain')).toBe('plain');
+    expect(stringifyPlayerError(null)).toBe('unknown');
+    expect(stringifyPlayerError(new Error('boom'))).toContain('boom');
+    expect(stringifyPlayerError({ type: 'error' })).toContain('error');
+    expect(
+      stringifyPlayerError({
+        type: 'error',
+        target: { error: { code: 3, message: 'decode' } },
+      }),
+    ).toBe('error code=3 decode');
+    expect(stringifyPlayerError({})).not.toBe('[object Object]');
+  });
+
+  it('reports serialized error detail', () => {
+    const { emit } = setup();
+    act(() => {
+      emit('error', { type: 'error' });
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(lastReportBody().message).toBe('error');
   });
 
   it('posts a summary on ended', () => {
