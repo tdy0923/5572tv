@@ -660,7 +660,7 @@ export default function PerformanceMonitor() {
 
   const errorPaths = Object.entries(
     filteredRequests
-      .filter((req: any) => req.statusCode >= 400)
+      .filter((req: any) => req.statusCode >= 500)
       .reduce<Record<string, number>>((acc, req: any) => {
         const path = req.path || '/';
         acc[path] = (acc[path] || 0) + 1;
