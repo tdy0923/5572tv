@@ -13,6 +13,15 @@
 
 > 改完 `flutter_app/**` 推送会自动触发 `Build & Push Android APK`（CI 重建并提交 APK，带 `[skip apk]` 防死循环）。
 
+## 每次发布网站版本都要改
+
+| #   | 位置                            | 改什么                                                                    |
+| --- | ------------------------------- | ------------------------------------------------------------------------- |
+| 1   | `VERSION.txt` / `package.json`  | 同步新版本号（触发 Docker 镜像版本 tag）                                  |
+| 2   | `CHANGELOG`                     | 顶部追加本次注记（Added/Fixed/Changed）                                   |
+| 3   | `README.md`                     | 标题与 Release 徽标同步新版本                                             |
+| 4   | GitHub Releases                 | 建对应 tag 的 Release，注记贴 CHANGELOG（缺失的旧版本一并回填）            |
+
 ## 二维码 / 下载链接（通常不用改）
 
 - 二维码与下载按钮**固定指向** `/download/5572tv-android.apk`，文件名不变则永远有效，无需更新。
