@@ -277,11 +277,15 @@ export async function GET(request: NextRequest) {
 
     // 检查是否有错误（用户取消授权/提供商拒绝等，不计入失败次数）
     if (error) {
-      console.error('OIDC认证错误:', error);
       const errorDescription =
         searchParams.get('error_description') ||
         searchParams.get('error_reason') ||
         '';
+      console.error(
+        'OIDC认证错误:',
+        error,
+        errorDescription ? `(${errorDescription})` : '',
+      );
       const message = `OIDC认证失败${errorDescription ? `：${errorDescription}` : ''}`;
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent(message)}`, origin),
